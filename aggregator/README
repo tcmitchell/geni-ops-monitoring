@@ -1,0 +1,49 @@
+ToC of Reference Aggregator
+
+1. Ubuntu packages
+    sudo apt-get install postgresql
+    sudo apt-get install python-psycopg2	
+
+2. Configuration
+    Omit (1) and (2) if you already have a postgres user
+    (1)     sudo -u postgres psql postgres
+    (2) (in postgres) \password postgres 
+    (3)     sudo -u postgres createuser --superuser $USER
+    (4)     sudo -u postgres psql postgres
+    (5)	(in postgres) \password <USER> # USER is typed
+    (6)     sudo -u postgres createdb agg-db
+
+    Consider creating a read-only user for nagios...
+
+3. Design of aggregator For now we're using postgres.  We could
+    consider others if we hit a performance wall.
+
+    DB-centric design: The aggregator db is the center of the universe
+    and other programs insert data, query data, and monitor its
+    health.
+
+    Create Table:
+
+    - Program that defines schema (hardcoded for now). TODO file for
+      reading json-schema, how does an update to schema effect a long
+      running aggregator?
+
+    Inserts:
+
+    - Periodic wakeup call Local store for new values sleep
+
+    - Triggers for getting new data.  Python program that
+      is listening for staleness of data for a particular
+      item.  
+
+    - Conversion of json objects to relational data
+
+
+    Queries:
+    
+    - Tim is working on this, but for now assume SQL queries
+
+    
+    Monitoring of DB:
+
+    - Another python program that monitors the state of health of db.
