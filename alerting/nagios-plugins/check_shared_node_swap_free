@@ -1,11 +1,11 @@
 #! /usr/bin/python
 
-"""Checks the CPU usage of a shared node"""
+"""Checks the swap usage of a shared node"""
 
 import nagiosplugin
 import argparse
 
-class SharedNodeCpu(nagiosplugin.Resource):
+class SharedNodeSwapFree(nagiosplugin.Resource):
 
     def __init__(self, aggregate):
         self._aggregate = aggregate
@@ -19,10 +19,10 @@ class SharedNodeCpu(nagiosplugin.Resource):
         metric = []
 
         for host in hosts:
-            name[host] = '%s_sn_cpu' % host
-            value[host] = 0
+            name[host] = '%s_sn_swap_free' % host
+            value[host] = 4000
             metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
-                                              max=100, context='load'))
+                                              context='swapfree'))
 
         return metric
 
@@ -37,8 +37,8 @@ def main():
                       help='identifier for aggregate to check')
     args = argp.parse_args()
     check = nagiosplugin.Check(
-        SharedNodeCpu(args.aggregate),
-        nagiosplugin.ScalarContext('load', args.warning, args.critical))
+        SharedNodeSwapFree(args.aggregate),
+        nagiosplugin.ScalarContext('swapfree', args.warning, args.critical))
     check.main()
 
 if __name__ == '__main__':
