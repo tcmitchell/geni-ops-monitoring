@@ -1,2 +1,33 @@
 Some plugins in this directory will use the nagiosplugin python
 library (https://pypi.python.org/pypi/nagiosplugin/)
+
+The library uses the following design to construct nagios checks:
+             +----------+                \
+             | Resource |                 |
+             +----------+                 |
+       _____/      |     \_____           | Acquisition
+      v            v           v          |
++---------+   +---------+   +---------+   |
+| Metric  |...| Metric  |...| Metric  |  <
++---------+   +---------+   +---------+   |
+     |             |             |        |
+     v             v             v        |
++---------+   +---------+   +---------+   |
+| Context |...| Context |...| Context |   | Evaluation
++---------+   +---------+   +---------+   |
+     |             |             |        |
+     v             v             v        |
++---------+   +---------+   +---------+   |
+| Result  |...| Result  |...| Result  |  <
++---------+   +---------+   +---------+   |
+           \___    |    ___/              |
+               v   v   v                  | Presentation
+              +---------+                 |
+              | Summary |                 |
+              +---------+                /
+
+A single Resource and Summary map to a single nagios check, but each
+check can have multiple Metric/Context/Result paths.  With this design,
+we can build a library of Metrics based on the primitives defined in
+the data schema, and then we can use those Metric classes to construct
+more complex checks which are more useful to operators.
