@@ -19,7 +19,7 @@ class SharedNodeSwapFree(nagiosplugin.Resource):
         metric = []
 
         for host in hosts:
-            name[host] = '%s_sn_swap_free' % host
+            name[host] = '%s_swap_free' % host
             value[host] = 4000
             metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
                                               context='swapfree'))
