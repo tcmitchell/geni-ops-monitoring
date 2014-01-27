@@ -6,48 +6,53 @@ from time import sleep
 import json
 
 
+db_schema = {}
+db_schema["memory_util"] = "(agg_id varchar, time float8, value float4)"
 
-def json_receiver(json_text):
+# all in one function for now, simple and updates are contained in
+# here as compared to alternatives (returning a struct that matches
+# schema)
+def json_receiver(json_text, con):
+    cur = con.cursor()
     data = json.loads(json_text)
-    print data
-    print data["response-type"]
-    print data["aggregate-name"]
-    print data["aggregate-id"]
-    print data["data-type"]
-    print data["num-values"]
-    num_values = data["num-values"];
-    for i in range(num_values):
-        print data["values"][i], "at", data["times"][i]
 
-    return data
+    if (data["response_type"] == "data_poll"):
+        table_name = data["data_type"] # good practice?    
+        cur.execute("CREATE TABLE IF NOT EXISTS " + table_name + db_schema[table_name]);
+        con.commit()
+
+        print "Data from", data["aggregate_name"]
+
+        ins_str_base = "INSERT INTO " + table_name + " values ('" + data["aggregate_id"] + "',"
+
+        num_values = data["num_values"];
+        for i in range(num_values):
+            cur.execute(ins_str_base + str(data["times"][i]) + ", " + str(data["values"][i]) + ");")
+        
+        con.commit()
+            
+
 
 def main():
-    conn = psycopg2.connect("dbname=agg_db user=rirwin");
-    cur = conn.cursor();
-    #insert_str = "INSERT INTO agg-table (";
-    # function for inserts
 
-    cur.execute("drop table if exists agg_table_mem;");
-    conn.commit(); 
-    cur.execute("create table agg_table_mem(urn_id int8, time float8, value float4);");
-    conn.commit(); 
-    
+    con = psycopg2.connect("dbname=rirwin user=rirwin");
+    cur = con.cursor();
 
+    cur.execute("drop table if exists memory_util;");
+    con.commit(); 
 
     djf = dummy_json_fetcher.get_values();
     
-    json_receiver(djf)
+    json_receiver(djf,con)
 
 
-    cur.execute("select count(*) from agg_table_mem;");
+    cur.execute("select count(*) from memory_util;");
     print cur.fetchone()[0]
-
-    #sleep(1);
 
 
 
     cur.close();
-    conn.close();
+    con.close();
 
 
 if __name__ == "__main__":
