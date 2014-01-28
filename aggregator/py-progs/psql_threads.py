@@ -95,7 +95,7 @@ def thread_main(snft): # snft = SingleNounFetcherThread
 
         snft.counter = snft.counter + 1
     
-        if(snft.counter) > 5:
+        if(snft.counter) > 100:
             break; # Exits loop and thread_main()
         else: 
             snft.thread_sleep();
@@ -111,7 +111,7 @@ def main():
     total_thread_index = 0
     thread_str = table_str + str(thread_type_index)
     url_noun="http://127.0.0.1:5000/" + table_str + "/"
-    sleep_period_sec = 1
+    sleep_period_sec = 3
 
     create_table(con, table_str);
     now_sec_epoch = time.time()/2 # need to handle null results
