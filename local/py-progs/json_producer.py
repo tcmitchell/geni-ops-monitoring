@@ -6,48 +6,51 @@
 import json
 #import time
 
+#
+# I bet I could use the schema for automating this
+#
 def psql_to_json(q_res, table_name):
     
     num_values = len(q_res)
-    aggregate_id = q_res[0][0] 
-    aggregate_name = q_res[0][0]
+
+    aggregate_ids = []
+    resource_ids = []
     values = []
     times = [] 
     
-    for i in range(num_values):
-        times.append(q_res[i][1])
-        values.append(q_res[i][2])
+    for i in range(num_values): 
+        aggregate_ids.append(q_res[i][0])
+        resource_ids.append(q_res[i][1])
+        times.append(q_res[i][2])
+        values.append(q_res[i][3])
 
     j = json.dumps({'response_type': 'data_poll',
-                    'aggregate_name': aggregate_name,
-                    'aggregate_id': aggregate_id,
                     'data_type': table_name,
                     'num_values': num_values,
+                    'aggregate_ids': (aggregate_ids[0:num_values]),
+                    'resource_ids': (resource_ids[0:num_values]),
                     'values': (values[0:num_values]),
                     'times': (times[0:num_values])
                     })
 
     return j
 
-def get_dummy_values():
-
-    vals = [0.5, 0.6, 0.7, 0.8, 0.9]
-    times = [1,2,3,4,5]
-   
-    j = json.dumps({'response_type': 'data_poll',
-                    'aggregate_name':'ig_bbn',
-                    'aggregate_id':'urn=3243+ig_bbn',
-                    'data_type':'memory_util',
-                    'num_values':5,
-                    'values': (vals[0:5]),
-                    'times': (times[0:5])
-                    })
-
-    #'values': (vals[0],vals[1],vals[2],vals[3],vals[4]),
-    #'times': (times[0],times[1],times[2],times[3],times[4])
-
-    return j
-    
-
 if __name__ == "__main__":
-    get_values()
+
+    # appearance of result from query
+    q_res = []
+    row = ("404-ig","compute_node_1", 1390939480.1, 32.6)
+    q_res.append(row)
+    row = ("404-ig","compute_node_1", 1390939481.1, 42.5)
+    q_res.append(row)
+    row = ("404-ig","compute_node_1", 1390939482.1, 35.6)
+    q_res.append(row)
+    row = ("404-ig","compute_node_1", 1390939483.1, 32.1)
+    q_res.append(row)
+    row = ("404-ig","compute_node_1", 1390939484.1, 32.0)
+    q_res.append(row)
+    
+    print q_res
+    #psql_to_json(q_res,"memory_util")
+
+    #get_values()
