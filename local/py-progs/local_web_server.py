@@ -2,7 +2,7 @@
 from flask import Flask, request
 import psycopg2
 import json_producer
-import psql_query
+import local_query_handler
 
 app = Flask(__name__)
 
@@ -35,15 +35,22 @@ def memory_util():
         print "get memory since", since
 
     # query local store for memory util
-    q_res = psql_query.query(con,"memory_util","time > " + str(since));
-    
-    # form json
-    j = json_producer.psql_to_json(q_res, "memory_util")
+    (r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(since));
 
-    return j
+    if (r_stat == 0):
+        # form json
+        j = json_producer.psql_to_json(q_res, "memory_util")
+        return j
+    else:
+        return str(r_stat) + ": " + q_res
 
 
 
 if __name__ == '__main__':
     con = psycopg2.connect("dbname=local user=rirwin");
+    
+    # add debug functions for startup here
+    #(r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(0));
+    #print q_res
+
     app.run(debug = True)

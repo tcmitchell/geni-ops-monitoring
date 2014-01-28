@@ -1,6 +1,12 @@
 todo items:
 
+(done) aggregate_id should be in an array since local store might respond with more than one aggregate_id.  Also, resource_id?
+
+make json producer read schema more easily and automate schema updates, let's just match the rows returned from sql to arrays in json.
+
 Test memory_util thin thread running in realtime
+
+threading locks for using db conn
 
 Security - certificate-based approach
 

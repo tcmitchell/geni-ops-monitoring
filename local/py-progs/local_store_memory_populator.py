@@ -9,7 +9,8 @@ sys.path.append("../../config")
 import db_schema_config
 
 db_schema = db_schema_config.get_schema_dict()
-aggregate_id="404-ig"
+# 404 is not found and the area code in atlanta #TheGoalIsGEC19
+aggregate_id="404-ig" 
 resource_id="compute_node_1"
 
 

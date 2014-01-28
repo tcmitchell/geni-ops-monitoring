@@ -26,7 +26,7 @@ def json_receiver(json_text, con):
         num_values = data["num_values"];
         for i in range(num_values):
             cur.execute(ins_str_base + str(data["times"][i]) + ", " + str(data["values"][i]) + ");")
-        
+         
         con.commit()
             
 def json_fetcher():

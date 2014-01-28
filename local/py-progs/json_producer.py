@@ -7,6 +7,7 @@ import json
 #import time
 
 #
+# TODO changes here required when schema update....hardcoded, :(
 # I bet I could use the schema for automating this
 #
 def psql_to_json(q_res, table_name):
@@ -50,7 +51,12 @@ if __name__ == "__main__":
     row = ("404-ig","compute_node_1", 1390939484.1, 32.0)
     q_res.append(row)
     
-    print q_res
-    #psql_to_json(q_res,"memory_util")
-
+    #print q_res
+    j = psql_to_json(q_res,"memory_util")
+    
+    #print "becomes"
+    #print j
+    
+    data = json.loads(j)
+    print data
     #get_values()

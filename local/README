@@ -1,4 +1,10 @@
-sudo apt-get install python-dev python-psutil
+
+# for upgrade of psutil
+sudo apt-get install python-dev python-psutil python-pip
 sudo pip install psutil --upgrade
+# end psutil
 
 sudo -u postgres createdb local
+
+# webserver
+sudo apt-get install python-flask python-requests 

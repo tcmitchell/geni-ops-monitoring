@@ -1,102 +1,139 @@
  #!/usr/bin/python
 
-#import psycopg2
+import psycopg2
 import threading
 import time 
+import json_receiver
+import sys
+import requests
 
 # lock of the conn and cur usage by this program
 # psql has locks for what would be concurrent psql accesses
 # from other program
 psql_lock = threading.Lock() 
-conn = None
-cur = None
 
-class DataFetcherThread(threading.Thread):
+sys.path.append("../../config")
+import db_schema_config
+db_schema = db_schema_config.get_schema_dict()
 
-    def __init__(self, threadID, name, datastore_url, sleep_period_sec):
+class SingleNounFetcherThread(threading.Thread):
+
+    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec):
         threading.Thread.__init__(self)
         self.threadID = threadID
-        self.name = name
-        self.counter = 0
-        self.datastore_url = datastore_url
-        self.insert_base_str = "INSERT INTO TABLE "
+        self.thread_name = thread_name
+  
+        self.local_url_noun = local_url_noun
+        self.insert_base_str = "INSERT INTO " + table_str + " VALUES"
         self.sleep_period_sec = sleep_period_sec
-        self.schema = ""; # read from config file containing json-schema?
+        self.table_str = table_str
+        self.counter = 0
+        self.time_of_last_update = initial_time
+        self.schema = db_schema[table_str]
+        self.con = con
 
     def run(self):
+
         print "Starting " + self.name
 
         thread_main(self)
-        
+
         print "Exiting " + self.name
 
     def poll_datastore(self):
-        self.counter = self.counter + 1
-        response = "response = " + self.name + " " + str(self.counter)
-        return response
 
-    def transform_response(self, response):
-        values = "(transformed to values from " + self.datastore_url + " " + response + ")"
-        return values
+        payload = {'since':self.time_of_last_update}
+        resp = requests.get(self.local_url_noun,params=payload)
+        
+        # need to handle response codes
+        return resp.content
 
-    def insert_query(self, query_str):
+    def insert_query(self, rows):
+        num_rows = len(rows)
+        ins_str = self.insert_base_str
+
+        for i in range(num_rows-1):
+            ins_str = ins_str + rows[i]
+            ins_str = ins_str + ","
+        ins_str = ins_str + rows[num_rows-1] + ";"
+         
+        print "Insert Query = ", ins_str
 
         psql_lock.acquire()
 
-        print "INSERT_QUERY " + query_str
-        #cur.execute(Above)
-        #conn.commit()
-        time.sleep(1) # simulating delay, test locking
-        print "Committed"
+        cur = self.con.cursor()
+        cur.execute(ins_str) # todo try execption block
+        self.con.commit() 
+        cur.close()
 
         psql_lock.release()
-        
-def thread_main(dft): # dft = DataFetcher
+
+        print "Committed"
+
+    def thread_sleep(self):
+        time.sleep(self.sleep_period_sec)
+
+# thread main outside of thread class, is this a good idea? 
+def thread_main(snft): # snft = SingleNounFetcherThread
     
-    while True: 
+    while (True): 
 
         # poll datastore
-        response = dft.poll_datastore()
-        values = dft.transform_response(response)
-        insert_str = dft.insert_base_str + values + ";"
-            
-        dft.insert_query(insert_str)
-            
-        if(dft.counter) > 5:
-            break; # Exits loop and thread_main
+        json_text = snft.poll_datastore()
+
+        # convert response to json
+        (r_code, rows, time) = json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
+
+        print "Received " + str(len(rows)) + " updates"
+
+        if len(rows) > 0:
+            # if any new values update latest time
+            snft.time_of_last_update = time
+
+            # insert into database
+            snft.insert_query(rows)
+
+        snft.counter = snft.counter + 1
+    
+        if(snft.counter) > 5:
+            break; # Exits loop and thread_main()
         else: 
-            time.sleep(dft.sleep_period_sec);
+            snft.thread_sleep();
         
-def main(): # args
+       
+# how to unit test this? 
+def main(): 
 
-    # some config file?
+    # should all threads share a connection, I think not
+    con = psycopg2.connect("dbname=aggregator user=rirwin")
+    table_str = "memory_util"
+    thread_type_index = 0
+    total_thread_index = 0
+    thread_str = table_str + str(thread_type_index)
+    url_noun="http://127.0.0.1:5000/" + table_str + "/"
+    sleep_period_sec = 1
 
-    #[conn, cur] = init_conn("rirwin","rirwin") # args
-    #create_table(conn, cur, "test_py");
+    create_table(con, table_str);
+    now_sec_epoch = time.time()/2 # need to handle null results
+    
+    threads = {}
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, now_sec_epoch, sleep_period_sec)
 
-    thread1 = DataFetcherThread(1, "Thread-1", "datastore_one_url", 0.5)
-    thread2 = DataFetcherThread(2, "Thread-2", "datastore_two_url", 0.5)
 
-    thread1.start()
-    thread2.start()
+    threads[table_str].start()
 
     print "Exiting main thread"
 
-    #cur.close()
-    #conn.close()
 
 
-def init_conn(dbname, username):
-    conn = psycopg2.connect("dbname=rirwin user=rirwin")
-    cur = conn.cursor()
+def create_table(con, table_str):
     
-    return (conn, cur)
+    cur = con.cursor()
+    cur.execute("DROP TABLE IF EXISTS " + table_str + ";")
+    cur.execute("CREATE TABLE " + table_str + db_schema[table_str]);
+    con.commit() 
 
-def create_table(conn, cur, tablename):
-    cur.execute("DROP TABLE IF EXISTS test_py;")
-    cur.execute(create_schema_str);
-    cur.execute(insert_packet_str);
-    conn.commit(); # must have commit, otw others cannot query
+    cur.close()
 
 if __name__ == "__main__":
     main()

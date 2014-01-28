@@ -6,11 +6,11 @@ import json
 # Again this is very hard coded... :( need to load the schema into here for automatic decoding
 # it can be done
 #
-def json_receiver(json_text, table_str, thread_name):
+def json_to_psql(json_text, table_str, thread_name):
     
     data = json.loads(json_text)
-    
     rows = [];
+    latest_time = 0;
     if (data["response_type"] == "data_poll"):
         
         if (data["data_type"] != table_str):
@@ -21,7 +21,10 @@ def json_receiver(json_text, table_str, thread_name):
             for i in range(num_values):
                 row = "('" + data["aggregate_ids"][i] + "','" + data["resource_ids"][i] + "'," + str(data["times"][i]) + ", " + str(data["values"][i]) + ")"
                 rows.append(row)
-            return (0,rows)
+                if data["times"][i] > latest_time:
+                    latest_time = data["times"][i]
+
+            return (0,rows,latest_time)
             
 
 def main():
@@ -31,10 +34,11 @@ def main():
     table_str = "memory_util"
     thread_name = "thread-test"
     
-    (r_code, rows) = json_receiver(json_text, table_str, thread_name)
-    print r_code,"\n"
-    print rows[0],"\n"
+    (r_code, rows, latest_time) = json_to_psql(json_text, table_str, thread_name)
+    print r_code
+    print rows[0]
     print rows[1]
+    print latest_time
     
 if __name__ == "__main__":
     main()
