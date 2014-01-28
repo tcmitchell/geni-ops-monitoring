@@ -33,8 +33,8 @@ def run_inserts(con, num_ins, per_sec):
 
     cur.close()
 
-if __name__ == "__main__":
 
+def main():
     if (len(sys.argv) != 3):
         print "Provide exactly two args: (1) for num inserts, (2) for period between inserts in seconds"
         sys.exit(1)
@@ -77,3 +77,6 @@ if __name__ == "__main__":
 
     cur.close();
     con.close();
+
+if __name__ == "__main__":
+    main()

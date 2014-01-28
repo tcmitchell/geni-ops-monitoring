@@ -1,0 +1,4 @@
+sudo apt-get install python-dev python-psutil
+sudo pip install psutil --upgrade
+
+sudo -u postgres createdb local

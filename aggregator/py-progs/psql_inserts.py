@@ -43,9 +43,8 @@ def main():
     cur.execute("drop table if exists memory_util;");
     con.commit(); 
 
-    #djf = dummy_json_fetcher.get_values();
     response = json_fetcher()
-    json_receiver(response,con)
+    json_receiver(response, con)
 
 
     cur.execute("select count(*) from memory_util;");

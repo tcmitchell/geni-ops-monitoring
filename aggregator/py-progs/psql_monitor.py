@@ -4,7 +4,7 @@ import psycopg2
 from time import sleep
 
 
-conn = psycopg2.connect("dbname=agg-db user=rirwin");
+conn = psycopg2.connect("dbname=aggregator user=rirwin");
 cur = conn.cursor();
 
 check_size_pretty_db_str = "select * from pg_size_pretty(pg_database_size('agg-db'))"
