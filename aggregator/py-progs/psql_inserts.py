@@ -1,13 +1,11 @@
 #!/usr/bin/python
 
 import psycopg2
-import dummy_json_fetcher
-from time import sleep
 import json
-
+import requests
 
 db_schema = {}
-db_schema["memory_util"] = "(agg_id varchar, time float8, value float4)"
+db_schema["memory_util"] = "(aggregate_id varchar, time float8, value float8)"
 
 # all in one function for now, simple and updates are contained in
 # here as compared to alternatives (returning a struct that matches
@@ -17,7 +15,7 @@ def json_receiver(json_text, con):
     data = json.loads(json_text)
 
     if (data["response_type"] == "data_poll"):
-        table_name = data["data_type"] # good practice?    
+        table_name = data["data_type"] 
         cur.execute("CREATE TABLE IF NOT EXISTS " + table_name + db_schema[table_name]);
         con.commit()
 
@@ -31,19 +29,23 @@ def json_receiver(json_text, con):
         
         con.commit()
             
+def json_fetcher():
 
+    payload = {'since':2}
+    r = requests.get('http://127.0.0.1:5000/memory_util/',params=payload)
+    return r.content
 
 def main():
 
-    con = psycopg2.connect("dbname=rirwin user=rirwin");
+    con = psycopg2.connect("dbname=aggregator user=rirwin");
     cur = con.cursor();
 
     cur.execute("drop table if exists memory_util;");
     con.commit(); 
 
-    djf = dummy_json_fetcher.get_values();
-    
-    json_receiver(djf,con)
+    #djf = dummy_json_fetcher.get_values();
+    response = json_fetcher()
+    json_receiver(response,con)
 
 
     cur.execute("select count(*) from memory_util;");

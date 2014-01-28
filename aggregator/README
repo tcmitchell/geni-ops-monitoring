@@ -2,7 +2,7 @@ ToC of Reference Aggregator
 
 1. Ubuntu packages
     sudo apt-get install postgresql
-    sudo apt-get install python-psycopg2	
+    sudo apt-get install python-psycopg2 python-flask python-requests	
 
 2. Configuration
     Omit (1) and (2) if you already have a postgres user
@@ -11,7 +11,7 @@ ToC of Reference Aggregator
     (3)     sudo -u postgres createuser --superuser $USER
     (4)     sudo -u postgres psql postgres
     (5)	(in postgres) \password <USER> # USER is typed
-    (6)     sudo -u postgres createdb agg-db
+    (6)     sudo -u postgres createdb aggregator
 
     Consider creating a read-only user for nagios...
 
