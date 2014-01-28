@@ -5,10 +5,13 @@ import time
 import psutil
 import sys
 
-db_schema = {}
-db_schema["memory_util"] = "(aggregate_id varchar, time float8, value float8)"
+sys.path.append("../../config")
+import db_schema_config
 
-aggregate_id="urn=404-oh-no"
+db_schema = db_schema_config.get_schema_dict()
+aggregate_id="404-ig"
+resource_id="compute_node_1"
+
 
 def get_mem_util_percent():
     # despite being called virtual, this is physical memory
@@ -24,7 +27,7 @@ def run_inserts(con, num_ins, per_sec):
         time_sec_epoch = time.time()
         percent_mem_used = get_mem_util_percent()
 
-        ins_str = "INSERT INTO memory_util VALUES ('" + aggregate_id + "', " + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
+        ins_str = "INSERT INTO memory_util VALUES ('" + aggregate_id + "', '" + resource_id + "'," + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
 
         cur.execute(ins_str)
         con.commit()
