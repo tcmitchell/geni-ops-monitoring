@@ -11,10 +11,12 @@ app = Flask(__name__)
 # conn of database
 con = None
 
+'''
+# fix json import
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Not found' } ), 404)
-
+'''
 
 @app.route('/', methods = ['GET'])
 def index():
