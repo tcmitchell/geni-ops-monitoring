@@ -12,6 +12,7 @@ import requests
 # from other program
 psql_lock = threading.Lock() 
 
+# schema only used for unit test
 sys.path.append("../../config")
 import db_schema_config
 db_schema = db_schema_config.get_schema_dict()
@@ -29,8 +30,7 @@ class SingleNounFetcherThread(threading.Thread):
         self.table_str = table_str
         self.counter = 0
         self.time_of_last_update = initial_time
-        self.schema = db_schema[table_str]
-        self.con = con
+        self.con = con # is this a copy or a reference? many cons may be bad
 
     def run(self):
 
@@ -82,7 +82,7 @@ def thread_main(snft): # snft = SingleNounFetcherThread
         json_text = snft.poll_datastore()
 
         # convert response to json
-        (r_code, rows, time) = json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
+        (r_code, rows, time) = json_receiver.json_to_psql_auto_schema(json_text, snft.table_str, snft.thread_name)
 
         print "Received " + str(len(rows)) + " updates"
 
@@ -95,7 +95,7 @@ def thread_main(snft): # snft = SingleNounFetcherThread
 
         snft.counter = snft.counter + 1
     
-        if(snft.counter) > 100:
+        if(snft.counter) > 3:
             break; # Exits loop and thread_main()
         else: 
             snft.thread_sleep();
