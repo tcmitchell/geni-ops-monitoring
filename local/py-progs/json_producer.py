@@ -6,6 +6,30 @@
 import json
 #import time
 
+import sys
+sys.path.append("../../config")
+import db_schema_config
+
+def psql_to_json_auto_schema(q_res, table_name):
+    schema = db_schema_config.get_schema_for_type(table_name)
+    num_cols = len(schema)
+    num_rows = len(q_res)
+    data = []
+    
+    for col_i in range(num_cols):
+        data.append([])
+        for row_i in range(num_rows):
+            data[col_i].append(q_res[row_i][col_i])
+    
+    json_dict = {}
+    json_dict['response_type'] = 'data_poll'
+    json_dict['data_type'] = table_name
+    json_dict['num_values'] = num_rows
+
+    for col_i in range(num_cols):
+        json_dict[schema[col_i][0]] = data[col_i][0:num_rows]
+   
+    return json.dumps(json_dict)
 #
 # TODO changes here required when schema update....hardcoded, :(
 # I bet I could use the schema for automating this
@@ -53,10 +77,13 @@ if __name__ == "__main__":
     
     #print q_res
     j = psql_to_json(q_res,"memory_util")
+
+    print "Old way=\n",j
+
+    j_new = psql_to_json_auto_schema(q_res,"memory_util")    
+    print "New way=\n", j_new
     
-    #print "becomes"
-    #print j
     
-    data = json.loads(j)
-    print data
+    #data = json.loads(j)
+    #print data
     #get_values()
