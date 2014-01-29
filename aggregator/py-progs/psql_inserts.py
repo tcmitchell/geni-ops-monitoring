@@ -59,8 +59,9 @@ def json_receiver(json_text, con):
                 rows_str = rows_str + ","
 
         cur.execute(ins_str_base + rows_str + ";");
-         
+        
         con.commit()
+    cur.close()
             
 def json_fetcher():
 
