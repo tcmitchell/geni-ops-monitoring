@@ -42,19 +42,19 @@ class AggregatorQuerier():
     # Public aggregator queries
     ###########################################################################
 
-    def get_last_memory_util(self, aggregate):
+    def get_last_memory_util(self, aggregate, since=None):
         """
         Get the latest value of memory utilization for a given aggregate
         """
-        #internal_result = self._get_metric_by_aggregate_latest_first, aggregate, "memory_util")
+        internal_result = self._get_metric_by_aggregate(aggregate, "memory_util", since)
 
         # FIXME: fake data for now
-        internal_result = { "pc1" : [ { "time" : 5, "value" : .2 }, 
-                                      { "time" : 4, "value" : .25 } ],
-                            "pc2" : [ { "time" : 5, "value" : .1 }, 
-                                      { "time" : 4, "value" : .15 } ], 
-                            "pc3" : [ { "time" : 5, "value" : .3 }, 
-                                      { "time" : 4, "value" : .35 } ] }
+        #internal_result = { "pc1" : [ { "time" : 5, "value" : .2 }, 
+        #                              { "time" : 4, "value" : .25 } ],
+        #                    "pc2" : [ { "time" : 5, "value" : .1 }, 
+        #                              { "time" : 4, "value" : .15 } ], 
+        #                    "pc3" : [ { "time" : 5, "value" : .3 }, 
+        #                              { "time" : 4, "value" : .35 } ] }
 
         external_result = {}
 
@@ -69,7 +69,7 @@ class AggregatorQuerier():
     # Private utility methods
     ###########################################################################
 
-    def _datetime_to_db_timestamp(dt):
+    def _datetime_to_db_timestamp(self, dt):
         """
         Converts a python datetime object to a timestamp in the format
         that the querier requires
@@ -88,15 +88,17 @@ class AggregatorQuerier():
         # If since is unset, make it default 
         if since is None:
             since = datetime.datetime.now() - \
-                    datetime.timedelta(minutes=self.query_window)
+                    datetime.timedelta(minutes=self._DEFAULT_QUERY_WINDOW)
 
         # Convert datetime timestamp to db format
-        since = _datetime_to_db_timestamp(since_dt)
+        since = self._datetime_to_db_timestamp(since)
 
-        # Form the query
-        query = ("SELECT resource_id,time,value FROM %s "
-                 "WHERE time > %s ORDER BY time DESC;")
-        args = (metric, since,)
+        # Build the query...
+        #  Pass the table name to avoid added quotes
+        #  Pass all other parameters using the normal psycopg2 method
+        query = "SELECT resource_id,time,value FROM %s " % metric
+        query = query + "WHERE time > %s ORDER BY time DESC;"
+        args = (since,)
 
         try:
             # Get a cursor and make the query
@@ -120,21 +122,20 @@ class AggregatorQuerier():
             # Close the cursor now that our object is built
             cur.close()
 
+            return result
+
         except psycopg2.Error as e:
             # FIXME: do something else, probably cascade the exception
             print e
 
-        return result
 
     ###########################################################################
     # Unit testing code 
     ###########################################################################
 
     def run_unit_test(self, aggregate):
-        result = self.get_last_memory_util(aggregate)
+        result = self.get_last_memory_util(aggregate, datetime.datetime.utcfromtimestamp(0))
         
-        print result
-
         for resource in result:
             print "gpo-ig[%s] latest memory utilization is: %s" % \
                 (resource, result[resource])
@@ -142,7 +143,7 @@ class AggregatorQuerier():
         return 0
 
 if __name__ == "__main__":
-    querier = AggregatorQuerier("aggregator", "rirwin")
+    querier = AggregatorQuerier("aggregator", "tupty")
     val = querier.run_unit_test("gpo-ig")
     querier.close()
     sys.exit(val)

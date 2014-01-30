@@ -1,0 +1,49 @@
+#! /usr/bin/python
+
+"""Checks the memory utilization of a shared node"""
+
+import argparse
+import datetime
+import nagiosplugin
+from psql_queries import AggregatorQuerier
+
+class SharedNodeMemUtil(nagiosplugin.Resource):
+
+    def __init__(self, aggregate):
+        self._aggregate = aggregate
+        self._querier = AggregatorQuerier("aggregator", "nagios")
+
+    def probe(self):
+        # Query the aggregator data store
+        results = self._querier.get_last_memory_util(self._aggregate, \
+                  datetime.datetime.utcfromtimestamp(0)) #FIXME: don't specify timestamp
+
+        name = {}
+        value = {}
+        metric = []
+
+        for host in results:
+            name[host] = '%s_mem_used' % host
+            value[host] = results[host]
+            metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
+                                              context='mem'))
+
+        return metric
+
+@nagiosplugin.guarded
+def main():
+    argp = argparse.ArgumentParser(description=__doc__)
+    argp.add_argument('-w', '--warning', metavar='RANGE', default='',
+                      help='return warning if load is outside RANGE')
+    argp.add_argument('-c', '--critical', metavar='RANGE', default='',
+                      help='return critical if load is outside RANGE')
+    argp.add_argument('-a', '--aggregate',
+                      help='identifier for aggregate to check')
+    args = argp.parse_args()
+    check = nagiosplugin.Check(
+        SharedNodeMemUtil(args.aggregate),
+        nagiosplugin.ScalarContext('mem', args.warning, args.critical))
+    check.main()
+
+if __name__ == '__main__':
+    main()
