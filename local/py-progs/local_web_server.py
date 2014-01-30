@@ -39,7 +39,7 @@ def memory_util():
 
     if (r_stat == 0):
         # form json
-        j = json_producer.psql_to_json(q_res, "memory_util")
+        j = json_producer.psql_to_json_auto_schema(q_res, "memory_util")
         return j
     else:
         return str(r_stat) + ": " + q_res
