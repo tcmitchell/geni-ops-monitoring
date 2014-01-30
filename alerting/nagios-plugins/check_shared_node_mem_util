@@ -15,7 +15,8 @@ class SharedNodeMemUtil(nagiosplugin.Resource):
 
     def probe(self):
         # Query the aggregator data store
-        results = self._querier.get_last_memory_util(self._aggregate)
+        results = self._querier.get_last_memory_util(self._aggregate, \
+                  datetime.datetime.utcfromtimestamp(0)) #FIXME: don't specify timestamp
 
         name = {}
         value = {}
@@ -40,7 +41,7 @@ def main():
                       help='identifier for aggregate to check')
     args = argp.parse_args()
     check = nagiosplugin.Check(
-        SharedNodeMemUsed(args.aggregate),
+        SharedNodeMemUtil(args.aggregate),
         nagiosplugin.ScalarContext('mem', args.warning, args.critical))
     check.main()
 
