@@ -30,7 +30,7 @@ class JsonReceiver:
         for res_item_i in range(len(data["results"])):
             item_dict = data["results"][res_item_i]
             num_cols_not_tv = len(item_dict) - 1
-            row_base_str = ""
+            row_base_str = "("
             for col_i in range(num_cols_not_tv): # base of values insert str
                 if table_schema[col_i][1] == 'varchar':
                     row_base_str = row_base_str + "'" + item_dict[table_schema[col_i][0]] + "',"

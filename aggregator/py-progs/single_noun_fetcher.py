@@ -19,18 +19,19 @@ db_schema = db_schema_config.get_schema_dict()
 
 class SingleNounFetcherThread(threading.Thread):
 
-    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec):
+    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec, schema_dict):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.thread_name = thread_name
-  
+        self.schema_dict = schema_dict
         self.local_url_noun = local_url_noun
         self.insert_base_str = "INSERT INTO " + table_str + " VALUES"
         self.sleep_period_sec = sleep_period_sec
         self.table_str = table_str
         self.counter = 0
         self.time_of_last_update = initial_time
-        self.con = con # is this a copy or a reference? many cons may be bad
+        self.con = con 
+        self.json_receiver = json_receiver.JsonReceiver(schema_dict)
 
     def run(self):
 
@@ -82,7 +83,7 @@ def thread_main(snft): # snft = SingleNounFetcherThread
         json_text = snft.poll_datastore()
 
         # convert response to json
-        (r_code, rows, time) = json_receiver.json_to_psql_auto_schema(json_text, snft.table_str, snft.thread_name)
+        (r_code, rows, time) = snft.json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
 
         print "Received " + str(len(rows)) + " updates"
 
@@ -117,8 +118,7 @@ def main():
     now_sec_epoch = time.time()/2 # need to handle null results
     
     threads = {}
-    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, now_sec_epoch, sleep_period_sec)
-
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, now_sec_epoch, sleep_period_sec, db_schema_config.get_schema())
 
     threads[table_str].start()
 
