@@ -86,7 +86,7 @@ class JsonProducer:
 
         for item in items_dict:
             json_dict["results"].append(items_dict[item])
-        return json_dict
+        return json.dumps(json_dict)
             
     # gets every combination of columns that are not 'time' or 'value'
     def get_data_groupings(self, schema):

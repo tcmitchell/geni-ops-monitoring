@@ -4,6 +4,10 @@ import psycopg2
 import json_producer
 import local_query_handler
 
+import sys
+sys.path.append("../../config")
+import db_schema_config
+
 app = Flask(__name__)
 
 # lock for database
@@ -39,7 +43,8 @@ def memory_util():
 
     if (r_stat == 0):
         # form json
-        j = json_producer.psql_to_json_auto_schema(q_res, "memory_util")
+        #j = json_producer.psql_to_json_auto_schema(q_res, "memory_util")
+        j = jp.psql_to_json(q_res, "memory_util")
         return j
     else:
         return str(r_stat) + ": " + q_res
@@ -48,6 +53,8 @@ def memory_util():
 
 if __name__ == '__main__':
     con = psycopg2.connect("dbname=local user=rirwin");
+
+    jp = json_producer.JsonProducer(db_schema_config.get_schema());
     
     # add debug functions for startup here
     #(r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(0));
