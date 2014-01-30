@@ -5,7 +5,43 @@ import json
 import sys
 sys.path.append("../../config")
 import db_schema_config
-full_schema = db_schema_config.get_schema()
+
+
+class JsonReceiver:
+    def __init__(self, schema_dict):
+        self.schema_dict = schema_dict
+
+    def json_to_psql(self, json_text, table_str, thread_name):
+        data = json.loads(json_text)
+        if (data["response_type"] == "data_poll"):
+            return self.json_to_psql_data(data, table_str)
+
+    def json_to_psql_data(self, data, table_str):
+        table_name = data["data_type"]
+        
+        if (table_name != table_str):
+            error_str = "Table name returned " + table_name + " but asked for " + table_str
+            return (-1, error_str, None)
+
+        table_schema = self.schema_dict[table_name]
+        num_cols = len(table_schema)
+        rows = []
+        # make this a function
+        for res_item_i in range(len(data["results"])):
+            item_dict = data["results"][res_item_i]
+            num_cols_not_tv = len(item_dict) - 1
+            row_base_str = ""
+            for col_i in range(num_cols_not_tv): # base of values insert str
+                if table_schema[col_i][1] == 'varchar':
+                    row_base_str = row_base_str + "'" + item_dict[table_schema[col_i][0]] + "',"
+                else:
+                    row_base_str = row_base_str + item_dict[table_schema[col_i][0]] + ","
+
+            for meas_i in item_dict["measurements"]:
+                rows.append(row_base_str +str(meas_i[table_schema[-1][0]]) + ", " + str(meas_i[table_schema[-2][0]]) + ")")
+
+        return (0, rows, 0)
+                            
 
 def get_psql_entry(col_type, value):
 
@@ -16,6 +52,7 @@ def get_psql_entry(col_type, value):
 
     return entry
 
+# deprecated
 def json_to_psql_auto_schema(json_text, table_str, thread_name):
    
     data = json.loads(json_text)
@@ -57,44 +94,24 @@ def json_to_psql_auto_schema(json_text, table_str, thread_name):
             # append to rows array
             rows.append(row_str)
     
-    
     return (0,rows,latest_time)
 
-#
-# Again this is very hard coded... :( need to load the schema into here for automatic decoding
-# it can be done
-#
-def json_to_psql(json_text, table_str, thread_name):
-    
-    data = json.loads(json_text)
-    rows = [];
-    latest_time = 0;
-    if (data["response_type"] == "data_poll"):
-        
-        if (data["data_type"] != table_str):
-            error_str = thread_name + " received data from " + data["aggregate_id"] + " about " + data["data_type"] + " when this thread cares about " + table_str
-            return (1,error_str)
-        else:
-            num_values = data["num_values"]
-            for i in range(num_values):
-                row = "('" + data["aggregate_id"][i] + "','" + data["resource_id"][i] + "'," + str(data["time"][i]) + ", " + str(data["value"][i]) + ")"
-                rows.append(row)
-                if data["time"][i] > latest_time:
-                    latest_time = data["time"][i]
 
-            return (0,rows,latest_time)
-            
 
 def main():
-    json_text = '{"data_type": "memory_util", "num_values": 5, "time": [1390939480.98, 1390939481.08, 1390939481.19, 1390939481.29, 1390939481.39], "value": [32.6, 32.6, 32.6, 32.6, 32.6], "response_type": "data_poll", "aggregate_id": ["404-ig", "404-ig", "404-ig", "404-ig", "404-ig"], "resource_id": ["compute_node_1", "compute_node_1", "compute_node_1", "compute_node_1", "compute_node_1"]}'
-    #print json_text
+    json_text = '{"response_type": "data_poll", "data_type": "memory_util", "results": [{"resource_id": "compute_node_1", "measurements": [{"value": 37.8, "time": 1391036714.17}, {"value": 37.8, "time": 1391036818.49}, {"value": 37.8, "time": 1391036818.71}], "aggregate_id": "404-ig"},{"resource_id": "compute_node_2", "measurements": [{"value": 37.8, "time": 1391036714.17}, {"value": 37.8, "time": 1391036818.49}, {"value": 37.8, "time": 1391036818.71}], "aggregate_id": "404-ig"}]}'
+    
+    print json_text
 
     table_str = "memory_util"
     thread_name = "thread-test"
+    jr = JsonReceiver(db_schema_config.get_schema())
     
-    (r_code, rows, latest_time) = json_to_psql_auto_schema(json_text, table_str, thread_name)
+    (r_code, rows, latest_time) = jr.json_to_psql(json_text, table_str, thread_name)
+    
     print r_code
-    print 'all rows', rows
+    print 'all rows', len(rows)
+    print rows
     print rows[0]
     print rows[1]
     print 'latest time =',latest_time
