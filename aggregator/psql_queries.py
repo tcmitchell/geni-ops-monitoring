@@ -137,7 +137,7 @@ class AggregatorQuerier():
         return 0
 
 if __name__ == "__main__":
-    querier = AggregatorQuerier("aggregator", "tupty")
+    querier = AggregatorQuerier("aggregator", "nagios")
     val = querier.run_unit_test("gpo-ig")
     querier.close()
     sys.exit(val)
