@@ -2,7 +2,7 @@
 
 def get_schema():
     schema = {}
-    schema["memory_util"] = [("aggregate_id","varchar"),("resource_id","varchar"), ("time", "float8"), ("value", "float8")]
+    schema["memory_util"] = [("aggregate_id","varchar"),("resource_id","varchar"), ("ts", "int8"), ("v", "float4")]
 
     return schema
 
