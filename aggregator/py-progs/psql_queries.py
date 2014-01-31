@@ -46,15 +46,8 @@ class AggregatorQuerier():
         """
         Get the latest value of memory utilization for a given aggregate
         """
-        internal_result = self._get_metric_by_aggregate(aggregate, "memory_util", since)
-
-        # FIXME: fake data for now
-        #internal_result = { "pc1" : [ { "time" : 5, "value" : .2 }, 
-        #                              { "time" : 4, "value" : .25 } ],
-        #                    "pc2" : [ { "time" : 5, "value" : .1 }, 
-        #                              { "time" : 4, "value" : .15 } ], 
-        #                    "pc3" : [ { "time" : 5, "value" : .3 }, 
-        #                              { "time" : 4, "value" : .35 } ] }
+        internal_result = self._get_metric_by_aggregate(aggregate, 
+                                                        "memory_util", since)
 
         external_result = {}
 
@@ -134,7 +127,8 @@ class AggregatorQuerier():
     ###########################################################################
 
     def run_unit_test(self, aggregate):
-        result = self.get_last_memory_util(aggregate, datetime.datetime.utcfromtimestamp(0))
+        result = self.get_last_memory_util(aggregate, 
+                 datetime.datetime.utcfromtimestamp(0))
         
         for resource in result:
             print "gpo-ig[%s] latest memory utilization is: %s" % \
