@@ -59,7 +59,8 @@ def data():
     else:
         print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    (r_stat, q_res) = query_handler.query(con,event_type,"ts > " + str(ts_gte) + " and ts < " + str(ts_lt));
+    where_params = "ts >= " + str(ts_gte) + " and ts < " + str(ts_lt)
+    (r_stat, q_res) = query_handler.query(con,event_type,where_params);
 
     print q_res
     if (r_stat == 0):
