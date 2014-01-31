@@ -4,7 +4,7 @@ import json
 
 from sys import path as sys_path 
 sys_path.append("../../config")
-import db_schema_config
+import schema_config
 
 class JsonProducer:
     def __init__(self, schema_dict):
@@ -79,5 +79,5 @@ if __name__ == "__main__":
     row = ("404-ig","compute_node_1", 1390939484.1, 32.0)
     q_res.append(row)
     
-    jp = JsonProducer(db_schema_config.get_schema())
+    jp = JsonProducer(schema_config.get_schema())
     print jp.psql_to_json(q_res, "memory_util")

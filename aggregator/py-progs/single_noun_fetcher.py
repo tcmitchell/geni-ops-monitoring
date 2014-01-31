@@ -13,9 +13,9 @@ import requests
 psql_lock = threading.Lock() 
 
 # schema only used for unit test
-sys.path.append("../../config")
-import db_schema_config
-db_schema = db_schema_config.get_schema_dict()
+from sys import path as sys_path 
+sys_path.append("../../config")
+import schema_config
 
 class SingleNounFetcherThread(threading.Thread):
 
@@ -101,11 +101,8 @@ def thread_main(snft): # snft = SingleNounFetcherThread
         else: 
             snft.thread_sleep();
         
-       
-# how to unit test this? 
 def main(): 
 
-    # should all threads share a connection, I think not
     con = psycopg2.connect("dbname=aggregator user=rirwin")
     table_str = "memory_util"
     thread_type_index = 0
@@ -114,23 +111,30 @@ def main():
     url_noun="http://127.0.0.1:5000/" + table_str + "/"
     sleep_period_sec = 3
 
-    create_table(con, table_str);
-    now_sec_epoch = time.time()/2 # need to handle null results
+    sec_epoch = 0 
+    #sec_epoch = time.time() 
+
+    schema = schema_config.get_schema_for_type(table_str)
+    create_table(con, schema, table_str)
     
     threads = {}
-    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, now_sec_epoch, sleep_period_sec, db_schema_config.get_schema())
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, sec_epoch, sleep_period_sec, schema_config.get_schema())
 
     threads[table_str].start()
 
     print "Exiting main thread"
 
 
-
-def create_table(con, table_str):
+def create_table(con, schema, table_str):
+    
+    schema_str = "("
+    for i in range(len(schema)):
+        schema_str += schema[i][0] + " " + schema[i][1] + ","
+    schema_str = schema_str[:-1] + ")"
     
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS " + table_str + ";")
-    cur.execute("CREATE TABLE " + table_str + db_schema[table_str]);
+    cur.execute("CREATE TABLE " + table_str + schema_str);
     con.commit() 
 
     cur.close()

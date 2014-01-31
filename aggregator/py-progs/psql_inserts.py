@@ -1,19 +1,19 @@
 #!/usr/bin/python
 
+# THIS FILE IS FOR TESTING A MANUAL QUERY AND INSERT
+# NOT USED
+
 import psycopg2
 import json
 import requests
 
+from sys import path as sys_path 
+sys_path.append("../../config")
+import schema_config
 
-import sys
-sys.path.append("../../config")
-import db_schema_config
-full_schema = db_schema_config.get_schema()
+full_schema = schema_config.get_schema()
 
 
-# all in one function for now, simple and updates are contained in
-# here as compared to alternatives (returning a struct that matches
-# schema)
 def json_receiver(json_text, con):
     cur = con.cursor()
     data = json.loads(json_text)

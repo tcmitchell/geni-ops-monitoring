@@ -5,22 +5,23 @@ import time
 import psutil
 import sys
 
-sys.path.append("../../config")
-import db_schema_config
+from sys import path as sys_path 
+sys_path.append("../../config")
+import schema_config
 
 # TODO add locking from threading in case multiple LocalStorePopulators
 
 # TODO make class LocalStorePopulator for this class to inherit
 # Intent is for each table to have its own object getting data
 class LocalStoreMemoryPopulator:
-    def __init__(self, con, aggregate_id, resource_id, num_inserts, sleep_period_sec, table_str):
+    def __init__(self, con, aggregate_id, resource_id, num_inserts, sleep_period_sec, table_schema, table_str):
         self.con = con
         self.aggregate_id = aggregate_id
         self.resource_id = resource_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
+        self.table_schema = table_schema
         self.table_str = table_str
-        self.table_schema = db_schema_config.get_schema_for_type(table_str)
 
     def translate_psql_table_schema(self):
         
@@ -99,13 +100,13 @@ def main():
     # 404 is not found and the area code in atlanta #TheGoalIsGEC19
     aggregate_id="404-ig" 
     resource_id="compute_node_1"
-    table_name = "memory_util"
+    table_str = "memory_util"
 
     (num_ins, per_sec) = arg_parser(sys.argv)
 
     con = psycopg2.connect("dbname=local user=rirwin");
 
-    lsmp = LocalStoreMemoryPopulator(con, aggregate_id, resource_id, num_ins, per_sec, table_name)
+    lsmp = LocalStoreMemoryPopulator(con, aggregate_id, resource_id, num_ins, per_sec, schema_config.get_schema_for_type(table_str), table_str)
     lsmp.establish_table()
     lsmp.run_inserts()
         

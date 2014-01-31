@@ -4,9 +4,9 @@ import psycopg2
 import json_producer
 import local_query_handler
 
-import sys
-sys.path.append("../../config")
-import db_schema_config
+from sys import path as sys_path 
+sys_path.append("../../config")
+import schema_config
 
 app = Flask(__name__)
 
@@ -54,7 +54,7 @@ def memory_util():
 if __name__ == '__main__':
     con = psycopg2.connect("dbname=local user=rirwin");
 
-    jp = json_producer.JsonProducer(db_schema_config.get_schema());
+    jp = json_producer.JsonProducer(schema_config.get_schema());
     
     # add debug functions for startup here
     #(r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(0));

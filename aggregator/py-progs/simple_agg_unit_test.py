@@ -1,11 +1,11 @@
 import psycopg2
 import sys
 sys.path.append("../../config")
-import db_schema_config
+import schema_config
 
 
 table_str = "memory_util"
-table_schema = db_schema_config.get_schema_for_type(table_str)
+table_schema = schema_config.get_schema_for_type(table_str)
 
 con = psycopg2.connect("dbname=aggregator user=rirwin");
 cur = con.cursor()
