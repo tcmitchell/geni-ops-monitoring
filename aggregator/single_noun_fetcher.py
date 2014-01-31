@@ -29,7 +29,7 @@ class SingleNounFetcherThread(threading.Thread):
         self.sleep_period_sec = sleep_period_sec
         self.table_str = table_str
         self.counter = 0
-        self.time_of_last_update = initial_time
+        self.time_of_last_update = int(initial_time)
         self.con = con 
         self.json_receiver = json_receiver.JsonReceiver(schema_dict)
 
@@ -42,9 +42,13 @@ class SingleNounFetcherThread(threading.Thread):
         print "Exiting " + self.name
 
     def poll_datastore(self):
-
+        
+        req_time = int(time.time()*1000000)
         payload = {'since':self.time_of_last_update}
         resp = requests.get(self.local_url_noun,params=payload)
+        
+        if resp:
+            self.time_of_last_update = req_time
         
         # need to handle response codes
         return resp.content
@@ -83,14 +87,12 @@ def thread_main(snft): # snft = SingleNounFetcherThread
         json_text = snft.poll_datastore()
 
         # convert response to json
-        (r_code, rows, time) = snft.json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
+        (r_code, rows) = snft.json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
 
         print "Received " + str(len(rows)) + " updates"
 
         if len(rows) > 0:
-            # if any new values update latest time
-            snft.time_of_last_update = time
-
+            
             # insert into database
             snft.insert_query(rows)
 
@@ -109,10 +111,10 @@ def main():
     total_thread_index = 0
     thread_str = table_str + str(thread_type_index)
     url_noun="http://127.0.0.1:5000/" + table_str + "/"
-    sleep_period_sec = 3
+    sleep_period_sec = 1
 
     sec_epoch = 0 
-    #sec_epoch = time.time() 
+    #sec_epoch = int(time.time()*1000000)
 
     schema = schema_config.get_schema_for_type(table_str)
     create_table(con, schema, table_str)
