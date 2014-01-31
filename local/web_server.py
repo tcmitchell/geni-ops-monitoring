@@ -3,6 +3,7 @@ from flask import Flask, request
 import psycopg2
 import json_producer
 import query_handler
+import time
 
 from sys import path as sys_path 
 sys_path.append("../config")
@@ -10,10 +11,21 @@ import schema_config
 
 app = Flask(__name__)
 
-# lock for database
-
-# conn of database
 con = None
+
+def extract_ts_filters(ts_filters):
+    ts_lt = int(time.time()*1000000)
+    ts_gte = 0
+
+    for ts_filter in ts_filters:
+        ts_typ = ts_filter.split('=')[0]
+        ts_val = int(ts_filter.split('=')[1])
+        if ts_typ == 'gte':
+            ts_gte = ts_val
+        elif ts_typ == 'lt':
+            ts_lt = ts_val
+    
+    return (ts_lt, ts_gte)
 
 '''
 # fix json import
@@ -27,37 +39,43 @@ def index():
     return "Hello, World!"
 
 
-@app.route('/memory_util/', methods = ['GET'])
-def memory_util():
+@app.route('/data/', methods = ['GET'])
+def data(): 
 
-    # TODO numeric and "" checking and exception handling
-    since = request.args.get('since', 0)
-    
-    if since <= 0:
-        print "get all memory_util, recommended to use ?since= filter next query"
+    # gets event type (i.e., memory_util)
+    event_type = request.args.get('event_type', None)
+    if event_type == None:
+        return "provide an event_type"
+
+    # get all timestamp filters
+    ts = request.args.get('ts', 0)
+
+    ts_filters = request.args.getlist('ts')
+
+    (ts_lt, ts_gte) = extract_ts_filters(ts_filters)
+
+    if ts_gte <= 0:
+        print "get all memory_util, recommended to use ?ts= filter next query"
     else:
-        print "get memory since", since
+        print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    # query local store for memory util
-    (r_stat, q_res) = query_handler.query(con,"memory_util","time > " + str(since));
+    (r_stat, q_res) = query_handler.query(con,event_type,"ts > " + str(ts_gte) + " and ts < " + str(ts_lt));
 
+    print q_res
     if (r_stat == 0):
         # form json
-        #j = json_producer.psql_to_json_auto_schema(q_res, "memory_util")
-        j = jp.psql_to_json(q_res, "memory_util")
+        j = jp.psql_to_json(q_res, event_type)
         return j
     else:
         return str(r_stat) + ": " + q_res
 
 
-
 if __name__ == '__main__':
-    con = psycopg2.connect("dbname=local user=rirwin");
 
+    con = psycopg2.connect("dbname=local user=rirwin");
+    # consider having more than one json producer to handle multiple
+    # calls at once
     jp = json_producer.JsonProducer(schema_config.get_schema());
     
-    # add debug functions for startup here
-    #(r_stat, q_res) = query_handler.query(con,"memory_util","time > " + str(0));
-    #print q_res
 
     app.run(debug = True)
