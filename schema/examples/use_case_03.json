@@ -93,11 +93,13 @@
 # * Also note that we're using the custom GPO 'data' schema, which
 #   extends UNIS's "metadata", for the purpose of embedding both data and
 #   metadata in the same response
-cpu_utilization = {
+{
   '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
   'id': '1',
   'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
   'eventType': 'ops_monitoring:cpu_utilization',
+  'description': 'CPU utilization percentage',
+  'units': 'percent',
   'tsdata': {
     { 'ts': 1391198716651283, 'val': 0.45, },
     { 'ts': 1391198776651284, 'val': 0.44, },

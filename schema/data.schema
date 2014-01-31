@@ -9,6 +9,16 @@
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/metadata#"
   },
   "properties": {
+    "units": {
+      "units": "Valid units for the values in this metric",
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "description": "Description of this metric",
+      "type": "string",
+      "required": false
+    },
     "tsdata": {
       "description": "Time-series data",
       "name": "tsdata",
