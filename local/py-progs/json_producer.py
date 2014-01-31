@@ -1,48 +1,14 @@
 #!/usr/bin/python
 
-# tutorial
-# http://docs.python.org/2/library/json.html
-
 import json
-#import time
 
-import sys
-sys.path.append("../../config")
+from sys import path as sys_path 
+sys_path.append("../../config")
 import db_schema_config
-
-'''
-{
-"response_type": "data_poll",
-"data_type": "memory_util", 
-"results": 
-  [ 
-   {
-   "aggregate_id": "404-ig",
-   "resource_id": "compute_node_1", 
-   "measurements": [{"timestamp": 1391036714.17,
-                                "value": 37.8},
-                               {"timestamp": 1391036818.49,
-                                "value": 37.8},
-                               {"timestamp": 1391036818.71,
-                                "value": 37.8}]
-   },
-   {
-   "aggregate_id": "404-ig",
-   "resource_id": "compute_node_2", 
-   "measurements": [{"timestamp": 1391036715.32,
-                                "value": 58.8},
-                               {"timestamp": 1391036819.28,
-                                "value": 58.3}]
-   }
-  ]
-}
- schema["memory_util"] = [("aggregate_id","varchar"),("resource_id","varchar"), ("time", "float8"), ("value", "float8")]
-
-'''
 
 class JsonProducer:
     def __init__(self, schema_dict):
-        self.schema_dict = schema_dict
+        self._schema_dict = schema_dict
 
     def psql_to_json(self, q_res, table_name):
         if (table_name == "info"): 
@@ -54,14 +20,11 @@ class JsonProducer:
     def psql_to_json_info(self, q_res):
         pass # not implemented yet
 
-
     def psql_to_json_data(self, q_res, table_name):
 
-        schema = self.schema_dict[table_name]
+        schema = self._schema_dict[table_name]
         num_cols = len(schema)
         num_rows = len(q_res)
-        print schema
-
 
         # enumerate columns
         key_cols = self.get_data_groupings(schema)
@@ -100,28 +63,6 @@ class JsonProducer:
 
         return keys
 
-# function version, to be removed
-def psql_to_json_auto_schema(q_res, table_name):
-    schema = db_schema_config.get_schema_for_type(table_name)
-    num_cols = len(schema)
-    num_rows = len(q_res)
-    data = []
-    
-    for col_i in range(num_cols):
-        data.append([])
-        for row_i in range(num_rows):
-            data[col_i].append(q_res[row_i][col_i])
-    
-    json_dict = {}
-    json_dict['response_type'] = 'data_poll'
-    json_dict['data_type'] = table_name
-    json_dict['num_values'] = num_rows
-
-    for col_i in range(num_cols):
-        json_dict[schema[col_i][0]] = data[col_i][0:num_rows]
-   
-    return json.dumps(json_dict)
-
 
 if __name__ == "__main__":
 
@@ -138,15 +79,5 @@ if __name__ == "__main__":
     row = ("404-ig","compute_node_1", 1390939484.1, 32.0)
     q_res.append(row)
     
-   
     jp = JsonProducer(db_schema_config.get_schema())
     print jp.psql_to_json(q_res, "memory_util")
-    
-
-    #j_new = psql_to_json_auto_schema(q_res,"memory_util")    
-    #print "New way=\n", j_new
-    
-    
-    #data = json.loads(j)
-    #print data
-    #get_values()
