@@ -5,8 +5,8 @@ import time
 import psutil
 import sys
 
-from sys import path as sys_path 
-sys_path.append("../config")
+import sys
+sys.path.append("../config")
 import schema_config
 
 # TODO add locking from threading in case multiple LocalStorePopulators
@@ -36,7 +36,7 @@ class LocalStoreMemoryPopulator:
 
         for i in range(self.num_inserts):
 
-            time_sec_epoch = time.time()
+            time_sec_epoch = int(time.time()*1000000)
             percent_mem_used = self.get_mem_util_percent()
 
             ins_str = "INSERT INTO memory_util VALUES ('" + self.aggregate_id + "', '" + self.resource_id + "'," + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
