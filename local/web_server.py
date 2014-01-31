@@ -2,7 +2,7 @@
 from flask import Flask, request
 import psycopg2
 import json_producer
-import local_query_handler
+import query_handler
 
 from sys import path as sys_path 
 sys_path.append("../../config")
@@ -39,7 +39,7 @@ def memory_util():
         print "get memory since", since
 
     # query local store for memory util
-    (r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(since));
+    (r_stat, q_res) = query_handler.query(con,"memory_util","time > " + str(since));
 
     if (r_stat == 0):
         # form json
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     jp = json_producer.JsonProducer(schema_config.get_schema());
     
     # add debug functions for startup here
-    #(r_stat, q_res) = local_query_handler.query(con,"memory_util","time > " + str(0));
+    #(r_stat, q_res) = query_handler.query(con,"memory_util","time > " + str(0));
     #print q_res
 
     app.run(debug = True)
