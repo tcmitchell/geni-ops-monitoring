@@ -1,6 +1,6 @@
 import psycopg2
 import sys
-sys.path.append("../../config")
+sys.path.append("../config")
 import schema_config
 
 

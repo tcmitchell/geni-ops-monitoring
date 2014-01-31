@@ -8,7 +8,7 @@ import json
 import requests
 
 from sys import path as sys_path 
-sys_path.append("../../config")
+sys_path.append("../config")
 import schema_config
 
 full_schema = schema_config.get_schema()

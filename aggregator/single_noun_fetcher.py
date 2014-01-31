@@ -14,7 +14,7 @@ psql_lock = threading.Lock()
 
 # schema only used for unit test
 from sys import path as sys_path 
-sys_path.append("../../config")
+sys_path.append("../config")
 import schema_config
 
 class SingleNounFetcherThread(threading.Thread):

@@ -3,7 +3,7 @@
 import json
 
 from sys import path as sys_path 
-sys_path.append("../../config")
+sys_path.append("../config")
 import schema_config
 
 
