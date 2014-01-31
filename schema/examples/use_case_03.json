@@ -90,24 +90,20 @@
 
 # Metadata for the cpu_utilization metric on pc1 at bbn-ig.
 # Assumptions: same as above
+# * Also note that we're using the custom GPO 'data' schema, which
+#   extends UNIS's "metadata", for the purpose of embedding both data and
+#   metadata in the same response
 cpu_utilization = {
-  '$schema': 'http://unis.incntre.iu.edu/schema/20120709/metadata#',
+  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
   'id': '1',
   'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
   'eventType': 'ops_monitoring:cpu_utilization',
-  'parameters': {
-    'datumSchema': 'http://unis.incntre.iu.edu/schema/20120709/tsdatum#',
+  'tsdata': {
+    { 'ts': 1391198716651283, 'val': 0.45, },
+    { 'ts': 1391198776651284, 'val': 0.44, },
+    { 'ts': 1391198836651284, 'val': 0.44, },
+    { 'ts': 1391198896651284, 'val': 0.47, },
+    { 'ts': 1391198956651284, 'val': 0.46, },
+    { 'ts': 1391199016651285, 'val': 0.47, },
   },
 }
-
-# Values for the cpu_utilization metric designed above, would be obtained
-# via some URL like:
-#   https://datastore.instageni.gpolab.bbn.com/tsdata/1?ts=gte=1391198716651283
-[
-  { 'ts': 1391198716651283, 'val': 0.45, },
-  { 'ts': 1391198776651284, 'val': 0.44, },
-  { 'ts': 1391198836651284, 'val': 0.44, },
-  { 'ts': 1391198896651284, 'val': 0.47, },
-  { 'ts': 1391198956651284, 'val': 0.46, },
-  { 'ts': 1391199016651285, 'val': 0.47, },
-]

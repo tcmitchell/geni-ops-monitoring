@@ -12,13 +12,17 @@ monitoring use.  In particular:
   * a local datastore would be a networkresource subtype (service),
     or we might extend that further
 
-* http://unis.incntre.iu.edu/schema/20120709/metadata:
-  Metadata about a metric.  This defines a unique (per-domain) ID,
-  a "subject", the networkresource to which the metric pertains, an
-  "eventType" which is the type of metric, and parameters indicating
-  what kind of data goes into the metric
-
-* http://unis.incntre.iu.edu/schema/20120709/tsdatum
-  Time-series metric values.  This defines a timestamp,value tuple.
-  An array of these would be (all or part of) the response to an API
-  request for measurement data.
+* schema/data.schema:
+  * To be posted as: http://www.gpolab.bbn.com/monitoring/schema/20140131/data
+  * Combined data and metadata about a metric --- contains all features
+    of the following two UNIS types, but combines them into one type
+    for our current convenience:
+    * http://unis.incntre.iu.edu/schema/20120709/metadata:
+      Metadata about a metric.  This defines a unique (per-domain) ID,
+      a "subject", the networkresource to which the metric pertains, an
+      "eventType" which is the type of metric, and parameters indicating
+      what kind of data goes into the metric
+    * http://unis.incntre.iu.edu/schema/20120709/tsdatum
+      Time-series metric values.  This defines a timestamp,value tuple.
+      An array of these form the tsdata array of the response to an API
+      request for measurement data.
