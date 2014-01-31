@@ -44,7 +44,8 @@ class SingleNounFetcherThread(threading.Thread):
     def poll_datastore(self):
         
         req_time = int(time.time()*1000000)
-        payload = {'since':self.time_of_last_update}
+        payload = {'event_type':self.table_str,
+                   'ts':'gte='+str(self.time_of_last_update)}
         resp = requests.get(self.local_url_noun,params=payload)
         
         if resp:
@@ -110,17 +111,17 @@ def main():
     thread_type_index = 0
     total_thread_index = 0
     thread_str = table_str + str(thread_type_index)
-    url_noun="http://127.0.0.1:5000/" + table_str + "/"
+    url_noun="http://127.0.0.1:5000/data/"
     sleep_period_sec = 1
 
-    sec_epoch = 0 
-    #sec_epoch = int(time.time()*1000000)
+    micro_sec_epoch = 0 
+    #micro_sec_epoch = int(time.time()*1000000)
 
     schema = schema_config.get_schema_for_type(table_str)
     create_table(con, schema, table_str)
     
     threads = {}
-    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, sec_epoch, sleep_period_sec, schema_config.get_schema())
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, micro_sec_epoch, sleep_period_sec, schema_config.get_schema())
 
     threads[table_str].start()
 
