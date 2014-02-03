@@ -6,6 +6,8 @@ import psutil
 import sys
 import json
 
+#todo threading similar to single noun fetcher
+
 sys.path.append("../common/db-tools")
 import table_manager as TableManager
 
@@ -81,7 +83,6 @@ def main():
     schema_file = "../config/test_schema_dict"
     json_data = open(schema_file)
     schema_dict = json.load(json_data)
-    #schema = schema_dict[table_str]
 
     (num_ins, per_sec) = arg_parser(sys.argv)
 
