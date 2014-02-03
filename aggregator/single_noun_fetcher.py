@@ -3,24 +3,22 @@
 import psycopg2
 import threading
 import time 
+import json
 import json_receiver
 import sys
 import requests
 
-# lock of the conn and cur usage by this program
-# psql has locks for what would be concurrent psql accesses
-# from other program
-psql_lock = threading.Lock() 
 
 # schema only used for unit test
 from sys import path as sys_path 
-sys_path.append("../config")
-import schema_config
+sys_path.append("../common/db-tools/")
+import table_manager as TableManager
 
 class SingleNounFetcherThread(threading.Thread):
 
-    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec, schema_dict):
+    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec, schema_dict, psql_lock):
         threading.Thread.__init__(self)
+        self.con = con 
         self.threadID = threadID
         self.thread_name = thread_name
         self.schema_dict = schema_dict
@@ -28,10 +26,15 @@ class SingleNounFetcherThread(threading.Thread):
         self.insert_base_str = "INSERT INTO " + table_str + " VALUES"
         self.sleep_period_sec = sleep_period_sec
         self.table_str = table_str
+        self.psql_lock = psql_lock
         self.counter = 0
         self.time_of_last_update = int(initial_time)
-        self.con = con 
+
+        self.table_manager = TableManager.TableManager(self.con, schema_dict)
+        self.table_manager.establish_table(table_str)
+
         self.json_receiver = json_receiver.JsonReceiver(schema_dict)
+
 
     def run(self):
 
@@ -65,14 +68,14 @@ class SingleNounFetcherThread(threading.Thread):
          
         print "Insert Query = ", ins_str
 
-        psql_lock.acquire()
+        self.psql_lock.acquire()
 
         cur = self.con.cursor()
         cur.execute(ins_str) # todo try execption block
         self.con.commit() 
         cur.close()
 
-        psql_lock.release()
+        self.psql_lock.release()
 
         print "Committed"
 
@@ -117,30 +120,21 @@ def main():
     micro_sec_epoch = 0 
     #micro_sec_epoch = int(time.time()*1000000)
 
-    schema = schema_config.get_schema_for_type(table_str)
-    create_table(con, schema, table_str)
-    
+    schema_file = "../config/test_schema_dict"
+    json_data = open(schema_file)
+    schema_dict = json.load(json_data)
+    # lock of the conn and cur usage by this program
+    # psql has locks for what would be concurrent psql accesses
+    # from other program
+    psql_lock = threading.Lock() 
+
     threads = {}
-    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, micro_sec_epoch, sleep_period_sec, schema_config.get_schema())
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, micro_sec_epoch, sleep_period_sec, schema_dict, psql_lock)
 
     threads[table_str].start()
 
     print "Exiting main thread"
 
-
-def create_table(con, schema, table_str):
-    
-    schema_str = "("
-    for i in range(len(schema)):
-        schema_str += schema[i][0] + " " + schema[i][1] + ","
-    schema_str = schema_str[:-1] + ")"
-    
-    cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS " + table_str + ";")
-    cur.execute("CREATE TABLE " + table_str + schema_str);
-    con.commit() 
-
-    cur.close()
 
 if __name__ == "__main__":
     main()

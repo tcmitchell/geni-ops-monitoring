@@ -2,10 +2,6 @@
 
 import json
 
-from sys import path as sys_path 
-sys_path.append("../config")
-import schema_config
-
 
 class JsonReceiver:
     def __init__(self, schema_dict):
@@ -61,7 +57,12 @@ def main():
 
     table_str = "memory_util"
     thread_name = "thread-test"
-    jr = JsonReceiver(schema_config.get_schema())
+
+    schema_file = "../config/test_schema_dict"
+    json_data = open(schema_file)
+    schema_dict = json.load(json_data)
+
+    jr = JsonReceiver(schema_dict)
     
     (r_code, rows) = jr.json_to_psql(json_text, table_str, thread_name)
     

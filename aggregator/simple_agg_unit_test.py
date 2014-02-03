@@ -1,16 +1,16 @@
 import psycopg2
-import sys
-sys.path.append("../config")
-import schema_config
+import json
+
+schema_file = "../config/test_schema_dict"
+json_data = open(schema_file)
+schema_dict = json.load(json_data)
 
 
 table_str = "memory_util"
-table_schema = schema_config.get_schema_for_type(table_str)
+table_schema = schema_dict[table_str]
 
 con = psycopg2.connect("dbname=aggregator user=rirwin");
 cur = con.cursor()
-
-
 
 schema_str = "("
 for col_i in range(len(table_schema)):
