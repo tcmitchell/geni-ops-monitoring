@@ -4,40 +4,32 @@ import psycopg2
 import time
 import psutil
 import sys
+import json
 
-import sys
-sys.path.append("../config")
-import schema_config
+sys.path.append("../common/db-tools")
+import table_manager as TableManager
 
 # TODO add locking from threading in case multiple LocalStorePopulators
 
 # TODO make class LocalStorePopulator for this class to inherit
 # Intent is for each table to have its own object getting data
 class LocalStoreMemoryPopulator:
-    def __init__(self, con, aggregate_id, resource_id, num_inserts, sleep_period_sec, table_schema, table_str):
-        self.con = con
+    def __init__(self, con, aggregate_id, resource_id, num_inserts, sleep_period_sec, schema_dict, table_str):
+        self.con = con;
         self.aggregate_id = aggregate_id
         self.resource_id = resource_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
-        self.table_schema = table_schema
+        self.table_schema = schema_dict[table_str]
         self.table_str = table_str
-
-    def translate_psql_table_schema(self):
-        
-        schema_str = "("
-        for col_i in range(len(self.table_schema)):
-            schema_str = schema_str + self.table_schema[col_i][0] + " " + self.table_schema[col_i][1] + "," 
-        
-        # remove , and add ), makes a smug face [:-1]
-        return schema_str[:-1] + ")"
+        self.table_manager = TableManager.TableManager(self.con, schema_dict)
+        self.table_manager.establish_table(table_str)
 
     def run_inserts(self):
 
         for i in range(self.num_inserts):
-
             time_sec_epoch = int(time.time()*1000000)
-            percent_mem_used = self.get_mem_util_percent()
+            percent_mem_used = get_mem_util_percent()
 
             ins_str = "INSERT INTO memory_util VALUES ('" + self.aggregate_id + "', '" + self.resource_id + "'," + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
             cur = self.con.cursor()            
@@ -47,26 +39,10 @@ class LocalStoreMemoryPopulator:
 
             time.sleep(self.sleep_period_sec)    
 
-    def establish_table(self):
-        
-        # class functions should not be called in constructor
-        table_schema_str = self.translate_psql_table_schema();
-
-        # should this be in try catch?
-        cur = self.con.cursor()
-        
-        try:
-            cur.execute("create table if not exists " + self.table_str + " " + table_schema_str);
-            self.con.commit(); 
-        except psycopg2.Error as e:
-            print e
-        
-        cur = self.con.cursor()
-
-    def get_mem_util_percent(self):
-        # despite being called virtual, this is physical memory
-        mem = psutil.virtual_memory() 
-        return mem.percent
+def get_mem_util_percent():
+    # despite being called virtual, this is physical memory
+    mem = psutil.virtual_memory() 
+    return mem.percent
 
 def arg_parser(argv):
     if (len(argv) != 3):
@@ -102,15 +78,21 @@ def main():
     resource_id="compute_node_1"
     table_str = "memory_util"
 
+    schema_file = "../config/test_schema_dict"
+    json_data = open(schema_file)
+    schema_dict = json.load(json_data)
+    #schema = schema_dict[table_str]
+
     (num_ins, per_sec) = arg_parser(sys.argv)
 
-    con = psycopg2.connect("dbname=local user=rirwin");
+    db_con_str = "dbname=local user=rirwin";
+    con = psycopg2.connect(db_con_str);
+    lsmp = LocalStoreMemoryPopulator(con, aggregate_id, resource_id, num_ins, per_sec, schema_dict, table_str)
 
-    lsmp = LocalStoreMemoryPopulator(con, aggregate_id, resource_id, num_ins, per_sec, schema_config.get_schema_for_type(table_str), table_str)
-    lsmp.establish_table()
+    #lsmp.establish_table()
     lsmp.run_inserts()
         
-
+    
     cur = con.cursor();
     cur.execute("select count(*) from memory_util;");
     print "num entries", cur.fetchone()[0]

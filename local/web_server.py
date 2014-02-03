@@ -4,14 +4,9 @@ import psycopg2
 import json_producer
 import query_handler
 import time
-
-from sys import path as sys_path 
-sys_path.append("../config")
-import schema_config
+import json
 
 app = Flask(__name__)
-
-con = None
 
 def extract_ts_filters(ts_filters):
     ts_lt = int(time.time()*1000000)
@@ -74,9 +69,13 @@ def data():
 if __name__ == '__main__':
 
     con = psycopg2.connect("dbname=local user=rirwin");
-    # consider having more than one json producer to handle multiple
-    # calls at once
-    jp = json_producer.JsonProducer(schema_config.get_schema());
+    
+    schema_file = "../config/test_schema_dict"
+    json_data = open(schema_file)
+    schema_dict = json.load(json_data)
+
+
+    jp = json_producer.JsonProducer(schema_dict);
     
 
     app.run(debug = True)
