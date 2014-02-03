@@ -27,3 +27,6 @@ con.commit()
 
 cur.execute("select count(*) from " + table_str + ";");
 print "num entries", cur.fetchone()[0]
+
+cur.close()
+con.close()
