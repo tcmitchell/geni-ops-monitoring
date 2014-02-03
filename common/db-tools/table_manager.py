@@ -6,14 +6,11 @@ import sys
 
 class TableManager:
 
-    def __init__(self, db_con_str, schema_dict):
-        try:
-            self.con = psycopg2.connect(db_con_str);
-        except psycopg2.Error as e:
-            print e
-            sys.exit(1)
+    def __init__(self, con, schema_dict):
+        self.con = con
 
         self.schema_dict = schema_dict
+        print schema_dict
 
     def table_exists(self, table_str):
         exists = False
@@ -40,39 +37,46 @@ class TableManager:
         return col_names
 
     def establish_tables(self, table_str_arr):
-        
         for table_str in table_str_arr:
-            schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
+            self.establish_table(table_str)
 
-            if self.table_exists(table_str):
-                print "WARNING: table " + table_str + " already exists with schema:"
-                print self.get_table_col_names(table_str)
-                print "schema_str " + schema_str
-                print "Skipping creation of " + table_str
-                # TODO check if different schema
-                # TODO user input for overwrite or not
-            
-            else:
-                try:
-                    cur = self.con.cursor()
-                    cur.execute("create table " + table_str + schema_str)
-                    self.con.commit()
-                    cur.close()
-                except psycopg2.Error as e:
-                    print e
+    def establish_table(self, table_str):
 
-    def drop_tables(self, table_str_arr):
-        
-        cur = self.con.cursor()
+        schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
+
+        if self.table_exists(table_str):
+            print "WARNING: table " + table_str + " already exists with schema:"
+            print self.get_table_col_names(table_str)
+            print "Current schema_str " + schema_str
+            print "Skipping creation of " + table_str
+            # TODO check if different schema
+            # TODO user input for overwrite or not
             
-        for table_str in table_str_arr:
+        else:
             try:
-                cur.execute("drop table if exists " + table_str)
+                cur = self.con.cursor()
+                cur.execute("create table " + table_str + schema_str)
                 self.con.commit()
+                cur.close()
             except psycopg2.Error as e:
                 print e
 
-        cur.close()
+    def drop_tables(self, table_str_arr):
+        for table_str in table_str_arr:
+            self.drop_table(table_str)
+
+    def drop_table(self, table_str):
+        
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            self.con.commit()
+            print "Dropping table", table_str
+            cur.close()
+        except psycopg2.Error as e:
+            print e
+
+        
 
 def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("
@@ -120,8 +124,9 @@ def main():
     (table_str_arr) = arg_parser(sys.argv, schema_dict.keys())
 
     db_con_str = "dbname=local user=rirwin"
+    con = psycopg2.connect(db_con_str);
     
-    tm = TableManager(db_con_str, schema_dict)
+    tm = TableManager(con, schema_dict)
     
     tm.establish_tables(table_str_arr)
     tm.drop_tables(table_str_arr)
