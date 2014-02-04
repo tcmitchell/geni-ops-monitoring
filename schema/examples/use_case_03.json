@@ -145,3 +145,22 @@
     { 'ts': 1391199016651285, 'val': 22222222, },
   },
 }
+
+# Metadata and data for the disk_part_max_used metric on pc1 at gpo-ig.
+{
+  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
+  'id': '4',
+  'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
+  'eventType': 'ops_monitoring:disk_park_max_used',
+  'description': 'Percent full of fullest local disk partition',
+  'units': 'percent',
+  'tsdata': {
+    { 'ts': 1391198716651283, 'val': 0.414, },
+    { 'ts': 1391198776651284, 'val': 0.414, },
+    { 'ts': 1391198836651284, 'val': 0.423, },
+    { 'ts': 1391198896651284, 'val': 0.423, },
+    { 'ts': 1391198956651284, 'val': 0.423, },
+    { 'ts': 1391199016651285, 'val': 0.423, },
+  },
+}
+
