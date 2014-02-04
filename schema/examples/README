@@ -24,11 +24,10 @@ In general, to test a file using validictory:
   import json
   import urllib2
   
-  schema_url = <schema URL according to the file and/or README>
   datafile = <path to example file you want to test>
   
-  schema = json.load(urllib2.urlopen(schema_url))
   data = json.load(open(datafile))
+  schema = json.load(urllib2.urlopen(data['$schema']))
   validictory.validate(data, schema)
-  
+
 No output means validictory considers the file to be valid.
