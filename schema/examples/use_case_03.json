@@ -1,31 +1,5 @@
 # example JSON data to meet use case 3  
 
-# Description of gpo-ig aggregate.  Assumptions:
-# * https://datastore.instageni.gpolab.bbn.com/ is the URL of the local
-#   datastore which serves both metadata and measurement data about
-#   gpo-ig - this could be any URL, the choice of a concrete location
-#   is just for illustration purposes
-# * I decided to call our project 'ops_monitoring' in the context of
-#   this schema, and therefore where defining novel properties,
-#   eventTypes, etc, i used that namespace
-# * The $schema parameter does *not* need to be transmitted with the
-#   data --- i just included it here for clarity
-{
-  "$schema": "http://unis.incntre.iu.edu/schema/20120709/domain#",
-  "id": "gpo-ig",
-  "selfRef": "https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig",
-  "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
-  "ts": 1391192685740849,
-  "nodes": [
-    {
-      "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
-    },
-    {
-      "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc2",
-    },
-  ],
-}
-
 # Description of pc1 node at gpo-ig.  Assumptions: same as above
 {
   "$schema": "http://unis.incntre.iu.edu/schema/20120709/node#",
