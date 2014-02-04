@@ -11,45 +11,45 @@
 # * The $schema parameter does *not* need to be transmitted with the
 #   data --- i just included it here for clarity
 {
-  '$schema': 'http://unis.incntre.iu.edu/schema/20120709/domain#',
-  'id': 'gpo-ig',
-  'selfRef': 'https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig',
-  'urn': 'urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm',
-  'ts': 1391192685740849,
-  'nodes': [
+  "$schema": "http://unis.incntre.iu.edu/schema/20120709/domain#",
+  "id": "gpo-ig",
+  "selfRef": "https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig",
+  "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
+  "ts": 1391192685740849,
+  "nodes": [
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
+      "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
     },
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc2',
+      "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc2",
     },
   ],
 }
 
 # Description of pc1 node at gpo-ig.  Assumptions: same as above
 {
-  '$schema': 'http://unis.incntre.iu.edu/schema/20120709/node#',
-  'id': 'instageni.gpolab.bbn.com_node_pc1',
-  'ts': 1391192705275101,
-  'selfRef': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
-  'urn': 'urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1',
-  'properties': {
-    'ops_monitoring': {
-      'mem_total_kb': 50331648,
+  "$schema": "http://unis.incntre.iu.edu/schema/20120709/node#",
+  "id": "instageni.gpolab.bbn.com_node_pc1",
+  "ts": 1391192705275101,
+  "selfRef": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
+  "properties": {
+    "ops_monitoring": {
+      "mem_total_kb": 50331648,
     },
   },
-  'ports': [
+  "ports": [
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth0',
+      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth0",
     }
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth1',
+      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth1",
     }
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth2',
+      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth2",
     }
     {
-      'href': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth3',
+      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth3",
     }
   ],
 }
@@ -57,16 +57,16 @@
 # Description of pc1:eth0 interface at gpo-ig.  Assumptions: same as above
 # * also, the interface bandwidths are totally fictional
 {
-  '$schema': 'http://unis.incntre.iu.edu/schema/20120709/port#',
-  'selfRef': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1:eth0',
-  'urn': 'urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0',
-  'ts': 1391194147100678,
-  'id': 'instageni.gpolab.bbn.com_interface_pc1:eth0',
-  'properties': {
-    'ops_monitoring': {
-      'role': 'control',
-      'max_bps': 10000000,
-      'max_pps': 1000000,
+  "$schema": "http://unis.incntre.iu.edu/schema/20120709/port#",
+  "selfRef": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1:eth0",
+  "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0",
+  "ts": 1391194147100678,
+  "id": "instageni.gpolab.bbn.com_interface_pc1:eth0",
+  "properties": {
+    "ops_monitoring": {
+      "role": "control",
+      "max_bps": 10000000,
+      "max_pps": 1000000,
     },
   },
 }
@@ -74,16 +74,16 @@
 # Description of pc1:eth1 interface at gpo-ig.  Assumptions: same as above
 # * also, the interface bandwidths are totally fictional
 {
-  '$schema': 'http://unis.incntre.iu.edu/schema/20120709/port#',
-  'selfRef': 'https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1:eth1',
-  'urn': 'urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1',
-  'ts': 1391194147100678,
-  'id': 'instageni.gpolab.bbn.com_interface_pc1:eth1',
-  'properties': {
-    'ops_monitoring': {
-      'role': 'experimental',
-      'max_bps': 10000000,
-      'max_pps': 1000000,
+  "$schema": "http://unis.incntre.iu.edu/schema/20120709/port#",
+  "selfRef": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1:eth1",
+  "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
+  "ts": 1391194147100678,
+  "id": "instageni.gpolab.bbn.com_interface_pc1:eth1",
+  "properties": {
+    "ops_monitoring": {
+      "role": "experimental",
+      "max_bps": 10000000,
+      "max_pps": 1000000,
     },
   },
 }
@@ -94,73 +94,73 @@
 #   extends UNIS's "metadata", for the purpose of embedding both data and
 #   metadata in the same response
 {
-  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
-  'id': '1',
-  'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
-  'eventType': 'ops_monitoring:cpu_utilization',
-  'description': 'CPU utilization percentage',
-  'units': 'percent',
-  'tsdata': {
-    { 'ts': 1391198716651283, 'val': 0.45, },
-    { 'ts': 1391198776651284, 'val': 0.44, },
-    { 'ts': 1391198836651284, 'val': 0.44, },
-    { 'ts': 1391198896651284, 'val': 0.47, },
-    { 'ts': 1391198956651284, 'val': 0.46, },
-    { 'ts': 1391199016651285, 'val': 0.47, },
-  },
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
+  "id": "1",
+  "subject": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "eventType": "ops_monitoring:cpu_utilization",
+  "description": "CPU utilization percentage",
+  "units": "percent",
+  "tsdata": [
+    { "ts": 1391198716651283, "val": 0.45 },
+    { "ts": 1391198776651284, "val": 0.44 },
+    { "ts": 1391198836651284, "val": 0.44 },
+    { "ts": 1391198896651284, "val": 0.47 },
+    { "ts": 1391198956651284, "val": 0.46 },
+    { "ts": 1391199016651285, "val": 0.47 }
+  ]
 }
 
 # Metadata and data for the swap_free metric on pc1 at gpo-ig.
 {
-  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
-  'id': '2',
-  'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
-  'eventType': 'ops_monitoring:swap_free',
-  'description': 'Percentage of swap available',
-  'units': 'percent',
-  'tsdata': {
-    { 'ts': 1391198716651283, 'val': 0.95, },
-    { 'ts': 1391198776651284, 'val': 0.95, },
-    { 'ts': 1391198836651284, 'val': 0.95, },
-    { 'ts': 1391198896651284, 'val': 0.95, },
-    { 'ts': 1391198956651284, 'val': 0.95, },
-    { 'ts': 1391199016651285, 'val': 0.95, },
-  },
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
+  "id": "2",
+  "subject": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "eventType": "ops_monitoring:swap_free",
+  "description": "Percentage of swap available",
+  "units": "percent",
+  "tsdata": [
+    { "ts": 1391198716651283, "val": 0.95 },
+    { "ts": 1391198776651284, "val": 0.95 },
+    { "ts": 1391198836651284, "val": 0.95 },
+    { "ts": 1391198896651284, "val": 0.95 },
+    { "ts": 1391198956651284, "val": 0.95 },
+    { "ts": 1391199016651285, "val": 0.95 }
+  ]
 }
 
 # Metadata and data for the mem_active_kb metric on pc1 at gpo-ig.
 {
-  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
-  'id': '3',
-  'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
-  'eventType': 'ops_monitoring:mem_active_kb',
-  'description': 'Memory in active use',
-  'units': 'kilobytes',
-  'tsdata': {
-    { 'ts': 1391198716651283, 'val': 20030048, },
-    { 'ts': 1391198776651284, 'val': 20031148, },
-    { 'ts': 1391198836651284, 'val': 20031148, },
-    { 'ts': 1391198896651284, 'val': 22222222, },
-    { 'ts': 1391198956651284, 'val': 22222222, },
-    { 'ts': 1391199016651285, 'val': 22222222, },
-  },
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
+  "id": "3",
+  "subject": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "eventType": "ops_monitoring:mem_active_kb",
+  "description": "Memory in active use",
+  "units": "kilobytes",
+  "tsdata": [
+    { "ts": 1391198716651283, "val": 20030048 },
+    { "ts": 1391198776651284, "val": 20031148 },
+    { "ts": 1391198836651284, "val": 20031148 },
+    { "ts": 1391198896651284, "val": 22222222 },
+    { "ts": 1391198956651284, "val": 22222222 },
+    { "ts": 1391199016651285, "val": 22222222 }
+  ]
 }
 
 # Metadata and data for the disk_part_max_used metric on pc1 at gpo-ig.
 {
-  '$schema': 'http://www.gpolab.bbn.com/monitoring/schema/20140131/data#',
-  'id': '4',
-  'subject': 'https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1',
-  'eventType': 'ops_monitoring:disk_park_max_used',
-  'description': 'Percent full of fullest local disk partition',
-  'units': 'percent',
-  'tsdata': {
-    { 'ts': 1391198716651283, 'val': 0.414, },
-    { 'ts': 1391198776651284, 'val': 0.414, },
-    { 'ts': 1391198836651284, 'val': 0.423, },
-    { 'ts': 1391198896651284, 'val': 0.423, },
-    { 'ts': 1391198956651284, 'val': 0.423, },
-    { 'ts': 1391199016651285, 'val': 0.423, },
-  },
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
+  "id": "4",
+  "subject": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "eventType": "ops_monitoring:disk_park_max_used",
+  "description": "Percent full of fullest local disk partition",
+  "units": "percent",
+  "tsdata": [
+    { "ts": 1391198716651283, "val": 0.414 },
+    { "ts": 1391198776651284, "val": 0.414 },
+    { "ts": 1391198836651284, "val": 0.423 },
+    { "ts": 1391198896651284, "val": 0.423 },
+    { "ts": 1391198956651284, "val": 0.423 },
+    { "ts": 1391199016651285, "val": 0.423 }
+  ]
 }
 
