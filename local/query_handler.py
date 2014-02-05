@@ -8,7 +8,7 @@ def query(con, table, where_filter):
     r_stat = None;
 
     try:
-        cur.execute("select * from " + table + " where " + where_filter + ";")
+        cur.execute("select * from " + table + " where " + where_filter + " + LIMIT 10000;")
         q_res = cur.fetchall()
         r_stat = 0
     except Exception, e:
