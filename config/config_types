@@ -1,0 +1,13 @@
+{
+"mem_total":    {
+                 "description":"total memory on the node",
+		 "units":"bytes",
+		 "db_template":"node"
+               }
+,
+"ctrl_net_max_bytes":   {
+                 "description":"sum of maximum bytes per second available on all control interfaces",
+		 "units":"bps",
+		 "db_template":"node"
+               }
+}
