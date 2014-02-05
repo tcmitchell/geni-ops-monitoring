@@ -11,15 +11,19 @@
   },
   "ports": [
     { 
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0",
       "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth0"
     },
     { 
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
       "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth1"
     },
     { 
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth2",
       "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth2"
     },
     { 
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth3",
       "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth3"
     }
   ]
