@@ -1,14 +1,16 @@
 {
-  "$schema": "http://unis.incntre.iu.edu/schema/20120709/domain#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
   "id": "gpo-ig",
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
   "ts": 1391192685740849,
-  "nodes": [
+  "resources": [
     {
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
       "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1"
     },
     {
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2",
       "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc2"
     }
   ]
