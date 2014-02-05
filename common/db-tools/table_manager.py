@@ -3,14 +3,29 @@
 import psycopg2
 import json
 import sys
+from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, con, schema_dict):
+    def __init__(self, con, db_templates, event_types):
         self.con = con
+        self.schema_dict = self.create_schema_dict(db_templates, event_types)
+        print "Scema loaded:" 
+        pprint(self.schema_dict)
 
-        self.schema_dict = schema_dict
-        print schema_dict
+    def create_schema_dict(self, db_templates, event_types):
+        schema_dict = {}
+
+        for ev_t in event_types.keys():
+            
+            # gets template schema name for the event type
+            temp_t = event_types[ev_t]["db_template"]
+
+            # create a new list for the schema dictionary
+            # value column type is specified in event types file
+            schema_dict[ev_t] = db_templates[temp_t] + [["v",event_types[ev_t]["v_col_type"]]]
+
+        return schema_dict
 
     def table_exists(self, table_str):
         exists = False
@@ -117,20 +132,27 @@ def arg_parser(argv, dict_keys):
 
 
 def main():
-    schema_file = "../../config/test_schema_dict"
-    json_data = open(schema_file)
-    schema_dict = json.load(json_data)
 
-    (table_str_arr) = arg_parser(sys.argv, schema_dict.keys())
+    db_templates = json.load(open("../../config/db_templates"))
+    event_types = json.load(open("../../config/event_types"))
+
+    # to have a table for all event types for local store or
+    # aggregator to have a table for all event types
+    table_str_arr = event_types.keys()
+    #print table_str_arr
+
+    # to pass in event types to create subset of all event types
+    #(table_str_arr) = arg_parser(sys.argv, schema_dict.keys())
 
     db_con_str = "dbname=local user=rirwin"
     con = psycopg2.connect(db_con_str);
     
-    tm = TableManager(con, schema_dict)
+    tm = TableManager(con, db_templates, event_types)
     
-    tm.establish_tables(table_str_arr)
     tm.drop_tables(table_str_arr)
+    tm.establish_tables(table_str_arr)
+    
 
-
+    con.close()
 if __name__ == "__main__":
     main()

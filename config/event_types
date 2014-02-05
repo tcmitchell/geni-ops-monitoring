@@ -1,22 +1,29 @@
 {
-"cpu_util":    [
-                 ["description":"shared node cpu util"],
-		 ["units":"percent"],
-		 ["db_template":"node"]
-               ],
-"mem_used":    [
-                 ["description":"total memory in active use on the node"],
-		 ["units":"bytes"],
-		 ["db_template":"node"]
-               ],
-"swap_free":   [
-                 ["description":"percent of total swap which is free"],
-		 ["units":"percent"],
-		 ["db_template":"node"]
-               ],
-"disk_part_max_used":   [
-                 ["description":"highest percent utilization of any local partition"],
-		 ["units":"percent"],
-		 ["db_template":"node"]
-               ]
+"cpu_util":    {
+                 "description":"shared node cpu util",
+		 "units":"percent",
+		 "v_col_type":"float4",
+		 "db_template":"node"
+               }
+,
+"mem_used":    {
+                 "description":"total memory in active use on the node",
+		 "units":"bytes",
+		 "v_col_type":"int8",
+		 "db_template":"node"
+               }
+,
+"swap_free":   {
+                 "description":"percent of total swap which is free",
+		 "units":"percent",
+		 "v_col_type":"float4",
+		 "db_template":"node"
+               },
+"disk_part_max_used": {  
+                 "description":"highest percent utilization of any local partition",
+		 "units":"percent",
+		 "v_col_type":"float4",
+		 "db_template":"node"
+               }
+
 }
