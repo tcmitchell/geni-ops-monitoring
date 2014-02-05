@@ -10,7 +10,7 @@
   },
   "properties": {
     "units": {
-      "units": "Valid units for the values in this metric",
+      "description": "Valid units for the values in this metric",
       "type": "string",
       "required": true
     },
@@ -23,7 +23,14 @@
       "description": "Time-series data",
       "name": "tsdata",
       "type": "array",
-      "required": false
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "$ref": "http://unis.incntre.iu.edu/schema/20120709/tsdatum#"
+          }
+        ]
+      }
     }
   }
 }
