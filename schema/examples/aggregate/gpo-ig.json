@@ -13,5 +13,11 @@
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2",
       "href": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc2"
     }
+  ],
+  "slivers": [
+    {
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947",
+      "href": "https://datastore.instageni.gpolab.bbn.com/slivers/instageni.gpolab.bbn.com_sliver_36947"
+    }
   ]
 }
