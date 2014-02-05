@@ -16,7 +16,20 @@
       "items": {
         "type": [
           {
-            "urn": "integer",
+            "urn": "string",
+            "$ref": "http://unis.incntre.iu.edu/schema/20120709/node"
+          }
+        ]
+      }
+    },
+    "slivers": {
+      "description": "active slivers at this aggregate",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
             "$ref": "http://unis.incntre.iu.edu/schema/20120709/node"
           }
         ]
