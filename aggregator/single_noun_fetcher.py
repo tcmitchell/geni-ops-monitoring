@@ -120,9 +120,13 @@ def main():
     micro_sec_epoch = 0 
     #micro_sec_epoch = int(time.time()*1000000)
 
-    schema_file = "../config/test_schema_dict"
-    json_data = open(schema_file)
-    schema_dict = json.load(json_data)
+    # Dense lines to get schema_dict
+    db_templates = json.load(open("../config/db_templates"))
+    event_types = json.load(open("../config/event_types"))
+    schema_dict = {}
+    for ev_t in event_types.keys():
+        schema_dict[ev_t] = db_templates[event_types[ev_t]["db_template"]] + [["v",event_types[ev_t]["v_col_type"]]]
+    # end dense lines to get schema_dict
 
     # lock of the conn and cur usage by this program
     # psql has locks for what would be concurrent psql accesses

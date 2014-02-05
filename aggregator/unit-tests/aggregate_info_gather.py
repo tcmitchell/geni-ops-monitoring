@@ -8,38 +8,57 @@ from pprint import pprint
 #  conversation about data
 #
 
-# information
 #
-# aggregator learns of gpo-ig and queries domain
-# aggregator goes to url <local of gpo-ig>/info/domain
-
-
+# ---- INFORMATION ----
+#
+# ** CONFIG store
+#
+# Conversation between config store and aggregator here
+#
+# Outcome is that the config store provides aggregator with a list of
+# aggregates and their urls (https://url_of_local_datastore/aggregate/agg_id)
+#
+#
+# ** LOCAL store
+#
+# aggregator learns of gpo-ig and queries for each domain/aggregate info
+#
+# aggregator goes to each url <local url>/info/aggregate/<agg_id>
+#
+#
 # local responds with nodes (incl. href since talking about physical resources)
-
-
-# aggregator queries nodes with <gpo-ig>/info/nodes
-
-
-# local resonds with properties about the node including ports
-
-
-# aggregator queries node
+# 
+#
+# aggregator queries for each node <local url>/info/aggregate/<gpo-ig>/<node_id>
+#
+#
+# local resonds with properties about the node including interface existence
+#
+#
+# aggregator queries for each interface
+# <local url>/info/aggregate/<gpo-ig>/<node_id>/<interface_id>
+#
+#
+# local responds with properties about the interfaces
 
 
 
 '''
 For the reference aggregator each eventType has its own table, with
-the noun hierarchy being ids /domain/<domain_id>/<node_id> has tsdata
-so the data would be:
-table: <eventType> with columns: (domain_id, node_id, ts, v)
+the noun hierarchy being ids /domain/<domain_id>/<node_id> has tsdata.
+Examples:
 
-for ports data would be accessed from:
-/domain/<domain_id>/<node_id>/<port> 
-table: <eventType> with columns: (domain_id, node_id, port_id, ts, v)
+For aggregate level tsdata:
+table: <eventType> with columns: (agg_id, ts, v)
 
-'''
+node level:
+table: <eventType> with columns: (agg_id, node_id, ts, v)
 
-'''
+port level:
+table: <eventType> with columns: (agg_id, node_id, port_id, ts, v)
+
+
+
 Rougher thoughts:
 
 Slivers Chaos has an idea that is a work in progress.
@@ -53,9 +72,11 @@ url_dict = {}
 url_dict["gpo-ig"] = {}
 
 # retrieved from local store
-url_dict["gpo-ig"]["info"] = "http://127.0.0.1:5000/info/domain/" 
+url_dict["gpo-ig"]["info"] = "http://127.0.0.1:5000/info/aggregate/gpo-ig" 
 
-info = urllib2.urlopen(url_dict["gpo-ig"]["info"])
+info = json.load(urllib2.urlopen(url_dict["gpo-ig"]["info"]))
+
+pprint(info)
 
 
 '''
