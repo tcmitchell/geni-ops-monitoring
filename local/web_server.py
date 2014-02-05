@@ -33,6 +33,70 @@ def not_found(error):
 def index():
     return "Hello, World!"
 
+@app.route('/info', methods = ['GET'])
+def info():
+    return "info great"
+
+@app.route('/info/aggregate', methods = ['GET'])
+def info_aggregate():  # gets all aggregates
+    print "info_agg()"
+ 
+    # query database for all aggregates and nodes gives agg info, node existence
+
+    # form json response
+
+    # already formed
+    return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
+
+@app.route('/info/aggregate/<agg_id>', methods = ['GET'])
+def info_aggregate_args(agg_id): # gets
+    print "info_agg_args(",agg_id,")"
+
+    # query database for dom_id aggregate and nodes gives agg info, node existence
+
+    # form json response
+
+    # already formed
+    
+    return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
+
+@app.route('/info/aggregate/<agg_id>/node', methods = ['GET'])
+def info_node(agg_id):  # gets all nodes at aggregate
+    print "info_node(",agg_id,")"
+ 
+    # query database for all nodes at agg_id gives node info, port existence
+
+    # form json response
+
+    # already formed
+    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
+
+@app.route('/info/aggregate/<agg_id>/<node_id>', methods = ['GET'])
+def info_node_args(agg_id, node_id): 
+    print "info_node_args(",agg_id,",",node_id,")"
+
+    # query database for node_id at agg_id gives node info, port existence
+
+    # form json response
+
+    # already formed
+    
+    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
+
+@app.route('/info/aggregate/<agg_id>/<node_id>/<port>', methods = ['GET'])
+def info_port_args(agg_id, node_id, port_id): 
+    print "info_port_args(",agg_id,",",node_id,")"
+
+    # query database for node_id at agg_id gives node info, port existence
+
+    # form json response
+
+    # already formed
+    
+    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
+
+
+
 
 @app.route('/data/', methods = ['GET'])
 def data(): 

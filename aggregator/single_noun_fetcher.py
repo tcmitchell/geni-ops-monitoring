@@ -123,6 +123,7 @@ def main():
     schema_file = "../config/test_schema_dict"
     json_data = open(schema_file)
     schema_dict = json.load(json_data)
+
     # lock of the conn and cur usage by this program
     # psql has locks for what would be concurrent psql accesses
     # from other program
