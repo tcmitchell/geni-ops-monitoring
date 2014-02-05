@@ -1,0 +1,22 @@
+{
+"aggregate": [ 
+	       ["aggregate_id", "varchar"],
+               ["ts", "int8"],
+               ["v", "float4"]
+	     ]
+,
+"node": [ 
+                 ["aggregate_id", "varchar"],
+                 ["node_id", "varchar"],
+                 ["ts", "int8"],
+                 ["v", "float4"]
+               ]
+,
+"interface": [ 
+                 ["aggregate_id", "varchar"],
+                 ["node_id", "varchar"],
+                 ["interface_id", "varchar"],
+                 ["ts", "int8"],
+                 ["v", "float4"]
+               ]
+}
