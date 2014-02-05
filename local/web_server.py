@@ -37,19 +37,9 @@ def index():
 def info():
     return "info great"
 
-@app.route('/info/aggregate', methods = ['GET'])
-def info_aggregate():  # gets all aggregates
-    print "info_agg()"
- 
-    # query database for all aggregates and nodes gives agg info, node existence
-
-    # form json response
-
-    # already formed
-    return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
 
 @app.route('/info/aggregate/<agg_id>', methods = ['GET'])
-def info_aggregate_args(agg_id): # gets
+def info_aggregate_args(agg_id): # gets aggregate info
     print "info_agg_args(",agg_id,")"
 
     # query database for dom_id aggregate and nodes gives agg info, node existence
@@ -60,22 +50,12 @@ def info_aggregate_args(agg_id): # gets
     
     return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
 
-@app.route('/info/aggregate/<agg_id>/node', methods = ['GET'])
-def info_node(agg_id):  # gets all nodes at aggregate
-    print "info_node(",agg_id,")"
- 
-    # query database for all nodes at agg_id gives node info, port existence
-
-    # form json response
-
-    # already formed
-    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
 
 @app.route('/info/aggregate/<agg_id>/<node_id>', methods = ['GET'])
-def info_node_args(agg_id, node_id): 
+def info_node_args(agg_id, node_id): # gets node info
     print "info_node_args(",agg_id,",",node_id,")"
 
-    # query database for node_id at agg_id gives node info, port existence
+    # query database for node_id at agg_id gives node info, interface existence
 
     # form json response
 
@@ -83,17 +63,18 @@ def info_node_args(agg_id, node_id):
     
     return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
 
-@app.route('/info/aggregate/<agg_id>/<node_id>/<port>', methods = ['GET'])
-def info_port_args(agg_id, node_id, port_id): 
-    print "info_port_args(",agg_id,",",node_id,")"
 
-    # query database for node_id at agg_id gives node info, port existence
+@app.route('/info/aggregate/<agg_id>/<node_id>/<interface_id>', methods = ['GET'])
+def info_interface_args(agg_id, node_id, interface_id): # gets interface info
+    print "info_interface_args(",agg_id,",",interface_id,")"
+
+    # query database for port_id at node_id gives node info
 
     # form json response
 
     # already formed
     
-    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
+    return json.dumps(json.load(open("../schema/examples/interface/iface_resp1.json")))
 
 
 
@@ -134,10 +115,14 @@ if __name__ == '__main__':
 
     con = psycopg2.connect("dbname=local user=rirwin");
     
-    schema_file = "../config/test_schema_dict"
-    json_data = open(schema_file)
-    schema_dict = json.load(json_data)
 
+    # Dense lines to get schema_dict
+    db_templates = json.load(open("../config/db_templates"))
+    event_types = json.load(open("../config/event_types"))
+    schema_dict = {}
+    for ev_t in event_types.keys():
+        schema_dict[ev_t] = db_templates[event_types[ev_t]["db_template"]] + [["v",event_types[ev_t]["v_col_type"]]]
+    # end dense lines to get schema_dict
 
     jp = json_producer.JsonProducer(schema_dict);
     
