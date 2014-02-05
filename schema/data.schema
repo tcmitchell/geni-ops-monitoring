@@ -23,7 +23,7 @@
       "description": "Time-series data",
       "name": "tsdata",
       "type": "array",
-      "required": false
+      "required": false,
       "items": {
         "type": [
           {
