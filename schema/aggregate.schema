@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
+  "description": "GENI aggregate",
+  "name": "Aggregate",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
+  },
+  "properties": {
+    "resources": {
+      "description": "resources controlled by this aggregate",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "integer",
+            "$ref": "http://unis.incntre.iu.edu/schema/20120709/node"
+          }
+        ]
+      }
+    }
+  }
+}
