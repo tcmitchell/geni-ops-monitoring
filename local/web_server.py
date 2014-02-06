@@ -5,7 +5,10 @@ import json_producer
 import query_handler
 import time
 import json
-
+import sys
+from pprint import pprint as pprint
+sys.path.append("../common/db-tools")
+import table_manager
 app = Flask(__name__)
 
 def extract_ts_filters(ts_filters):
@@ -41,14 +44,23 @@ def info():
 @app.route('/info/aggregate/<agg_id>', methods = ['GET'])
 def info_aggregate_args(agg_id): # gets aggregate info
     print "info_agg_args(",agg_id,")"
+    table_str = "aggregate"
+    node_self_refs = []
 
-    # query database for dom_id aggregate and nodes gives agg info, node existence
 
-    # form json response
+    agg_info = query_handler.get_object_info(con, table_str, agg_id)
 
-    # already formed
+    nodes = query_handler.get_agg_nodes(con, agg_id)
     
-    return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
+    for node_id in nodes:
+        node_self_refs.append(query_handler.get_self_ref(con, "node", node_id))
+
+    # repeat for other resources at aggregate
+
+    return jp.json_info(table_str, agg_info, node_self_refs)
+
+   
+    #return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
 
 
 @app.route('/info/aggregate/<agg_id>/<node_id>', methods = ['GET'])
@@ -95,12 +107,12 @@ def data():
     (ts_lt, ts_gte) = extract_ts_filters(ts_filters)
 
     if ts_gte <= 0:
-        print "get all memory_util, recommended to use ?ts= filter next query"
+        print "get all " + event_type + ", recommended to use ?ts= filter next query"
     else:
         print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    where_params = "ts >= " + str(ts_gte) + " and ts < " + str(ts_lt)
-    (r_stat, q_res) = query_handler.query(con,event_type,where_params);
+    where_filter = "where ts >= " + str(ts_gte) + " and ts < " + str(ts_lt)
+    (r_stat, q_res) = query_handler.select_query(con,event_type,where_filter);
 
     print q_res
     if (r_stat == 0):
@@ -119,12 +131,9 @@ if __name__ == '__main__':
     # Dense lines to get schema_dict
     db_templates = json.load(open("../config/db_templates"))
     event_types = json.load(open("../config/event_types"))
-    schema_dict = {}
-    for ev_t in event_types.keys():
-        schema_dict[ev_t] = db_templates[event_types[ev_t]["db_template"]] + [["v",event_types[ev_t]["v_col_type"]]]
-    # end dense lines to get schema_dict
+    resource_types = json.load(open("../config/resource_types"))
 
-    jp = json_producer.JsonProducer(schema_dict);
-    
+    tm = table_manager.TableManager(con, db_templates, event_types, resource_types)
+    jp = json_producer.JsonProducer(tm.schema_dict);
 
     app.run(debug = True)
