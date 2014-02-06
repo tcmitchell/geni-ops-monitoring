@@ -24,43 +24,56 @@ class LocalDatastorePopulator:
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
         self.event_table_str_arr = event_table_str_arr
-        self.resource_table_str_arr = resource_table_str_arr # deprecated
+        self.resource_table_str_arr = resource_table_str_arr 
         self.resource_arr = resource_arr
         self.table_manager = table_manager
 
         self.table_manager.establish_tables(event_table_str_arr)
-        self.table_manager.establish_tables(resource_table_str_arr) #deprecated
-
-    # TODO Improve this function to read resource_types format auto
-    # not hard, get this from table manager
+        self.table_manager.establish_tables(resource_table_str_arr) 
+   
     def update_resource_tables(self):
+
+        agg_schema_arr = self.table_manager.schema_dict["aggregate"]
+        node_schema_arr = self.table_manager.schema_dict["node"]
+        iface_schema_arr = self.table_manager.schema_dict["interface"]
         time_sec_epoch = int(time.time()*1000000)
         cur = self.con.cursor()            
-        s1 = "','" # separator 1
+        s = "','" # separator for all (incl numerics)
         for agg_dict in self.resource_arr:
 
             # insert each node to aggregate table
             for node_key in agg_dict["nodes"]: 
                 node_dict = agg_dict["nodes"][node_key]
-                ins_str = "INSERT INTO aggregate VALUES ('" + agg_dict["schema"] + s1 + agg_dict["id"] + s1 + agg_dict["selfRef"] + s1 + agg_dict["urn"] + "'," + agg_dict["ts"] + ",'" + node_dict["id"] + "')";
+                ins_str = "INSERT INTO aggregate VALUES ('"
+                # loop through each of agg schema, skip last bc it is a dict
+                for key_i in range(len(agg_schema_arr)-1):
+                    ins_str += agg_dict[agg_schema_arr[key_i][0]] + s
+                
+                ins_str += node_dict["id"] + "')"
                 cur.execute(ins_str)
                 self.con.commit()
-
+                
                 # insert each interface of node to node table
                 for iface_key in node_dict["interfaces"]:
                     iface_dict = node_dict["interfaces"][iface_key]
-                    ins_str = "INSERT INTO node VALUES ('" + node_dict["schema"] + s1 + node_dict["id"] + s1 + node_dict["selfRef"] + s1 + node_dict["urn"] + "'," + node_dict["ts"] + ",'" + iface_dict["id"] + "')";
+                    ins_str = "INSERT INTO node VALUES ('"
+                    for key_i in range(len(node_schema_arr)-1):
+                        ins_str += node_dict[node_schema_arr[key_i][0]] + s
+
+                    ins_str += iface_dict["id"] + "')"
                     cur.execute(ins_str)
                     self.con.commit()
 
                     # insert each interface into interface table
-                    ins_str = "INSERT INTO interface VALUES ('" + iface_dict["schema"] + s1 + iface_dict["id"] + s1 + iface_dict["selfRef"] + s1 + iface_dict["urn"] + "'," + iface_dict["ts"] + ",'" + iface_dict["role"] + "'," + iface_dict["max_bps"] + "," + iface_dict["max_pps"] + ",'" + iface_dict["mac_addr"] + s1 + iface_dict["ip_addr"] + "')";
+                    ins_str = "INSERT INTO interface VALUES ('" 
+                    for key_i in range(len(iface_schema_arr)):
+                        ins_str +=iface_dict[iface_schema_arr[key_i][0]] + s
+
+                    ins_str = ins_str[:-2] + ")" # remove last 2 of ',' add )
                     cur.execute(ins_str)
                     self.con.commit()
-       
+                    
         cur.close()
-       
-
     def run_node_inserts(self, table_str):
 
         for i in range(self.num_inserts):
@@ -152,7 +165,7 @@ def main():
     agg1_pc1_dict["selfRef"] = url_local_agg_info + agg1_dict["id"] + "/" + agg1_pc1_dict["id"]
     agg1_pc1_dict["urn"] = "urn=404-ig+pc1+urn"
     agg1_pc1_dict["ts"] = str(int(time.time()*1000000))
-    agg1_pc1_dict["mem_total_kb"] = 2*1000000
+    agg1_pc1_dict["mem_total_kb"] = str(2*1000000)
     agg1_pc1_dict["interfaces"] = {}
 
     agg1_pc1_eth0_dict = {}
