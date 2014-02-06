@@ -48,7 +48,7 @@
       "description": "Expiration time: 64-bit integer timestamp",
       "type": "integer",
       "required": true
-    }
+    },
     "resources": {
       "description": "List of resources this sliver has reserved",
       "type": "array",
