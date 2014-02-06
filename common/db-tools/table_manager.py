@@ -10,8 +10,9 @@ class TableManager:
     def __init__(self, con, db_templates, event_types, resource_types):
         self.con = con
         self.schema_dict = self.create_schema_dict(db_templates, event_types, resource_types)
-        print "Scema loaded:" 
-        pprint(self.schema_dict)
+        print "Schema loaded" 
+        #pprint(self.schema_dict)
+        print 
 
     def create_schema_dict(self, db_templates, event_types, resource_types):
         schema_dict = {}
@@ -64,13 +65,15 @@ class TableManager:
 
     def establish_table(self, table_str):
 
+        #print table_str
+        #pprint(self.schema_dict[table_str])
         schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
 
         if self.table_exists(table_str):
-            print "WARNING: table " + table_str + " already exists with schema:"
+            print "\nINFO: table " + table_str + " already exists with schema:"
             print self.get_table_col_names(table_str)
             print "Current schema_str " + schema_str
-            print "Skipping creation of " + table_str
+            print "Skipping creation of " + table_str + "\n"
             # TODO check if different schema
             # TODO user input for overwrite or not
             

@@ -74,6 +74,7 @@ class LocalDatastorePopulator:
                     self.con.commit()
                     
         cur.close()
+
     def run_node_inserts(self, table_str):
 
         for i in range(self.num_inserts):
@@ -89,7 +90,7 @@ class LocalDatastorePopulator:
             time.sleep(self.sleep_period_sec)    
 
 def get_data(table_str): 
-        if table_str == mem_used:
+        if table_str == "mem_used":
             return get_mem_util()
 
 def get_mem_util():
@@ -202,18 +203,18 @@ def main():
 
     resource_arr.append(agg1_dict)
 
-    pprint(resource_arr)
+    #pprint(resource_arr)
 
-    lsmp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, event_table_str_arr, resource_table_str_arr, resource_arr)
+    ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, event_table_str_arr, resource_table_str_arr, resource_arr)
 
-    lsmp.update_resource_tables()
+    ldp.update_resource_tables()
 
 
     #
     # TODO pass a dictionary and have it iterate through keys and pass
     # to this function
 
-    #lsmp.run_inserts_ts("mem_used")
+    ldp.run_node_inserts("mem_used")
         
     
     cur = con.cursor();
