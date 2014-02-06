@@ -1,25 +1,31 @@
 #!/usr/bin/python
 
 import json
-
+from pprint import pprint as pprint
 
 class JsonProducer:
     def __init__(self, schema_dict):
         self._schema_dict = schema_dict
 
-    def psql_to_json(self, q_res, table_name):
-        if (table_name == "info"): 
-            json_dict = self.psql_to_json_info(q_res)
-        else:
-            json_dict = self.psql_to_json_data(q_res, table_name)
+    def psql_to_json(self, q_res, table_str):
+        json_dict = self.psql_to_json_data(q_res, table_str)
         return json_dict
 
-    def psql_to_json_info(self, q_res):
-        pass # not implemented yet
+    def json_info(self, table_str, info_row, node_self_refs = [], iface_self_refs = []):
+        print "json_info"
+        schema = self._schema_dict[table_str]
+        json_dict = {}
+        for col_i in range(len(schema)):
+            json_dict[schema[col_i][0]] = info_row[col_i]
+        json_dict["nodes"] = []
+        for node_self_ref in node_self_refs:
+            json_dict["nodes"].append({"href":node_self_ref})
 
-    def psql_to_json_data(self, q_res, table_name):
+        return json.dumps(json_dict)
 
-        schema = self._schema_dict[table_name]
+    def psql_to_json_data(self, q_res, table_str):#TODO redo for UNIS
+
+        schema = self._schema_dict[table_str]
         num_cols = len(schema)
         num_rows = len(q_res)
 
@@ -28,7 +34,7 @@ class JsonProducer:
         items_dict = {}
         num_cols_not_tv = len(key_cols[0])
 
-        # pass through results to pick up items
+        # pass through results to pick up items, TODO redo for UNIS
         for row_i in range(num_rows):
             row = q_res[row_i]
             group_key =  repr(row[0:num_cols_not_tv])
@@ -41,7 +47,7 @@ class JsonProducer:
         
         json_dict = {}
         json_dict["response_type"] = "data_poll"
-        json_dict["data_type"] = table_name
+        json_dict["data_type"] = table_str
         json_dict["results"] = []
 
         for item in items_dict:
@@ -78,6 +84,7 @@ if __name__ == "__main__":
 
     # Dense lines to get schema_dict
     db_templates = json.load(open("../config/db_templates"))
+    event_types = json.load(open("../config/event_types"))
     event_types = json.load(open("../config/event_types"))
     schema_dict = {}
     for ev_t in event_types.keys():

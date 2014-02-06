@@ -1,6 +1,6 @@
 {
-"aggregate_id": [
-		 ["schema", "varchar"],
+"aggregate": [
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
@@ -8,18 +8,19 @@
 		 ["nodes","varchar"]
                 ]
 ,
-"node_id": [
-		 ["schema", "varchar"],
+"node": [
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["interface","varchar"],
-		 ["mem_total_kb","int8"]
+		 ["mem_total_kb","int8"],
+		 ["interfaces","varchar"]
+
            ]
 ,
-"interface_id": [
-		 ["schema", "varchar"],
+"interface": [
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
