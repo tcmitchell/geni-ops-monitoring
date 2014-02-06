@@ -146,6 +146,8 @@ def main():
     con = psycopg2.connect(db_con_str);
 
     tm = table_manager.TableManager(con, db_templates, event_types, resource_types)
+    #tm.drop_tables(resource_types.keys())
+    #tm.establish_tables(resource_types.keys())
     # End table manager
 
     # Info about this local datastore populator

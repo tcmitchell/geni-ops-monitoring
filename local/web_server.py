@@ -56,11 +56,7 @@ def info_aggregate_args(agg_id): # gets aggregate info
         node_self_refs.append(query_handler.get_self_ref(con, "node", node_id))
 
     # repeat for other resources at aggregate
-
     return jp.json_info(table_str, agg_info, node_self_refs)
-
-   
-    #return json.dumps(json.load(open("../schema/examples/aggregate/agg_resp.json")))
 
 
 @app.route('/info/aggregate/<agg_id>/<node_id>', methods = ['GET'])

@@ -66,7 +66,7 @@ def get_self_ref(con, table_str, resource_id):
     res = None;
 
     try:
-        cur.execute("select selfRef from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
+        cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
         res = q_res[0] # removes outer garbage
 
