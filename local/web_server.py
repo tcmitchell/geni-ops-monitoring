@@ -70,34 +70,27 @@ def info_node_args(node_id):
    
     if node_info != None:
         ifaces = query_handler.get_node_ifaces(con, node_id)
-    
+        print ifaces
         for iface_id in ifaces:
-            iface_self_refs.append(query_handler.get_self_ref(con, "interface", node_id))
-        # repeat for other resources at aggregate
+            iface_self_refs.append(query_handler.get_self_ref(con, "interface", iface_id))
+        # repeat for other resources at node
 
-        return jp.json_info(table_str, node_info, iface_self_refs)
+        return jp.json_info(table_str, node_info, [], iface_self_refs)
 
     else:
         return "node not found"
-    # query database for node_id at agg_id gives node info, interface existence
-
-    # form json response
-
-    # already formed
     
-    #return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
 
 
 @app.route('/info/interface/<interface_id>', methods = ['GET'])
-def info_interface_args(agg_id, node_id, interface_id): # gets interface info
+def info_interface_args(interface_id): # gets interface info
     print "info_interface_args(",interface_id,")"
+    table_str = "interface"
+    iface_info = query_handler.get_object_info(con, table_str, interface_id)
 
-    # query database for port_id at node_id gives node info
+    if iface_info != None:
+        return jp.json_info(table_str, iface_info)
 
-    # form json response
-
-    # already formed
-    
     return json.dumps(json.load(open("../schema/examples/interface/iface_resp1.json")))
 
 

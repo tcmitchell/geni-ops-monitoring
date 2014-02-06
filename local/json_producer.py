@@ -17,11 +17,19 @@ class JsonProducer:
         json_dict = {}
         for col_i in range(len(schema)):
             json_dict[schema[col_i][0]] = info_row[col_i]
-        json_dict["nodes"] = []
-        for node_self_ref in node_self_refs:
-            json_dict["nodes"].append({"href":node_self_ref})
+
+        if len(node_self_refs) > 0:
+            json_dict["nodes"] = []
+            for node_self_ref in node_self_refs:
+                json_dict["nodes"].append({"href":node_self_ref})
+
+        if len(iface_self_refs) > 0:
+            json_dict["interfaces"] = []
+            for iface_self_ref in iface_self_refs:
+                json_dict["interfaces"].append({"href":iface_self_ref})
 
         return json.dumps(json_dict)
+   
 
     def psql_to_json_data(self, q_res, table_str):#TODO redo for UNIS
 

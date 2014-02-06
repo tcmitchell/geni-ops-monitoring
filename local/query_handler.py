@@ -20,16 +20,6 @@ def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
 
     return (r_stat, q_res)
 
-'''
-   # query database for dom_id aggregate and nodes gives agg info,
-    # node existence,
-    table_str = "aggregate"
-    where_filter = "where id = '" + agg_id + "'"
-    order_by_filter = "order_by ts desc"
-    limit_filter = "limit 1"
-    (r_stat, q_res) = query_handler.select_query(con,table_str,where_filter,order_by_filter, limit_filter);
-    nodes = []
-'''
 def get_agg_nodes(con, agg_id_str):
     cur = con.cursor()
     res = [];
@@ -53,7 +43,7 @@ def get_node_ifaces(con, node_id_str):
     res = [];
 
     try:
-        cur.execute("select distinct interface from node  where id = '" + node_id_str + "'")
+        cur.execute("select distinct interfaces from node  where id = '" + node_id_str + "'")
         q_res = cur.fetchall()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
@@ -86,6 +76,7 @@ def get_self_ref(con, table_str, resource_id):
     res = None;
 
     try:
+        print "select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1"
         cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
         res = q_res[0] # removes outer garbage
