@@ -68,7 +68,7 @@ class TableManager:
         #print table_str
         #pprint(self.schema_dict[table_str])
         schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
-
+        
         if self.table_exists(table_str):
             print "\nINFO: table " + table_str + " already exists with schema:"
             print self.get_table_col_names(table_str)
@@ -80,6 +80,7 @@ class TableManager:
         else:
             try:
                 cur = self.con.cursor()
+                print "create table " + table_str + schema_str
                 cur.execute("create table " + table_str + schema_str)
                 self.con.commit()
                 cur.close()
@@ -106,7 +107,7 @@ class TableManager:
 def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("
         for col_i in range(len(table_schema_dict)):
-            schema_str = schema_str + table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "," 
+            schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         
         # remove , and add )
         return schema_str[:-1] + ")"
