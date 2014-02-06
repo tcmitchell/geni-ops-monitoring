@@ -151,13 +151,13 @@ def main():
     # End table manager
 
     # Info about this local datastore populator
-    url_local_agg_info = "http://127.0.0.1:5000/info/aggregate/"
+    url_local_info = "http://127.0.0.1:5000/info/"
 
     resource_arr = []
     agg1_dict = {}
     agg1_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/domain#"
     agg1_dict["id"] = "404-ig"
-    agg1_dict["selfRef"] = url_local_agg_info + agg1_dict["id"]
+    agg1_dict["selfRef"] = url_local_info + "aggregate/" + agg1_dict["id"]
     agg1_dict["urn"] = "urn=404-ig+urn"
     agg1_dict["ts"] = str(int(time.time()*1000000))
     agg1_dict["nodes"] = {}
@@ -165,7 +165,7 @@ def main():
     agg1_pc1_dict = {}
     agg1_pc1_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/node#"
     agg1_pc1_dict["id"] = "pc1"
-    agg1_pc1_dict["selfRef"] = url_local_agg_info + agg1_dict["id"] + "/" + agg1_pc1_dict["id"]
+    agg1_pc1_dict["selfRef"] = url_local_info + "node/" + agg1_pc1_dict["id"]
     agg1_pc1_dict["urn"] = "urn=404-ig+pc1+urn"
     agg1_pc1_dict["ts"] = str(int(time.time()*1000000))
     agg1_pc1_dict["mem_total_kb"] = str(2*1000000)
@@ -174,7 +174,7 @@ def main():
     agg1_pc1_eth0_dict = {}
     agg1_pc1_eth0_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/port#"
     agg1_pc1_eth0_dict["id"] = "eth0"
-    agg1_pc1_eth0_dict["selfRef"] = url_local_agg_info + agg1_dict["id"] + "/" + agg1_pc1_dict["id"] + "/" + agg1_pc1_eth0_dict["id"]
+    agg1_pc1_eth0_dict["selfRef"] = url_local_info + "interface/" + agg1_pc1_eth0_dict["id"]
     agg1_pc1_eth0_dict["urn"] = "urn=404-ig+pc1+eth0+urn"
     agg1_pc1_eth0_dict["ts"] = str(int(time.time()*1000000))
     agg1_pc1_eth0_dict["role"] = "control"

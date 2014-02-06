@@ -42,39 +42,55 @@ def info():
 
 
 @app.route('/info/aggregate/<agg_id>', methods = ['GET'])
-def info_aggregate_args(agg_id): # gets aggregate info
+def info_aggregate_args(agg_id): 
     print "info_agg_args(",agg_id,")"
     table_str = "aggregate"
     node_self_refs = []
-
-
-    agg_info = query_handler.get_object_info(con, table_str, agg_id)
-
-    nodes = query_handler.get_agg_nodes(con, agg_id)
     
-    for node_id in nodes:
-        node_self_refs.append(query_handler.get_self_ref(con, "node", node_id))
+    agg_info = query_handler.get_object_info(con, table_str, agg_id)
+    
+    if agg_info != None:
+        nodes = query_handler.get_agg_nodes(con, agg_id)
+    
+        for node_id in nodes:
+            node_self_refs.append(query_handler.get_self_ref(con, "node", node_id))
+        # repeat for other resources at aggregate
 
-    # repeat for other resources at aggregate
-    return jp.json_info(table_str, agg_info, node_self_refs)
+        return jp.json_info(table_str, agg_info, node_self_refs)
 
+    else:
+        return "aggregate not found"
 
-@app.route('/info/aggregate/<agg_id>/<node_id>', methods = ['GET'])
-def info_node_args(agg_id, node_id): # gets node info
-    print "info_node_args(",agg_id,",",node_id,")"
+@app.route('/info/node/<node_id>', methods = ['GET'])
+def info_node_args(node_id): 
+    print "info_node_args(",node_id,")"
+    table_str = "node"
+    iface_self_refs = []
+    node_info = query_handler.get_object_info(con, table_str, node_id)
+   
+    if node_info != None:
+        ifaces = query_handler.get_node_ifaces(con, node_id)
+    
+        for iface_id in ifaces:
+            iface_self_refs.append(query_handler.get_self_ref(con, "interface", node_id))
+        # repeat for other resources at aggregate
 
+        return jp.json_info(table_str, node_info, iface_self_refs)
+
+    else:
+        return "node not found"
     # query database for node_id at agg_id gives node info, interface existence
 
     # form json response
 
     # already formed
     
-    return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
+    #return json.dumps(json.load(open("../schema/examples/node/node_resp.json")))
 
 
-@app.route('/info/aggregate/<agg_id>/<node_id>/<interface_id>', methods = ['GET'])
+@app.route('/info/interface/<interface_id>', methods = ['GET'])
 def info_interface_args(agg_id, node_id, interface_id): # gets interface info
-    print "info_interface_args(",agg_id,",",interface_id,")"
+    print "info_interface_args(",interface_id,")"
 
     # query database for port_id at node_id gives node info
 

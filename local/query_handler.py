@@ -2,6 +2,8 @@
 
 import psycopg2
 
+# TODO find cursor not closed.  probably in exceptions
+
 def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
     cur = con.cursor()
     q_res = None;
@@ -46,12 +48,30 @@ def get_agg_nodes(con, agg_id_str):
 
     return res
 
-def get_object_info(con, table_str, res_id_str):
+def get_node_ifaces(con, node_id_str):
+    cur = con.cursor()
+    res = [];
+
+    try:
+        cur.execute("select distinct interface from node  where id = '" + node_id_str + "'")
+        q_res = cur.fetchall()
+        q_res = q_res[0] # removes outer garbage
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
+
+    except Exception, e:
+        print e.pgerror
+
+    cur.close()
+
+    return res
+
+def get_object_info(con, table_str, obj_id):
     cur = con.cursor()
     res = None;
 
     try:
-        cur.execute("select * from " + table_str + " where id = '" + res_id_str + "' order by ts desc limit 1")
+        cur.execute("select * from " + table_str + " where id = '" + obj_id + "' order by ts desc limit 1")
         res = cur.fetchone()
        
     except Exception, e:
