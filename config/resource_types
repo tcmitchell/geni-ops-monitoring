@@ -1,5 +1,5 @@
 {
-"aggregate_id": [
+"aggregate": [
 		 ["schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -8,17 +8,18 @@
 		 ["nodes","varchar"]
                 ]
 ,
-"node_id": [
+"node": [
 		 ["schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["interface","varchar"],
-		 ["mem_total_kb","int8"]
+		 ["mem_total_kb","int8"],
+		 ["interfaces","varchar"]
+
            ]
 ,
-"interface_id": [
+"interface": [
 		 ["schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
