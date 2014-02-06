@@ -1,6 +1,6 @@
 {
 "aggregate": [
-		 ["schema", "varchar"],
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
@@ -9,7 +9,7 @@
                 ]
 ,
 "node": [
-		 ["schema", "varchar"],
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
@@ -20,7 +20,7 @@
            ]
 ,
 "interface": [
-		 ["schema", "varchar"],
+		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
