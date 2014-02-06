@@ -7,14 +7,18 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, con, db_templates, event_types):
+    def __init__(self, con, db_templates, event_types, resource_types):
         self.con = con
-        self.schema_dict = self.create_schema_dict(db_templates, event_types)
+        self.schema_dict = self.create_schema_dict(db_templates, event_types, resource_types)
         print "Scema loaded:" 
         pprint(self.schema_dict)
 
-    def create_schema_dict(self, db_templates, event_types):
+    def create_schema_dict(self, db_templates, event_types, resource_types):
         schema_dict = {}
+
+        if (len(dict(event_types.items() + resource_types.items())) != len(event_types) + len(resource_types)):
+            print "Error: table namespace collision"
+            return None
 
         for ev_t in event_types.keys():
             
@@ -24,6 +28,9 @@ class TableManager:
             # create a new list for the schema dictionary
             # value column type is specified in event types file
             schema_dict[ev_t] = db_templates[temp_t] + [["v",event_types[ev_t]["v_col_type"]]]
+
+        for res_t in resource_types.keys():
+            schema_dict[res_t] = resource_types[res_t]
 
         return schema_dict
 
@@ -135,10 +142,11 @@ def main():
 
     db_templates = json.load(open("../../config/db_templates"))
     event_types = json.load(open("../../config/event_types"))
+    resource_types = json.load(open("../../config/resource_types"))
 
     # to have a table for all event types for local store or
     # aggregator to have a table for all event types
-    table_str_arr = event_types.keys()
+    table_str_arr = event_types.keys() + resource_types.keys()
     #print table_str_arr
 
     # to pass in event types to create subset of all event types
@@ -147,7 +155,7 @@ def main():
     db_con_str = "dbname=local user=rirwin"
     con = psycopg2.connect(db_con_str);
     
-    tm = TableManager(con, db_templates, event_types)
+    tm = TableManager(con, db_templates, event_types, resource_types)
     
     tm.drop_tables(table_str_arr)
     tm.establish_tables(table_str_arr)

@@ -24,6 +24,12 @@ from pprint import pprint
 # aggregator learns of gpo-ig and queries for each domain/aggregate info
 #
 # aggregator goes to each url <local url>/info/aggregate/<agg_id>
+aggregate_urls = {}
+aggregate_urls["gpo-ig"] = "http://127.0.0.1:5000/info/aggregate/gpo-ig"
+
+print json.load(urllib2.urlopen(aggregate_urls["gpo-ig"]))
+#print json.load(urllib2.urlopen("http://127.0.0.1:5000/info/aggregate/gpo-ig-should-fail"))
+
 #
 #
 # local responds with nodes (incl. href since talking about physical resources)
@@ -68,15 +74,7 @@ External checker of port to port tests:
 (src_domain_id, src_node_id, src_port_id, dst_domain_id, dst_node_id, dst_port_id, ts, v)
 '''
 
-url_dict = {}
-url_dict["gpo-ig"] = {}
 
-# retrieved from local store
-url_dict["gpo-ig"]["info"] = "http://127.0.0.1:5000/info/aggregate/gpo-ig" 
-
-info = json.load(urllib2.urlopen(url_dict["gpo-ig"]["info"]))
-
-pprint(info)
 
 
 '''

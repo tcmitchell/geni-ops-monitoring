@@ -1,0 +1,34 @@
+{
+"aggregate_id": [
+		 ["schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["nodes","varchar"]
+                ]
+,
+"node_id": [
+		 ["schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["interface","varchar"],
+		 ["mem_total_kb","int8"]
+           ]
+,
+"interface_id": [
+		 ["schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["role","varchar"],
+		 ["max_bps","int8"],
+		 ["max_pps","int8"],
+		 ["mac_addr","macaddr"],
+		 ["ip_addr","cidr"]
+           ]
+
+}
