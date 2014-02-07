@@ -13,7 +13,7 @@ def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
         q_res = cur.fetchone()
         r_stat = 0
     except Exception, e:
-        q_res = e.pgerror
+        q_res = e
         r_stat = 500
 
     cur.close()
@@ -32,7 +32,7 @@ def get_agg_nodes(con, agg_id_str):
             res.append(q_res[res_i])
 
     except Exception, e:
-        print e.pgerror
+        print e
 
     cur.close()
 
@@ -50,7 +50,8 @@ def get_agg_slivers(con, agg_id_str):
             res.append(q_res[res_i])
 
     except Exception, e:
-        print e.pgerror
+        print e
+
 
     cur.close()
 
@@ -68,7 +69,7 @@ def get_node_ifaces(con, node_id_str):
             res.append(q_res[res_i])
 
     except Exception, e:
-        print e.pgerror
+        print e
 
     cur.close()
 
@@ -83,7 +84,7 @@ def get_object_info(con, table_str, obj_id):
         res = cur.fetchone()
        
     except Exception, e:
-        print e.pgerror
+        print e
     
     cur.close()
 
@@ -106,7 +107,7 @@ def get_refs(con, table_str, resource_id):
         refs = [self_ref, urn] # two queries avoids regex split with ,
 
     except Exception, e:
-        print e.pgerror
+        print e
     
     cur.close()
     return refs
@@ -121,7 +122,7 @@ def select_query(con, table, where_filter="", order_by_filter = "", limit_filter
         q_res = cur.fetchall()
         r_stat = 0
     except Exception, e:
-        q_res = e.pgerror
+        q_res = e
         r_stat = 500
     
     cur.close()

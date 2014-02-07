@@ -92,10 +92,8 @@ def info_insert(con, table_str, row_arr):
     con.commit()
     cur.close()
 
-def main():
 
-    (num_ins, per_sec) = arg_parser(sys.argv)
-
+def generate_and_insert_config_data(data_schema, info_schema):
     # 404 is not found and the area code in atlanta #TheGoalIsGEC19
     aggregate_id="404-ig" 
     node_id="404-ig-pc1"
@@ -104,9 +102,7 @@ def main():
     data_table_str_arr = [table_str]
     info_table_str_arr = ["aggregate","resource","port"]
 
-    # For table manager
-    data_schema = json.load(open("../config/data_schema"))
-    info_schema = json.load(open("../config/info_schema"))
+    # For table manager    
     db_con_str = "dbname=local user=rirwin";
     con = psycopg2.connect(db_con_str);
 
@@ -137,6 +133,13 @@ def main():
     resource1.append(str(int(time.time()*1000000)))
     resource1.append(str(2*1000000)) # mem_total_kb
 
+    sliver1 = []
+    sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
+    sliver1.append("404-ig-slv1")
+    sliver1.append(url_local_info + "sliver/" + sliver1[1])
+    sliver1.append("urn=404-ig+slv1+urn")
+    sliver1.append(str(int(time.time()*1000000)))
+
     port1 = []
     port1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
     port1.append("404-ig-pc1:eth0")
@@ -156,9 +159,9 @@ def main():
     aggres1.append(url_local_info + "node/" + aggres1[0])
 
     aggsliv1 = []
-    aggsliv1.append("404-ig-pc1")
+    aggsliv1.append("404-ig-slv1")
     aggsliv1.append("404-ig")
-    aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
+    aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-slv1")
     aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
                  
     resport1 = []
@@ -169,10 +172,29 @@ def main():
 
     info_insert(con, "aggregate", agg1)
     info_insert(con, "resource", resource1)
+    info_insert(con, "sliver", sliver1)
     info_insert(con, "port", port1)
     info_insert(con, "aggregate_resource",aggres1)
     info_insert(con, "resource_port", resport1)
     info_insert(con, "aggregate_sliver", aggsliv1)
+
+def main():
+
+    (num_ins, per_sec) = arg_parser(sys.argv)
+
+    # 404 is not found and the area code in atlanta #TheGoalIsGEC19
+    aggregate_id="404-ig" 
+    node_id="404-ig-pc1"
+    table_str = "mem_used"
+
+    data_table_str_arr = [table_str]
+    info_table_str_arr = ["aggregate","resource","port"]
+
+    db_con_str = "dbname=local user=rirwin";
+    con = psycopg2.connect(db_con_str);
+    data_schema = json.load(open("../config/data_schema"))
+    info_schema = json.load(open("../config/info_schema"))
+    tm = table_manager.TableManager(con, data_schema, info_schema)
 
     ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, data_table_str_arr, info_table_str_arr)
     

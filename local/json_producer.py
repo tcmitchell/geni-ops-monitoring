@@ -18,11 +18,13 @@ class JsonProducer:
         for col_i in range(len(schema)):
             json_dict[schema[col_i][0]] = info_row[col_i]
             
-        if len(res_refs) > 0:
+        print res_refs, len(res_refs)
+        if len(res_refs) > 0 and res_refs[0] != None:
             json_dict["resources"] = []
             for res_ref in res_refs:
                 json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
-        if len(slv_refs) > 0:
+
+        if len(slv_refs) > 0 and slv_refs[0] != None:
             json_dict["slivers"] = []
             for slv_ref in slv_refs:
                 json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  

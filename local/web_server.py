@@ -19,7 +19,7 @@ def extract_ts_filters(ts_filters):
         ts_typ = ts_filter.split('=')[0]
         ts_val = int(ts_filter.split('=')[1])
         if ts_typ == 'gte':
-            ts_gte = ts_val
+            ts_gte = ts_val 
         elif ts_typ == 'lt':
             ts_lt = ts_val
     
@@ -49,19 +49,18 @@ def info_aggregate_args(agg_id):
     slv_refs = []
     
     agg_info = query_handler.get_object_info(con, table_str, agg_id)
-    
     if agg_info != None:
 
         resources = query_handler.get_agg_nodes(con, agg_id)
         for res_id in resources:
             res_refs.append(query_handler.get_refs(con, "resource", res_id))
 
-        #slivers = query_handler.get_agg_slivers(con, agg_id)
-        #for slv_id in slivers:
-        #    slv_refs.append(query_handler.get_refs(con, "sliver", slv_id))
+        slivers = query_handler.get_agg_slivers(con, agg_id)
+        print "slivers",slivers
+        for slv_id in slivers:
+            slv_refs.append(query_handler.get_refs(con, "sliver", slv_id))
 
-
-        return jp.json_agg_info(table_str, agg_info, res_refs)
+        return jp.json_agg_info(table_str, agg_info, res_refs, slv_refs)
 
     else:
         return "aggregate not found"
@@ -85,8 +84,6 @@ def info_node_args(node_id):
     else:
         return "node not found"
     
-
-
 @app.route('/info/interface/<interface_id>', methods = ['GET'])
 def info_interface_args(interface_id): # gets interface info
     print "info_interface_args(",interface_id,")"

@@ -5,8 +5,7 @@
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["measRef","varchar"],
-	         ["aggregate_type","varchar"]
+		 ["measRef","varchar"]
           ]
 ,
 "resource": [
@@ -16,6 +15,14 @@
 		 ["urn","varchar"],
 		 ["ts","int8"],
 		 ["mem_total_kb","int8"]
+          ]
+,
+"sliver": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"]
           ]
 ,
 "port": [
