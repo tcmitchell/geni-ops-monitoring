@@ -1,0 +1,51 @@
+{
+"aggregate": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["measRef","varchar"],
+		 ["resource_urn","varchar"],
+		 ["resource_href","varchar"],
+		 ["sliver_urn","varchar"],
+		 ["sliver_href","varchar"]
+          ]
+,
+"node": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["port_urn","varchar"],
+		 ["port_href","varchar"]
+          ]
+,
+"interface": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["address_type","varchar"],
+		 ["address_address","varchar"]
+          ]
+
+,
+"aggregate_properties": [
+	         ["num_slivers","int8"]
+             ]
+,
+"node_properties": [
+		 ["mem_total_kb","int8"],
+		 ["interfaces","varchar"]
+                 ]
+,
+"interface_properties": [
+		 ["role","varchar"],
+		 ["max_bps","int8"],
+		 ["max_pps","int8"],
+		 ["ip_addr","cidr"]
+                        ]
+}

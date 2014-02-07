@@ -1,0 +1,24 @@
+{
+"cpu_util":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float4"]
+             ]
+,
+"mem_used":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","int8"]
+             ]
+,
+"swap_free":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float4"]
+              ],
+"disk_part_max_used": [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float4"]
+             ]
+}
