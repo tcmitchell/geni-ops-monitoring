@@ -7,31 +7,24 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, con, db_templates, event_types, resource_types):
+    def __init__(self, con, data_schema, info_schema):
         self.con = con
-        self.schema_dict = self.create_schema_dict(db_templates, event_types, resource_types)
+        self.schema_dict = self.create_schema_dict(data_schema, info_schema)
         print "Schema loaded" 
         #pprint(self.schema_dict)
-        print 
 
-    def create_schema_dict(self, db_templates, event_types, resource_types):
+    def create_schema_dict(self, data_schema, info_schema):
         schema_dict = {}
 
-        if (len(dict(event_types.items() + resource_types.items())) != len(event_types) + len(resource_types)):
+        if (len(dict(data_schema.items() + info_schema.items())) != len(data_schema) + len(info_schema)):
             print "Error: table namespace collision"
             return None
 
-        for ev_t in event_types.keys():
-            
-            # gets template schema name for the event type
-            temp_t = event_types[ev_t]["db_template"]
+        for ds_k in data_schema.keys():
+            schema_dict[ds_k] = data_schema[ds_k]
 
-            # create a new list for the schema dictionary
-            # value column type is specified in event types file
-            schema_dict[ev_t] = db_templates[temp_t] + [["v",event_types[ev_t]["v_col_type"]]]
-
-        for res_t in resource_types.keys():
-            schema_dict[res_t] = resource_types[res_t]
+        for is_k in info_schema.keys():
+            schema_dict[is_k] = info_schema[is_k]
 
         return schema_dict
 
@@ -65,8 +58,6 @@ class TableManager:
 
     def establish_table(self, table_str):
 
-        #print table_str
-        #pprint(self.schema_dict[table_str])
         schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
         
         if self.table_exists(table_str):
@@ -106,7 +97,10 @@ class TableManager:
 
 def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("
+
         for col_i in range(len(table_schema_dict)):
+            print table_schema_dict[col_i][0]
+            print table_schema_dict[col_i][1]
             schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         
         # remove , and add )
@@ -144,14 +138,14 @@ def arg_parser(argv, dict_keys):
 
 def main():
 
-    db_templates = json.load(open("../../config/db_templates"))
-    event_types = json.load(open("../../config/event_types"))
-    resource_types = json.load(open("../../config/resource_types"))
+    info_schema = json.load(open("../../config/info_schema"))
+    data_schema = json.load(open("../../config/data_schema"))
 
     # to have a table for all event types for local store or
     # aggregator to have a table for all event types
-    table_str_arr = event_types.keys() + resource_types.keys()
-    #print table_str_arr
+    table_str_arr = info_schema.keys() + data_schema.keys()
+    
+    print table_str_arr
 
     # to pass in event types to create subset of all event types
     #(table_str_arr) = arg_parser(sys.argv, schema_dict.keys())
@@ -159,7 +153,7 @@ def main():
     db_con_str = "dbname=local user=rirwin"
     con = psycopg2.connect(db_con_str);
     
-    tm = TableManager(con, db_templates, event_types, resource_types)
+    tm = TableManager(con, data_schema, info_schema)
     
     tm.drop_tables(table_str_arr)
     tm.establish_tables(table_str_arr)

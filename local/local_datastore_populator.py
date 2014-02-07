@@ -126,6 +126,17 @@ def arg_parser(argv):
 
     return num_ins, per_sec
 
+def info_insert(con, table_str, row_arr):
+    val_str = "'"
+    for val in row_arr:
+        val_str += val + "','" # join won't do this
+    val_str = val_str[:-2] # remove last 2 of ','
+    cur = con.cursor()
+    print val_str
+    cur.execute("insert into " + table_str + " values (" + val_str + ")")
+    con.commit()
+    cur.close()
+
 def main():
 
     (num_ins, per_sec) = arg_parser(sys.argv)
@@ -139,84 +150,87 @@ def main():
     resource_table_str_arr = ["aggregate","node","interface"]
 
     # For table manager
-    db_templates = json.load(open("../config/db_templates"))
-    event_types = json.load(open("../config/event_types"))
-    resource_types = json.load(open("../config/resource_types"))
+    data_schema = json.load(open("../config/data_schema"))
+    info_schema = json.load(open("../config/info_schema"))
     db_con_str = "dbname=local user=rirwin";
     con = psycopg2.connect(db_con_str);
 
-    tm = table_manager.TableManager(con, db_templates, event_types, resource_types)
-    #tm.drop_tables(resource_types.keys())
-    #tm.establish_tables(resource_types.keys())
+    tm = table_manager.TableManager(con, data_schema, info_schema)
+    tm.drop_tables(data_schema.keys())
+    tm.drop_tables(info_schema.keys())
+    tm.establish_tables(data_schema.keys())
+    tm.establish_tables(info_schema.keys())
     # End table manager
 
     # Info about this local datastore populator
     url_local_info = "http://127.0.0.1:5000/info/"
+    url_local_data = "http://127.0.0.1:5000/data/"
 
     resource_arr = []
-    agg1_dict = {}
-    agg1_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/domain#"
-    agg1_dict["id"] = "404-ig"
-    agg1_dict["selfRef"] = url_local_info + "aggregate/" + agg1_dict["id"]
-    agg1_dict["urn"] = "urn=404-ig+urn"
-    agg1_dict["ts"] = str(int(time.time()*1000000))
-    agg1_dict["nodes"] = {}
+    agg1 = []
+    agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#")
+    agg1.append("404-ig")
+    agg1.append(url_local_info + "aggregate/" + agg1[0])
+    agg1.append("urn=404-ig+urn")
+    agg1.append(str(int(time.time()*1000000)))
+    agg1.append(url_local_data)
+
+    resource1 = []
+    resource1.append("http://unis.incntre.iu.edu/schema/20120709/resource#")
+    resource1.append("404-ig-pc1")
+    resource1.append(url_local_info + "resource/" + resource1[1])
+    resource1.append("urn=404-ig+pc1+urn")
+    resource1.append(str(int(time.time()*1000000)))
+    resource1.append(str(2*1000000)) # mem_total_kb
+
+    port1 = []
+    port1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+    port1.append("404-ig-pc1:eth0")
+    port1.append(url_local_info + "interface/" + port1[0])
+    port1.append("urn=404-ig+pc1+eth0+urn")
+    port1.append(str(int(time.time()*1000000)))
+    port1.append("ipv4")
+    port1.append("192.1.242.140")
+    port1.append("control")
+    port1.append(str(10000000)) #max bps
+    port1.append(str(1000000)) #max pps
+
+    aggres1 = []
+    aggres1.append("404-ig-pc1")
+    aggres1.append("404-ig")
+    aggres1.append("http://gpolab.bbn.com/404-ig-pc1")
+    aggres1.append(url_local_info + "node/" + aggres1[0])
+
+    aggsliv1 = []
+    aggsliv1.append("404-ig-pc1")
+    aggsliv1.append("404-ig")
+    aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
+    aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
+                 
+    resport1 = []
+    resport1.append("404-ig-pc1:eth0")
+    resport1.append("404-ig-pc1")
+    resport1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
+    resport1.append(url_local_info + "interface/" + resport1[0])
+
+    info_insert(con, "aggregate", agg1)
+    info_insert(con, "resource", resource1)
+    info_insert(con, "port", port1)
+    info_insert(con, "aggregate_resource",aggres1)
+    info_insert(con, "resource_port", resport1)
+    info_insert(con, "aggregate_sliver", aggsliv1)
+
+    #ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, event_table_str_arr, resource_table_str_arr, resource_arr)
     
-    agg1_pc1_dict = {}
-    agg1_pc1_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/node#"
-    agg1_pc1_dict["id"] = "pc1"
-    agg1_pc1_dict["selfRef"] = url_local_info + "node/" + agg1_pc1_dict["id"]
-    agg1_pc1_dict["urn"] = "urn=404-ig+pc1+urn"
-    agg1_pc1_dict["ts"] = str(int(time.time()*1000000))
-    agg1_pc1_dict["mem_total_kb"] = str(2*1000000)
-    agg1_pc1_dict["interfaces"] = {}
 
-    agg1_pc1_eth0_dict = {}
-    agg1_pc1_eth0_dict["$schema"] = "http://unis.incntre.iu.edu/schema/20120709/port#"
-    agg1_pc1_eth0_dict["id"] = "eth0"
-    agg1_pc1_eth0_dict["selfRef"] = url_local_info + "interface/" + agg1_pc1_eth0_dict["id"]
-    agg1_pc1_eth0_dict["urn"] = "urn=404-ig+pc1+eth0+urn"
-    agg1_pc1_eth0_dict["ts"] = str(int(time.time()*1000000))
-    agg1_pc1_eth0_dict["role"] = "control"
-    agg1_pc1_eth0_dict["max_bps"] = str(10000000)
-    agg1_pc1_eth0_dict["max_pps"] = str(1000000)
-    agg1_pc1_eth0_dict["mac_addr"] = "12:34:56:67:89:01"
-    agg1_pc1_eth0_dict["ip_addr"] = "192.1.1.101"
-
-    # insert other interfaces for pc1 here
-    # agg1_pc1_eth1_dict = {} ...
-    agg1_pc1_dict["interfaces"]["eth0"] = agg1_pc1_eth0_dict
-    
-    # Then add to agg1_pc1_dict
-    # agg1_pc1_dict["interfaces"]["eth1"] = agg1_pc1_eth1_dict
-
-    # pc1 is complete, add it to agg1_dict
-    agg1_dict["nodes"]["pc1"] = agg1_pc1_dict
-
-    # insert other nodes for aggregate 404-ig here
-    #agg1_pc2_dict = {} ...
-    
-    # insert interfaces to pc2 as above 
-    # (be careful with reusing dicts in python)
-    # agg1_pc2_dict["interfaces"]["eth1"] = agg1_pc2_eth1_dict
-
-    # insert node to agg1_dict
-    # agg1_dict["nodes"]["pc1"] = agg1_pc1_dict  
-
-    resource_arr.append(agg1_dict)
-
-    #pprint(resource_arr)
-
-    ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, event_table_str_arr, resource_table_str_arr, resource_arr)
-
-    ldp.update_resource_tables()
+    #ldp.update_resource_tables()
 
 
     #
     # TODO pass a dictionary and have it iterate through keys and pass
     # to this function
 
-    ldp.run_node_inserts("mem_used")
+    #ldp.run_node_inserts("mem_used")
         
     
     cur = con.cursor();
