@@ -17,71 +17,26 @@ import table_manager
 # TODO make class LocalStorePopulator for this class to inherit
 # Intent is for each table to have its own object getting data
 class LocalDatastorePopulator:
-    def __init__(self, con, aggregate_id, node_id, num_inserts, sleep_period_sec, table_manager, event_table_str_arr, resource_table_str_arr, resource_arr):
+    def __init__(self, con, aggregate_id, node_id, num_inserts, sleep_period_sec, table_manager, data_table_str_arr, info_table_str_arr):
         self.con = con;
         self.aggregate_id = aggregate_id
         self.node_id = node_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
-        self.event_table_str_arr = event_table_str_arr
-        self.resource_table_str_arr = resource_table_str_arr 
-        self.resource_arr = resource_arr
+        self.data_table_str_arr = data_table_str_arr
+        self.info_table_str_arr = info_table_str_arr 
         self.table_manager = table_manager
 
-        self.table_manager.establish_tables(event_table_str_arr)
-        self.table_manager.establish_tables(resource_table_str_arr) 
+        self.table_manager.establish_tables(data_table_str_arr)
+        self.table_manager.establish_tables(info_table_str_arr) 
    
-    def update_resource_tables(self):
-
-        agg_schema_arr = self.table_manager.schema_dict["aggregate"]
-        node_schema_arr = self.table_manager.schema_dict["node"]
-        iface_schema_arr = self.table_manager.schema_dict["interface"]
-        time_sec_epoch = int(time.time()*1000000)
-        cur = self.con.cursor()            
-        s = "','" # separator for all (incl numerics)
-        for agg_dict in self.resource_arr:
-
-            # insert each node to aggregate table
-            for node_key in agg_dict["nodes"]: 
-                node_dict = agg_dict["nodes"][node_key]
-                ins_str = "INSERT INTO aggregate VALUES ('"
-                # loop through each of agg schema, skip last bc it is a dict
-                for key_i in range(len(agg_schema_arr)-1):
-                    ins_str += agg_dict[agg_schema_arr[key_i][0]] + s
-                
-                ins_str += node_dict["id"] + "')"
-                cur.execute(ins_str)
-                self.con.commit()
-                
-                # insert each interface of node to node table
-                for iface_key in node_dict["interfaces"]:
-                    iface_dict = node_dict["interfaces"][iface_key]
-                    ins_str = "INSERT INTO node VALUES ('"
-                    for key_i in range(len(node_schema_arr)-1):
-                        ins_str += node_dict[node_schema_arr[key_i][0]] + s
-
-                    ins_str += iface_dict["id"] + "')"
-                    cur.execute(ins_str)
-                    self.con.commit()
-
-                    # insert each interface into interface table
-                    ins_str = "INSERT INTO interface VALUES ('" 
-                    for key_i in range(len(iface_schema_arr)):
-                        ins_str +=iface_dict[iface_schema_arr[key_i][0]] + s
-
-                    ins_str = ins_str[:-2] + ")" # remove last 2 of ',' add )
-                    cur.execute(ins_str)
-                    self.con.commit()
-                    
-        cur.close()
-
     def run_node_inserts(self, table_str):
 
         for i in range(self.num_inserts):
             time_sec_epoch = int(time.time()*1000000)
             percent_mem_used = get_data(table_str)
 
-            ins_str = "INSERT INTO " + table_str + " VALUES ('" + self.aggregate_id + "', '" + self.node_id + "'," + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
+            ins_str = "INSERT INTO " + table_str + " VALUES ('" + self.node_id + "'," + str(time_sec_epoch) + "," + str(percent_mem_used) + ");" 
             cur = self.con.cursor()            
             cur.execute(ins_str)
             self.con.commit()
@@ -143,11 +98,11 @@ def main():
 
     # 404 is not found and the area code in atlanta #TheGoalIsGEC19
     aggregate_id="404-ig" 
-    node_id="pc1"
+    node_id="404-ig-pc1"
     table_str = "mem_used"
 
-    event_table_str_arr = [table_str]
-    resource_table_str_arr = ["aggregate","node","interface"]
+    data_table_str_arr = [table_str]
+    info_table_str_arr = ["aggregate","resource","port"]
 
     # For table manager
     data_schema = json.load(open("../config/data_schema"))
@@ -166,11 +121,10 @@ def main():
     url_local_info = "http://127.0.0.1:5000/info/"
     url_local_data = "http://127.0.0.1:5000/data/"
 
-    resource_arr = []
     agg1 = []
     agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#")
     agg1.append("404-ig")
-    agg1.append(url_local_info + "aggregate/" + agg1[0])
+    agg1.append(url_local_info + "aggregate/" + agg1[1])
     agg1.append("urn=404-ig+urn")
     agg1.append(str(int(time.time()*1000000)))
     agg1.append(url_local_data)
@@ -186,7 +140,7 @@ def main():
     port1 = []
     port1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
     port1.append("404-ig-pc1:eth0")
-    port1.append(url_local_info + "interface/" + port1[0])
+    port1.append(url_local_info + "interface/" + port1[1])
     port1.append("urn=404-ig+pc1+eth0+urn")
     port1.append(str(int(time.time()*1000000)))
     port1.append("ipv4")
@@ -220,7 +174,7 @@ def main():
     info_insert(con, "resource_port", resport1)
     info_insert(con, "aggregate_sliver", aggsliv1)
 
-    #ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, event_table_str_arr, resource_table_str_arr, resource_arr)
+    ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, data_table_str_arr, info_table_str_arr)
     
 
     #ldp.update_resource_tables()
@@ -230,7 +184,7 @@ def main():
     # TODO pass a dictionary and have it iterate through keys and pass
     # to this function
 
-    #ldp.run_node_inserts("mem_used")
+    ldp.run_node_inserts("mem_used")
         
     
     cur = con.cursor();

@@ -53,7 +53,7 @@ def info_aggregate_args(agg_id):
         nodes = query_handler.get_agg_nodes(con, agg_id)
     
         for node_id in nodes:
-            node_self_refs.append(query_handler.get_self_ref(con, "node", node_id))
+            node_self_refs.append(query_handler.get_self_ref(con, "resource", node_id))
         # repeat for other resources at aggregate
 
         return jp.json_info(table_str, agg_info, node_self_refs)
@@ -72,7 +72,7 @@ def info_node_args(node_id):
         ifaces = query_handler.get_node_ifaces(con, node_id)
         print ifaces
         for iface_id in ifaces:
-            iface_self_refs.append(query_handler.get_self_ref(con, "interface", iface_id))
+            iface_self_refs.append(query_handler.get_self_ref(con, "port", iface_id))
         # repeat for other resources at node
 
         return jp.json_info(table_str, node_info, [], iface_self_refs)
@@ -134,11 +134,10 @@ if __name__ == '__main__':
     
 
     # Dense lines to get schema_dict
-    db_templates = json.load(open("../config/db_templates"))
-    event_types = json.load(open("../config/event_types"))
-    resource_types = json.load(open("../config/resource_types"))
+    info_schema = json.load(open("../config/info_schema"))
+    data_schema = json.load(open("../config/data_schema"))
 
-    tm = table_manager.TableManager(con, db_templates, event_types, resource_types)
+    tm = table_manager.TableManager(con, info_schema, data_schema)
     jp = json_producer.JsonProducer(tm.schema_dict);
 
     app.run(debug = True)

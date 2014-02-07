@@ -47,7 +47,7 @@
 ,
 "resource_port": [
 	         ["id","varchar"],
-		 ["node_id","varchar"],
+		 ["resource_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	  ]

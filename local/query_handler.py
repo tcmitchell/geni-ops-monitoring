@@ -25,7 +25,7 @@ def get_agg_nodes(con, agg_id_str):
     res = [];
 
     try:
-        cur.execute("select distinct nodes from aggregate  where id = '" + agg_id_str + "'")
+        cur.execute("select distinct id from aggregate_resource where aggregate_id = '" + agg_id_str + "'") 
         q_res = cur.fetchall()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
@@ -43,7 +43,7 @@ def get_node_ifaces(con, node_id_str):
     res = [];
 
     try:
-        cur.execute("select distinct interfaces from node  where id = '" + node_id_str + "'")
+        cur.execute("select distinct id from resource_port  where id = '" + node_id_str + "'")
         q_res = cur.fetchall()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
@@ -76,7 +76,7 @@ def get_self_ref(con, table_str, resource_id):
     res = None;
 
     try:
-        print "select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1"
+        #print "select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1"
         cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
         res = q_res[0] # removes outer garbage
