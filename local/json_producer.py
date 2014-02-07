@@ -45,6 +45,22 @@ class JsonProducer:
 
         return json.dumps(json_dict)
    
+    # TODO merge with above if possible (probably not because of address)
+    def json_port_info(self, port_id, info_row):
+
+        schema = self._schema_dict["port"]
+        json_dict = {}
+        for col_i in range(len(schema)):
+            if schema[col_i][0] == "address_address":
+                addr = info_row[col_i]
+            elif schema[col_i][0] == "address_type":
+                addr_type = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
+    
+        json_dict["address"] = {"address":addr,"type":addr_type}
+
+        return json.dumps(json_dict)
 
     def psql_to_json_data(self, q_res, table_str):#TODO redo for UNIS
 

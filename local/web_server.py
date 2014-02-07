@@ -65,9 +65,9 @@ def info_aggregate_args(agg_id):
     else:
         return "aggregate not found"
 
-@app.route('/info/resource/<res_id>', methods = ['GET'])
-def info_resource_args(res_id): 
-    print "info_resource_args(",res_id,")"
+@app.route('/info/node/<res_id>', methods = ['GET'])
+def info_node_args(res_id): 
+    print "info_node_args(",res_id,")"
     table_str = "resource"
     port_refs = []
 
@@ -83,17 +83,16 @@ def info_resource_args(res_id):
     else:
         return "resource not found"
     
-@app.route('/info/interface/<interface_id>', methods = ['GET'])
-def info_interface_args(interface_id): # gets interface info
-    print "info_interface_args(",interface_id,")"
-    table_str = "interface"
-    iface_info = query_handler.get_object_info(con, table_str, interface_id)
+@app.route('/info/interface/<port_id>', methods = ['GET'])
+def info_interface_args(port_id): # gets interface info
+    print "info_interface_args(",port_id,")"
+    table_str = "port"
+    port_info = query_handler.get_object_info(con, table_str, port_id)
 
-    if iface_info != None:
-        return jp.json_info(table_str, iface_info)
-
-    return json.dumps(json.load(open("../schema/examples/interface/iface_resp1.json")))
-
+    if port_info != None:
+        return jp.json_port_info(table_str, port_info)
+    else:
+        return "port not found"
 
 
 
