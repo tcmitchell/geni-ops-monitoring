@@ -11,23 +11,21 @@ class JsonProducer:
         json_dict = self.psql_to_json_data(q_res, table_str)
         return json_dict
 
-    def json_info(self, table_str, info_row, node_self_refs = [], iface_self_refs = []):
+    def json_agg_info(self, agg_id, info_row, res_refs =[], slv_refs = []):
         print "json_info"
-        schema = self._schema_dict[table_str]
+        schema = self._schema_dict["aggregate"]
         json_dict = {}
         for col_i in range(len(schema)):
             json_dict[schema[col_i][0]] = info_row[col_i]
-
-        if len(node_self_refs) > 0:
-            json_dict["nodes"] = []
-            for node_self_ref in node_self_refs:
-                json_dict["nodes"].append({"href":node_self_ref})
-
-        if len(iface_self_refs) > 0:
-            json_dict["interfaces"] = []
-            for iface_self_ref in iface_self_refs:
-                json_dict["interfaces"].append({"href":iface_self_ref})
-
+            
+        if len(res_refs) > 0:
+            json_dict["resources"] = []
+            for res_ref in res_refs:
+                json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+        if len(slv_refs) > 0:
+            json_dict["slivers"] = []
+            for slv_ref in slv_refs:
+                json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
         return json.dumps(json_dict)
    
 

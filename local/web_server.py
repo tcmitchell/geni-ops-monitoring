@@ -45,18 +45,23 @@ def info():
 def info_aggregate_args(agg_id): 
     print "info_agg_args(",agg_id,")"
     table_str = "aggregate"
-    node_self_refs = []
+    res_refs = []    
+    slv_refs = []
     
     agg_info = query_handler.get_object_info(con, table_str, agg_id)
     
     if agg_info != None:
-        nodes = query_handler.get_agg_nodes(con, agg_id)
-    
-        for node_id in nodes:
-            node_self_refs.append(query_handler.get_self_ref(con, "resource", node_id))
-        # repeat for other resources at aggregate
 
-        return jp.json_info(table_str, agg_info, node_self_refs)
+        resources = query_handler.get_agg_nodes(con, agg_id)
+        for res_id in resources:
+            res_refs.append(query_handler.get_refs(con, "resource", res_id))
+
+        #slivers = query_handler.get_agg_slivers(con, agg_id)
+        #for slv_id in slivers:
+        #    slv_refs.append(query_handler.get_refs(con, "sliver", slv_id))
+
+
+        return jp.json_agg_info(table_str, agg_info, res_refs)
 
     else:
         return "aggregate not found"
