@@ -6,46 +6,49 @@
 		 ["urn","varchar"],
 		 ["ts","int8"],
 		 ["measRef","varchar"],
-		 ["resource_urn","varchar"],
-		 ["resource_href","varchar"],
-		 ["sliver_urn","varchar"],
-		 ["sliver_href","varchar"]
+	         ["aggregate_type","varchar"]
           ]
 ,
-"node": [
+"resource": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["port_urn","varchar"],
-		 ["port_href","varchar"]
+		 ["mem_total_kb","int8"]
           ]
 ,
-"interface": [
+"port": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
 		 ["address_type","varchar"],
-		 ["address_address","varchar"]
-          ]
-
-,
-"aggregate_properties": [
-	         ["num_slivers","int8"]
-             ]
-,
-"node_properties": [
-		 ["mem_total_kb","int8"],
-		 ["interfaces","varchar"]
-                 ]
-,
-"interface_properties": [
+		 ["address_address","varchar"],
 		 ["role","varchar"],
 		 ["max_bps","int8"],
-		 ["max_pps","int8"],
-		 ["ip_addr","cidr"]
-                        ]
+		 ["max_pps","int8"]
+          ]
+,
+"aggregate_resource" : [
+	         ["id","varchar"],
+		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
+,
+"aggregate_sliver" : [
+	         ["id","varchar"],
+		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	 ]
+,
+"resource_port": [
+	         ["id","varchar"],
+		 ["node_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
 }
