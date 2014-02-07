@@ -57,12 +57,12 @@ def get_agg_slivers(con, agg_id_str):
 
     return res
 
-def get_node_ifaces(con, node_id_str):
+def get_res_ports(con, res_id_str):
     cur = con.cursor()
     res = [];
 
     try:
-        cur.execute("select distinct id from resource_port  where id = '" + node_id_str + "'")
+        cur.execute("select distinct id from resource_port  where resource_id = '" + res_id_str + "'")
         q_res = cur.fetchall()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):

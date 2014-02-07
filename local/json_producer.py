@@ -12,13 +12,12 @@ class JsonProducer:
         return json_dict
 
     def json_agg_info(self, agg_id, info_row, res_refs =[], slv_refs = []):
-        print "json_info"
+
         schema = self._schema_dict["aggregate"]
         json_dict = {}
         for col_i in range(len(schema)):
             json_dict[schema[col_i][0]] = info_row[col_i]
             
-        print res_refs, len(res_refs)
         if len(res_refs) > 0 and res_refs[0] != None:
             json_dict["resources"] = []
             for res_ref in res_refs:
@@ -28,6 +27,22 @@ class JsonProducer:
             json_dict["slivers"] = []
             for slv_ref in slv_refs:
                 json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
+        return json.dumps(json_dict)
+   
+
+    # TODO merge with above if possible
+    def json_res_info(self, resource_id, info_row, port_refs =[]):
+
+        schema = self._schema_dict["resource"]
+        json_dict = {}
+        for col_i in range(len(schema)):
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+        if len(port_refs) > 0 and port_refs[0] != None:
+            json_dict["ports"] = []
+            for port_ref in port_refs:
+                json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
+
         return json.dumps(json_dict)
    
 

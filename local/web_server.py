@@ -65,24 +65,23 @@ def info_aggregate_args(agg_id):
     else:
         return "aggregate not found"
 
-@app.route('/info/node/<node_id>', methods = ['GET'])
-def info_node_args(node_id): 
-    print "info_node_args(",node_id,")"
-    table_str = "node"
-    iface_self_refs = []
-    node_info = query_handler.get_object_info(con, table_str, node_id)
-   
-    if node_info != None:
-        ifaces = query_handler.get_node_ifaces(con, node_id)
-        print ifaces
-        for iface_id in ifaces:
-            iface_self_refs.append(query_handler.get_self_ref(con, "port", iface_id))
-        # repeat for other resources at node
+@app.route('/info/resource/<res_id>', methods = ['GET'])
+def info_resource_args(res_id): 
+    print "info_resource_args(",res_id,")"
+    table_str = "resource"
+    port_refs = []
 
-        return jp.json_info(table_str, node_info, [], iface_self_refs)
+    res_info = query_handler.get_object_info(con, table_str, res_id)
+    if res_info != None:
+
+        ports = query_handler.get_res_ports(con, res_id)
+        for port_id in ports:
+            port_refs.append(query_handler.get_refs(con, "port", port_id))
+
+        return jp.json_res_info(table_str, res_info, port_refs)
 
     else:
-        return "node not found"
+        return "resource not found"
     
 @app.route('/info/interface/<interface_id>', methods = ['GET'])
 def info_interface_args(interface_id): # gets interface info

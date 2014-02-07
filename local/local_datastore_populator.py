@@ -126,7 +126,7 @@ def generate_and_insert_config_data(data_schema, info_schema):
     agg1.append(url_local_data)
 
     resource1 = []
-    resource1.append("http://unis.incntre.iu.edu/schema/20120709/resource#")
+    resource1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
     resource1.append("404-ig-pc1")
     resource1.append(url_local_info + "resource/" + resource1[1])
     resource1.append("urn=404-ig+pc1+urn")
