@@ -136,7 +136,7 @@ def get_event_data(con, event_type, begin_ts, end_ts, obj_id):
         q_res = cur.fetchall()
         res = []
         for q_res_i in xrange(len(q_res)):
-            q_res_i = q_res[0][0][1:-1].split(',')
+            q_res_i = q_res[q_res_i][0][1:-1].split(',')
             res.append({"ts":q_res_i[0],"v":q_res_i[1]})
 
     except Exception, e:
