@@ -143,7 +143,7 @@ def generate_and_insert_config_data(data_schema, info_schema):
     port1 = []
     port1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
     port1.append("404-ig-pc1:eth0")
-    port1.append(url_local_info + "port/" + port1[1])
+    port1.append(url_local_info + "interface/" + port1[1])
     port1.append("urn=404-ig+pc1+eth0+urn")
     port1.append(str(int(time.time()*1000000)))
     port1.append("ipv4")

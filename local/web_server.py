@@ -131,13 +131,12 @@ def data():
 if __name__ == '__main__':
 
     con = psycopg2.connect("dbname=local user=rirwin");
-    
 
     # Dense lines to get schema_dict
     info_schema = json.load(open("../config/info_schema"))
     data_schema = json.load(open("../config/data_schema"))
 
-    #tm = table_manager.TableManager(con, info_schema, data_schema)
+    tm = table_manager.TableManager(con, info_schema, data_schema)
     jp = json_producer.JsonProducer(tm.schema_dict);
 
     app.run(debug = True)
