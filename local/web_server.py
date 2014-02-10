@@ -23,7 +23,7 @@ def extract_ts_filters(ts_filters):
         elif ts_typ == 'lt':
             ts_lt = ts_val
     
-    return (ts_lt, ts_gte)
+    return (str(ts_lt), str(ts_gte))
 
 '''
 # fix json import
@@ -100,32 +100,32 @@ def info_interface_args(port_id): # gets interface info
 def data(): 
 
     # gets event type (i.e., memory_util)
-    event_type = request.args.get('event_type', None)
+    event_type = request.args.get('eventType', None)
     if event_type == None:
-        return "provide an event_type"
-
+        return "provide an eventType"
+   
     # get all timestamp filters
     ts = request.args.get('ts', 0)
-
     ts_filters = request.args.getlist('ts')
-
     (ts_lt, ts_gte) = extract_ts_filters(ts_filters)
+
+    # handle if 
+    res_id = request.args.get('resource_id', 0)
 
     if ts_gte <= 0:
         print "get all " + event_type + ", recommended to use ?ts= filter next query"
     else:
         print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    where_filter = "where ts >= " + str(ts_gte) + " and ts < " + str(ts_lt)
-    (r_stat, q_res) = query_handler.select_query(con,event_type,where_filter);
+    tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt);
 
-    print q_res
-    if (r_stat == 0):
+
+    if (tsdata):
         # form json
-        j = jp.psql_to_json(q_res, event_type)
+        j = jp.event_resource_data_to_json(tsdata, event_type, res_id)
         return j
     else:
-        return str(r_stat) + ": " + q_res
+        return "No results"
 
 
 if __name__ == '__main__':

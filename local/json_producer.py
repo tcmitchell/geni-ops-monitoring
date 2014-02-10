@@ -62,35 +62,19 @@ class JsonProducer:
 
         return json.dumps(json_dict)
 
-    def psql_to_json_data(self, q_res, table_str):#TODO redo for UNIS
 
-        schema = self._schema_dict[table_str]
-        num_cols = len(schema)
-        num_rows = len(q_res)
+    def event_resource_data_to_json(self, tsdata, event_type, res_id):
 
-        # enumerate columns
-        key_cols = self.get_data_groupings(schema)
-        items_dict = {}
-        num_cols_not_tv = len(key_cols[0])
+        schema = self._schema_dict[event_type]
 
-        # pass through results to pick up items, TODO redo for UNIS
-        for row_i in range(num_rows):
-            row = q_res[row_i]
-            group_key =  repr(row[0:num_cols_not_tv])
-            if group_key not in items_dict:
-                items_dict[group_key] = {}
-                for col_i in range (num_cols-2): # last 2 are time & value
-                    items_dict[group_key][schema[col_i][0]] = row[col_i]
-                items_dict[group_key]["measurements"] = []
-            items_dict[group_key]["measurements"].append({schema[-1][0]:row[-1],schema[-2][0]:row[-2]})
-        
         json_dict = {}
-        json_dict["response_type"] = "data_poll"
-        json_dict["data_type"] = table_str
-        json_dict["results"] = []
+        json_dict["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
+        json_dict["id"] = res_id + ":" + event_type
+        json_dict["subject"] = res_id # TODO add selfref
+        json_dict["eventType"] = event_type
+        json_dict["units"] = "units" # TODO get units
+        json_dict["tsdata"] = tsdata
 
-        for item in items_dict:
-            json_dict["results"].append(items_dict[item])
         return json.dumps(json_dict)
             
     # gets every combination of columns that are not 'time' or 'value'

@@ -125,24 +125,27 @@ def get_refs(con, table_str, resource_id):
 
     return refs
 
-def select_query(con, table, where_filter="", order_by_filter = "", limit_filter = "LIMIT 10000"):
+def get_event_data(con, event_type, begin_ts, end_ts):
     cur = con.cursor()
     print "cursor open"
-    q_res = None;
-    r_stat = None;
-
+    res = None;
     try:
-        cur.execute("select * from " + table + " " + where_filter + " " + order_by_filter + " " + limit_filter)
+        cur.execute("select (ts,v) from " + event_type + " where ts >= " + begin_ts + " and ts < " + end_ts)
         q_res = cur.fetchall()
-        r_stat = 0
+        res = []
+        for q_res_i in xrange(len(q_res)):
+            q_res_i = q_res[0][0][1:-1].split(',')
+            res.append({"ts":q_res_i[0],"v":q_res_i[1]})
+
     except Exception, e:
-        q_res = e
-        r_stat = 500
+        print e
+
     
     cur.close()
     print "cursor closed"
 
-    return (r_stat, q_res)
+    return res
+
 
 def main():
     con = psycopg2.connect("dbname=local user=rirwin");
