@@ -65,35 +65,34 @@ def info_aggregate_args(agg_id):
     else:
         return "aggregate not found"
 
-@app.route('/info/node/<res_id>', methods = ['GET'])
-def info_node_args(res_id): 
-    print "info_node_args(",res_id,")"
-    table_str = "resource"
-    port_refs = []
+@app.route('/info/node/<node_id>', methods = ['GET'])
+def info_node_args(node_id): 
+    print "info_node_args(",node_id,")"
+    table_str = "node"
+    iface_refs = []
 
-    res_info = query_handler.get_object_info(con, table_str, res_id)
-    if res_info != None:
+    node_info = query_handler.get_object_info(con, table_str, node_id)
+    if node_info != None:
 
-        ports = query_handler.get_res_ports(con, res_id)
-        for port_id in ports:
-            port_refs.append(query_handler.get_refs(con, "port", port_id))
+        ifaces = query_handler.get_node_interfaces(con, node_id)
+        for iface_id in ifaces:
+            iface_refs.append(query_handler.get_refs(con, "interface", iface_id))
 
-        return jp.json_res_info(table_str, res_info, port_refs)
+        return jp.json_node_info(table_str, node_info, iface_refs)
 
     else:
         return "resource not found"
     
-@app.route('/info/interface/<port_id>', methods = ['GET'])
-def info_interface_args(port_id): # gets interface info
-    print "info_interface_args(",port_id,")"
-    table_str = "port"
-    port_info = query_handler.get_object_info(con, table_str, port_id)
+@app.route('/info/interface/<iface_id>', methods = ['GET'])
+def info_interface_args(iface_id): # gets interface info
+    print "info_interface_args(",iface_id,")"
+    table_str = "interface"
+    iface_info = query_handler.get_object_info(con, table_str, iface_id)
 
-    if port_info != None:
-        return jp.json_port_info(table_str, port_info)
+    if iface_info != None:
+        return jp.json_interface_info(iface_info)
     else:
         return "port not found"
-
 
 
 @app.route('/data/', methods = ['GET'])
@@ -110,23 +109,23 @@ def data():
     (ts_lt, ts_gte) = extract_ts_filters(ts_filters)
 
     # handle if 
-    res_id = request.args.get('resource_id', 0)
+    obj_id = request.args.get('obj_id', 0)
 
     if ts_gte <= 0:
         print "get all " + event_type + ", recommended to use ?ts= filter next query"
     else:
         print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    if (res_id != None):
-        tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt, res_id);
+    if (obj_id != None):
+        tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt, obj_id);
 
 
     if (tsdata):
         # form json
-        j = jp.event_resource_data_to_json(tsdata, event_type, res_id)
+        j = jp.event_data_to_json(tsdata, event_type, obj_id)
         return j
     else:
-        return "No results"
+        return "No results for " + str(obj_id) + " of eventType " + str(event_type)
 
 
 if __name__ == '__main__':
@@ -137,7 +136,7 @@ if __name__ == '__main__':
     info_schema = json.load(open("../config/info_schema"))
     data_schema = json.load(open("../config/data_schema"))
 
-    tm = table_manager.TableManager(con, info_schema, data_schema)
+    tm = table_manager.TableManager(con, data_schema, info_schema)
     jp = json_producer.JsonProducer(tm.schema_dict);
 
     app.run(debug = True)

@@ -100,7 +100,7 @@ def generate_and_insert_config_data(data_schema, info_schema):
     table_str = "mem_used"
 
     data_table_str_arr = [table_str]
-    info_table_str_arr = ["aggregate","resource","port"]
+    info_table_str_arr = ["aggregate","node","interface"]
 
     # For table manager    
     db_con_str = "dbname=local user=rirwin";
@@ -125,13 +125,13 @@ def generate_and_insert_config_data(data_schema, info_schema):
     agg1.append(str(int(time.time()*1000000)))
     agg1.append(url_local_data)
 
-    resource1 = []
-    resource1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
-    resource1.append("404-ig-pc1")
-    resource1.append(url_local_info + "node/" + resource1[1])
-    resource1.append("urn=404-ig+pc1+urn")
-    resource1.append(str(int(time.time()*1000000)))
-    resource1.append(str(2*1000000)) # mem_total_kb
+    node1 = []
+    node1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
+    node1.append("404-ig-pc1")
+    node1.append(url_local_info + "node/" + node1[1])
+    node1.append("urn=404-ig+pc1+urn")
+    node1.append(str(int(time.time()*1000000)))
+    node1.append(str(2*1000000)) # mem_total_kb
 
     sliver1 = []
     sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
@@ -140,17 +140,17 @@ def generate_and_insert_config_data(data_schema, info_schema):
     sliver1.append("urn=404-ig+slv1+urn")
     sliver1.append(str(int(time.time()*1000000)))
 
-    port1 = []
-    port1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
-    port1.append("404-ig-pc1:eth0")
-    port1.append(url_local_info + "interface/" + port1[1])
-    port1.append("urn=404-ig+pc1+eth0+urn")
-    port1.append(str(int(time.time()*1000000)))
-    port1.append("ipv4")
-    port1.append("192.1.242.140")
-    port1.append("control")
-    port1.append(str(10000000)) #max bps
-    port1.append(str(1000000)) #max pps
+    interface1 = []
+    interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+    interface1.append("404-ig-pc1:eth0")
+    interface1.append(url_local_info + "interface/" + interface1[1])
+    interface1.append("urn=404-ig+pc1+eth0+urn")
+    interface1.append(str(int(time.time()*1000000)))
+    interface1.append("ipv4")
+    interface1.append("192.1.242.140")
+    interface1.append("control")
+    interface1.append(str(10000000)) #max bps
+    interface1.append(str(1000000)) #max pps
 
     aggres1 = []
     aggres1.append("404-ig-pc1")
@@ -164,18 +164,18 @@ def generate_and_insert_config_data(data_schema, info_schema):
     aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-slv1")
     aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
                  
-    resport1 = []
-    resport1.append("404-ig-pc1:eth0")
-    resport1.append("404-ig-pc1")
-    resport1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
-    resport1.append(url_local_info + "interface/" + resport1[0])
+    nodeiface1 = []
+    nodeiface1.append("404-ig-pc1:eth0")
+    nodeiface1.append("404-ig-pc1")
+    nodeiface1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
+    nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
 
     info_insert(con, "aggregate", agg1)
-    info_insert(con, "resource", resource1)
+    info_insert(con, "node", node1)
     info_insert(con, "sliver", sliver1)
-    info_insert(con, "port", port1)
+    info_insert(con, "interface", interface1)
     info_insert(con, "aggregate_resource",aggres1)
-    info_insert(con, "resource_port", resport1)
+    info_insert(con, "node_interface", nodeiface1)
     info_insert(con, "aggregate_sliver", aggsliv1)
 
 def main():
@@ -188,12 +188,13 @@ def main():
     table_str = "mem_used"
 
     data_table_str_arr = [table_str]
-    info_table_str_arr = ["aggregate","resource","port"]
+    info_table_str_arr = ["aggregate","node","interface"]
 
     db_con_str = "dbname=local user=rirwin";
     con = psycopg2.connect(db_con_str);
     data_schema = json.load(open("../config/data_schema"))
     info_schema = json.load(open("../config/info_schema"))
+
     tm = table_manager.TableManager(con, data_schema, info_schema)
 
     generate_and_insert_config_data(data_schema, info_schema)
