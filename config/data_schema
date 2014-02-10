@@ -2,29 +2,28 @@
 "cpu_util":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","float4"]
+	       ["v","float4"],
+	       ["units","percent"]
              ]
 ,
 "mem_used":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","int8"]
+	       ["v","int8"],
+	       ["units","bytes"]
              ]
 ,
 "swap_free":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","float4"]
-              ],
+	       ["v","float4"],
+	       ["units","percent"]
+              ]
+,
 "disk_part_max_used": [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","float4"]
-             ],
-"units":   [
-	 ["cpu_util":"varchar"],
-	 ["mem_used":"varchar"],
-	 ["swap_free":"varchar"],
-	 ["disk_part_max_used":"varchar"]
-       ]
+	       ["v","float4"],
+	       ["units","percent"]
+             ]
 }
