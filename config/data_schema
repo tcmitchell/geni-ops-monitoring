@@ -20,11 +20,11 @@
 	       ["id", "varchar"],
                ["ts", "int8"],
 	       ["v","float4"]
-             ]
+             ],
 "units":   [
 	 ["cpu_util":"varchar"],
 	 ["mem_used":"varchar"],
 	 ["swap_free":"varchar"],
-	 ["disk_part_max_used":"varchar"],
+	 ["disk_part_max_used":"varchar"]
        ]
 }
