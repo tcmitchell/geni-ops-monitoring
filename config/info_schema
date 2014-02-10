@@ -8,7 +8,7 @@
 		 ["measRef","varchar"]
           ]
 ,
-"resource": [
+"node": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -25,7 +25,7 @@
 		 ["ts","int8"]
           ]
 ,
-"port": [
+"interface": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -52,9 +52,9 @@
 		 ["selfRef","varchar"]
 	 ]
 ,
-"resource_port": [
+"node_interface": [
 	         ["id","varchar"],
-		 ["resource_id","varchar"],
+		 ["node_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	  ]
