@@ -117,7 +117,8 @@ def data():
     else:
         print "get", event_type, "between", ts_gte, "and", ts_lt
 
-    tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt);
+    if (res_id != None):
+        tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt, res_id);
 
 
     if (tsdata):

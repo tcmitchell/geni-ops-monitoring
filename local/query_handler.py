@@ -125,12 +125,14 @@ def get_refs(con, table_str, resource_id):
 
     return refs
 
-def get_event_data(con, event_type, begin_ts, end_ts):
+
+def get_event_data(con, event_type, begin_ts, end_ts, obj_id):
     cur = con.cursor()
     print "cursor open"
     res = None;
     try:
-        cur.execute("select (ts,v) from " + event_type + " where ts >= " + begin_ts + " and ts < " + end_ts)
+        # assumes an id for obj_id in table event_type 
+        cur.execute("select (ts,v) from " + event_type + " where ts >= " + begin_ts + " and ts < " + end_ts + " and id = '" + obj_id + "'")
         q_res = cur.fetchall()
         res = []
         for q_res_i in xrange(len(q_res)):
