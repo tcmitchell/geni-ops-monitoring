@@ -11,17 +11,20 @@ class TableManager:
         self.con = con
         self.schema_dict = self.create_schema_dict(data_schema, info_schema)
         print "Schema loaded" 
-        #pprint(self.schema_dict)
+        pprint(self.schema_dict)
 
     def create_schema_dict(self, data_schema, info_schema):
         schema_dict = {}
-
+        schema_dict["units"] = {}
         if (len(dict(data_schema.items() + info_schema.items())) != len(data_schema) + len(info_schema)):
             print "Error: table namespace collision"
             return None
 
+        # TODO id an opaque identifier that keeps metadata 
         for ds_k in data_schema.keys():
-            schema_dict[ds_k] = data_schema[ds_k]
+            schema_dict[ds_k] = data_schema[ds_k][:-1] # last of list is units
+            # 2nd of tuple is a string of what unit type is (i.e., percent)
+            schema_dict["units"][ds_k] = data_schema[ds_k][-1][1] 
 
         for is_k in info_schema.keys():
             schema_dict[is_k] = info_schema[is_k]
