@@ -6,6 +6,7 @@ import psycopg2
 
 def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
     cur = con.cursor()
+    print "cursor open"
     q_res = None;
     r_stat = None;
     try:
@@ -17,11 +18,13 @@ def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
         r_stat = 500
 
     cur.close()
+    print "cursor closed"
 
     return (r_stat, q_res)
 
 def get_agg_nodes(con, agg_id_str):
     cur = con.cursor()
+    print "cursor open"
     res = [];
 
     try:
@@ -35,11 +38,13 @@ def get_agg_nodes(con, agg_id_str):
         print e
 
     cur.close()
+    print "cursor closed"
 
     return res
 
 def get_agg_slivers(con, agg_id_str):
     cur = con.cursor()
+    print "cursor open"
     res = [];
 
     try:
@@ -54,11 +59,13 @@ def get_agg_slivers(con, agg_id_str):
 
 
     cur.close()
+    print "cursor closed"
 
     return res
 
 def get_res_ports(con, res_id_str):
     cur = con.cursor()
+    print "cursor open"
     res = [];
 
     try:
@@ -72,11 +79,13 @@ def get_res_ports(con, res_id_str):
         print e
 
     cur.close()
+    print "cursor closed"
 
     return res
 
 def get_object_info(con, table_str, obj_id):
     cur = con.cursor()
+    print "cursor open"
     res = None;
 
     try:
@@ -87,11 +96,13 @@ def get_object_info(con, table_str, obj_id):
         print e
     
     cur.close()
+    print "cursor closed"
 
     return res
 
 def get_refs(con, table_str, resource_id):
     cur = con.cursor()
+    print "cursor open"
     refs = None;
 
     try:
@@ -110,10 +121,13 @@ def get_refs(con, table_str, resource_id):
         print e
     
     cur.close()
+    print "cursor closed"
+
     return refs
 
 def select_query(con, table, where_filter="", order_by_filter = "", limit_filter = "LIMIT 10000"):
     cur = con.cursor()
+    print "cursor open"
     q_res = None;
     r_stat = None;
 
@@ -126,6 +140,7 @@ def select_query(con, table, where_filter="", order_by_filter = "", limit_filter
         r_stat = 500
     
     cur.close()
+    print "cursor closed"
 
     return (r_stat, q_res)
 

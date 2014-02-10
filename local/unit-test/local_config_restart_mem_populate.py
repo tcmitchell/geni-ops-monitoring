@@ -2,7 +2,7 @@ import sys
 import json
 import psycopg2
 
-sys.path.append("../../common/db-tools")
+sys.path.append("../../common/")
 import table_manager
 sys.path.append("../")
 import local_datastore_populator

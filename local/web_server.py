@@ -7,7 +7,7 @@ import time
 import json
 import sys
 from pprint import pprint as pprint
-sys.path.append("../common/db-tools")
+sys.path.append("../common")
 import table_manager
 app = Flask(__name__)
 
@@ -137,7 +137,7 @@ if __name__ == '__main__':
     info_schema = json.load(open("../config/info_schema"))
     data_schema = json.load(open("../config/data_schema"))
 
-    tm = table_manager.TableManager(con, info_schema, data_schema)
+    #tm = table_manager.TableManager(con, info_schema, data_schema)
     jp = json_producer.JsonProducer(tm.schema_dict);
 
     app.run(debug = True)

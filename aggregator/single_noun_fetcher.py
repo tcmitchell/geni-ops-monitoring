@@ -11,7 +11,7 @@ import requests
 
 # schema only used for unit test
 from sys import path as sys_path 
-sys_path.append("../common/db-tools/")
+sys_path.append("../common/")
 import table_manager as TableManager
 
 class SingleNounFetcherThread(threading.Thread):

@@ -9,7 +9,7 @@ from pprint import pprint as pprint
 
 #todo threading similar to single noun fetcher
 
-sys.path.append("../common/db-tools")
+sys.path.append("../common/")
 import table_manager
 
 # TODO add locking from threading in case multiple LocalStorePopulators
@@ -196,10 +196,12 @@ def main():
     info_schema = json.load(open("../config/info_schema"))
     tm = table_manager.TableManager(con, data_schema, info_schema)
 
+    generate_and_insert_config_data(data_schema, info_schema)
+
     ldp = LocalDatastorePopulator(con, aggregate_id, node_id, num_ins, per_sec, tm, data_table_str_arr, info_table_str_arr)
     
 
-    #ldp.update_resource_tables()
+   
 
 
     #

@@ -35,7 +35,7 @@ class TableManager:
             cur.execute("select exists(select relname from pg_class where relname='" + table_str + "')")
             exists = cur.fetchone()[0]
             cur.close()
-        except psycopg2.Error as e:
+        except Exception, e:
             print e
         return exists
     
@@ -47,7 +47,7 @@ class TableManager:
             cur.execute("select * from " + table_str + " LIMIT 0")
             col_names = [desc[0] for desc in cur.description]
             cur.close()
-        except psycopg2.Error as e:
+        except Exception, e:
             print e
             
         return col_names
@@ -75,7 +75,7 @@ class TableManager:
                 cur.execute("create table " + table_str + schema_str)
                 self.con.commit()
                 cur.close()
-            except psycopg2.Error as e:
+            except Exception, e:
                 print e
 
     def drop_tables(self, table_str_arr):
@@ -90,7 +90,7 @@ class TableManager:
             self.con.commit()
             print "Dropping table", table_str
             cur.close()
-        except psycopg2.Error as e:
+        except Exception, e:
             print e
 
         
@@ -99,8 +99,8 @@ def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("
 
         for col_i in range(len(table_schema_dict)):
-            print table_schema_dict[col_i][0]
-            print table_schema_dict[col_i][1]
+            #print table_schema_dict[col_i][0]
+            #print table_schema_dict[col_i][1]
             schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         
         # remove , and add )
@@ -138,8 +138,8 @@ def arg_parser(argv, dict_keys):
 
 def main():
 
-    info_schema = json.load(open("../../config/info_schema"))
-    data_schema = json.load(open("../../config/data_schema"))
+    info_schema = json.load(open("../config/info_schema"))
+    data_schema = json.load(open("../config/data_schema"))
 
     # to have a table for all event types for local store or
     # aggregator to have a table for all event types
