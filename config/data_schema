@@ -26,4 +26,18 @@
 	       ["v","float4"],
 	       ["units","percent"]
              ]
+,
+"ctrl_net_rx_bytes":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","int8"],
+	       ["units","bytes"]
+              ]
+,
+"ctrl_net_tx_bytes":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","int8"],
+	       ["units","bytes"]
+              ]
 }
