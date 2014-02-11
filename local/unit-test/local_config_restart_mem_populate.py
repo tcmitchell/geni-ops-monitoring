@@ -43,16 +43,25 @@ def main():
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
     # data population
-    event_str_arr = data_schema.keys()
+    node_event_str_arr = []
+    node_event_str_arr.append("mem_used")
+    node_event_str_arr.append("cpu_util")
+    node_event_str_arr.append("disk_part_max_used")
+    node_event_str_arr.append("swap_free")
 
-    # uncomment for a subset of data_schema
-    #event_str_arr = []
-    #event_str_arr.append("mem_used")
-    #event_str_arr.append("cpu_util")
+    inteface_event_str_arr = []
+    inteface_event_str_arr.append("ctrl_net_rx_bytes")
+    inteface_event_str_arr.append("ctrl_net_tx_bytes")
 
-    nsp = node_stats_populator.NodeStatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
+    node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
 
-    nsp.run_node_stats_main()
+    node_sp.run_node_stats_main()
+
+    interface_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
+
+    interface_sp.run_node_stats_main()
+
+
 
     for ev in event_str_arr:
         cur.execute("select count(*) from " + ev);

@@ -12,28 +12,27 @@ sys.path.append("../common/")
 import table_manager
 import local_datastore_populator
 
-#class LocalDatastoreNodeStatsPopulator(threading.Thread):
-class NodeStatsPopulator(threading.Thread):
-    def __init__(self, ldp_helper, node_id, num_inserts, sleep_period_sec, event_types_arr):
+class StatsPopulator(threading.Thread):
+    def __init__(self, ldp_helper, obj_id, num_inserts, sleep_period_sec, event_types_arr):
         self.ldp_helper = ldp_helper # ldp = local datastore populator
-        self.node_id = node_id
+        self.obj_id = obj_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
         self.event_types_arr = event_types_arr
 
-    def run_node_stats_main(self):
+    def run_stats_main(self):
 
         for i in range(self.num_inserts):
             for ev_t in self.event_types_arr:
-                self.node_stat_insert(ev_t)
+                self.stat_insert(ev_t)
             time.sleep(self.sleep_period_sec)    
 
-    def node_stat_insert(self, ev_t):    
+    def stat_insert(self, ev_t):    
         
         time_sec_epoch = int(time.time()*1000000)
         data = get_data(ev_t)
         if data != None:
-            ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.node_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
+            ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
 
             self.ldp_helper.psql_lock.acquire()
             cur = self.ldp_helper.con.cursor()            
@@ -112,9 +111,9 @@ def main():
     ldph = local_datastore_populator.LocalDatastorePopulator(con, psql_lock, tbl_mgr)
 
 
-    nsp = NodeStatsPopulator(ldph, node_id, num_ins, per_sec, event_types_arr)
+    sp = StatsPopulator(ldph, node_id, num_ins, per_sec, event_types_arr)
 
-    nsp.run_node_stats_main()
+    sp.run_stats_main()
    
     
     cur = con.cursor();
