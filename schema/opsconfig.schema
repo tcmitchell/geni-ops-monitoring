@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#",
+  "description": "Operational monitoring data configuration",
+  "name": "opsconfig",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
+  },
+  "properties": {
+    "aggregates": {
+      "description": "GENI aggregates known to support operational monitoring",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref":
+              "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "authorities": {
+      "description": "GENI authorities known to support operational monitoring",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref":
+              "http://www.gpolab.bbn.com/monitoring/schema/20140131/authority#"
+          }
+        ]
+      }
+    }
+  }
+}
