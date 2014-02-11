@@ -19,7 +19,7 @@
             "urn": "string",
             "$ref":
               "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
-            "type": "string"
+            "amtype": "string"
           }
         ]
       }
