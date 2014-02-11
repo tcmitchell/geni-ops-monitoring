@@ -43,11 +43,13 @@ def main():
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
     # data population
-    event_str_arr = []
-    #event_str_arr = data_schema.keys()
+    event_str_arr = data_schema.keys()
 
-    event_str_arr.append("mem_used")
-    
+    # uncomment for a subset of data_schema
+    #event_str_arr = []
+    #event_str_arr.append("mem_used")
+    #event_str_arr.append("cpu_util")
+
     nsp = node_stats_populator.NodeStatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
 
     nsp.run_node_stats_main()
