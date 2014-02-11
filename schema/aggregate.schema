@@ -36,7 +36,8 @@
         "type": [
           {
             "urn": "string",
-            "$ref": "http://unis.incntre.iu.edu/schema/20120709/node"
+            "$ref":
+              "http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#"
           }
         ]
       }
