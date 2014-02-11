@@ -1,7 +1,7 @@
 {
   "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
   "id": "gpo-ig",
-  "selfRef": "https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig",
+  "selfRef": "https://datastore.instageni.gpolab.bbn.com/aggregates/gpo-ig",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
   "ts": 1391192685740849,
   "measRef": "https://datastore.instageni.gpolab.bbn.com/data",
