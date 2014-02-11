@@ -7,7 +7,7 @@
   "ts": 1391192685740849,
   "aggregate": {
     "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
-    "href": "https://datastore.instageni.gpolab.bbn.com/domains/gpo-ig"
+    "href": "https://datastore.instageni.gpolab.bbn.com/aggregates/gpo-ig"
   },
   "slice_urn": "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive",
   "slice_uuid": "8c6b97fa-493b-400f-95ee-19accfaf4ae8",
