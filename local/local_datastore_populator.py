@@ -15,8 +15,7 @@ class LocalDatastorePopulator:
     def __init__(self, con, psql_lock,  table_manager):
         self.con = con
         self.psql_lock = psql_lock
-        self.table_manager = table_manager
-       
+        self.table_manager = table_manager       
 
 def main():
 
@@ -32,8 +31,6 @@ def main():
 
     ldp = LocalDatastorePopulator(con, psql_lock, tm)
     
-    cur.close();
-    con.close();
 
 if __name__ == "__main__":
     main()
