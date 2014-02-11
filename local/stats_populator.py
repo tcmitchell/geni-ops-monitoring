@@ -14,11 +14,20 @@ import local_datastore_populator
 
 class StatsPopulator(threading.Thread):
     def __init__(self, ldp_helper, obj_id, num_inserts, sleep_period_sec, event_types_arr):
+        threading.Thread.__init__(self)
         self.ldp_helper = ldp_helper # ldp = local datastore populator
         self.obj_id = obj_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
         self.event_types_arr = event_types_arr
+
+    def run(self):
+
+        print "Starting thread for populating stats about" + self.obj_id
+        
+        self.run_stats_main()
+
+        print "Exiting thread for populating stats about" + self.obj_id
 
     def run_stats_main(self):
 
@@ -49,7 +58,7 @@ def get_data(event_type):
     if event_type == "mem_used":
         return psutil.virtual_memory().used
     elif event_type == "swap_free":
-        return (1.0 - psutil.swap_memory().percent)
+        return (100.0 - psutil.swap_memory().percent)
     elif event_type == "cpu_util":
         return psutil.cpu_percent(interval=0)
     elif event_type == "disk_part_max_used":
@@ -113,15 +122,15 @@ def main():
 
     sp = StatsPopulator(ldph, node_id, num_ins, per_sec, event_types_arr)
 
-    sp.run_stats_main()
-   
+    #sp.run_stats_main()
+    sp.start()
     
     cur = con.cursor();
     cur.execute("select count(*) from " + event_types_arr[0]);
     print "num entries", cur.fetchone()[0]
 
     cur.close();
-    con.close();
+    #con.close();
     
 if __name__ == "__main__":
     main()

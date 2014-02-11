@@ -55,15 +55,24 @@ def main():
 
     print node_event_str_arr + interface_event_str_arr
 
+    
+
     node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, node_event_str_arr)
 
-    node_sp.run_stats_main()
 
     interface_sp = stats_populator.StatsPopulator(ldph, interface_id, num_ins, per_sec, interface_event_str_arr)
 
-    interface_sp.run_stats_main()
+    # start threads
+    node_sp.start()
+    interface_sp.start()
 
+    threads = []
+    threads.append(node_sp)
+    threads.append(interface_sp)
 
+    # join all threads
+    for t in threads:
+        t.join()
 
     for ev in (node_event_str_arr + interface_event_str_arr):
         cur.execute("select * from " + ev + " limit 1");
