@@ -8,7 +8,7 @@ import table_manager
 sys.path.append("../")
 import local_datastore_populator
 import info_populator
-import node_stats_populator
+import stats_populator
 
 def main():
     info_schema = json.load(open("../../config/info_schema"))
@@ -24,7 +24,7 @@ def main():
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
     node_id = "404-ig-pc1"
-    
+    interface_id = "404-ig-pc1:eth0"
     num_ins = 10
     per_sec = 0.2
 
@@ -49,23 +49,25 @@ def main():
     node_event_str_arr.append("disk_part_max_used")
     node_event_str_arr.append("swap_free")
 
-    inteface_event_str_arr = []
-    inteface_event_str_arr.append("ctrl_net_rx_bytes")
-    inteface_event_str_arr.append("ctrl_net_tx_bytes")
+    interface_event_str_arr = []
+    interface_event_str_arr.append("ctrl_net_rx_bytes")
+    interface_event_str_arr.append("ctrl_net_tx_bytes")
 
-    node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
+    print node_event_str_arr + interface_event_str_arr
 
-    node_sp.run_node_stats_main()
+    node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, node_event_str_arr)
 
-    interface_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, event_str_arr)
+    node_sp.run_stats_main()
 
-    interface_sp.run_node_stats_main()
+    interface_sp = stats_populator.StatsPopulator(ldph, interface_id, num_ins, per_sec, interface_event_str_arr)
+
+    interface_sp.run_stats_main()
 
 
 
-    for ev in event_str_arr:
-        cur.execute("select count(*) from " + ev);
-        print ev, "has", cur.fetchone()[0], "entries"
+    for ev in (node_event_str_arr + interface_event_str_arr):
+        cur.execute("select * from " + ev + " limit 1");
+        print ev, "has this entry:\n", cur.fetchone()
 
     cur.close()
     con.close()

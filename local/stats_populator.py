@@ -49,7 +49,7 @@ def get_data(event_type):
     if event_type == "mem_used":
         return psutil.virtual_memory().used
     elif event_type == "swap_free":
-        return psutil.swap_memory().percent
+        return (1.0 - psutil.swap_memory().percent)
     elif event_type == "cpu_util":
         return psutil.cpu_percent(interval=0)
     elif event_type == "disk_part_max_used":
