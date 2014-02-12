@@ -139,7 +139,7 @@ def main():
     # aggregator to have a table for all event types
     table_str_arr = info_schema.keys() + data_schema.keys()
     
-    print table_str_arr
+    print table_str_arr, " will be reset"
 
     # to pass in event types to create subset of all event types
     #(table_str_arr) = arg_parser(sys.argv, schema_dict.keys())
