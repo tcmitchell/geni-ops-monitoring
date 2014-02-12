@@ -3,9 +3,8 @@ from pprint import pprint as pprint
 import json
 import psycopg2
 
-    # remove this comment once documented on wiki
-    # Valid call
-    #{"filters":{"eventType": ["mem_used","cpu_util"],"ts":{"gte":3,"lt":5},"obj":{"type":"node","id":["404-ig-pc1","404-ig-pc2"]}}}
+# remove this comment once documented on wiki
+#{"filters":{"eventType": ["mem_used","cpu_util"],"ts":{"gte":3,"lt":5},"obj":{"type":"node","id":["404-ig-pc1","404-ig-pc2"]}}}
 
 def check_data_query_keys(q_dict):
 
@@ -25,11 +24,11 @@ def check_data_query_keys(q_dict):
 
     return (True, None)
 
+# Main handle for data queries
 def handle_ts_data_query(con, filters, schema_dict):
 
-    # try to make a dictionary
     try:
-        q_dict = eval(filters) 
+        q_dict = eval(filters) # try to make a dictionary
 
     except Exception, e:
         return "query: " + filters + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"
@@ -78,7 +77,7 @@ def get_interface_info_dict(schema, info_row):
 
     return json_dict
 
-
+# Main handle interface queries
 def handle_iface_info_query(con, iface_id, iface_schema):
     table_str = "interface"
     iface_info = get_object_info(con, table_str, iface_id)
@@ -102,6 +101,7 @@ def get_node_info_dict(node_id, schema, info_row, port_refs =[]):
             
     return json_dict
 
+# Main handle node info queries
 def handle_node_info_query(con, node_id, node_schema):
     
     table_str = "node"
@@ -139,6 +139,7 @@ def get_agg_info_dict(agg_id, info_row, schema, res_refs =[], slv_refs = []):
     return json_dict
 
 
+# Main handle aggregate info queries
 def handle_agg_info_query(con, agg_id, agg_schema):
     table_str = "aggregate"
     res_refs = []    
@@ -161,27 +162,9 @@ def handle_agg_info_query(con, agg_id, agg_schema):
     else:
         return "aggregate not found"
 
-def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
-    cur = con.cursor()
-    print "cursor open"
-    q_res = None;
-    r_stat = None;
-    try:
-        cur.execute("select " + distinct_filter + " from " + table + " " + where_filter);
-        q_res = cur.fetchone()
-        r_stat = 0
-    except Exception, e:
-        q_res = e
-        r_stat = 500
-
-    cur.close()
-    print "cursor closed"
-
-    return (r_stat, q_res)
 
 def get_agg_nodes(con, agg_id_str):
     cur = con.cursor()
-    print "cursor open"
     res = [];
 
     try:
@@ -195,13 +178,11 @@ def get_agg_nodes(con, agg_id_str):
         print e
 
     cur.close()
-    print "cursor closed"
 
     return res
 
 def get_agg_slivers(con, agg_id_str):
     cur = con.cursor()
-    print "cursor open"
     res = [];
 
     try:
@@ -214,15 +195,12 @@ def get_agg_slivers(con, agg_id_str):
     except Exception, e:
         print e
 
-
     cur.close()
-    print "cursor closed"
 
     return res
 
 def get_node_interfaces(con, node_id_str):
     cur = con.cursor()
-    print "cursor open"
     res = [];
 
     try:
@@ -236,13 +214,11 @@ def get_node_interfaces(con, node_id_str):
         print e
 
     cur.close()
-    print "cursor closed"
 
     return res
 
 def get_object_info(con, table_str, obj_id):
     cur = con.cursor()
-    print "cursor open"
     res = None;
 
     try:
@@ -252,13 +228,11 @@ def get_object_info(con, table_str, obj_id):
         print e
     
     cur.close()
-    print "cursor closed"
 
     return res
 
 def get_refs(con, table_str, resource_id):
     cur = con.cursor()
-    print "cursor open"
     refs = None;
 
     try:
@@ -277,7 +251,6 @@ def get_refs(con, table_str, resource_id):
         print e
     
     cur.close()
-    print "cursor closed"
 
     return refs
 
@@ -300,7 +273,6 @@ def build_ts_where_str(ts_dict):
 
     return ts_where_str
 
-
 def get_tsdata(con, event_type, obj_type, obj_id, ts_where_str):
     cur = con.cursor()
     res = None
@@ -321,10 +293,8 @@ def get_tsdata(con, event_type, obj_type, obj_id, ts_where_str):
     cur.close()
     return res
 
-
 def main():
-    con = psycopg2.connect("dbname=local user=rirwin");
-    print query(con, "memory_util", "time > 1")
+    print "no unit test"
 
 if __name__ == "__main__":
     main()
