@@ -11,6 +11,22 @@ sys.path.append("../common")
 import table_manager
 app = Flask(__name__)
 
+def check_data_query_keys(q_dict):
+    missing_keys = []
+
+    if "filters" not in q_dict:
+        missing_keys.append("filter")
+    if "ts" not in q_dict["filters"]:
+        missing_keys.append("ts")
+    if "eventType" not in q_dict["filters"]:
+        missing_keys.append("eventType")
+    if "obj" not in q_dict["filters"]:
+        missing_keys.append("obj")
+    if len(missing_keys) > 0:
+        return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing keys: " + str(missing_keys))
+    
+    return (True, None)
+        
 def extract_ts_filters(ts_filters):
     ts_lt = int(time.time()*1000000)
     ts_gte = 0
@@ -94,6 +110,41 @@ def info_interface_args(iface_id): # gets interface info
     else:
         return "port not found"
 
+
+@app.route('/data/v2/', methods = ['GET'])
+def data_v2(): 
+    # get everything to the right of ?q= as string from Flask
+    # then stop using Flask
+    #
+    # Valid call
+    #
+    #{"filters":{"eventType": ["mem_used","cpu_util"],"ts":{"gte":3,"lt":5},"obj":{"type":"node","id":["404-ig-pc1","404-ig-pc2"]}}}
+    q = request.args.get('q', None)
+    ret_str = ""
+    try:
+        q_dict = eval(q)
+        
+        (ok, fail_str) = check_data_query_keys(q_dict)
+
+        if ok == True:
+            ts_filters = q_dict["filters"]["ts"]
+            ev_t_filters = q_dict["filters"]["eventType"]
+            obj_filters = q_dict["filters"]["obj"]
+        
+            pprint(ts_filters)
+            pprint(ev_t_filters)
+            pprint(obj_filters)
+        else:
+            return fail_str
+
+    except Exception, e:
+        return "query: " + q + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"       
+
+    ## do query handling
+    
+
+
+    return "/data/v2/" + q + "<br>" + ret_str
 
 @app.route('/data/', methods = ['GET'])
 def data(): 
