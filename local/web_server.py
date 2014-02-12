@@ -27,19 +27,6 @@ def check_data_query_keys(q_dict):
     
     return (True, None)
         
-def extract_ts_filters(ts_filters):
-    ts_lt = int(time.time()*1000000)
-    ts_gte = 0
-
-    for ts_filter in ts_filters:
-        ts_typ = ts_filter.split('=')[0]
-        ts_val = int(ts_filter.split('=')[1])
-        if ts_typ == 'gte':
-            ts_gte = ts_val 
-        elif ts_typ == 'lt':
-            ts_lt = ts_val
-    
-    return (str(ts_lt), str(ts_gte))
 
 '''
 # fix json import
@@ -111,7 +98,7 @@ def info_interface_args(iface_id): # gets interface info
         return "port not found"
 
 
-@app.route('/data/v2/', methods = ['GET'])
+@app.route('/data/', methods = ['GET'])
 def data_v2(): 
     # get everything to the right of ?q= as string from Flask
     # then stop using Flask
@@ -123,60 +110,19 @@ def data_v2():
     ret_str = ""
     try:
         q_dict = eval(q)
-        
         (ok, fail_str) = check_data_query_keys(q_dict)
-
         if ok == True:
-            ts_filters = q_dict["filters"]["ts"]
-            ev_t_filters = q_dict["filters"]["eventType"]
-            obj_filters = q_dict["filters"]["obj"]
         
-            pprint(ts_filters)
-            pprint(ev_t_filters)
-            pprint(obj_filters)
+            ts_filters = q_dict["filters"]["ts"]
+            event_types = q_dict["filters"]["eventType"]
+            objects = q_dict["filters"]["obj"]
         else:
             return fail_str
-
     except Exception, e:
         return "query: " + q + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"       
 
-    ## do query handling
-    
-
-
-    return "/data/v2/" + q + "<br>" + ret_str
-
-@app.route('/data/', methods = ['GET'])
-def data(): 
-
-    # gets event type (i.e., memory_util)
-    event_type = request.args.get('eventType', None)
-    if event_type == None:
-        return "provide an eventType"
-   
-    # get all timestamp filters
-    ts = request.args.get('ts', 0)
-    ts_filters = request.args.getlist('ts')
-    (ts_lt, ts_gte) = extract_ts_filters(ts_filters)
-
-    # handle if 
-    obj_id = request.args.get('obj_id', 0)
-
-    if ts_gte <= 0:
-        print "get all " + event_type + ", recommended to use ?ts= filter next query"
-    else:
-        print "get", event_type, "between", ts_gte, "and", ts_lt
-
-    if (obj_id != None):
-        tsdata = query_handler.get_event_data(con, event_type, ts_gte, ts_lt, obj_id);
-
-
-    if (tsdata):
-        # form json
-        j = jp.event_data_to_json(tsdata, event_type, obj_id)
-        return j
-    else:
-        return "No results for " + str(obj_id) + " of eventType " + str(event_type)
+    ## do query handling and json production
+    return query_handler.handle_data_query(con, event_types, objects, ts_filters, tm.schema_dict)
 
 
 if __name__ == '__main__':

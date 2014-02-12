@@ -1,8 +1,7 @@
 #!/usr/bin/python
-
+from pprint import pprint as pprint
+import json
 import psycopg2
-
-# TODO find cursor not closed.  probably in exceptions
 
 def select_distinct_query(con, table, distinct_filter = "",  where_filter=""):
     cur = con.cursor()
@@ -125,27 +124,68 @@ def get_refs(con, table_str, resource_id):
 
     return refs
 
+def build_ts_where_str(ts_dict):
+    ts_where_str = ""
 
-def get_event_data(con, event_type, begin_ts, end_ts, obj_id):
+    try:
+        for ts_k in ts_dict:
+            ts_v = ts_dict[ts_k]
+            if ts_k == 'gte':
+                ts_where_str += "ts >= " + str(ts_v) + " "
+            elif ts_k == 'gt':
+                ts_where_str += "ts > " + str(ts_v) + " "
+            elif ts_k == 'lte':
+                ts_where_str += "ts <= " + str(ts_v) + " "
+            elif ts_k == 'lt':
+                ts_where_str += "ts < " + str(ts_v) + " "
+    except Exception, e:
+        print str(e), "ts filters has invalid key or value:"
+
+    return ts_where_str
+
+# handles query and json response
+def handle_data_query(con, event_types, objects, ts_filters, schema_dict):
+    resp_arr = []
+    
+    ts_where_str = build_ts_where_str(ts_filters)
+    
+    for event_type in event_types:
+        obj_type = objects["type"]
+        for obj_id in objects["id"]:
+            resp_i = {}
+            ts_arr = get_tsdata(con, event_type, obj_type, obj_id, ts_where_str)
+            if (ts_arr != None):
+                resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
+                resp_i["id"] = obj_id + ":" + event_type
+                resp_i["subject"] = obj_id
+                resp_i["eventType"] = event_type
+                resp_i["description"] = event_type + " for " + obj_id + " of type " + obj_type
+                resp_i["units"] = schema_dict["units"][event_type]
+                resp_i["tsdata"] = ts_arr
+                #pprint(resp_i)
+                resp_arr.append(resp_i)
+
+    return json.dumps(resp_arr)
+
+
+def get_tsdata(con, event_type, obj_type, obj_id, ts_where_str):
     cur = con.cursor()
-    print "cursor open"
-    res = None;
+    res = None
     try:
         # assumes an id for obj_id in table event_type 
-        cur.execute("select (ts,v) from " + event_type + " where ts >= " + begin_ts + " and ts < " + end_ts + " and id = '" + obj_id + "'")
+        cur.execute("select (ts,v) from " + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
-        res = []
-        for q_res_i in xrange(len(q_res)):
-            q_res_i = q_res[q_res_i][0][1:-1].split(',')
-            res.append({"ts":q_res_i[0],"v":q_res_i[1]})
-
+        if len(q_res) > 0:
+            res = []
+            for q_res_i in xrange(len(q_res)): # parsing result "(<ts>,<v>)"
+                q_res_i = q_res[q_res_i][0][1:-1].split(',')
+                res.append({"ts":q_res_i[0],"v":q_res_i[1]})
+        
     except Exception, e:
+        print "query failed: select (ts,v) from " + event_type + " where id = '" + obj_id + "' and " + ts_where_str
         print e
 
-    
     cur.close()
-    print "cursor closed"
-
     return res
 
 

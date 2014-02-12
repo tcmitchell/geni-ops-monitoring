@@ -7,10 +7,6 @@ class JsonProducer:
     def __init__(self, schema_dict):
         self._schema_dict = schema_dict
 
-    def psql_to_json(self, q_res, table_str):
-        json_dict = self.psql_to_json_data(q_res, table_str)
-        return json_dict
-
     def json_agg_info(self, agg_id, info_row, res_refs =[], slv_refs = []):
 
         schema = self._schema_dict["aggregate"]
@@ -60,20 +56,6 @@ class JsonProducer:
 
         return json.dumps(json_dict)
 
-
-    def event_data_to_json(self, tsdata, event_type, obj_id):
-
-        schema = self._schema_dict[event_type]
-        units = self._schema_dict["units"]
-        json_dict = {}
-        json_dict["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
-        json_dict["id"] = obj_id + ":" + event_type # TODO unique id
-        json_dict["subject"] = obj_id # TODO add selfref
-        json_dict["eventType"] = event_type
-        json_dict["units"] = units
-        json_dict["tsdata"] = tsdata
-
-        return json.dumps(json_dict)
 
 if __name__ == "__main__":
 
