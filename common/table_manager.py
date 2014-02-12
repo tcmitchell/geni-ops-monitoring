@@ -3,15 +3,17 @@
 import psycopg2
 import json
 import sys
+import threading
 from pprint import pprint as pprint
 
 class TableManager:
 
     def __init__(self, con, data_schema, info_schema):
-        self.con = con
+        self.con = con 
+        self.db_lock = threading.Lock()
         self.schema_dict = self.create_schema_dict(data_schema, info_schema)
-        print "Schema loaded" 
-        pprint(self.schema_dict)
+        print "Schema loaded with keys:" 
+        print self.schema_dict.keys()
 
     def create_schema_dict(self, data_schema, info_schema):
         schema_dict = {}
@@ -20,7 +22,6 @@ class TableManager:
             print "Error: table namespace collision"
             return None
 
-        # TODO id an opaque identifier that keeps metadata 
         for ds_k in data_schema.keys():
             schema_dict[ds_k] = data_schema[ds_k][:-1] # last of list is units
             # 2nd of tuple is a string of what unit type is (i.e., percent)
@@ -68,8 +69,6 @@ class TableManager:
             print self.get_table_col_names(table_str)
             print "Current schema_str " + schema_str
             print "Skipping creation of " + table_str + "\n"
-            # TODO check if different schema
-            # TODO user input for overwrite or not
             
         else:
             try:
@@ -96,23 +95,15 @@ class TableManager:
         except Exception, e:
             print e
 
-        
-
 def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("
 
         for col_i in range(len(table_schema_dict)):
-            #print table_schema_dict[col_i][0]
-            #print table_schema_dict[col_i][1]
             schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         
         # remove , and add )
         return schema_str[:-1] + ")"
 
-
-def print_keys(dict_keys):
-    for key in dict_keys:
-        print key, 
 
 def arg_parser(argv, dict_keys):
     if (len(argv) == 1):
@@ -131,7 +122,7 @@ def arg_parser(argv, dict_keys):
             sys.exit(1)
         if table_str not in dict_keys:
             print "Argument " + arg + " converted to string " + table_str + " was not found in schema dictionary keys:"
-            print_keys(dict_keys)
+            print dict_keys.keys()
             sys.exit(1)
         else:
             table_str_arr.append(table_str)
@@ -160,8 +151,12 @@ def main():
     
     tm.drop_tables(table_str_arr)
     tm.establish_tables(table_str_arr)
-    
 
     con.close()
+
 if __name__ == "__main__":
+
+    # TODO add warning that running table manager will drop all tables
+    # and create tables
+
     main()

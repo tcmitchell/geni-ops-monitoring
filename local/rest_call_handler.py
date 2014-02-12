@@ -25,7 +25,7 @@ def check_data_query_keys(q_dict):
     return (True, None)
 
 # Main handle for data queries
-def handle_ts_data_query(con, filters, schema_dict):
+def handle_ts_data_query(tm, filters, schema_dict):
 
     try:
         q_dict = eval(filters) # try to make a dictionary
@@ -49,7 +49,7 @@ def handle_ts_data_query(con, filters, schema_dict):
         obj_type = objects["type"]
         for obj_id in objects["id"]:
             resp_i = {}
-            ts_arr = get_tsdata(con, event_type, obj_type, obj_id, ts_where_str)
+            ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
             if (ts_arr != None):
                 resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
                 resp_i["id"] = obj_id + ":" + event_type
@@ -78,9 +78,10 @@ def get_interface_info_dict(schema, info_row):
     return json_dict
 
 # Main handle interface queries
-def handle_iface_info_query(con, iface_id, iface_schema):
+def handle_iface_info_query(tm, iface_id, iface_schema):
+    con = tm.con
     table_str = "interface"
-    iface_info = get_object_info(con, table_str, iface_id)
+    iface_info = get_object_info(tm, table_str, iface_id)
 
     if iface_info != None:
         return json.dumps(get_interface_info_dict(iface_schema, iface_info))
@@ -102,18 +103,18 @@ def get_node_info_dict(node_id, schema, info_row, port_refs =[]):
     return json_dict
 
 # Main handle node info queries
-def handle_node_info_query(con, node_id, node_schema):
-    
+def handle_node_info_query(tm, node_id, node_schema):
+    con = tm.con
     table_str = "node"
     iface_refs = []
 
-    node_info = get_object_info(con, table_str, node_id)
+    node_info = get_object_info(tm, table_str, node_id)
 
     if node_info != None:
 
-        ifaces = get_node_interfaces(con, node_id)
+        ifaces = get_node_interfaces(tm, node_id)
         for iface_id in ifaces:
-            iface_refs.append(get_refs(con, "interface", iface_id))
+            iface_refs.append(get_refs(tm, "interface", iface_id))
 
         return json.dumps(get_node_info_dict(node_id, node_schema, node_info, iface_refs))
 
@@ -140,22 +141,23 @@ def get_agg_info_dict(agg_id, info_row, schema, res_refs =[], slv_refs = []):
 
 
 # Main handle aggregate info queries
-def handle_agg_info_query(con, agg_id, agg_schema):
+def handle_agg_info_query(tm, agg_id, agg_schema):
+    con = tm.con
     table_str = "aggregate"
     res_refs = []    
     slv_refs = []
 
-    agg_info = get_object_info(con, table_str, agg_id)
+    agg_info = get_object_info(tm, table_str, agg_id)
     if agg_info != None:
 
-        resources = get_agg_nodes(con, agg_id)
+        resources = get_agg_nodes(tm, agg_id)
         for res_id in resources:
-            res_refs.append(get_refs(con, "resource", res_id))
+            res_refs.append(get_refs(tm, "resource", res_id))
 
-        slivers = get_agg_slivers(con, agg_id)
+        slivers = get_agg_slivers(tm, agg_id)
         print "slivers",slivers
         for slv_id in slivers:
-            slv_refs.append(get_refs(con, "sliver", slv_id))
+            slv_refs.append(get_refs(tm, "sliver", slv_id))
 
         return json.dumps(get_agg_info_dict(agg_id, agg_info, agg_schema, res_refs, slv_refs))
 
@@ -163,13 +165,15 @@ def handle_agg_info_query(con, agg_id, agg_schema):
         return "aggregate not found"
 
 
-def get_agg_nodes(con, agg_id_str):
-    cur = con.cursor()
+def get_agg_nodes(tm, agg_id_str):
+    cur = tm.con.cursor()
     res = [];
 
     try:
+        tm.db_lock.acquire()
         cur.execute("select distinct id from aggregate_resource where aggregate_id = '" + agg_id_str + "'") 
         q_res = cur.fetchall()
+        tm.db_lock.release()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
             res.append(q_res[res_i])
@@ -181,13 +185,15 @@ def get_agg_nodes(con, agg_id_str):
 
     return res
 
-def get_agg_slivers(con, agg_id_str):
-    cur = con.cursor()
+def get_agg_slivers(tm, agg_id_str):
+    cur = tm.con.cursor()
     res = [];
 
     try:
+        tm.db_lock.acquire()
         cur.execute("select distinct id from aggregate_sliver where aggregate_id = '" + agg_id_str + "'") 
         q_res = cur.fetchall()
+        tm.db_lock.release()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
             res.append(q_res[res_i])
@@ -199,13 +205,15 @@ def get_agg_slivers(con, agg_id_str):
 
     return res
 
-def get_node_interfaces(con, node_id_str):
-    cur = con.cursor()
+def get_node_interfaces(tm, node_id_str):
+    cur = tm.con.cursor()
     res = [];
 
     try:
+        tm.db_lock.acquire()
         cur.execute("select distinct id from node_interface where node_id = '" + node_id_str + "'")
         q_res = cur.fetchall()
+        tm.db_lock.release()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
             res.append(q_res[res_i])
@@ -217,13 +225,15 @@ def get_node_interfaces(con, node_id_str):
 
     return res
 
-def get_object_info(con, table_str, obj_id):
-    cur = con.cursor()
+def get_object_info(tm, table_str, obj_id):
+    cur = tm.con.cursor()
     res = None;
 
     try:
+        tm.db_lock.acquire()
         cur.execute("select * from " + table_str + " where id = '" + obj_id + "' order by ts desc limit 1")
         res = cur.fetchone()
+        tm.db_lock.release()
     except Exception, e:
         print e
     
@@ -231,11 +241,12 @@ def get_object_info(con, table_str, obj_id):
 
     return res
 
-def get_refs(con, table_str, resource_id):
-    cur = con.cursor()
+def get_refs(tm, table_str, resource_id):
+    cur = tm.con.cursor()
     refs = None;
 
     try:
+        tm.db_lock.acquire()
         cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
 
@@ -243,7 +254,7 @@ def get_refs(con, table_str, resource_id):
 
         cur.execute("select \"urn\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
-
+        tm.db_lock.release()
         urn = q_res[0] # removes outer garbage
         refs = [self_ref, urn] # two queries avoids regex split with ,
 
@@ -273,13 +284,17 @@ def build_ts_where_str(ts_dict):
 
     return ts_where_str
 
-def get_tsdata(con, event_type, obj_type, obj_id, ts_where_str):
-    cur = con.cursor()
+def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
+    cur = tm.con.cursor()
     res = None
     try:
+        tm.db_lock.acquire()
+
         # assumes an id for obj_id in table event_type 
         cur.execute("select (ts,v) from " + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
+        tm.db_lock.release()
+
         if len(q_res) > 0:
             res = []
             for q_res_i in xrange(len(q_res)): # parsing result "(<ts>,<v>)"
