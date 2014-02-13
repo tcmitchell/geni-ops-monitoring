@@ -10,12 +10,11 @@ from pprint import pprint as pprint
 
 sys.path.append("../common/")
 import table_manager
-import local_datastore_populator
 
 class InfoPopulator(threading.Thread):
-    def __init__(self, ldp_helper):
+    def __init__(self, tbl_mgr):
         # ldp = local datastore populator
-        self.ldp_helper = ldp_helper 
+        self.tbl_mgr = tbl_mgr 
 
     def ins_fake_info(self):
          info_dict = {}
@@ -90,20 +89,20 @@ class InfoPopulator(threading.Thread):
          info_dict["node_interface"] = nodeiface1
 
          for k in info_dict:
-             info_insert(self.ldp_helper, k, info_dict[k])
+             info_insert(self.tbl_mgr, k, info_dict[k])
 
-def info_insert(ldp_helper, table_str, row_arr):
+def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
 
     for val in row_arr:
         val_str += val + "','" # join won't do this
 
     val_str = val_str[:-2] # remove last 2 of ','
-    cur = ldp_helper.con.cursor()
-    ldp_helper.tbl_mgr.db_lock.acquire()
+    cur = tbl_mgr.con.cursor()
+    tbl_mgr.db_lock.acquire()
     cur.execute("insert into " + table_str + " values (" + val_str + ")")
-    ldp_helper.con.commit()
-    ldp_helper.tbl_mgr.db_lock.release()
+    tbl_mgr.con.commit()
+    tbl_mgr.db_lock.release()
     cur.close()
 
 def main():
@@ -118,12 +117,7 @@ def main():
     tbl_mgr.establish_tables(info_schema.keys())
     
 
-    psql_lock = threading.Lock()
-
-    # local datastore populator helper
-    ldph = local_datastore_populator.LocalDatastorePopulator(con, psql_lock, tbl_mgr)
-
-    ip = InfoPopulator(ldph)
+    ip = InfoPopulator(tbl_mgr)
 
     ip.ins_fake_info()
    

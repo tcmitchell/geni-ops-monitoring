@@ -5,7 +5,6 @@ import psycopg2
 sys.path.append("../../common/")
 import table_manager
 sys.path.append("../")
-import local_datastore_populator
 import info_populator
 import stats_populator
 
@@ -27,11 +26,9 @@ def main():
     num_ins = 10
     per_sec = 0.2
 
-    # local datastore populator helper
-    ldph = local_datastore_populator.LocalDatastorePopulator(con, tbl_mgr)
 
     # info population
-    ip = info_populator.InfoPopulator(ldph)
+    ip = info_populator.InfoPopulator(tbl_mgr)
 
     ip.ins_fake_info()
        
@@ -53,10 +50,10 @@ def main():
     print node_event_str_arr + interface_event_str_arr
     
 
-    node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, node_event_str_arr)
+    node_sp = stats_populator.StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, node_event_str_arr)
 
 
-    interface_sp = stats_populator.StatsPopulator(ldph, interface_id, num_ins, per_sec, interface_event_str_arr)
+    interface_sp = stats_populator.StatsPopulator(tbl_mgr, interface_id, num_ins, per_sec, interface_event_str_arr)
 
     # start threads
     node_sp.start()

@@ -10,12 +10,11 @@ from pprint import pprint as pprint
 
 sys.path.append("../common/")
 import table_manager
-import local_datastore_populator
 
 class StatsPopulator(threading.Thread):
-    def __init__(self, ldp_helper, obj_id, num_inserts, sleep_period_sec, event_types_arr):
+    def __init__(self, tbl_mgr, obj_id, num_inserts, sleep_period_sec, event_types_arr):
         threading.Thread.__init__(self)
-        self.ldp_helper = ldp_helper # ldp = local datastore populator
+        self.tbl_mgr = tbl_mgr # ldp = local datastore populator
         self.obj_id = obj_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
@@ -43,12 +42,12 @@ class StatsPopulator(threading.Thread):
         if data != None:
             ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
 
-            self.ldp_helper.tbl_mgr.db_lock.acquire()
-            cur = self.ldp_helper.con.cursor()            
+            self.tbl_mgr.db_lock.acquire()
+            cur = self.tbl_mgr.con.cursor()            
             cur.execute(ins_str)
-            self.ldp_helper.con.commit() # could do bulk commits
+            self.tbl_mgr.con.commit() # could do bulk commits
             cur.close()
-            self.ldp_helper.tbl_mgr.db_lock.release()
+            self.tbl_mgr.db_lock.release()
         else:
             print "No data received for event_type:", ev_t
 
@@ -114,10 +113,8 @@ def main():
     info_schema = json.load(open("../config/info_schema"))
     tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
 
-    # local datastore populator helper
-    ldph = local_datastore_populator.LocalDatastorePopulator(con, tbl_mgr)
 
-    sp = StatsPopulator(ldph, node_id, num_ins, per_sec, event_types_arr)
+    sp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
 
     #sp.run_stats_main()
     sp.start()
