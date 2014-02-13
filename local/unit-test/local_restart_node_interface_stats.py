@@ -2,23 +2,32 @@ import sys
 import json
 import psycopg2
 
-sys.path.append("../../common/")
+local_path = "../"
+config_path = "../../config/"
+common_path = "../../common/"
+
+sys.path.append(local_path)
+sys.path.append(config_path)
+sys.path.append(common_path)
 import table_manager
-sys.path.append("../")
 import info_populator
 import stats_populator
+import postgres_conf_loader
 
 def main():
-    info_schema = json.load(open("../../config/info_schema"))
-    data_schema = json.load(open("../../config/data_schema"))
+    info_schema = json.load(open(config_path + "info_schema"))
+    data_schema = json.load(open(config_path + "data_schema"))
 
     table_str_arr = info_schema.keys() + data_schema.keys()
-
-    db_con_str = "dbname=local user=rirwin"
-    con = psycopg2.connect(db_con_str);
     
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+
+    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+
     tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
 
+    #tbl_mgr.drop_db(database_)
+    #tbl_mgr.establish_db(database_)
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
     node_id = "404-ig-pc1"
