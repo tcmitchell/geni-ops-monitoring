@@ -152,7 +152,7 @@ def handle_agg_info_query(tm, agg_id, agg_schema):
 
         resources = get_agg_nodes(tm, agg_id)
         for res_id in resources:
-            res_refs.append(get_refs(tm, "resource", res_id))
+            res_refs.append(get_refs(tm, "node", res_id))
 
         slivers = get_agg_slivers(tm, agg_id)
         print "slivers",slivers
