@@ -1,10 +1,61 @@
+Reference Local Datastore README
 
-# for upgrade of psutil
-sudo apt-get install python-dev python-psutil python-pip
-sudo pip install psutil --upgrade
-# end psutil
+1. Aptitude packages
 
-sudo -u postgres createdb local
+    (1) sudo apt-get install postgresql
+    (2) sudo apt-get install python-psycopg2 python-requests python-json	
 
-# webserver
-sudo apt-get install python-flask python-requests 
+    For the Python-Flask webserver:
+    (3) sudo apt-get install python-flask
+
+    For the Nginx webserver:
+    (3) ...
+
+
+2. PostgreSQL Configuration
+
+    Omit (1) and (2) if you already have a postgres user
+    (1)     sudo -u postgres psql postgres
+    (2) (in postgres) \password postgres 
+    (3)     sudo -u postgres createuser --superuser $USER
+    (4)     sudo -u postgres psql postgres
+    (5)	(in postgres) \password <USER> # USER is typed
+    (6)     sudo -u postgres createdb local
+
+    Consider modifying (3) to be read-only for REST reponses and
+    creating another user for local inserts that read and write
+    priviledges.
+
+
+3. PSutil Install and Configuration (necessary for the unit-test)
+
+    (1) sudo apt-get install python-dev python-psutil python-pip
+    (2) sudo pip install psutil --upgrade
+
+
+4. Nginx Configuration
+    ...
+
+
+5. Datastore database cleanup and initialization 
+
+    (1) Running the unit-test drops tables that are to be used for
+    resource information and tsdata.  
+    (2) It populates the tables with dummy configuration information.
+    (3) It runs a series of inserts for putting tsdata that take a few
+    seconds to complete.
+    (4) Open PostgreSQL to look at the data and tables
+        (a) psql # to get into postgres
+	(b) \connect local
+  	(c) \dt
+	(d) select * from aggregate;
+
+6. Starting the Flask webserver
+
+    (1) python web_server.py
+    (2) Example calls that work with the unit test population:
+        (a) Aggregate Info http://127.0.0.1:5000/info/aggregate/404-ig
+	(b) Node Info http://127.0.0.1:5000/info/node/404-ig-pc1
+	(c) Interface Info http://127.0.0.1:5000/info/interface/404-ig-pc1:eth0
+	(d) Node tsdata http://127.0.0.1:5000/data/?q={"filters":{"eventType":["mem_used","cpu_util"],"ts":{"gte":3},"obj":{"type":"node","id":["404-ig-pc1"]}}}
+	(e) Interface tsdata http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ctrl_net_rx_bytes","ctrl_net_tx_bytes"],"ts":{"gte":3},"obj":{"type":"interface","id":["404-ig-pc1:eth0"]}}}
