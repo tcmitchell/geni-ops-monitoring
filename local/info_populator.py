@@ -90,18 +90,20 @@ class InfoPopulator(threading.Thread):
          info_dict["node_interface"] = nodeiface1
 
          for k in info_dict:
-             info_insert(self.ldp_helper.con,k,info_dict[k])
+             info_insert(self.ldp_helper, k, info_dict[k])
 
-def info_insert(con, table_str, row_arr):
+def info_insert(ldp_helper, table_str, row_arr):
     val_str = "'"
 
     for val in row_arr:
         val_str += val + "','" # join won't do this
 
     val_str = val_str[:-2] # remove last 2 of ','
-    cur = con.cursor()
+    cur = ldp_helper.con.cursor()
+    ldp_helper.tbl_mgr.db_lock.acquire()
     cur.execute("insert into " + table_str + " values (" + val_str + ")")
-    con.commit()
+    ldp_helper.con.commit()
+    ldp_helper.tbl_mgr.db_lock.release()
     cur.close()
 
 def main():

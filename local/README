@@ -26,6 +26,8 @@ Reference Local Datastore README
     creating another user for local inserts that read and write
     priviledges.
 
+    Also, include the postres conf file for good autovacuuming.
+    Maybe also a cron job for daily vacuum fulls
 
 3. PSutil Install and Configuration (necessary for the unit-test)
 

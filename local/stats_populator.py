@@ -43,12 +43,12 @@ class StatsPopulator(threading.Thread):
         if data != None:
             ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
 
-            self.ldp_helper.psql_lock.acquire()
+            self.ldp_helper.tbl_mgr.db_lock.acquire()
             cur = self.ldp_helper.con.cursor()            
             cur.execute(ins_str)
             self.ldp_helper.con.commit() # could do bulk commits
             cur.close()
-            self.ldp_helper.psql_lock.release()
+            self.ldp_helper.tbl_mgr.db_lock.release()
         else:
             print "No data received for event_type:", ev_t
 
@@ -114,11 +114,8 @@ def main():
     info_schema = json.load(open("../config/info_schema"))
     tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
 
-    psql_lock = threading.Lock()
-
     # local datastore populator helper
-    ldph = local_datastore_populator.LocalDatastorePopulator(con, psql_lock, tbl_mgr)
-
+    ldph = local_datastore_populator.LocalDatastorePopulator(con, tbl_mgr)
 
     sp = StatsPopulator(ldph, node_id, num_ins, per_sec, event_types_arr)
 

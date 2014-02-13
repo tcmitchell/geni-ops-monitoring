@@ -1,7 +1,6 @@
 import sys
 import json
 import psycopg2
-import threading
 
 sys.path.append("../../common/")
 import table_manager
@@ -28,10 +27,8 @@ def main():
     num_ins = 10
     per_sec = 0.2
 
-    psql_lock = threading.Lock()
-
     # local datastore populator helper
-    ldph = local_datastore_populator.LocalDatastorePopulator(con, psql_lock, tbl_mgr)
+    ldph = local_datastore_populator.LocalDatastorePopulator(con, tbl_mgr)
 
     # info population
     ip = info_populator.InfoPopulator(ldph)
@@ -54,7 +51,6 @@ def main():
     interface_event_str_arr.append("ctrl_net_tx_bytes")
 
     print node_event_str_arr + interface_event_str_arr
-
     
 
     node_sp = stats_populator.StatsPopulator(ldph, node_id, num_ins, per_sec, node_event_str_arr)
