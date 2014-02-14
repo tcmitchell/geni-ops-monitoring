@@ -5,8 +5,14 @@ import rest_call_handler
 import sys
 import json
 from pprint import pprint as pprint
-sys.path.append("../common")
+
+config_path = "../config/"
+common_path = "../common/"
+
+sys.path.append(config_path)
+sys.path.append(common_path)
 import table_manager
+import postgres_conf_loader
 
 app = Flask(__name__)
        
@@ -30,7 +36,10 @@ def data():
 
 if __name__ == '__main__':
 
-    con = psycopg2.connect("dbname=local user=rirwin");
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+
+    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+
     info_schema = json.load(open("../config/info_schema"))
     data_schema = json.load(open("../config/data_schema"))
     tm = table_manager.TableManager(con, data_schema, info_schema)
