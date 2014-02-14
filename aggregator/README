@@ -2,7 +2,7 @@ ToC of Reference Aggregator
 
 1. Ubuntu packages
     sudo apt-get install postgresql
-    sudo apt-get install python-psycopg2 python-requests python-json	
+    sudo apt-get install python-psycopg2 python-requests 	
 
 2. Configuration
     Omit (1) and (2) if you already have a postgres user

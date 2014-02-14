@@ -3,7 +3,7 @@ Reference Local Datastore README
 1. Aptitude packages
 
     (1) sudo apt-get install postgresql
-    (2) sudo apt-get install python-psycopg2 python-requests python-json	
+    (2) sudo apt-get install python-psycopg2 python-requests 	
 
     For the Python-Flask webserver:
     (3) sudo apt-get install python-flask
