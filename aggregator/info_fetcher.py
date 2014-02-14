@@ -18,6 +18,11 @@ import postgres_conf_loader
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
 # the am urn
 
+# This program populates an "aggregator atlas" and sends the data to
+# database tables.  The data_fetcher uses this to fetch tsdata about
+# objects.  The aggregator apps (i.e., nagios) queries the tables
+# for object existence instead of having an InfoFetcher instance.
+
 class InfoFetcher:
     
     def __init__(self, tbl_mgr, am_urls_urns):
@@ -31,15 +36,19 @@ class InfoFetcher:
         self.agg_atlas["href"]["interface"] = {}
         for am_i in am_urls_urns:
             self.agg_atlas["href"]["aggregate"][am_i["urn"]] = am_i["href"]
+    
         self.agg_atlas["aggregate"] = []
         self.agg_atlas["sliver"]  = []        
         self.agg_atlas["resource"]  = []        
         self.agg_atlas["node"]  = []        
         self.agg_atlas["interface"]  = []
+        self.agg_atlas["aggregate_resource"] = {}
+        self.agg_atlas["aggregate_sliver"] = {}
+        self.agg_atlas["node_interface"] = {}
+
 
     # Get info about all aggregates with hrefs in the agg_atlas
     def poll_am_info(self):
-
         self.agg_atlas["aggregate"] = []
         for am_urn in self.agg_atlas["href"]["aggregate"]:
             resp = requests.get(self.agg_atlas["href"]["aggregate"][am_urn])
@@ -49,9 +58,12 @@ class InfoFetcher:
                 if key == "resources":
                     for res_i in am_dict[key]:
                         self.agg_atlas["href"]["resource"][res_i["urn"]] = res_i["href"]
+                        self.agg_atlas["aggregate_resource"][res_i["urn"]] = {"aggregate_id":am_dict["id"],"urn":res_i["urn"],"selfRef":res_i["href"]}
+                        
                 elif key == "slivers":
                     for res_i in am_dict[key]:
                         self.agg_atlas["href"]["sliver"][res_i["urn"]] = res_i["href"]
+                        self.agg_atlas["aggregate_sliver"][res_i["urn"]] = {"aggregate_id":am_dict["id"],"urn":res_i["urn"],"selfRef":res_i["href"]}
                 else:
                     am_i[key] = am_dict[key]
             self.agg_atlas["aggregate"].append(am_i)
@@ -59,11 +71,11 @@ class InfoFetcher:
 
     # Get info about resources with hrefs in the agg_atlas
     def poll_res_info(self):
-
         self.agg_atlas["node"] = []    
         for res_urn in self.agg_atlas["href"]["resource"]:
             resp = requests.get(self.agg_atlas["href"]["resource"][res_urn])
             res_dict = json.loads(resp.content)
+            self.agg_atlas["aggregate_resource"][res_dict["urn"]]["id"] = res_dict["id"]
             
             if res_dict["$schema"].endswith("node#"):
                 node_i = {}
@@ -85,6 +97,18 @@ class InfoFetcher:
             for key in iface_dict:
                 iface_i[key] = iface_dict[key]
             self.agg_atlas["interface"].append(iface_i)
+ 
+    # Not implemented on the server side 
+            #NOT WORKING
+    def poll_sliver_info(self):
+        self.agg_atlas["sliver"] = []    
+        for slv_urn in self.agg_atlas["href"]["sliver"]:
+            resp = requests.get(self.agg_atlas["href"]["sliver"][slv_urn])
+            slv_dict = json.loads(resp.content)
+            slv_i = {}
+            for key in slv_dict:
+                slv_i[key] = slv_dict[key]
+            self.agg_atlas["sliver"].append(slv_i)
 
     # Polls am hrefs, then drops/inserts aggregate table
     def refresh_am_info(self):
@@ -115,6 +139,17 @@ class InfoFetcher:
                 node_info_list.append(node_i[key[0]])
             info_insert(self.tbl_mgr, "node", node_info_list)
 
+    # CONSIDER refresh_aggregate_resource function, would lead to
+    # redundant polls but could keep it simple.
+    #
+
+    # refresh_aggregate_sliver
+
+    # refresh_sliver_resource
+
+    # slices?
+
+
     # Polls interface hrefs, then drops/inserts interface table
     def refresh_iface_info(self):
         self.poll_iface_info()
@@ -136,7 +171,7 @@ class InfoFetcher:
                     iface_info_list.append(iface_i[key[0]])
             
             info_insert(self.tbl_mgr, "interface", iface_info_list)
-                       
+             
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
     for val in row_arr:
@@ -170,8 +205,7 @@ def main():
     info.refresh_am_info()
     info.refresh_res_info()
     info.refresh_iface_info()
-    
-    
+        
     
     pprint(info.agg_atlas)
 
