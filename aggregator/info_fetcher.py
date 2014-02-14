@@ -93,8 +93,7 @@ class InfoFetcher:
         self.tbl_mgr.establish_table("aggregate")
 
         schema = self.tbl_mgr.schema_dict["aggregate"]
-        print "aggregate schema"
-        pprint(schema)
+
         for am_i in self.agg_atlas["aggregate"]:
             am_info_list = []
             for key in schema:  
@@ -108,6 +107,13 @@ class InfoFetcher:
         self.tbl_mgr.drop_table("node") 
         self.tbl_mgr.establish_table("node")
 
+        schema = self.tbl_mgr.schema_dict["node"]
+
+        for node_i in self.agg_atlas["node"]:
+            node_info_list = []
+            for key in schema:  
+                node_info_list.append(node_i[key[0]])
+            info_insert(self.tbl_mgr, "node", node_info_list)
 
     # Polls interface hrefs, then drops/inserts interface table
     def refresh_iface_info(self):
@@ -115,7 +121,21 @@ class InfoFetcher:
         self.tbl_mgr.drop_table("interface") 
         self.tbl_mgr.establish_table("interface")
 
+        schema = self.tbl_mgr.schema_dict["interface"]
 
+        for iface_i in self.agg_atlas["interface"]:
+            iface_info_list = []
+            pprint(iface_i)
+            pprint(schema)
+            for key in schema:  
+                if key[0] == "address_type":
+                    iface_info_list.append(iface_i["address"]["type"])
+                elif key[0] == "address_address":
+                    iface_info_list.append(iface_i["address"]["address"])
+                else:
+                    iface_info_list.append(iface_i[key[0]])
+            
+            info_insert(self.tbl_mgr, "interface", iface_info_list)
                        
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
