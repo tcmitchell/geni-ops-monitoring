@@ -20,7 +20,7 @@ def main():
 
     table_str_arr = info_schema.keys() + data_schema.keys()
     
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
 
     con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
 

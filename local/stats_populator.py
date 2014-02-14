@@ -111,7 +111,7 @@ def main():
     node_id="404-ig-pc1"
     event_types_arr = ["mem_used","cpu_util","disk_part_max_used"]
 
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
 
     con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
 

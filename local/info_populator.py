@@ -112,7 +112,7 @@ def info_insert(tbl_mgr, table_str, row_arr):
 
 def main():
 
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
 
     con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
 
