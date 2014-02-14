@@ -8,8 +8,13 @@ import json
 import threading
 from pprint import pprint as pprint
 
-sys.path.append("../common/")
+config_path = "../config/"
+common_path = "../common/"
+
+sys.path.append(config_path)
+sys.path.append(common_path)
 import table_manager
+import postgres_conf_loader
 
 class InfoPopulator(threading.Thread):
     def __init__(self, tbl_mgr):
@@ -107,8 +112,10 @@ def info_insert(tbl_mgr, table_str, row_arr):
 
 def main():
 
-    db_con_str = "dbname=local user=rirwin";
-    con = psycopg2.connect(db_con_str);
+    [database_, username_, password_, host_, port_] = postgres_conf_loader.main(config_path)
+
+    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+
     data_schema = json.load(open("../config/data_schema"))
     info_schema = json.load(open("../config/info_schema"))
     tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)

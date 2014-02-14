@@ -26,8 +26,6 @@ def main():
 
     tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
 
-    #tbl_mgr.drop_db(database_)
-    #tbl_mgr.establish_db(database_)
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
     node_id = "404-ig-pc1"
