@@ -39,7 +39,6 @@ class InfoFetcher:
     
         self.agg_atlas["aggregate"] = []
         self.agg_atlas["sliver"]  = []        
-        self.agg_atlas["resource"]  = []        
         self.agg_atlas["node"]  = []        
         self.agg_atlas["interface"]  = []
         self.agg_atlas["aggregate_resource"] = {}
@@ -57,17 +56,34 @@ class InfoFetcher:
             for key in am_dict:
                 if key == "resources":
                     for res_i in am_dict[key]:
-                        self.agg_atlas["href"]["resource"][res_i["urn"]] = res_i["href"]
-                        self.agg_atlas["aggregate_resource"][res_i["urn"]] = {"aggregate_id":am_dict["id"],"urn":res_i["urn"],"selfRef":res_i["href"]}
-                        
+                        self.agg_atlas["href"]["resource"][res_i["urn"]] = res_i["href"]                        
                 elif key == "slivers":
                     for res_i in am_dict[key]:
                         self.agg_atlas["href"]["sliver"][res_i["urn"]] = res_i["href"]
-                        self.agg_atlas["aggregate_sliver"][res_i["urn"]] = {"aggregate_id":am_dict["id"],"urn":res_i["urn"],"selfRef":res_i["href"]}
                 else:
                     am_i[key] = am_dict[key]
             self.agg_atlas["aggregate"].append(am_i)
+
               
+    def poll_aggregate_resource_info(self):
+        self.agg_atlas["aggregate_resource"] = []
+        for am_urn in self.agg_atlas["href"]["aggregate"]:
+            resp = requests.get(self.agg_atlas["href"]["aggregate"][am_urn])
+            am_dict = json.loads(resp.content)
+            am_id = am_dict["id"]
+            resources = am_dict["resources"]
+            for res_i in resources:
+                res_i_self_ref = res_i["href"]
+                res_i_urn = res_i["urn"]
+                resp = requests.get(res_i_self_ref)
+                res_i_dict = json.loads(resp.content)
+ 
+                res_i_id = res_i_dict["id"]
+                agg_res_list = [res_i_id, am_id, res_i_urn, res_i_self_ref];
+                agg_res_dict = {"id":res_i_id, "aggregate_id":am_id, "urn":res_i_urn, "selfRef":res_i_self_ref}                                
+                self.agg_atlas["aggregate_resource"].append(agg_res_dict)
+                info_insert(self.tbl_mgr, "aggregate_resource", agg_res_list)
+
 
     # Get info about resources with hrefs in the agg_atlas
     def poll_res_info(self):
@@ -75,8 +91,7 @@ class InfoFetcher:
         for res_urn in self.agg_atlas["href"]["resource"]:
             resp = requests.get(self.agg_atlas["href"]["resource"][res_urn])
             res_dict = json.loads(resp.content)
-            self.agg_atlas["aggregate_resource"][res_dict["urn"]]["id"] = res_dict["id"]
-            
+              
             if res_dict["$schema"].endswith("node#"):
                 node_i = {}
                 for key in res_dict:
@@ -98,9 +113,11 @@ class InfoFetcher:
                 iface_i[key] = iface_dict[key]
             self.agg_atlas["interface"].append(iface_i)
  
-    # Not implemented on the server side 
+    # Not implemented on the local side 
             #NOT WORKING
     def poll_sliver_info(self):
+        pass
+        '''
         self.agg_atlas["sliver"] = []    
         for slv_urn in self.agg_atlas["href"]["sliver"]:
             resp = requests.get(self.agg_atlas["href"]["sliver"][slv_urn])
@@ -109,6 +126,7 @@ class InfoFetcher:
             for key in slv_dict:
                 slv_i[key] = slv_dict[key]
             self.agg_atlas["sliver"].append(slv_i)
+            '''
 
     # Polls am hrefs, then drops/inserts aggregate table
     def refresh_am_info(self):
@@ -139,9 +157,12 @@ class InfoFetcher:
                 node_info_list.append(node_i[key[0]])
             info_insert(self.tbl_mgr, "node", node_info_list)
 
-    # CONSIDER refresh_aggregate_resource function, would lead to
-    # redundant polls but could keep it simple.
-    #
+    # Polls aggregate info and then resource info to get resource ids
+    def refresh_aggregate_resource_info(self):
+        self.tbl_mgr.drop_table("aggregate_resource") 
+        self.tbl_mgr.establish_table("aggregate_resource")
+        self.poll_aggregate_resource_info()
+
 
     # refresh_aggregate_sliver
 
@@ -203,6 +224,7 @@ def main():
     info = InfoFetcher(tbl_mgr, am_urls_urns)
     
     info.refresh_am_info()
+    info.refresh_aggregate_resource_info()
     info.refresh_res_info()
     info.refresh_iface_info()
         
