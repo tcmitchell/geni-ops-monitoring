@@ -64,7 +64,7 @@ class InfoFetcher:
                     am_i[key] = am_dict[key]
             self.agg_atlas["aggregate"].append(am_i)
 
-              
+    # Gets aggregate to resource mapping indepently of other polls
     def poll_aggregate_resource_info(self):
         self.agg_atlas["aggregate_resource"] = []
         for am_urn in self.agg_atlas["href"]["aggregate"]:
@@ -75,13 +75,19 @@ class InfoFetcher:
             for res_i in resources:
                 res_i_self_ref = res_i["href"]
                 res_i_urn = res_i["urn"]
+                
+                # get resource id
                 resp = requests.get(res_i_self_ref)
                 res_i_dict = json.loads(resp.content)
- 
                 res_i_id = res_i_dict["id"]
+                
+                # temporary variables for readbility
                 agg_res_list = [res_i_id, am_id, res_i_urn, res_i_self_ref];
-                agg_res_dict = {"id":res_i_id, "aggregate_id":am_id, "urn":res_i_urn, "selfRef":res_i_self_ref}                                
+                agg_res_dict = {"id":res_i_id, "aggregate_id":am_id, "urn":res_i_urn, "selfRef":res_i_self_ref}          
+                
+                # append to atlas
                 self.agg_atlas["aggregate_resource"].append(agg_res_dict)
+                # insert into aggregator db
                 info_insert(self.tbl_mgr, "aggregate_resource", agg_res_list)
 
 
@@ -101,6 +107,39 @@ class InfoFetcher:
                     else:
                         node_i[key] = res_dict[key]
                 self.agg_atlas["node"].append(node_i)
+
+    # Gets node to interface mapping indepently of other polls
+    # requires node list to exist in atlas
+    # alternatively populate href with node hrefs
+    def poll_node_interface_info(self):
+        self.agg_atlas["node_interface"] = []
+
+        for node_i in self.agg_atlas["node"]: 
+            resp = requests.get(node_i["selfRef"])
+            node_dict = json.loads(resp.content)
+            node_id = node_dict["id"]
+            interfaces = node_dict["ports"]
+            for iface_i in interfaces:
+                iface_i_self_ref = iface_i["href"]
+                iface_i_urn = iface_i["urn"]
+                
+                # get resource id
+                resp = requests.get(iface_i_self_ref)
+                iface_i_dict = json.loads(resp.content)
+                iface_i_id = iface_i_dict["id"]
+                
+                # temporary variables for readbility
+                node_iface_list = [iface_i_id, node_id, iface_i_urn, iface_i_self_ref];
+                node_iface_dict = {"id":iface_i_id, "node_id":node_id, "urn":iface_i_urn, "selfRef":iface_i_self_ref}          
+
+                # append to atlas
+                self.agg_atlas["node_interface"].append(node_iface_dict)
+                # insert into aggregator db
+                info_insert(self.tbl_mgr, "node_interface", node_iface_list)
+
+
+
+
 
     # Get info about interfaces with hrefs in the agg_atlas
     def poll_iface_info(self):
@@ -163,6 +202,11 @@ class InfoFetcher:
         self.tbl_mgr.establish_table("aggregate_resource")
         self.poll_aggregate_resource_info()
 
+    # Polls node info and then interface info to get interface ids
+    def refresh_node_interface_info(self):
+        self.tbl_mgr.drop_table("node_interface") 
+        self.tbl_mgr.establish_table("node_interface")
+        self.poll_node_interface_info()
 
     # refresh_aggregate_sliver
 
@@ -224,9 +268,12 @@ def main():
     info = InfoFetcher(tbl_mgr, am_urls_urns)
     
     info.refresh_am_info()
-    info.refresh_aggregate_resource_info()
     info.refresh_res_info()
     info.refresh_iface_info()
+
+    info.refresh_aggregate_resource_info()
+    info.refresh_node_interface_info()
+
         
     
     pprint(info.agg_atlas)
