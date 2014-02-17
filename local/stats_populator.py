@@ -8,12 +8,12 @@ import json
 import threading
 from pprint import pprint as pprint
 
-config_path = "../config/"
+
 common_path = "../common/"
-sys.path.append(config_path)
+
 sys.path.append(common_path)
 import table_manager
-import postgres_conf_loader
+
 
 class StatsPopulator(threading.Thread):
     def __init__(self, tbl_mgr, obj_id, num_inserts, sleep_period_sec, event_types_arr):
@@ -44,14 +44,9 @@ class StatsPopulator(threading.Thread):
         time_sec_epoch = int(time.time()*1000000)
         data = get_data(ev_t)
         if data != None:
-            ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
-
-            self.tbl_mgr.db_lock.acquire()
-            cur = self.tbl_mgr.con.cursor()            
-            cur.execute(ins_str)
-            self.tbl_mgr.con.commit() # could do bulk commits
-            cur.close()
-            self.tbl_mgr.db_lock.release()
+            val_str = "'" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) 
+            #ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
+            self.tbl_mgr.insert_stmt(ev_t, val_str)
         else:
             print "No data received for event_type:", ev_t
 
@@ -111,14 +106,11 @@ def main():
     node_id="404-ig-pc1"
     event_types_arr = ["mem_used","cpu_util","disk_part_max_used"]
 
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
+    db_name = "local"
+    config_path = "../config/"
 
-    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
 
-    data_schema = json.load(open("../config/data_schema"))
-    info_schema = json.load(open("../config/info_schema"))
-    tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
-
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
 
     sp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
 

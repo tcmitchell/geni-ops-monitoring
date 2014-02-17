@@ -8,17 +8,15 @@ import json
 import threading
 from pprint import pprint as pprint
 
-config_path = "../config/"
+
 common_path = "../common/"
 
-sys.path.append(config_path)
 sys.path.append(common_path)
 import table_manager
-import postgres_conf_loader
 
 class InfoPopulator(threading.Thread):
     def __init__(self, tbl_mgr):
-        # ldp = local datastore populator
+
         self.tbl_mgr = tbl_mgr 
 
     def ins_fake_info(self):
@@ -102,39 +100,36 @@ def info_insert(tbl_mgr, table_str, row_arr):
     for val in row_arr:
         val_str += val + "','" # join won't do this
 
-    val_str = val_str[:-2] # remove last 2 of ','
-    cur = tbl_mgr.con.cursor()
-    tbl_mgr.db_lock.acquire()
-    cur.execute("insert into " + table_str + " values (" + val_str + ")")
-    tbl_mgr.con.commit()
-    tbl_mgr.db_lock.release()
-    cur.close()
+    val_str = val_str[:-2] # remove last 2 of 3 chars: ','
+
+    tbl_mgr.insert_stmt(table_str, val_str)
+
 
 def main():
 
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
+   
+    db_name = "local"
+    config_path = "../config"
 
-    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
 
     data_schema = json.load(open("../config/data_schema"))
     info_schema = json.load(open("../config/info_schema"))
-    tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
+   
 
     tbl_mgr.drop_tables(info_schema.keys())
     tbl_mgr.establish_tables(info_schema.keys())
-    
-
     ip = InfoPopulator(tbl_mgr)
 
     ip.ins_fake_info()
    
     
-    cur = con.cursor();
+    cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from aggregate");
     print "num entries", cur.fetchone()[0]
 
     cur.close();
-    con.close();
+    tbl_mgr.close_con();
     
 if __name__ == "__main__":
     main()

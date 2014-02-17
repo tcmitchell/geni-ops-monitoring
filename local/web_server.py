@@ -6,13 +6,9 @@ import sys
 import json
 from pprint import pprint as pprint
 
-config_path = "../config/"
 common_path = "../common/"
-
-sys.path.append(config_path)
 sys.path.append(common_path)
 import table_manager
-import postgres_conf_loader
 
 app = Flask(__name__)
        
@@ -36,11 +32,8 @@ def data():
 
 if __name__ == '__main__':
 
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
+    db_name = "local"
+    config_path = "../config/"
+    tm = table_manager.TableManager(db_name, config_path)
 
-    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
-
-    info_schema = json.load(open("../config/info_schema"))
-    data_schema = json.load(open("../config/data_schema"))
-    tm = table_manager.TableManager(con, data_schema, info_schema)
     app.run(debug = True)

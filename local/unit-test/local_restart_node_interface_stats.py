@@ -3,31 +3,29 @@ import json
 import psycopg2
 
 local_path = "../"
-config_path = "../../config/"
 common_path = "../../common/"
 
 sys.path.append(local_path)
-sys.path.append(config_path)
 sys.path.append(common_path)
 import table_manager
 import info_populator
 import stats_populator
-import postgres_conf_loader
+
 
 def main():
+
+    db_name = "local"
+    config_path = "../../config/"
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
+
+
     info_schema = json.load(open(config_path + "info_schema"))
     data_schema = json.load(open(config_path + "data_schema"))
-
     table_str_arr = info_schema.keys() + data_schema.keys()
-    
-    [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
-
-    con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
-
-    tbl_mgr = table_manager.TableManager(con, data_schema, info_schema)
 
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
+
     node_id = "404-ig-pc1"
     interface_id = "404-ig-pc1:eth0"
     num_ins = 10
@@ -38,8 +36,9 @@ def main():
     ip = info_populator.InfoPopulator(tbl_mgr)
 
     ip.ins_fake_info()
+
        
-    cur = con.cursor();
+    cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from aggregate");
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
@@ -79,7 +78,7 @@ def main():
         print ev, "has this entry:\n", cur.fetchone()
 
     cur.close()
-    con.close()
+    tbl_mgr.con.close()
 
 if __name__ == "__main__":
     main()
