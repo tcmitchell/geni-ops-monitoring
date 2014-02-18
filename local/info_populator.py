@@ -46,11 +46,19 @@ class InfoPopulator(threading.Thread):
          
          sliver1 = []
          sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
-         sliver1.append("404-ig-slv1")
+         sliver1.append("instageni.gpolab.bbn.com_sliver_26947")
          sliver1.append(url_local_info + "sliver/" + sliver1[1])
-         sliver1.append("urn=404-ig+slv1+urn")
-         sliver1.append(str(int(time.time()*1000000)))
-         
+         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947")
+         sliver1.append("30752b06-8ea8-11e3-8d30-000000000000") #uuid
+         sliver1.append(str(int(time.time()*1000000))) #current ts
+         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
+         sliver1.append("https://datastore.instageni.gpolab.bbn.com/aggregates/gpo-ig") # agg_href
+         sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive") # slice_urn
+         sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
+         sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
+         sliver1.append(str(int(1391626683000000))) # created
+         sliver1.append(str(int(1391708989000000))) # expires
+
          info_dict["sliver"] = sliver1
          
          interface1 = []
@@ -90,6 +98,14 @@ class InfoPopulator(threading.Thread):
          nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
          
          info_dict["node_interface"] = nodeiface1
+
+         slivernode1 = []
+         slivernode1.append("instageni.gpolab.bbn.com_node_pc1")
+         slivernode1.append("instageni.gpolab.bbn.com_sliver_26947")
+         slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+         slivernode1.append(url_local_info + "node/" + nodeiface1[0])
+         
+         info_dict["sliver_node"] = slivernode1
 
          for k in info_dict:
              info_insert(self.tbl_mgr, k, info_dict[k])

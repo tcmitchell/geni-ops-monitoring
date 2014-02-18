@@ -22,7 +22,15 @@
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
-		 ["ts","int8"]
+		 ["uuid","varchar"],
+		 ["ts","int8"],
+		 ["aggregate_urn","varchar"],
+		 ["aggregate_href","varchar"],
+		 ["slice_urn","varchar"],
+		 ["slice_uuid","varchar"],
+		 ["creator","varchar"],
+		 ["created","int8"],
+		 ["expires","int8"]
           ]
 ,
 "interface": [
@@ -48,6 +56,13 @@
 "aggregate_sliver" : [
 	         ["id","varchar"],
 		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	 ]
+,
+"sliver_node" : [
+	         ["id","varchar"],
+		 ["sliver_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	 ]

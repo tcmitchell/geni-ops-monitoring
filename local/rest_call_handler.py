@@ -1,10 +1,5 @@
 #!/usr/bin/python
-from pprint import pprint as pprint
 import json
-import psycopg2
-
-# remove this comment once documented on wiki
-#{"filters":{"eventType": ["mem_used","cpu_util"],"ts":{"gte":3,"lt":5},"obj":{"type":"node","id":["404-ig-pc1","404-ig-pc2"]}}}
 
 def check_data_query_keys(q_dict):
 
@@ -25,8 +20,8 @@ def check_data_query_keys(q_dict):
     return (True, None)
 
 # Main handle for data queries
-def handle_ts_data_query(tm, filters, schema_dict):
-
+def handle_ts_data_query(tm, filters):
+    schema_dict = tm.schema_dict
     try:
         q_dict = eval(filters) # try to make a dictionary
 
@@ -62,6 +57,7 @@ def handle_ts_data_query(tm, filters, schema_dict):
 
     return json.dumps(resp_arr)
  
+# forms interface info dictionary (to be made to JSON)
 def get_interface_info_dict(schema, info_row):
 
     json_dict = {}
@@ -78,9 +74,11 @@ def get_interface_info_dict(schema, info_row):
     return json_dict
 
 # Main handle interface queries
-def handle_iface_info_query(tm, iface_id, iface_schema):
-    con = tm.con
+def handle_iface_info_query(tm, iface_id):
     table_str = "interface"
+    iface_schema = tm.schema_dict[table_str]
+    con = tm.con
+
     iface_info = get_object_info(tm, table_str, iface_id)
 
     if iface_info != None:
@@ -88,8 +86,8 @@ def handle_iface_info_query(tm, iface_id, iface_schema):
     else:
         return "port not found"
 
-
-def get_node_info_dict(node_id, schema, info_row, port_refs =[]):
+# Forms node info dictionary (to be made to JSON)
+def get_node_info_dict(schema, info_row, port_refs =[]):
 
     json_dict = {}
     for col_i in range(len(schema)):
@@ -102,10 +100,12 @@ def get_node_info_dict(node_id, schema, info_row, port_refs =[]):
             
     return json_dict
 
-# Main handle node info queries
-def handle_node_info_query(tm, node_id, node_schema):
-    con = tm.con
+# Main handle for node queries
+def handle_node_info_query(tm, node_id):
     table_str = "node"
+    node_schema = tm.schema_dict[table_str]
+    con = tm.con
+
     iface_refs = []
 
     node_info = get_object_info(tm, table_str, node_id)
@@ -116,13 +116,58 @@ def handle_node_info_query(tm, node_id, node_schema):
         for iface_id in ifaces:
             iface_refs.append(get_refs(tm, "interface", iface_id))
 
-        return json.dumps(get_node_info_dict(node_id, node_schema, node_info, iface_refs))
+        return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs))
 
     else:
         return "resource not found"
 
 
-def get_agg_info_dict(agg_id, info_row, schema, res_refs =[], slv_refs = []):
+
+# Forms sliver info dictionary (to be made to JSON)
+def get_sliver_info_dict(schema, info_row, res_refs =[]):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "aggregate_urn":
+            agg_urn = info_row[col_i]
+        elif schema[col_i][0] == "aggregate_href":
+            agg_href = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
+
+            
+    if len(res_refs) > 0 and res_refs[0] != None:
+        json_dict["resources"] = []
+        for res_ref in res_refs:
+            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+            
+    return json_dict
+
+# Main handle for sliver queries
+def handle_sliver_info_query(tm, sliver_id):
+    table_str = "sliver"
+    sliver_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    res_refs = []
+
+    sliver_info = get_object_info(tm, table_str, sliver_id)
+
+    if sliver_info != None:
+
+        resources = get_sliver_nodes(tm, sliver_id)
+        for res_id in resources:
+            res_refs.append(get_refs(tm, "node", res_id))
+
+        return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
+
+    else:
+        return "resource not found"
+
+# Forms aggregate info dictionary (to be made to JSON)
+def get_aggregate_info_dict(schema, info_row, res_refs =[], slv_refs = []):
 
     json_dict = {}
     for col_i in range(len(schema)):
@@ -140,32 +185,34 @@ def get_agg_info_dict(agg_id, info_row, schema, res_refs =[], slv_refs = []):
     return json_dict
 
 
-# Main handle aggregate info queries
-def handle_agg_info_query(tm, agg_id, agg_schema):
-    con = tm.con
+# Main handle aggregate for info queries
+def handle_aggregate_info_query(tm, agg_id):
     table_str = "aggregate"
+    agg_schema = tm.schema_dict[table_str]
+    con = tm.con
+
     res_refs = []    
     slv_refs = []
 
     agg_info = get_object_info(tm, table_str, agg_id)
     if agg_info != None:
 
-        resources = get_agg_nodes(tm, agg_id)
+        resources = get_aggregate_nodes(tm, agg_id)
         for res_id in resources:
             res_refs.append(get_refs(tm, "node", res_id))
 
-        slivers = get_agg_slivers(tm, agg_id)
+        slivers = get_aggregate_slivers(tm, agg_id)
         print "slivers",slivers
         for slv_id in slivers:
             slv_refs.append(get_refs(tm, "sliver", slv_id))
 
-        return json.dumps(get_agg_info_dict(agg_id, agg_info, agg_schema, res_refs, slv_refs))
+        return json.dumps(get_aggregate_info_dict(agg_schema, agg_info, res_refs, slv_refs))
 
     else:
         return "aggregate not found"
 
-
-def get_agg_nodes(tm, agg_id_str):
+# Gets an aggregates nodes from aggregate_resource table
+def get_aggregate_nodes(tm, agg_id_str):
     cur = tm.con.cursor()
     res = [];
 
@@ -185,7 +232,29 @@ def get_agg_nodes(tm, agg_id_str):
 
     return res
 
-def get_agg_slivers(tm, agg_id_str):
+# Gets an slivers nodes from aggregate_resource table
+def get_sliver_nodes(tm, slv_id_str):
+    cur = tm.con.cursor()
+    res = [];
+
+    try:
+        tm.db_lock.acquire()
+        cur.execute("select distinct id from sliver_resource where sliver_id = '" + slv_id_str + "'") 
+        q_res = cur.fetchall()
+        tm.db_lock.release()
+        q_res = q_res[0] # removes outer garbage
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
+
+    except Exception, e:
+        print e
+
+    cur.close()
+
+    return res
+
+# Gets an aggregate's slivers from aggregate_sliver table
+def get_aggregate_slivers(tm, agg_id_str):
     cur = tm.con.cursor()
     res = [];
 
@@ -205,6 +274,7 @@ def get_agg_slivers(tm, agg_id_str):
 
     return res
 
+# Gets node interfaces from node_interface table
 def get_node_interfaces(tm, node_id_str):
     cur = tm.con.cursor()
     res = [];
@@ -225,6 +295,8 @@ def get_node_interfaces(tm, node_id_str):
 
     return res
 
+# Gets object info where an object can be anything (node, aggregate,
+# interface, sliver
 def get_object_info(tm, table_str, obj_id):
     cur = tm.con.cursor()
     res = None;
@@ -241,11 +313,13 @@ def get_object_info(tm, table_str, obj_id):
 
     return res
 
+# Get references of resources
 def get_refs(tm, table_str, resource_id):
     cur = tm.con.cursor()
     refs = None;
 
     try:
+        # two queries avoids regex split with ,
         tm.db_lock.acquire()
         cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
         q_res = cur.fetchone()
@@ -256,7 +330,7 @@ def get_refs(tm, table_str, resource_id):
         q_res = cur.fetchone()
         tm.db_lock.release()
         urn = q_res[0] # removes outer garbage
-        refs = [self_ref, urn] # two queries avoids regex split with ,
+        refs = [self_ref, urn] 
 
     except Exception, e:
         print e
@@ -265,6 +339,7 @@ def get_refs(tm, table_str, resource_id):
 
     return refs
 
+# builds timestamp filter as a where clause for SQL statement
 def build_ts_where_str(ts_dict):
     ts_where_str = ""
 
