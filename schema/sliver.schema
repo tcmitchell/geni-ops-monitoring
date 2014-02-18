@@ -57,7 +57,6 @@
         "type": [
           {
             "urn": "string",
-            "is_exclusive": "boolean",
             "$ref": "http://unis.incntre.iu.edu/schema/20120709/node#"
           }
         ]
