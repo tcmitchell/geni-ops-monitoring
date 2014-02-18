@@ -1,5 +1,5 @@
 {
-"aggregate": [
+"ops_aggregate": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -8,7 +8,7 @@
 		 ["measRef","varchar"]
           ]
 ,
-"node": [
+"ops_node": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -17,7 +17,7 @@
 		 ["mem_total_kb","int8"]
           ]
 ,
-"sliver": [
+"ops_sliver": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -33,7 +33,7 @@
 		 ["expires","int8"]
           ]
 ,
-"interface": [
+"ops_interface": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
@@ -46,31 +46,111 @@
 		 ["max_pps","int8"]
           ]
 ,
-"aggregate_resource" : [
+"ops_slice": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["uuid","varchar"],
+		 ["ts","int8"],
+		 ["authority_urn","varchar"],
+		 ["authority_href","varchar"],
+		 ["created","varchar"],
+		 ["expires","varchar"]
+          ]
+,
+"ops_user": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["authority_urn","varchar"],
+		 ["authority_href","varchar"],
+		 ["fullname","varchar"],
+		 ["email","varchar"]
+          ]
+,
+"ops_authority": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["user_urn","varchar"],
+		 ["user_href","varchar"],
+		 ["slice_urn","varchar"],
+		 ["slice_href","int8"]
+          ]
+,
+"ops_opsconfig": [
+		 ["$schema", "varchar"],
+	         ["id","varchar"],
+		 ["selfRef","varchar"],
+		 ["ts","int8"]
+	]
+,
+"ops_aggregate_resource" : [
 	         ["id","varchar"],
 		 ["aggregate_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	  ]
 ,
-"aggregate_sliver" : [
+"ops_aggregate_sliver" : [
 	         ["id","varchar"],
 		 ["aggregate_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	 ]
 ,
-"sliver_node" : [
+"ops_sliver_node" : [
 	         ["id","varchar"],
 		 ["sliver_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	 ]
 ,
-"node_interface": [
+"ops_node_interface": [
 	         ["id","varchar"],
 		 ["node_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	  ]
+,
+"ops_slice_user": [
+	         ["id","varchar"],
+		 ["slice_id","varchar"],
+		 ["role","varchar"],
+		 ["selfRef","varchar"]
+	]
+,
+"ops_authority_user": [
+	         ["id","varchar"],
+		 ["authority_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+,
+"ops_authority_slice": [
+	         ["id","varchar"],
+		 ["authority_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+,
+"ops_opsconfig_aggregate": [
+	         ["id","varchar"],
+		 ["opsconfig_id","varchar"],
+		 ["amtype","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+,
+"ops_opsconfig_authority": [
+	         ["id","varchar"],
+		 ["opsconfig_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
 }

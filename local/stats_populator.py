@@ -46,7 +46,7 @@ class StatsPopulator(threading.Thread):
         if data != None:
             val_str = "'" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) 
             #ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
-            self.tbl_mgr.insert_stmt(ev_t, val_str)
+            self.tbl_mgr.insert_stmt("ops_" + ev_t, val_str)
         else:
             print "No data received for event_type:", ev_t
 
@@ -118,7 +118,7 @@ def main():
     sp.start()
     
     cur = con.cursor();
-    cur.execute("select count(*) from " + event_types_arr[0]);
+    cur.execute("select count(*) from ops_" + event_types_arr[0]);
     print "num entries", cur.fetchone()[0]
 
     cur.close();

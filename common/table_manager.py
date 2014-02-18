@@ -111,29 +111,32 @@ class TableManager:
 
     def table_exists(self, table_str):
         exists = False
+        self.db_lock.acquire()
         try:
             cur = self.con.cursor()
-            self.db_lock.acquire()
+
             cur.execute("select exists(select relname from pg_class where relname='" + table_str + "')")
             exists = cur.fetchone()[0]
-            self.db_lock.release()
             cur.close()
         except Exception, e:
             print e
+        self.db_lock.release()
+
         return exists
     
     def get_table_col_names(self, table_str):
 
+        self.db_lock.acquire()
         col_names = []
         try:
             cur = self.con.cursor()
-            self.db_lock.acquire()
             cur.execute("select * from " + table_str + " LIMIT 0")
-            self.db_lock.release()
             col_names = [desc[0] for desc in cur.description]
             cur.close()
         except Exception, e:
             print e
+
+        self.db_lock.release()
             
         return col_names
 
@@ -152,33 +155,40 @@ class TableManager:
             print "Skipping creation of " + table_str + "\n"
             
         else:
+            self.db_lock.acquire()
+        
             try:
                 cur = self.con.cursor()
                 print "create table " + table_str + schema_str
-                self.db_lock.acquire()
                 cur.execute("create table " + table_str + schema_str)
                 self.con.commit()
-                self.db_lock.release()
+
                 cur.close()
             except Exception, e:
                 print e
+            
+            self.db_lock.release()
 
     def drop_tables(self, table_str_arr):
         for table_str in table_str_arr:
             self.drop_table(table_str)
 
     def drop_table(self, table_str):
-        
+
+        self.db_lock.acquire()        
+
         try:
             cur = self.con.cursor() 
-            self.db_lock.acquire()
+            print "drop table if exists " + table_str
             cur.execute("drop table if exists " + table_str)
             self.con.commit()
-            self.db_lock.release()
+
             print "Dropping table", table_str
             cur.close()
         except Exception, e:
-            print e
+            print e, table_str
+
+        self.db_lock.release()
 
 def translate_table_schema_to_schema_str(table_schema_dict, table_str):
         schema_str = "("

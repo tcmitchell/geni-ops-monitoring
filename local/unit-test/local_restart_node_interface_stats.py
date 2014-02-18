@@ -31,7 +31,6 @@ def main():
     num_ins = 10
     per_sec = 0.2
 
-
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr)
 
@@ -39,7 +38,7 @@ def main():
 
        
     cur = tbl_mgr.con.cursor();
-    cur.execute("select count(*) from aggregate");
+    cur.execute("select count(*) from ops_aggregate");
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
     # data population
@@ -74,7 +73,7 @@ def main():
         t.join()
 
     for ev in (node_event_str_arr + interface_event_str_arr):
-        cur.execute("select * from " + ev + " limit 1");
+        cur.execute("select * from ops_" + ev + " limit 1");
         print ev, "has this entry:\n", cur.fetchone()
 
     cur.close()

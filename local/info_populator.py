@@ -32,7 +32,7 @@ class InfoPopulator(threading.Thread):
          agg1.append(str(int(time.time()*1000000)))
          agg1.append(url_local_data)
          
-         info_dict["aggregate"] = agg1
+         info_dict["ops_aggregate"] = agg1
          
          node1 = []
          node1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
@@ -42,7 +42,7 @@ class InfoPopulator(threading.Thread):
          node1.append(str(int(time.time()*1000000)))
          node1.append(str(2*1000000)) # mem_total_kb
          
-         info_dict["node"] = node1
+         info_dict["ops_node"] = node1
          
          sliver1 = []
          sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
@@ -59,7 +59,7 @@ class InfoPopulator(threading.Thread):
          sliver1.append(str(int(1391626683000000))) # created
          sliver1.append(str(int(1391708989000000))) # expires
 
-         info_dict["sliver"] = sliver1
+         info_dict["ops_sliver"] = sliver1
          
          interface1 = []
          interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
@@ -73,15 +73,60 @@ class InfoPopulator(threading.Thread):
          interface1.append(str(10000000)) #max bps
          interface1.append(str(1000000)) #max pps
          
-         info_dict["interface"] = interface1
-         
+         info_dict["ops_interface"] = interface1
+
+         slice1 = []
+         slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/slice#")
+         slice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
+         slice1.append(url_local_info + "slice/" + slice1[1])
+         slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
+         slice1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")
+         slice1.append(str(int(time.time()*1000000)))
+         slice1.append("urn:publicid:IDN+ch.geni.net+authority+ch") # authority urn
+         slice1.append("https://datastore.ch.geni.net/authorities/ch.geni.net") # authority href
+         slice1.append("1391626683000000")
+         slice1.append("1391708989000000")
+
+         info_dict["ops_slice"] = slice1
+
+         user1 = []
+         user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/user#")
+         user1.append("tupty")
+         user1.append(url_local_info + "user/" + user1[1])
+         user1.append("tupty_user_urn") 
+         user1.append(str(int(time.time()*1000000)))
+         user1.append("urn:publicid:IDN+ch.geni.net+authority+ch") # authority urn
+         user1.append("https://datastore.ch.geni.net/authorities/ch.geni.net") # authority href
+         user1.append("Tim Exampleuser")
+         user1.append("tupty@example.com")
+
+         info_dict["ops_user"] = user1
+
+         authority1 = []
+         authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/authority#")
+         authority1.append("ch.geni.net")
+         authority1.append(url_local_info + "authority/" + authority1[1])
+         authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
+         authority1.append(str(int(time.time()*1000000))) 
+
+         info_dict["ops_authority"] = authority1
+
+         opsconfig1 = []
+         opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#")
+         opsconfig1.append("geni-prod")
+         opsconfig1.append(url_local_info + "opsconfig/" + opsconfig1[1])
+         opsconfig1.append(str(int(time.time()*1000000))) 
+
+         info_dict["ops_opsconfig"] = opsconfig1
+
+
          aggres1 = []
          aggres1.append("404-ig-pc1")
          aggres1.append("404-ig")
          aggres1.append("http://gpolab.bbn.com/404-ig-pc1")
          aggres1.append(url_local_info + "node/" + aggres1[0])
          
-         info_dict["aggregate_resource"] = aggres1
+         info_dict["ops_aggregate_resource"] = aggres1
          
          aggsliv1 = []
          aggsliv1.append("404-ig-slv1")
@@ -89,7 +134,7 @@ class InfoPopulator(threading.Thread):
          aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-slv1")
          aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
          
-         info_dict["aggregate_sliver"] = aggsliv1
+         info_dict["ops_aggregate_sliver"] = aggsliv1
          
          nodeiface1 = []
          nodeiface1.append("404-ig-pc1:eth0")
@@ -97,15 +142,57 @@ class InfoPopulator(threading.Thread):
          nodeiface1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
          nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
          
-         info_dict["node_interface"] = nodeiface1
+         info_dict["ops_node_interface"] = nodeiface1
 
          slivernode1 = []
          slivernode1.append("instageni.gpolab.bbn.com_node_pc1")
          slivernode1.append("instageni.gpolab.bbn.com_sliver_26947")
          slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
-         slivernode1.append(url_local_info + "node/" + nodeiface1[0])
+         slivernode1.append(url_local_info + "node/" + slivernode1[0])
          
-         info_dict["sliver_node"] = slivernode1
+         info_dict["ops_sliver_node"] = slivernode1
+
+         sliceuser1 = []
+         sliceuser1.append("tupty")
+         sliceuser1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
+         sliceuser1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+         sliceuser1.append(url_local_info + "user/" + sliceuser1[0])
+         
+         info_dict["ops_slice_user"] = sliceuser1
+
+         authuser1 = []
+         authuser1.append("tupty")
+         authuser1.append("ch.geni.net")
+         authuser1.append("urn:publicid:IDN+ch.geni.net+user+tupty")
+         authuser1.append(url_local_info + "user/" + authuser1[0])
+         
+         info_dict["ops_authority_user"] = authuser1
+
+         authslice1 = []
+         authslice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
+         authslice1.append("ch.geni.net")
+         authslice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
+         authslice1.append(url_local_info + "slice/" + authslice1[0])
+         
+         info_dict["ops_authority_slice"] = authslice1
+
+         opsconfigagg1 = []
+         opsconfigagg1.append("gpo-ig")
+         opsconfigagg1.append("geni-prod")
+         opsconfigagg1.append("protogeni")
+         opsconfigagg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
+         opsconfigagg1.append(url_local_info + "aggregate/" + opsconfigagg1[0])
+         
+         info_dict["ops_opsconfig_aggregate"] = opsconfigagg1
+
+         opsconfigauth1 = []
+         opsconfigauth1.append("ch.geni.net")
+         opsconfigauth1.append("geni-prod")
+         opsconfigauth1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
+         opsconfigauth1.append(url_local_info + "authority/" + opsconfigauth1[0])
+         
+         info_dict["ops_opsconfig_authority"] = opsconfigauth1
+
 
          for k in info_dict:
              info_insert(self.tbl_mgr, k, info_dict[k])

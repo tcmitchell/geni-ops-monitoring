@@ -26,6 +26,22 @@ def info_interface_args(iface_id):
 def info_sliver_args(sliver_id): 
     return rest_call_handler.handle_sliver_info_query(tm, sliver_id)
 
+@app.route('/info/slice/<slice_id>', methods = ['GET'])
+def info_slice_args(slice_id): 
+    return rest_call_handler.handle_slice_info_query(tm, slice_id)
+
+@app.route('/info/user/<user_id>', methods = ['GET'])
+def info_user_args(user_id): 
+    return rest_call_handler.handle_user_info_query(tm, user_id)
+
+@app.route('/info/authority/<authority_id>', methods = ['GET'])
+def info_authority_args(authority_id): 
+    return rest_call_handler.handle_authority_info_query(tm, authority_id)
+
+@app.route('/info/opsconfig/<opsconfig_id>', methods = ['GET'])
+def info_sliver_args(opsconfg_id): 
+    return rest_call_handler.handle_opsconfig_info_query(tm, opsconfig_id)
+
 @app.route('/data/', methods = ['GET'])
 def data(): 
     # get everything to the right of ?q= as string from flask.request
