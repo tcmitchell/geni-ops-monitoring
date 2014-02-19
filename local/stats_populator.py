@@ -102,27 +102,38 @@ def main():
 
     (num_ins, per_sec) = arg_parser(sys.argv)
 
-    # 404 is not found and the area code in atlanta #TheGoalIsGEC19
-    node_id="404-ig-pc1"
-    event_types_arr = ["mem_used","cpu_util","disk_part_max_used"]
 
     db_name = "local"
     config_path = "../config/"
-
-
     tbl_mgr = table_manager.TableManager(db_name, config_path)
-
-    sp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
-
-    #sp.run_stats_main()
-    sp.start()
     
-    cur = con.cursor();
+
+    node_id="instageni.gpolab.bbn.com_node_pc1"
+    event_types_arr = ["mem_used","cpu_util","disk_part_max_used"]
+    nsp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
+ 
+    iface_id="instageni.gpolab.bbn.com_interface_pc1:eth0"
+    event_types_arr = ["ctrl_net_rx_bytes","ctrl_net_tx_bytes"]
+    isp = StatsPopulator(tbl_mgr, iface_id, num_ins, per_sec, event_types_arr)
+
+    nsp.start()
+    isp.start()
+    
+    cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from ops_" + event_types_arr[0]);
     print "num entries", cur.fetchone()[0]
 
     cur.close();
-    #con.close();
+
+    threads = []
+    threads.append(nsp)
+    threads.append(isp)
+
+    # join all threads
+    for t in threads:
+        t.join()
+
+    tbl_mgr.close_con();
     
 if __name__ == "__main__":
     main()

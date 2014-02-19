@@ -68,13 +68,13 @@ class TableManager:
         try:
             cur = self.con.cursor()            
             ins_str = "insert into " + table_name + " values (" + val_str + ");";
+            print ins_str
             cur.execute(ins_str);
             self.con.commit() 
             cur.close()
         except Exception, e:
             print "Trouble inserting data to " + table_name + "."
             print "val str " + val_str
-            print "insert str " + ins_str
             print e
 
         self.db_lock.release()
