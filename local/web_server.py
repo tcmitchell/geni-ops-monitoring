@@ -38,10 +38,6 @@ def info_user_args(user_id):
 def info_authority_args(authority_id): 
     return rest_call_handler.handle_authority_info_query(tm, authority_id)
 
-@app.route('/info/opsconfig/<opsconfig_id>', methods = ['GET'])
-def info_sliver_args(opsconfg_id): 
-    return rest_call_handler.handle_opsconfig_info_query(tm, opsconfig_id)
-
 @app.route('/data/', methods = ['GET'])
 def data(): 
     # get everything to the right of ?q= as string from flask.request
