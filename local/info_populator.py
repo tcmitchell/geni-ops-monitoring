@@ -122,25 +122,25 @@ class InfoPopulator(threading.Thread):
 
 
          aggres1 = []
-         aggres1.append("404-ig-pc1")
-         aggres1.append("404-ig")
-         aggres1.append("http://gpolab.bbn.com/404-ig-pc1")
+         aggres1.append("instageni.gpolab.bbn.com_node_pc1")
+         aggres1.append("gpo-ig")
+         aggres1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
          aggres1.append(url_local_info + "node/" + aggres1[0])
          
          info_dict["ops_aggregate_resource"] = aggres1
          
          aggsliv1 = []
-         aggsliv1.append("404-ig-slv1")
-         aggsliv1.append("404-ig")
-         aggsliv1.append("http://gpolab.bbn.com/sliver1:404-ig-slv1")
+         aggsliv1.append("instageni.gpolab.bbn.com_sliver_26947")
+         aggsliv1.append("gpo-ig")
+         aggsliv1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
          aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
          
          info_dict["ops_aggregate_sliver"] = aggsliv1
          
          nodeiface1 = []
-         nodeiface1.append("404-ig-pc1:eth0")
-         nodeiface1.append("404-ig-pc1")
-         nodeiface1.append("http://gpolab.bbn.com/sliver1:404-ig-pc1")
+         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth0")
+         nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
+         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0")
          nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
          
          info_dict["ops_node_interface"] = nodeiface1
