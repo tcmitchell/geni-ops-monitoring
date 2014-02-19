@@ -91,13 +91,14 @@ def handle_sliver_info_query(tm, sliver_id):
     if sliver_info != None:
 
         resources = get_related_objects(tm, "ops_sliver_node", "sliver_id", sliver_id);
-        for res_id in resources:
-            res_refs.append(get_refs(tm, "ops_node", res_id))
+        print "resources",resources
+        for res_i in resources:
+            res_refs.append(get_refs(tm, "ops_node", res_i))
 
         return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
 
     else:
-        return "resource not found"
+        return "sliver not found"
 
 
 # Main handle aggregate for info queries
@@ -165,8 +166,8 @@ def handle_slice_info_query(tm, slice_id):
 
         users = get_related_objects(tm, "ops_slice_user", "slice_id", slice_id)
 
-        for user_id in users:
-            user_refs.append(get_slice_user_refs(tm, "ops_slice_user", user_id))
+        for user_i in users:
+            user_refs.append(get_slice_user_refs(tm, "ops_slice_user", user_i))
 
         return json.dumps(get_slice_info_dict(slice_schema, slice_info, user_refs))
 
@@ -180,13 +181,40 @@ def handle_user_info_query(tm, user_id):
     user_schema = tm.schema_dict[table_str]
     con = tm.con
 
-
     user_info = get_object_info(tm, table_str, user_id)
     if user_info != None:
-        
         return json.dumps(get_user_info_dict(user_schema, user_info))
     else:
         return "user not found"
+
+
+# Main handle opsconfig info queries
+def handle_opsconfig_info_query(tm, opsconfig_id):
+    table_str = "ops_opsconfig"
+    opsconfig_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    agg_refs = []
+    auth_refs = []
+
+    opsconfig_info = get_object_info(tm, table_str, opsconfig_id)
+    if opsconfig_info != None:
+        
+        aggs = get_related_objects(tm, "ops_opsconfig_aggregate", "opsconfig_id", opsconfig_id)
+
+        for agg_i in aggs:
+            agg_refs.append(get_opsconfig_aggregate_refs(tm, "ops_opsconfig_aggregate", agg_i))
+
+        auths = get_related_objects(tm, "ops_opsconfig_authority", "opsconfig_id", opsconfig_id)
+        for auth_i in auths:
+            auth_refs.append(get_refs(tm, "ops_opsconfig_authority", auth_i))
+
+        print "auths", auths, auth_refs
+        print "aggs",aggs, agg_refs
+
+        return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs))
+    else:
+        return "opsconfig not found"
 
 
 ### Argument checker for tsdata queries
@@ -212,6 +240,8 @@ def check_data_query_keys(q_dict):
     return (True, None)
 
 
+### Form response dictionary functions
+
 # Forms interface info dictionary (to be made to JSON)
 def get_interface_info_dict(schema, info_row):
 
@@ -228,8 +258,6 @@ def get_interface_info_dict(schema, info_row):
 
     return json_dict
 
-
-### Form response dictionary functions
 
 # Forms user info dictionary (to be made to JSON)
 def get_user_info_dict(schema, info_row):
@@ -249,21 +277,41 @@ def get_user_info_dict(schema, info_row):
 
 
 # Forms node info dictionary (to be made to JSON)
-def get_node_info_dict(schema, info_row, port_refs =[]):
+def get_node_info_dict(schema, info_row, port_refs):
 
     json_dict = {}
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
             
-    if len(port_refs) > 0 and port_refs[0] != None:
+    if len(port_refs[0]) > 0:
         json_dict["ports"] = []
         for port_ref in port_refs:
             json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
             
     return json_dict
 
+
+# Forms opsconfig info dictionary (to be made to JSON)
+def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    if len(agg_refs[0]) > 0:
+        json_dict["aggregates"] = []
+        for agg_ref in agg_refs:
+            json_dict["aggregates"].append({"href":agg_ref[0],"urn":agg_ref[1],"amtype":agg_ref[2]})
+    if len(auth_refs[0]) > 0:
+        json_dict["authorities"] = []
+        for auth_ref in auth_refs:
+            json_dict["authorities"].append({"href":auth_ref[0],"urn":auth_ref[1]})
+            
+    return json_dict
+
+
 # Forms sliver info dictionary (to be made to JSON)
-def get_sliver_info_dict(schema, info_row, res_refs =[]):
+def get_sliver_info_dict(schema, info_row, res_refs):
 
     json_dict = {}
     for col_i in range(len(schema)):
@@ -276,8 +324,7 @@ def get_sliver_info_dict(schema, info_row, res_refs =[]):
             
     json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
 
-            
-    if len(res_refs) > 0 and res_refs[0] != None:
+    if len(res_refs[0]) > 0:
         json_dict["resources"] = []
         for res_ref in res_refs:
             json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
@@ -286,18 +333,18 @@ def get_sliver_info_dict(schema, info_row, res_refs =[]):
 
 
 # Forms aggregate info dictionary (to be made to JSON)
-def get_aggregate_info_dict(schema, info_row, res_refs =[], slv_refs = []):
+def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
 
     json_dict = {}
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
             
-    if len(res_refs) > 0 and res_refs[0] != None:
+    if len(res_refs[0]) > 0:
         json_dict["resources"] = []
         for res_ref in res_refs:
             json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
 
-    if len(slv_refs) > 0 and slv_refs[0] != None:
+    if len(slv_refs[0]) > 0:
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
             json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
@@ -305,7 +352,7 @@ def get_aggregate_info_dict(schema, info_row, res_refs =[], slv_refs = []):
 
 
 # Forms slice info dictionary (to be made to JSON)
-def get_slice_info_dict(schema, info_row, user_refs =[]):
+def get_slice_info_dict(schema, info_row, user_refs):
 
     json_dict = {}
     for col_i in range(len(schema)):
@@ -321,7 +368,7 @@ def get_slice_info_dict(schema, info_row, user_refs =[]):
 
     json_dict["authority"] = {"href":auth_href,"urn":auth_urn}
 
-    if len(user_refs) > 0 and user_refs[0] != None:
+    if len(user_refs[0]) > 0:
         json_dict["members"] = []
         for member_ref in user_refs:
             json_dict["members"].append({"href":member_ref[0],"urn":member_ref[1],"role":member_ref[2]})
@@ -330,7 +377,7 @@ def get_slice_info_dict(schema, info_row, user_refs =[]):
 
 
 # Forms authority info dictionary (to be made to JSON)
-def get_authority_info_dict(schema, info_row, user_refs =[], slice_refs =[]):
+def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 
     json_dict = {}
     for col_i in range(len(schema)):
@@ -339,12 +386,12 @@ def get_authority_info_dict(schema, info_row, user_refs =[], slice_refs =[]):
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
 
-    if len(user_refs) > 0 and user_refs[0] != None:
+    if len(user_refs[0]) > 0:
         json_dict["users"] = []
         for user_ref in user_refs:
             json_dict["users"].append({"href":user_ref[0],"urn":user_ref[1]})
 
-    if len(slice_refs) > 0 and slice_refs[0] != None:
+    if len(slice_refs[0]) > 0:
         json_dict["slices"] = []
         for slice_ref in slice_refs:
             json_dict["slices"].append({"href":slice_ref[0],"urn":slice_ref[1]})
@@ -397,27 +444,31 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 
 
 # Get references of objects
-def get_refs(tm, table_str, resource_id):
+def get_refs(tm, table_str, object_id):
 
     tm.db_lock.acquire()
     cur = tm.con.cursor()
-    refs = None;
+    refs = [];
+    
+    print "get_refs",table_str, object_id
 
     try:
+        print "select \"selfRef\" from " + table_str + " where id = '" + object_id + "' order by ts desc limit 1"
         # two queries avoids regex split with ,
-        cur.execute("select \"selfRef\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
+        cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
-
+        
         self_ref = q_res[0] # removes outer garbage
 
-        cur.execute("select \"urn\" from " + table_str + " where id = '" + resource_id + "' order by ts desc limit 1")
+        cur.execute("select \"urn\" from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         urn = q_res[0] # removes outer garbage
         refs = [self_ref, urn] 
 
     except Exception, e:
         print e
-    
+    print "\nrefs to return", refs
+
     cur.close()
     tm.db_lock.release()
         
@@ -429,7 +480,7 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
     tm.db_lock.acquire()
     cur = tm.con.cursor()
-    refs = None;
+    refs = [];
 
     try:
         # three queries avoids regex split with ,
@@ -452,9 +503,41 @@ def get_slice_user_refs(tm, table_str, slice_id):
     
     cur.close()
     tm.db_lock.release()
-        
 
     return refs
+
+
+# special get of refs for opsconfig aggregates which includes amtype
+def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
+
+    tm.db_lock.acquire()
+    cur = tm.con.cursor()
+    refs = [];
+
+    try:
+        # three queries avoids regex split with ,
+        cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        q_res = cur.fetchone()
+        href = q_res[0] # removes outer garbage
+
+        cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        q_res = cur.fetchone()
+        urn = q_res[0] # removes outer garbage
+
+        cur.execute("select distinct \"amtype\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        q_res = cur.fetchone()
+        role = q_res[0] # removes outer garbage
+
+        refs = [href, urn, role] 
+
+    except Exception, e:
+        print e
+    
+    cur.close()
+    tm.db_lock.release()
+
+    return refs
+
 
 # builds timestamp filter as a where clause for SQL statement
 def build_ts_where_str(ts_dict):
