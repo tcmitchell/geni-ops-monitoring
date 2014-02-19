@@ -156,6 +156,7 @@ class InfoPopulator(threading.Thread):
          sliceuser1.append("tupty")
          sliceuser1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
          sliceuser1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+         sliceuser1.append("lead")
          sliceuser1.append(url_local_info + "user/" + sliceuser1[0])
          
          info_dict["ops_slice_user"] = sliceuser1

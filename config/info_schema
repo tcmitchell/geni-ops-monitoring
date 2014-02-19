@@ -55,8 +55,8 @@
 		 ["ts","int8"],
 		 ["authority_urn","varchar"],
 		 ["authority_href","varchar"],
-		 ["created","varchar"],
-		 ["expires","varchar"]
+		 ["created","int8"],
+		 ["expires","int8"]
           ]
 ,
 "ops_user": [
@@ -121,6 +121,7 @@
 "ops_slice_user": [
 	         ["id","varchar"],
 		 ["slice_id","varchar"],
+		 ["urn","varchar"],
 		 ["role","varchar"],
 		 ["selfRef","varchar"]
 	]

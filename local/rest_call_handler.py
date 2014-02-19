@@ -339,6 +339,7 @@ def handle_slice_info_query(tm, slice_id):
         for user_id in users:
             user_refs.append(get_slice_user_refs(tm, "ops_slice_user", user_id))
 
+        print user_refs
         return json.dumps(get_slice_info_dict(slice_schema, slice_info, user_refs))
 
     else:
@@ -351,6 +352,16 @@ def get_slice_info_dict(schema, info_row, user_refs =[]):
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
             
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "authority_href":
+            auth_href = info_row[col_i]
+        elif schema[col_i][0] == "authority_urn":
+            auth_urn = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+
+    json_dict["authority"] = {"href":auth_href,"urn":auth_urn}
+
     if len(user_refs) > 0 and user_refs[0] != None:
         json_dict["members"] = []
         for member_ref in user_refs:
@@ -416,19 +427,19 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
     try:
         # three queries avoids regex split with ,
-        cur.execute("select \"href\" from " + table_str + " where id = '" + slice_id + "' order by ts desc limit 1")
+        cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         href = q_res[0] # removes outer garbage
 
-        cur.execute("select \"urn\" from " + table_str + " where id = '" + slice_id + "' order by ts desc limit 1")
+        cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         urn = q_res[0] # removes outer garbage
 
-        cur.execute("select \"role\" from " + table_str + " where id = '" + slice_id + "' order by ts desc limit 1")
+        cur.execute("select distinct \"role\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
-        urn = q_res[0] # removes outer garbage
+        role = q_res[0] # removes outer garbage
 
-        refs = [self_ref, urn, role] 
+        refs = [href, urn, role] 
 
     except Exception, e:
         print e
