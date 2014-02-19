@@ -1,23 +1,8 @@
 #!/usr/bin/python
 import json
 
-def check_data_query_keys(q_dict):
 
-    if "filters" not in q_dict:
-        return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing filters key")
-        
-    missing_keys = []
-    if "ts" not in q_dict["filters"]:
-        missing_keys.append("ts")
-    if "eventType" not in q_dict["filters"]:
-        missing_keys.append("eventType")
-    if "obj" not in q_dict["filters"]:
-        missing_keys.append("obj")
-
-    if len(missing_keys) > 0:
-        return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing keys: " + str(missing_keys))
-
-    return (True, None)
+### Main query handler functions
 
 # Main handle for data queries
 def handle_ts_data_query(tm, filters):
@@ -56,49 +41,7 @@ def handle_ts_data_query(tm, filters):
                 resp_arr.append(resp_i)
 
     return json.dumps(resp_arr)
- 
-# forms interface info dictionary (to be made to JSON)
-def get_interface_info_dict(schema, info_row):
 
-    json_dict = {}
-    for col_i in range(len(schema)):
-        if schema[col_i][0] == "address_address":
-            addr = info_row[col_i]
-        elif schema[col_i][0] == "address_type":
-            addr_type = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    json_dict["address"] = {"address":addr,"type":addr_type}
-
-    return json_dict
-
-# Main handle interface queries
-def handle_iface_info_query(tm, iface_id):
-    table_str = "ops_interface"
-    iface_schema = tm.schema_dict[table_str]
-    con = tm.con
-
-    iface_info = get_object_info(tm, table_str, iface_id)
-
-    if iface_info != None:
-        return json.dumps(get_interface_info_dict(iface_schema, iface_info))
-    else:
-        return "port not found"
-
-# Forms node info dictionary (to be made to JSON)
-def get_node_info_dict(schema, info_row, port_refs =[]):
-
-    json_dict = {}
-    for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    if len(port_refs) > 0 and port_refs[0] != None:
-        json_dict["ports"] = []
-        for port_ref in port_refs:
-            json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
-            
-    return json_dict
 
 # Main handle for node queries
 def handle_node_info_query(tm, node_id):
@@ -120,27 +63,20 @@ def handle_node_info_query(tm, node_id):
     else:
         return "resource not found"
 
-# Forms sliver info dictionary (to be made to JSON)
-def get_sliver_info_dict(schema, info_row, res_refs =[]):
 
-    json_dict = {}
-    for col_i in range(len(schema)):
-        if schema[col_i][0] == "aggregate_urn":
-            agg_urn = info_row[col_i]
-        elif schema[col_i][0] == "aggregate_href":
-            agg_href = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
+# Main handle interface queries
+def handle_interface_info_query(tm, iface_id):
+    table_str = "ops_interface"
+    iface_schema = tm.schema_dict[table_str]
+    con = tm.con
 
-            
-    if len(res_refs) > 0 and res_refs[0] != None:
-        json_dict["resources"] = []
-        for res_ref in res_refs:
-            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
-            
-    return json_dict
+    iface_info = get_object_info(tm, table_str, iface_id)
+
+    if iface_info != None:
+        return json.dumps(get_interface_info_dict(iface_schema, iface_info))
+    else:
+        return "interface not found"
+
 
 # Main handle for sliver queries
 def handle_sliver_info_query(tm, sliver_id):
@@ -162,24 +98,6 @@ def handle_sliver_info_query(tm, sliver_id):
 
     else:
         return "resource not found"
-
-# Forms aggregate info dictionary (to be made to JSON)
-def get_aggregate_info_dict(schema, info_row, res_refs =[], slv_refs = []):
-
-    json_dict = {}
-    for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    if len(res_refs) > 0 and res_refs[0] != None:
-        json_dict["resources"] = []
-        for res_ref in res_refs:
-            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
-
-    if len(slv_refs) > 0 and slv_refs[0] != None:
-        json_dict["slivers"] = []
-        for slv_ref in slv_refs:
-            json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
-    return json_dict
 
 
 # Main handle aggregate for info queries
@@ -234,28 +152,6 @@ def handle_authority_info_query(tm, auth_id):
         return "authority not found"
 
 
-# Gets an related objects
-def get_related_objects(tm, table_str, colname_str, id_str):
-    cur = tm.con.cursor()
-    res = [];
-    tm.db_lock.acquire()
-    try:
-
-        cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
-        q_res = cur.fetchall()
-        q_res = q_res[0] # removes outer garbage
-        for res_i in range(len(q_res)):
-            res.append(q_res[res_i])
-
-    except Exception, e:
-        print e
-
-    cur.close()
-    tm.db_lock.release()
-
-    return res
-
-
 # Main handle slice info queries
 def handle_slice_info_query(tm, slice_id):
     table_str = "ops_slice"
@@ -268,7 +164,7 @@ def handle_slice_info_query(tm, slice_id):
     if slice_info != None:
 
         users = get_related_objects(tm, "ops_slice_user", "slice_id", slice_id)
-        #users = get_related_objects(tm, "ops_authority_user", "authority_id", auth_id)
+
         for user_id in users:
             user_refs.append(get_slice_user_refs(tm, "ops_slice_user", user_id))
 
@@ -276,6 +172,137 @@ def handle_slice_info_query(tm, slice_id):
 
     else:
         return "slice not found"
+
+
+# Main handle user info queries
+def handle_user_info_query(tm, user_id):
+    table_str = "ops_user"
+    user_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+
+    user_info = get_object_info(tm, table_str, user_id)
+    if user_info != None:
+        
+        return json.dumps(get_user_info_dict(user_schema, user_info))
+    else:
+        return "user not found"
+
+
+### Argument checker for tsdata queries
+
+# Checks the filters for data queies. It needs a filters dictionary
+# with ts, eventType, and obj keys
+def check_data_query_keys(q_dict):
+
+    if "filters" not in q_dict:
+        return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing filters key")
+        
+    missing_keys = []
+    if "ts" not in q_dict["filters"]:
+        missing_keys.append("ts")
+    if "eventType" not in q_dict["filters"]:
+        missing_keys.append("eventType")
+    if "obj" not in q_dict["filters"]:
+        missing_keys.append("obj")
+
+    if len(missing_keys) > 0:
+        return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing keys: " + str(missing_keys))
+
+    return (True, None)
+
+
+# Forms interface info dictionary (to be made to JSON)
+def get_interface_info_dict(schema, info_row):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "address_address":
+            addr = info_row[col_i]
+        elif schema[col_i][0] == "address_type":
+            addr_type = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["address"] = {"address":addr,"type":addr_type}
+
+    return json_dict
+
+
+### Form response dictionary functions
+
+# Forms user info dictionary (to be made to JSON)
+def get_user_info_dict(schema, info_row):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "authority_urn":
+            auth_urn = info_row[col_i]
+        elif schema[col_i][0] == "authority_href":
+            auth_href = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["authority"] = {"urn":auth_urn,"href":auth_href}
+
+    return json_dict
+
+
+# Forms node info dictionary (to be made to JSON)
+def get_node_info_dict(schema, info_row, port_refs =[]):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    if len(port_refs) > 0 and port_refs[0] != None:
+        json_dict["ports"] = []
+        for port_ref in port_refs:
+            json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
+            
+    return json_dict
+
+# Forms sliver info dictionary (to be made to JSON)
+def get_sliver_info_dict(schema, info_row, res_refs =[]):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "aggregate_urn":
+            agg_urn = info_row[col_i]
+        elif schema[col_i][0] == "aggregate_href":
+            agg_href = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
+
+            
+    if len(res_refs) > 0 and res_refs[0] != None:
+        json_dict["resources"] = []
+        for res_ref in res_refs:
+            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+            
+    return json_dict
+
+
+# Forms aggregate info dictionary (to be made to JSON)
+def get_aggregate_info_dict(schema, info_row, res_refs =[], slv_refs = []):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    if len(res_refs) > 0 and res_refs[0] != None:
+        json_dict["resources"] = []
+        for res_ref in res_refs:
+            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+
+    if len(slv_refs) > 0 and slv_refs[0] != None:
+        json_dict["slivers"] = []
+        for slv_ref in slv_refs:
+            json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
+    return json_dict
+
 
 # Forms slice info dictionary (to be made to JSON)
 def get_slice_info_dict(schema, info_row, user_refs =[]):
@@ -325,6 +352,7 @@ def get_authority_info_dict(schema, info_row, user_refs =[], slice_refs =[]):
     return json_dict
 
 
+### SQL query functions
 
 # Gets object info where an object can be anything (node, aggregate,
 # interface, sliver
@@ -345,7 +373,30 @@ def get_object_info(tm, table_str, obj_id):
 
     return res
 
-# Get references of resources
+
+# Gets related objects
+def get_related_objects(tm, table_str, colname_str, id_str):
+    cur = tm.con.cursor()
+    res = [];
+    tm.db_lock.acquire()
+    try:
+
+        cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
+        q_res = cur.fetchall()
+        q_res = q_res[0] # removes outer garbage
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
+
+    except Exception, e:
+        print e
+
+    cur.close()
+    tm.db_lock.release()
+
+    return res
+
+
+# Get references of objects
 def get_refs(tm, table_str, resource_id):
 
     tm.db_lock.acquire()
@@ -370,10 +421,10 @@ def get_refs(tm, table_str, resource_id):
     cur.close()
     tm.db_lock.release()
         
-
     return refs
 
-# special get of refs for slice users and role
+
+# special get of refs for slice users which includes role
 def get_slice_user_refs(tm, table_str, slice_id):
 
     tm.db_lock.acquire()

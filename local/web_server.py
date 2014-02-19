@@ -20,7 +20,7 @@ def info_node_args(node_id):
 
 @app.route('/info/interface/<iface_id>', methods = ['GET'])
 def info_interface_args(iface_id): 
-    return rest_call_handler.handle_iface_info_query(tm, iface_id)
+    return rest_call_handler.handle_interface_info_query(tm, iface_id)
 
 @app.route('/info/sliver/<sliver_id>', methods = ['GET'])
 def info_sliver_args(sliver_id): 
