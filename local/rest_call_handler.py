@@ -198,18 +198,66 @@ def handle_aggregate_info_query(tm, agg_id):
     if agg_info != None:
 
         resources = get_aggregate_nodes(tm, agg_id)
-        for res_id in resources:
-            res_refs.append(get_refs(tm, "ops_node", res_id))
+        for res_i in resources:
+            res_refs.append(get_refs(tm, "ops_node", res_i))
 
         slivers = get_aggregate_slivers(tm, agg_id)
-        print "slivers",slivers
-        for slv_id in slivers:
-            slv_refs.append(get_refs(tm, "ops_sliver", slv_id))
+        for slv_i in slivers:
+            slv_refs.append(get_refs(tm, "ops_sliver", slv_i))
 
         return json.dumps(get_aggregate_info_dict(agg_schema, agg_info, res_refs, slv_refs))
 
     else:
         return "aggregate not found"
+
+
+# Main handle aggregate for info queries
+def handle_authority_info_query(tm, auth_id):
+    table_str = "ops_authority"
+    auth_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    user_refs = []    
+    slice_refs = []
+
+    auth_info = get_object_info(tm, table_str, auth_id)
+    if auth_info != None:
+
+        users = get_related_objects(tm, "ops_authority_user", "authority_id", auth_id)
+        for user_i in users:
+            user_refs.append(get_refs(tm, "ops_user", user_i))
+
+        slices = get_related_objects(tm, "ops_authority_slice", "authority_id", auth_id)
+        for slice_i in slices:
+            slice_refs.append(get_refs(tm, "ops_slice", slice_i))
+
+        return json.dumps(get_authority_info_dict(auth_schema, auth_info, user_refs, slice_refs))
+
+    else:
+        return "authority not found"
+
+
+# Gets an related objects
+def get_related_objects(tm, table_str, colname_str, id_str):
+    cur = tm.con.cursor()
+    res = [];
+    tm.db_lock.acquire()
+    try:
+
+        cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
+        q_res = cur.fetchall()
+        q_res = q_res[0] # removes outer garbage
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
+
+    except Exception, e:
+        print e
+
+    cur.close()
+    tm.db_lock.release()
+
+    return res
+
 
 # Gets an aggregates nodes from aggregate_resource table
 def get_aggregate_nodes(tm, agg_id_str):
@@ -366,6 +414,29 @@ def get_slice_info_dict(schema, info_row, user_refs =[]):
         json_dict["members"] = []
         for member_ref in user_refs:
             json_dict["members"].append({"href":member_ref[0],"urn":member_ref[1],"role":member_ref[2]})
+            
+    return json_dict
+
+
+# Forms authority info dictionary (to be made to JSON)
+def get_authority_info_dict(schema, info_row, user_refs =[], slice_refs =[]):
+
+    json_dict = {}
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+
+    if len(user_refs) > 0 and user_refs[0] != None:
+        json_dict["users"] = []
+        for user_ref in user_refs:
+            json_dict["users"].append({"href":user_ref[0],"urn":user_ref[1]})
+
+    if len(slice_refs) > 0 and slice_refs[0] != None:
+        json_dict["slices"] = []
+        for slice_ref in slice_refs:
+            json_dict["slices"].append({"href":slice_ref[0],"urn":slice_ref[1]})
             
     return json_dict
 
