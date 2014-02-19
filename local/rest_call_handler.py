@@ -209,9 +209,6 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
         for auth_i in auths:
             auth_refs.append(get_refs(tm, "ops_opsconfig_authority", auth_i))
 
-        print "auths", auths, auth_refs
-        print "aggs",aggs, agg_refs
-
         return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs))
     else:
         return "opsconfig not found"
@@ -412,6 +409,7 @@ def get_object_info(tm, table_str, obj_id):
     try:
         cur.execute("select * from " + table_str + " where id = '" + obj_id + "' order by ts desc limit 1")
         res = cur.fetchone()
+        tm.con.commit()
     except Exception, e:
         print e
     
@@ -430,6 +428,7 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 
         cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
         q_res = cur.fetchall()
+        tm.con.commit()
         q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
             res.append(q_res[res_i])
@@ -450,24 +449,22 @@ def get_refs(tm, table_str, object_id):
     cur = tm.con.cursor()
     refs = [];
     
-    print "get_refs",table_str, object_id
-
     try:
-        print "select \"selfRef\" from " + table_str + " where id = '" + object_id + "' order by ts desc limit 1"
+
         # two queries avoids regex split with ,
         cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
-        
+        tm.con.commit()
         self_ref = q_res[0] # removes outer garbage
 
         cur.execute("select \"urn\" from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
+        tm.con.commit()
         urn = q_res[0] # removes outer garbage
         refs = [self_ref, urn] 
 
     except Exception, e:
         print e
-    print "\nrefs to return", refs
 
     cur.close()
     tm.db_lock.release()
@@ -486,14 +483,17 @@ def get_slice_user_refs(tm, table_str, slice_id):
         # three queries avoids regex split with ,
         cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         href = q_res[0] # removes outer garbage
 
         cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         urn = q_res[0] # removes outer garbage
 
         cur.execute("select distinct \"role\" from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         role = q_res[0] # removes outer garbage
 
         refs = [href, urn, role] 
@@ -518,14 +518,17 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
         # three queries avoids regex split with ,
         cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         href = q_res[0] # removes outer garbage
 
         cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         urn = q_res[0] # removes outer garbage
 
         cur.execute("select distinct \"amtype\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
+        tm.con.commit()
         role = q_res[0] # removes outer garbage
 
         refs = [href, urn, role] 
@@ -569,6 +572,7 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
         # assumes an id for obj_id in table event_type with ops_ prepended
         cur.execute("select (ts,v) from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
+        tm.con.commit()
         print q_res
 
         if len(q_res) > 0:
