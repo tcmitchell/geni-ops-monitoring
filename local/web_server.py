@@ -8,6 +8,10 @@ common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
 
+db_name = "local"
+config_path = "../config/"
+tm = table_manager.TableManager(db_name, config_path)
+
 app = Flask(__name__)
        
 @app.route('/info/aggregate/<agg_id>', methods = ['GET'])
@@ -49,9 +53,5 @@ def data():
     return rest_call_handler.handle_ts_data_query(tm, filters)
 
 if __name__ == '__main__':
-
-    db_name = "local"
-    config_path = "../config/"
-    tm = table_manager.TableManager(db_name, config_path)
 
     app.run(debug = True)
