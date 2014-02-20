@@ -52,12 +52,26 @@ Reference Local Datastore README
   	(c) \dt
 	(d) select * from aggregate;
 
+     TODO datastore config
+
 6. Starting the Flask webserver
 
     (1) python web_server.py
-    (2) Example calls that work with the unit test population:
-        (a) Aggregate Info http://127.0.0.1:5000/info/aggregate/404-ig
-	(b) Node Info http://127.0.0.1:5000/info/node/404-ig-pc1
-	(c) Interface Info http://127.0.0.1:5000/info/interface/404-ig-pc1:eth0
-	(d) Node tsdata http://127.0.0.1:5000/data/?q={"filters":{"eventType":["mem_used","cpu_util"],"ts":{"gte":3},"obj":{"type":"node","id":["404-ig-pc1"]}}}
-	(e) Interface tsdata http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ctrl_net_rx_bytes","ctrl_net_tx_bytes"],"ts":{"gte":3},"obj":{"type":"interface","id":["404-ig-pc1:eth0"]}}}
+    (2) Run unit test: python local_restart_node_interface_stats.py
+        This populates the local store
+    (3) Example calls that work after that population:
+
+ Info queries:
+ http://127.0.0.1:5000/info/aggregate/gpo-ig
+ http://127.0.0.1:5000/info/node/instageni.gpolab.bbn.com_node_pc1
+ http://127.0.0.1:5000/info/interface/instageni.gpolab.bbn.com_interface_pc1:eth0
+ http://127.0.0.1:5000/info/sliver/instageni.gpolab.bbn.com_sliver_26947
+ http://127.0.0.1:5000/info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive
+ http://127.0.0.1:5000/info/authority/ch.geni.net
+ http://127.0.0.1:5000/info/user/tupty
+ http://127.0.0.1:5000/info/opsconfig/geni-prod
+
+Data queries:
+ http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ctrl_net_rx_bytes","ctrl_net_tx_bytes"],"ts":{"gte":3},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth0"]}}}
+
+ http://127.0.0.1:5000/data/?q={"filters":{"eventType":["mem_used","cpu_util","disk_part_max_used"],"ts":{"gte":3},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}
