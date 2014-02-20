@@ -61,9 +61,9 @@ def get_data(event_type):
         return psutil.cpu_percent(interval=0)
     elif event_type == "disk_part_max_used":
         return psutil.disk_usage('/').percent
-    elif event_type == "ctrl_net_rx_bytes":
+    elif event_type == "rx_bytes":
         return psutil.network_io_counters().bytes_recv
-    elif event_type == "ctrl_net_tx_bytes":
+    elif event_type == "tx_bytes":
         return psutil.network_io_counters().bytes_sent
     else: # TODO add more
         return None
@@ -113,7 +113,7 @@ def main():
     nsp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
  
     iface_id="instageni.gpolab.bbn.com_interface_pc1:eth0"
-    event_types_arr = ["ctrl_net_rx_bytes","ctrl_net_tx_bytes"]
+    event_types_arr = ["rx_bytes","tx_bytes"]
     isp = StatsPopulator(tbl_mgr, iface_id, num_ins, per_sec, event_types_arr)
 
     nsp.start()
