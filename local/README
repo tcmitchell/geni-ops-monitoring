@@ -8,27 +8,20 @@ Reference Local Datastore README
     For the Python-Flask webserver:
     (3) sudo apt-get install python-flask
 
-    For the Apache webserver:
-    (3) ...
+    For the Apache webserver with WSGI:
+    (4) sudo apt-get apache2 libapache2-mod-wsgi
 
 
 2. PostgreSQL Configuration
 
-    Omit (1) and (2) if you already have a postgres user
-    (1)     sudo -u postgres psql postgres
-    (2) (in postgres) \password postgres 
-    (3)     sudo -u postgres createuser --superuser <LOCAL_OPERATOR_UNAME>
-    (4)     sudo -u postgres psql postgres
-    (5)	(in postgres) \password <LOCAL_OPERATOR_UNAME> 
-    (6)     sudo -u postgres createdb local
-    (7) Edit the config file at config/local_datastore_operators.conf
-        to match the username and password as well as other parameters
-	like hostname and port number if they are not localhost on port
-	5432.
-    (8) TODO Add documention on autovacuuming, need to test first.
-    Also, include the postres conf file for good autovacuuming.
-    Maybe also a cron job for daily vacuum fulls
+   We use <LOCAL_OPERATOR_NAME>=localstore, but any name you like
+   should work.
 
+    Omit (1) if you already have a postgres user
+    (1) sudo -u postgres psql -c '\password postgres' postgres
+    (2) sudo -u postgres createuser --superuser <LOCAL_OPERATOR_NAME>
+    (3) sudo -u postgres psql -c '\password localstore' postgres
+    (4) sudo -u postgres createdb local
 
 3. PSutil Install and Configuration (necessary for the unit-test)
 
@@ -38,30 +31,73 @@ Reference Local Datastore README
         python-psutil, upgrade it through pip
         sudo pip install psutil --upgrade
 
+4. Install and configure ops-monitoring software
 
-4. Apache Wsgi and Flask Configuration
-      ...
+   This puts the software in /usr/local/ops-monitoring.  You can put it
+   elsewhere, but may need to change other configuration down the line
+   to point to the correct paths.
 
+    (1) cd /usr/local
+    (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
+    (3) sudo $EDITOR ops-monitoring/config/local_datastore_operators.conf
+        * set username: <LOCAL_OPERATOR_NAME>
+        * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
 
-5. Datastore database cleanup and initialization 
+5. Apache WSGI and Flask Configuration
 
-    (1) Running the unit-test drops tables that are to be used for
-    resource information and tsdata.  
-    (2) Run unit test by doing:
-    	python local_restart_node_interface_stats.py 
-    (2) It populates the tables with simulated configuration information.
-    (3) It runs a series of inserts for putting node and interface data 
-        that take a few seconds to complete.
+   The reference configuration customizes apache to make the reference
+   datastore available via flask
+
+    (1) Add text to an appropriate VirtualHost directive in your apache
+        configuration (e.g. for a stock Ubuntu apache install, you can
+        put this inside the <VirtualHost *:80> block of
+          /etc/apache2/sites-available/default
+        If you want the pages served at a root other than /, modify the
+        WSGIScriptAlias directive:
+
+  WSGIDaemonProcess localstore threads=5
+  WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
+
+  <Directory /usr/local/ops-monitoring/local/wsgi>
+    WSGIProcessGroup localstore
+    WSGIApplicationGroup %{GLOBAL}
+    Order deny,allow
+    Allow from all
+  </Directory>
+
+6. Datastore database cleanup and initialization 
+
+   Populate your database either with the schema tables only, or with
+   the tables and some sample data if you want to see the localstore
+   work before adding your own data.
+
+    (1) cd /usr/local/ops-monitoring/local/unit-test
+    (2) IF you want the tables only, run:
+          python ./local_table_reset.py
+    (3) OR IF you want tables and data, run:
+    	  python ./local_restart_node_interface_stats.py 
+        This populates the tables with simulated configuration
+        information.  It then runs a series of inserts for putting node
+        and interface data that take a few seconds to complete.
     (4) Open PostgreSQL to look at the data and tables
-        (a) psql --dbname=local
+        (a) psql -U <LOCAL_OPERATOR_NAME> -h localhost --dbname=local
   	(c) \dt
 	(d) select * from ops_aggregate;
-    
 
-6. Starting the Flask webserver
+7. Start the webserver
 
-    (1) python web_server.py
-    (2) Example calls that work after that population in section 5:
+   Start apache:
+    (1) sudo service apache2 restart
+
+   OR start flask:
+    (2) cd /usr/local/ops-monitoring/local
+    (3) python ./web_server.py
+
+8. Invoke some example queries:
+   If you use the sample data from the unit test script, these queries
+   should work.  All of these URLs assume you're using flask with access
+   from localhost.  If you're using apache, replace "127.0.0.1:5000"
+   with the FQDN of your webserver in each example.
 
  Info queries:
  http://127.0.0.1:5000/info/aggregate/gpo-ig
