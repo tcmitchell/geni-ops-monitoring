@@ -19,11 +19,17 @@ Reference Local Datastore README
 
     Omit (1) if you already have a postgres user
     (1) sudo -u postgres psql -c '\password postgres' postgres
-    (2) sudo -u postgres createuser --superuser <LOCAL_OPERATOR_NAME>
+    (2) sudo -u postgres createuser --no-createdb --no-createrole \
+          --no-superuser <LOCAL_OPERATOR_NAME>
     (3) sudo -u postgres psql -c '\password <LOCAL_OPERATOR_NAME>' postgres
-    (4) sudo -u postgres createdb local
+    (4) sudo -u postgres createdb --owner=<LOCAL_OPERATOR_NAME> local
 
-3. PSutil Install and Configuration (necessary for the unit-test)
+3. PSutil Install and Configuration (optional)
+
+   This is only necessary if you want to use psutil to insert some
+   realistic-looking sample data into your datastore for testing.
+   See step 6 for more about this decision.  If you just want an empty
+   datastore into which to insert your own data, psutil isn't required.
 
     (1) sudo apt-get install python-dev python-pip 
     (2) sudo pip install psutil 
