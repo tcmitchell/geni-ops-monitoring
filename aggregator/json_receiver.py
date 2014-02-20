@@ -7,11 +7,23 @@ class JsonReceiver:
     def __init__(self, schema_dict):
         self.schema_dict = schema_dict
 
-    def json_to_psql(self, json_text, table_str, thread_name):
+    def json_to_psql(self, json_text, table_str, thread_name, obj_id):
         data = json.loads(json_text)
-        if (data["response_type"] == "data_poll"):
-            return self.json_to_psql_data(data, table_str)
+        if "tsdata" in data:
+            # check if obj_id == data id?
+            return self.tsdata_to_rows(data["tsdata"], table_str, obj_id)
+        else:
+            return None
 
+    def tsdata_to_rows(self, tsdata, table_str, obj_id):
+        rows = []
+        
+        #for i in tsdata:
+            #rows.append("insert into " + table_str + " values('" +obj_id + "'" + obj)
+        print tsdata
+        return rows
+
+    # deprecated    
     def json_to_psql_data(self, data, table_str):
         table_name = data["data_type"]
         
