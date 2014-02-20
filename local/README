@@ -19,9 +19,10 @@ Reference Local Datastore README
 
     Omit (1) if you already have a postgres user
     (1) sudo -u postgres psql -c '\password postgres' postgres
-    (2) sudo -u postgres createuser --superuser <LOCAL_OPERATOR_NAME>
+    (2) sudo -u postgres createuser --no-createdb --no-createrole \
+          --no-superuser <LOCAL_OPERATOR_NAME>
     (3) sudo -u postgres psql -c '\password <LOCAL_OPERATOR_NAME>' postgres
-    (4) sudo -u postgres createdb local
+    (4) sudo -u postgres createdb --owner=<LOCAL_OPERATOR_NAME> local
 
 3. PSutil Install and Configuration (optional)
 
