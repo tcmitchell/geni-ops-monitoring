@@ -7,7 +7,8 @@ import json
 import json_receiver
 import sys
 import requests
-
+sys.path.append("../common/")
+import table_manager
 
 # schema only used for unit test
 from sys import path as sys_path 
@@ -16,7 +17,7 @@ import table_manager as TableManager
 
 class SingleNounFetcherThread(threading.Thread):
 
-    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec, schema_dict, psql_lock):
+    def __init__(self, con, threadID, thread_name, local_url_noun, table_str, initial_time, sleep_period_sec, schema_dict, psql_lock, resource_id):
         threading.Thread.__init__(self)
         self.con = con 
         self.threadID = threadID
@@ -29,9 +30,9 @@ class SingleNounFetcherThread(threading.Thread):
         self.psql_lock = psql_lock
         self.counter = 0
         self.time_of_last_update = int(initial_time)
-
-        self.table_manager = TableManager.TableManager(self.con, schema_dict)
-        self.table_manager.establish_table(table_str)
+        self.resource_id = resource_id
+        #self.table_manager = TableManager.TableManager(self.con, schema_dict)
+        #self.table_manager.establish_table(table_str)
 
         self.json_receiver = json_receiver.JsonReceiver(schema_dict)
 
@@ -46,9 +47,11 @@ class SingleNounFetcherThread(threading.Thread):
 
     def poll_datastore(self):
         
+        #todo agg_id
         req_time = int(time.time()*1000000)
-        payload = {'event_type':self.table_str,
-                   'ts':'gte='+str(self.time_of_last_update)}
+        payload = {'eventType':self.table_str,
+                   'ts':'gte='+str(self.time_of_last_update),
+                   'resource_id':self.resource_id}
         resp = requests.get(self.local_url_noun,params=payload)
         
         if resp:
@@ -91,7 +94,7 @@ def thread_main(snft): # snft = SingleNounFetcherThread
         json_text = snft.poll_datastore()
 
         # convert response to json
-        (r_code, rows) = snft.json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name)
+        (r_code, rows) = snft.json_receiver.json_to_psql(json_text, snft.table_str, snft.thread_name, snft.resource_id)
 
         print "Received " + str(len(rows)) + " updates"
 
@@ -110,7 +113,8 @@ def thread_main(snft): # snft = SingleNounFetcherThread
 def main(): 
 
     con = psycopg2.connect("dbname=aggregator user=rirwin")
-    table_str = "memory_util"
+    table_str = "mem_used"
+    resource_id = "404-ig-pc1"
     thread_type_index = 0
     total_thread_index = 0
     thread_str = table_str + str(thread_type_index)
@@ -120,13 +124,15 @@ def main():
     micro_sec_epoch = 0 
     #micro_sec_epoch = int(time.time()*1000000)
 
-    # Dense lines to get schema_dict
-    db_templates = json.load(open("../config/db_templates"))
-    event_types = json.load(open("../config/event_types"))
-    schema_dict = {}
-    for ev_t in event_types.keys():
-        schema_dict[ev_t] = db_templates[event_types[ev_t]["db_template"]] + [["v",event_types[ev_t]["v_col_type"]]]
-    # end dense lines to get schema_dict
+
+    db_con_str = "dbname=aggregator user=rirwin";
+    con = psycopg2.connect(db_con_str);
+    data_schema = json.load(open("../config/data_schema"))
+    info_schema = json.load(open("../config/info_schema"))
+    tm = table_manager.TableManager(con, data_schema, info_schema)
+
+    table_str_arr = info_schema.keys() + table_str
+
 
     # lock of the conn and cur usage by this program
     # psql has locks for what would be concurrent psql accesses
@@ -134,7 +140,7 @@ def main():
     psql_lock = threading.Lock() 
 
     threads = {}
-    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, micro_sec_epoch, sleep_period_sec, schema_dict, psql_lock)
+    threads[table_str] = SingleNounFetcherThread(con, total_thread_index, thread_str, url_noun, table_str, micro_sec_epoch, sleep_period_sec, tm.schema_dict, psql_lock, resource_id, table_str_arr)
 
     threads[table_str].start()
 
