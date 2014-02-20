@@ -26,20 +26,25 @@ def handle_ts_data_query(tm, filters):
     resp_arr = []    
     
     for event_type in event_types:
-        obj_type = objects["type"]
-        for obj_id in objects["id"]:
-            resp_i = {}
-            ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
-            if (ts_arr != None):
-                resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
-                resp_i["id"] = obj_id + ":" + event_type
-                resp_i["subject"] = obj_id
-                resp_i["eventType"] = event_type
-                resp_i["description"] = event_type + " for " + obj_id + " of type " + obj_type
-                resp_i["units"] = schema_dict["units"]["ops_"+event_type]
-                resp_i["tsdata"] = ts_arr
-                resp_arr.append(resp_i)
-
+        et_split = event_type.split(':')
+        if et_split[0] == "ops_monitoring":
+            event_type = et_split[1]
+            obj_type = objects["type"]
+            for obj_id in objects["id"]:
+                resp_i = {}
+                        
+                ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
+                if (ts_arr != None):
+                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
+                    resp_i["id"] = obj_id + ":" + event_type
+                    resp_i["subject"] = obj_id
+                    resp_i["eventType"] = "ops_monitoring:" + event_type
+                    resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
+                    resp_i["units"] = schema_dict["units"]["ops_"+event_type]
+                    resp_i["tsdata"] = ts_arr
+                    resp_arr.append(resp_i)
+        else:
+            print "event ", event_type, "not recognized", "missing namespace 'ops_monitoring:' ?"
     return json.dumps(resp_arr)
 
 
@@ -411,7 +416,8 @@ def get_object_info(tm, table_str, obj_id):
         tm.con.commit()
     except Exception, e:
         print e
-    
+        tm.con.commit()
+
     cur.close()
     tm.db_lock.release()
 
@@ -436,6 +442,7 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 
     except Exception, e:
         print e
+        tm.con.commit()
 
     cur.close()
     tm.db_lock.release()
@@ -466,6 +473,7 @@ def get_refs(tm, table_str, object_id):
 
     except Exception, e:
         print e
+        tm.con.commit()
 
     cur.close()
     tm.db_lock.release()
@@ -501,6 +509,7 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
     except Exception, e:
         print e
+        tm.con.commit()
     
     cur.close()
     tm.db_lock.release()
@@ -536,7 +545,8 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
     except Exception, e:
         print e
-    
+        tm.con.commit()
+
     cur.close()
     tm.db_lock.release()
 
@@ -585,6 +595,7 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
     except Exception, e:
         print "query failed: select (ts,v) from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
         print e
+        tm.con.commit()
 
     cur.close()
     tm.db_lock.release()
