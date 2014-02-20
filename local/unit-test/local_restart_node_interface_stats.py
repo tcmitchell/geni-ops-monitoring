@@ -1,6 +1,7 @@
 import sys
 import json
 import psycopg2
+import getopt
 
 local_path = "../"
 common_path = "../../common/"
@@ -11,13 +12,46 @@ import table_manager
 import info_populator
 import stats_populator
 
+def usage():
+    print 'local_restart_node_interface_stats.py -b <local-store-base-url> -n <node-id> -i <interface-id> -r <num-inserts> -s <sleep-period-seconds>'
+    sys.exit(2)
 
-def main():
+def parse_args(argv):
+    base_url = "http://127.0.0.1:5000"
+    node_id = "instageni.gpolab.bbn.com_node_pc1"
+    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth0"
+    num_ins = 10;
+    per_sec = 0.2;
+
+    try:
+        opts, args = getopt.getopt(argv,"hb:n:i:r:s:",["baseurl=","nodeid=","interfaceid=","numinserts=","sleepperiodsec="])
+    except getopt.GetoptError:
+        usage()
+
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+        elif opt in ("-b", "--baseurl"):
+            base_url = arg
+        elif opt in ("-n", "--nodeid"):
+            node_id = arg
+        elif opt in ("-i", "--interfaceid"):
+            interface_id = arg
+        elif opt in ("-r", "--numinserts"):
+            num_ins = int(arg)
+        elif opt in ("-s", "--sleepperiodsec"):
+            per_sec = float(arg)
+
+    return [base_url, node_id, interface_id, num_ins, per_sec]
+
+
+def main(argv):
+
+    [base_url, node_id, interface_id, num_ins, per_sec] = parse_args(argv)
 
     db_name = "local"
     config_path = "../../config/"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
-
 
     info_schema = json.load(open(config_path + "info_schema"))
     data_schema = json.load(open(config_path + "data_schema"))
@@ -26,16 +60,9 @@ def main():
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
 
-    node_id = "instageni.gpolab.bbn.com_node_pc1"
-    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth0"
-    num_ins = 10
-    per_sec = 0.2
-
     # info population
-    ip = info_populator.InfoPopulator(tbl_mgr)
-
+    ip = info_populator.InfoPopulator(tbl_mgr, base_url)
     ip.ins_fake_info()
-
        
     cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from ops_aggregate");
@@ -49,8 +76,8 @@ def main():
     node_event_str_arr.append("swap_free")
 
     interface_event_str_arr = []
-    interface_event_str_arr.append("ctrl_net_rx_bytes")
-    interface_event_str_arr.append("ctrl_net_tx_bytes")
+    interface_event_str_arr.append("rx_bytes")
+    interface_event_str_arr.append("tx_bytes")
 
     print node_event_str_arr + interface_event_str_arr
     
@@ -80,4 +107,4 @@ def main():
     tbl_mgr.con.close()
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
