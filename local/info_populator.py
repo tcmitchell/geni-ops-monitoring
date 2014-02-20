@@ -15,15 +15,16 @@ sys.path.append(common_path)
 import table_manager
 
 class InfoPopulator(threading.Thread):
-    def __init__(self, tbl_mgr):
+    def __init__(self, tbl_mgr, url_base):
 
         self.tbl_mgr = tbl_mgr 
+        self.url_base = url_base
 
     def ins_fake_info(self):
          info_dict = {}
-         url_local_info = "http://127.0.0.1:5000/info/"
-         url_local_data = "http://127.0.0.1:5000/data/"
-         url_opsconfig_local_info = "http://127.0.0.1:5000/info/"
+         url_local_info = self.url_base + "/info/"
+         url_local_data = self.url_base + "/data/"
+         url_opsconfig_local_info = self.url_base + "/info/"
          
          agg1 = []
          agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#")
