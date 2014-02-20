@@ -8,7 +8,7 @@ Reference Local Datastore README
     For the Python-Flask webserver:
     (3) sudo apt-get install python-flask
 
-    For the Nginx webserver:
+    For the Apache webserver:
     (3) ...
 
 
@@ -17,49 +17,51 @@ Reference Local Datastore README
     Omit (1) and (2) if you already have a postgres user
     (1)     sudo -u postgres psql postgres
     (2) (in postgres) \password postgres 
-    (3)     sudo -u postgres createuser --superuser $USER
+    (3)     sudo -u postgres createuser --superuser <LOCAL_OPERATOR_UNAME>
     (4)     sudo -u postgres psql postgres
-    (5)	(in postgres) \password <USER> # USER is typed
+    (5)	(in postgres) \password <LOCAL_OPERATOR_UNAME> 
     (6)     sudo -u postgres createdb local
-
-    Consider modifying (3) to be read-only for REST reponses and
-    creating another user for local inserts that read and write
-    priviledges.
-
+    (7) Edit the config file at config/local_datastore_operators.conf
+        to match the username and password as well as other parameters
+	like hostname and port number if they are not localhost on port
+	5432.
+    (8) TODO Add documention on autovacuuming, need to test first.
     Also, include the postres conf file for good autovacuuming.
     Maybe also a cron job for daily vacuum fulls
 
+
 3. PSutil Install and Configuration (necessary for the unit-test)
 
-    (1) sudo apt-get install python-dev python-psutil python-pip
-    (2) sudo pip install psutil --upgrade
+    (1) sudo apt-get install python-dev python-pip 
+    (2) sudo pip install psutil 
+    (3) If psutil was installed through apt-get install 
+        python-psutil, upgrade it through pip
+        sudo pip install psutil --upgrade
 
 
-4. Nginx Configuration
-    ...
+4. Apache Wsgi and Flask Configuration
+      ...
 
 
 5. Datastore database cleanup and initialization 
 
     (1) Running the unit-test drops tables that are to be used for
     resource information and tsdata.  
-    (2) It populates the tables with dummy configuration information.
-    (3) It runs a series of inserts for putting tsdata that take a few
-    seconds to complete.
+    (2) Run unit test by doing:
+    	python local_restart_node_interface_stats.py 
+    (2) It populates the tables with simulated configuration information.
+    (3) It runs a series of inserts for putting node and interface data 
+        that take a few seconds to complete.
     (4) Open PostgreSQL to look at the data and tables
-        (a) psql # to get into postgres
-	(b) \connect local
+        (a) psql --dbname=local
   	(c) \dt
-	(d) select * from aggregate;
-
-     TODO datastore config
+	(d) select * from ops_aggregate;
+    
 
 6. Starting the Flask webserver
 
     (1) python web_server.py
-    (2) Run unit test: python local_restart_node_interface_stats.py
-        This populates the local store
-    (3) Example calls that work after that population:
+    (2) Example calls that work after that population in section 5:
 
  Info queries:
  http://127.0.0.1:5000/info/aggregate/gpo-ig
