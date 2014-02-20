@@ -27,14 +27,14 @@
 	       ["units","percent"]
              ]
 ,
-"ops_ctrl_net_rx_bytes":  [
+"ops_rx_bytes":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
 	       ["v","int8"],
 	       ["units","bytes"]
               ]
 ,
-"ops_ctrl_net_tx_bytes":  [
+"ops_tx_bytes":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
 	       ["v","int8"],
