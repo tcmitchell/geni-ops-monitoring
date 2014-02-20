@@ -76,11 +76,7 @@
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["user_urn","varchar"],
-		 ["user_href","varchar"],
-		 ["slice_urn","varchar"],
-		 ["slice_href","int8"]
+		 ["ts","int8"]
           ]
 ,
 "ops_opsconfig": [

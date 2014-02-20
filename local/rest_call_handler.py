@@ -381,9 +381,6 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
     json_dict = {}
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
 
     if user_refs:
         json_dict["users"] = []
@@ -417,6 +414,8 @@ def get_object_info(tm, table_str, obj_id):
     
     cur.close()
     tm.db_lock.release()
+
+    print "RESULT", res
 
     return res
 
