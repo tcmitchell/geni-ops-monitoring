@@ -26,8 +26,8 @@ def main():
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
 
-    node_id = "404-ig-pc1"
-    interface_id = "404-ig-pc1:eth0"
+    node_id = "instageni.gpolab.bbn.com_node_pc1"
+    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth0"
     num_ins = 10
     per_sec = 0.2
 
