@@ -9,7 +9,7 @@ Reference Local Datastore README
     (3) sudo apt-get install python-flask
 
     For the Apache webserver with WSGI:
-    (4) sudo apt-get apache2 libapache2-mod-wsgi
+    (4) sudo apt-get install apache2 libapache2-mod-wsgi
 
 
 2. PostgreSQL Configuration
@@ -20,7 +20,7 @@ Reference Local Datastore README
     Omit (1) if you already have a postgres user
     (1) sudo -u postgres psql -c '\password postgres' postgres
     (2) sudo -u postgres createuser --superuser <LOCAL_OPERATOR_NAME>
-    (3) sudo -u postgres psql -c '\password localstore' postgres
+    (3) sudo -u postgres psql -c '\password <LOCAL_OPERATOR_NAME>' postgres
     (4) sudo -u postgres createdb local
 
 3. PSutil Install and Configuration (necessary for the unit-test)
@@ -39,7 +39,7 @@ Reference Local Datastore README
 
     (1) cd /usr/local
     (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
-    (3) sudo $EDITOR ops-monitoring/config/local_datastore_operators.conf
+    (3) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
         * set username: <LOCAL_OPERATOR_NAME>
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
 
@@ -64,6 +64,10 @@ Reference Local Datastore README
     Order deny,allow
     Allow from all
   </Directory>
+
+    (2) In order to see WSGI errors if any occur, modify that same
+        VirtualHost block and set:
+  LogLevel info
 
 6. Datastore database cleanup and initialization 
 
