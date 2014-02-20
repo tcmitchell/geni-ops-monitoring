@@ -73,7 +73,7 @@ Reference Local Datastore README
 
     (1) cd /usr/local/ops-monitoring/local/unit-test
     (2) IF you want the tables only, run:
-          python FIXME
+          python ./local_table_reset.py
     (3) OR IF you want tables and data, run:
     	  python ./local_restart_node_interface_stats.py 
         This populates the tables with simulated configuration
