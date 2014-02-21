@@ -19,7 +19,6 @@ Contents of this directory:
  * Directories containing helper code:
    * common/: python libraries used by multiple components
    * config/: python configuration files used by multiple components
-   * extern/: external code needed by the repository, currently unused
 
 All files are:
 
