@@ -118,7 +118,7 @@ def handle_sliver_info_query(tm, sliver_id):
     if sliver_info != None:
 
         resources = get_related_objects(tm, "ops_sliver_node", "sliver_id", sliver_id);
-        print "resources",resources
+
         for res_i in resources:
             res_refs.append(get_refs(tm, "ops_node", res_i))
 
@@ -141,7 +141,7 @@ def handle_aggregate_info_query(tm, agg_id):
     if agg_info != None:
 
         resources = get_related_objects(tm, "ops_aggregate_resource", "aggregate_id", agg_id)
-        print resources
+
         for res_i in resources:
             res_refs.append(get_refs(tm, "ops_node", res_i))
 
@@ -456,8 +456,6 @@ def get_object_info(tm, table_str, obj_id):
     cur.close()
     tm.db_lock.release()
 
-    print "RESULT", res
-
     return res
 
 
@@ -619,7 +617,6 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
         cur.execute("select (ts,v) from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
         tm.con.commit()
-        print q_res
 
         if len(q_res) > 0:
             res = []
