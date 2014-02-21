@@ -271,6 +271,8 @@ def check_data_query_keys(q_dict):
 def get_interface_info_dict(schema, info_row):
 
     json_dict = {}
+
+    # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0] == "address_address":
             addr = info_row[col_i]
@@ -288,6 +290,8 @@ def get_interface_info_dict(schema, info_row):
 def get_user_info_dict(schema, info_row):
 
     json_dict = {}
+
+    # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0] == "authority_urn":
             auth_urn = info_row[col_i]
@@ -305,6 +309,8 @@ def get_user_info_dict(schema, info_row):
 def get_node_info_dict(schema, info_row, port_refs):
 
     json_dict = {}
+
+    # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -320,6 +326,8 @@ def get_node_info_dict(schema, info_row, port_refs):
 def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs):
 
     json_dict = {}
+
+    # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -340,6 +348,8 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs):
 def get_sliver_info_dict(schema, info_row, res_refs):
 
     json_dict = {}
+
+    # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0] == "aggregate_urn":
             agg_urn = info_row[col_i]
@@ -362,6 +372,8 @@ def get_sliver_info_dict(schema, info_row, res_refs):
 def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
 
     json_dict = {}
+    
+    # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -381,9 +393,8 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
 def get_slice_info_dict(schema, info_row, user_refs):
 
     json_dict = {}
-    for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
-            
+                
+    # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0] == "authority_href":
             auth_href = info_row[col_i]
@@ -406,6 +417,8 @@ def get_slice_info_dict(schema, info_row, user_refs):
 def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 
     json_dict = {}
+    
+    # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         json_dict[schema[col_i][0]] = info_row[col_i]
 
