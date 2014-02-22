@@ -1,0 +1,36 @@
+{
+ 
+ "opsconfig": {
+		"$schema":"schema:string",
+
+		"aggregates": {"schema:type":"schema:list", "urn":"schema:string", "amtype":"schema:string","href":"schema:string"},
+
+		"authorities": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer"
+	     }
+ 
+,
+ 
+"interface": {
+		"$schema":"schema:string",
+
+		"address": {"schema:type":"schema:dict", "type":"schema:string", "address":"schema:string"},
+
+		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "role":"schema:string", "max_bps":"schema:integer", "max_pps":"schema:integer"},
+
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer"
+	     }
+ 
+}
