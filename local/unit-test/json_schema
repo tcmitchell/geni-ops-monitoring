@@ -13,9 +13,7 @@
 
 		"ts":"schema:integer"
 	     }
- 
 ,
- 
 "interface": {
 		"$schema":"schema:string",
 
@@ -32,5 +30,123 @@
 
 		"ts":"schema:integer"
 	     }
- 
-}
+,
+"node": {
+		"$schema":"schema:string",
+
+		"ports": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "mem_total_kb":"schema:integer"},
+
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer"
+	     }
+,
+"aggregate": {
+		"$schema":"schema:string",
+
+		"resources": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"slivers": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"measRef":"schema:string",
+
+		"ts":"schema:integer"
+	     }
+,
+"authority": {
+		"$schema":"schema:string",
+
+		"users": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"slices": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer"
+	     }
+,
+"slice": {
+		"$schema":"schema:string",
+
+		"members": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string", "role":"schema:string"},
+
+		"authority": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"uuid":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer",
+
+		"created":"schema:integer",
+
+		"expires":"schema:integer"
+	     }
+,
+"sliver": {
+		"$schema":"schema:string",
+
+		"resources": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+
+		"aggregate": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"uuid":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"slice_urn":"schema:string",
+		
+		"slice_uuid":"schema:string",
+
+		"creator":"schema:string",
+
+		"ts":"schema:integer",
+
+		"created":"schema:integer",
+
+		"expires":"schema:integer"
+	     }
+,
+"user": {
+		"$schema":"schema:string",
+
+		"authority": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:integer",
+
+		"fullname":"schema:string",
+
+		"email":"schema:string"
+	     }
+ }

@@ -26,6 +26,8 @@ import os
 import urllib2
 from pprint import pprint as pprint
 
+# TODO if response has an extra key, exception is thrown and currently
+# not handled, ok
 
 def properties_dict(props_schema, props_dict):
 
@@ -109,22 +111,33 @@ json_schema = json.load(open(json_schema_path + "json_schema"))
 pprint(json_schema)
 base_url = "http://127.0.0.1:5000/"
 
-
+aggregate = base_url + "info/aggregate/gpo-ig"
+node = base_url + "info/node/instageni.gpolab.bbn.com_node_pc1"
+interface = base_url + "info/interface/instageni.gpolab.bbn.com_interface_pc1:eth0"
+slice_  = base_url + "info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive"
+sliver  = base_url + "info/sliver/instageni.gpolab.bbn.com_sliver_26947"
+authority = base_url + "info/authority/ch.geni.net"
+user  = base_url + "info/user/tupty"
 opsconfig = base_url + "info/opsconfig/geni-prod"
 
-resp = json.load(urllib2.urlopen(opsconfig))
-schema = json_schema["opsconfig"]
-
-print validate_response(schema, resp)
 
 
-interface = base_url + "info/interface/instageni.gpolab.bbn.com_interface_pc1:eth0"
 
-resp = json.load(urllib2.urlopen(interface))
-schema = json_schema["interface"]
+urls = {}
+urls["opsconfig"] = opsconfig
+urls["node"] = node
+urls["interface"] = interface
+urls["aggregate"] = aggregate
+urls["authority"] = authority
+urls["slice"] = slice_
+urls["sliver"] = sliver
+urls["user"] = user
 
-print validate_response(schema, resp)
 
+for key in urls:
+    resp = json.load(urllib2.urlopen(urls[key]))
+    schema = json_schema[key]
+    print key,"response is valid?",validate_response(schema, resp)
 
 
 
