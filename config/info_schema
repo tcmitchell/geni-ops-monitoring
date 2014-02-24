@@ -14,7 +14,7 @@
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["properties:mem_total_kb","int8"]
+		 ["properties$mem_total_kb","int8"]
           ]
 ,
 "ops_sliver": [
@@ -41,9 +41,9 @@
 		 ["ts","int8"],
 		 ["address_type","varchar"],
 		 ["address_address","varchar"],
-		 ["properties:role","varchar"],
-		 ["properties:max_bps","int8"],
-		 ["properties:max_pps","int8"]
+		 ["properties$role","varchar"],
+		 ["properties$max_bps","int8"],
+		 ["properties$max_pps","int8"]
           ]
 ,
 "ops_slice": [

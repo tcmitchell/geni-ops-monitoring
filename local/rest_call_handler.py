@@ -280,9 +280,9 @@ def get_interface_info_dict(schema, info_row):
             addr = info_row[col_i]
         elif schema[col_i][0] == "address_type":
             addr_type = info_row[col_i]
-        elif schema[col_i][0].startswith("properties:"):
-            # parse off properties: and place into properties dict
-            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split(":")[1]] = info_row[col_i]
+        elif schema[col_i][0].startswith("properties$"):
+            # parse off properties$ and place into properties dict
+            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split("$")[1]] = info_row[col_i]
 
 
         else:
@@ -321,9 +321,9 @@ def get_node_info_dict(schema, info_row, port_refs):
 
     # Not all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0].startswith("properties:"):
-            # parse off properties: and place into properties dict
-            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split(":")[1]] = info_row[col_i]
+        if schema[col_i][0].startswith("properties$"):
+            # parse off properties$ and place into properties dict
+            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split("$")[1]] = info_row[col_i]
         else:
             json_dict[schema[col_i][0]] = info_row[col_i]        
 
@@ -620,25 +620,24 @@ def build_ts_where_str(ts_dict):
     return ts_where_str
 
 def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
-    
+     
     tm.db_lock.acquire()
     cur = tm.con.cursor()
     res = None
     try:
     
         # assumes an id for obj_id in table event_type with ops_ prepended
-        cur.execute("select (ts,v) from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
+        cur.execute("select ts,v from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
         tm.con.commit()
 
         if len(q_res) > 0:
             res = []
-            for q_res_i in xrange(len(q_res)): # parsing result "(<ts>,<v>)"
-                q_res_i = q_res[q_res_i][0][1:-1].split(',')
-                res.append({"ts":q_res_i[0],"v":q_res_i[1]})
+            for q_res_i in xrange(len(q_res)): # parsing result "<ts>,<v>"
+                res.append({"ts":q_res[q_res_i][0],"v":q_res[q_res_i][1]})
         
     except Exception, e:
-        print "query failed: select (ts,v) from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
+        print "query failed: select ts,v from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
         print e
         tm.con.commit()
 

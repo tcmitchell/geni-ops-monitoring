@@ -23,6 +23,7 @@
 #----------------------------------------------------------------------
 
 import psycopg2
+import MySQLdb as mysqldb
 import json
 import sys
 import threading
@@ -30,8 +31,16 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, db_name, config_path):
-        self.con = self.init_conn(db_name, config_path)
+    def __init__(self, db_name, config_path, database_program="postgres"):
+        if database_program == "postgres":
+            self.con = self.init_psql_conn(db_name, config_path)
+        elif database_program == "mysql":
+            self.con = self.init_mysql_conn(db_name, config_path)
+        else:
+            print database_program, "is not a valid database program"
+            sys.exit(1)
+            
+        self.database_program = database_program
         self.db_lock = threading.Lock()
 
         info_schema = json.load(open(config_path + "info_schema"))
@@ -42,22 +51,47 @@ class TableManager:
         print self.schema_dict.keys() 
         print ""
 
-    def init_conn(self, db_name, config_path):
+
+    def init_psql_conn(self, db_name, config_path):
+
 
         # load a 2-function package for reading database config
         sys.path.append(config_path)
-        import postgres_conf_loader
+        import database_conf_loader
 
         if db_name == "local":
-            [database_, username_, password_, host_, port_] = postgres_conf_loader.local(config_path)
+            [database_, username_, password_, host_, port_] = database_conf_loader.psql_local(config_path)
         elif db_name == "aggregator":
-            [database_, username_, password_, host_, port_] = postgres_conf_loader.aggregator(config_path)
+            [database_, username_, password_, host_, port_] = database_conf_loader.psql_aggregator(config_path)
         else:
             print "No aggregator or local database selected.  Exiting\n"
             sys.exit(1)
 
         try:
             con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+        except Exception, e:
+            print e, "\nCannot open a connection to database " + database_ + ". \n Exiting."
+            sys.exit(1)
+
+        return con
+
+    def init_mysql_conn(self, db_name, config_path):
+
+        # load a 2-function package for reading database config
+        sys.path.append(config_path)
+        import database_conf_loader
+
+        if db_name == "local":
+            [database_, username_, password_, host_, port_] = database_conf_loader.mysql_local(config_path)
+        elif db_name == "aggregator":
+            [database_, username_, password_, host_, port_] = database_conf_loader.mysql_aggregator(config_path)
+        else:
+            print "No aggregator or local database selected.  Exiting\n"
+            sys.exit(1)
+
+        try:
+
+            con = mysqldb.connect(db = database_, user = username_, passwd = password_, host = host_, port = int(port_))
         except Exception, e:
             print e, "\nCannot open a connection to database " + database_ + ". \n Exiting."
             sys.exit(1)
@@ -131,7 +165,29 @@ class TableManager:
             print e
     '''
 
+    # break this into postgres and mysql
     def table_exists(self, table_str):
+        if self.database_program == "postgres":
+            return self.table_exists_psql(table_str)
+        elif self.database_program == "mysql":
+            return self.table_exists_mysql(table_str)
+
+    def table_exists_mysql(self, table_str):
+        exists = False
+        self.db_lock.acquire()
+        try:
+            cur = self.con.cursor()
+            cur.execute("show tables like '" + table_str + "'")
+            if cur.fetchone():
+                exists = True
+            cur.close()
+        except Exception, e:
+            print e
+        self.db_lock.release()
+
+        return exists
+
+    def table_exists_psql(self, table_str):
         exists = False
         self.db_lock.acquire()
         try:
@@ -145,8 +201,16 @@ class TableManager:
         self.db_lock.release()
 
         return exists
-    
-    def get_table_col_names(self, table_str):
+
+
+    def get_col_names(self, table_str):
+        if (self.database_program == "postgres"):
+            self.get_col_names_psql(table_str)
+        if (self.database_program == "mysql"):
+            self.get_col_names_mysql(table_str)
+
+
+    def get_col_names_psql(self, table_str):
 
         self.db_lock.acquire()
         col_names = []
@@ -159,20 +223,33 @@ class TableManager:
             print e
 
         self.db_lock.release()
-            
         return col_names
+
+
+    def get_col_names_mysql(self, table_str):
+
+        self.db_lock.acquire()
+        col_names = []
+        
+        # todo fill in
+
+        self.db_lock.release()
+        return col_names
+
 
     def establish_tables(self, table_str_arr):
         for table_str in table_str_arr:
             self.establish_table(table_str)
 
+
     def establish_table(self, table_str):
 
-        schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
+        schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str, self.database_program)
         
         if self.table_exists(table_str):
+       
             print "\nINFO: table " + table_str + " already exists with schema:"
-            print self.get_table_col_names(table_str)
+            print self.get_col_names(table_str)
             print "Current schema_str " + schema_str
             print "Skipping creation of " + table_str + "\n"
             
@@ -187,13 +264,15 @@ class TableManager:
 
                 cur.close()
             except Exception, e:
-                print e
+                print e, "Exception while creating table" + table + schema_str
             
             self.db_lock.release()
+
 
     def drop_tables(self, table_str_arr):
         for table_str in table_str_arr:
             self.drop_table(table_str)
+
 
     def drop_table(self, table_str):
 
@@ -212,12 +291,18 @@ class TableManager:
 
         self.db_lock.release()
 
-def translate_table_schema_to_schema_str(table_schema_dict, table_str):
+def translate_table_schema_to_schema_str(table_schema_dict, table_str, database_program):
         schema_str = "("
+        if database_program == "postgres":
+            for col_i in range(len(table_schema_dict)):
+                schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
+        else:
+            for col_i in range(len(table_schema_dict)):
+                if table_schema_dict[col_i][1] == "varchar":
+                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(128)," 
+                else:
+                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "," 
 
-        for col_i in range(len(table_schema_dict)):
-            schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
-        
         # remove , and add )
         return schema_str[:-1] + ")"
 
@@ -246,6 +331,19 @@ def arg_parser(argv, dict_keys):
 
     return table_str_arr
 
+def test_mysql(con):
+    
+    cur = con.cursor()
+    cur.execute("select version()")
+    ver = cur.fetchone()
+    print ver,"is the db version"
+
+
+    cur.execute("drop table if exists ops_swap_free")
+    con.commit()
+    cur.execute("create table ops_swap_free(id varchar(128),ts int8,v float4)")
+    con.commit()
+
 
 def main():
 
@@ -262,8 +360,7 @@ def main():
         print local_or_agg + " is not a valid response.  Enter L or A"
         sys.exit(1)
 
-
-    tm = TableManager(db_name, config_path)
+    tm = TableManager(db_name, config_path, "mysql")
 
     # get all tables all event types (data_schema) and info types
     # (info_schema) for local datastore database or aggregator

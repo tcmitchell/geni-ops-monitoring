@@ -37,7 +37,10 @@ class LocalDatastoreServer:
         import table_manager
 
         self.db_name = "local"
+
+        # uses postgres by default
         self.tm = table_manager.TableManager(self.db_name, self.config_path)
+        #self.tm = table_manager.TableManager(self.db_name, self.config_path, "mysql")
 
         self.app = Flask(__name__)
        

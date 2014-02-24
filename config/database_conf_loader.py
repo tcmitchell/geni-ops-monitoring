@@ -23,7 +23,7 @@
 
 import ConfigParser
 
-def local(config_path):
+def psql_local(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/local_datastore_operator.conf")
     database = config.get("postgres","database")
@@ -33,7 +33,7 @@ def local(config_path):
     port = config.get("postgres","port")
     return [database, username, password, host, port]
 
-def aggregator(config_path):
+def psql_aggregator(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/aggregator_operator.conf")
     database = config.get("postgres","database")
@@ -41,4 +41,24 @@ def aggregator(config_path):
     password = config.get("postgres","password")
     host = config.get("postgres","host")
     port = config.get("postgres","port")
+    return [database, username, password, host, port]
+
+def mysql_local(config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path + "/local_datastore_operator.conf")
+    database = config.get("mysql","database")
+    username = config.get("mysql","username")
+    password = config.get("mysql","password")
+    host = config.get("mysql","host")
+    port = config.get("mysql","port")
+    return [database, username, password, host, port]
+
+def mysql_aggregator(config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path + "/aggregator_operator.conf")
+    database = config.get("mysql","database")
+    username = config.get("mysql","username")
+    password = config.get("mysql","password")
+    host = config.get("mysql","host")
+    port = config.get("mysql","port")
     return [database, username, password, host, port]

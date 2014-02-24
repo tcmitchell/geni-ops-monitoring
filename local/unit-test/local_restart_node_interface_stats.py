@@ -74,7 +74,9 @@ def main(argv):
 
     db_name = "local"
     config_path = "../../config/"
+    # uses postgres by default
     tbl_mgr = table_manager.TableManager(db_name, config_path)
+    tbl_mgr = table_manager.TableManager(db_name, config_path, "mysql")
 
     info_schema = json.load(open(config_path + "info_schema"))
     data_schema = json.load(open(config_path + "data_schema"))
