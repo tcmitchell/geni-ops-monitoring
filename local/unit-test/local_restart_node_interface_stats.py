@@ -101,8 +101,14 @@ def main(argv):
     node_event_str_arr.append("swap_free")
 
     interface_event_str_arr = []
-    interface_event_str_arr.append("rx_bytes")
-    interface_event_str_arr.append("tx_bytes")
+    interface_event_str_arr.append("rx_bps")
+    interface_event_str_arr.append("tx_bps")
+    interface_event_str_arr.append("rx_pps")
+    interface_event_str_arr.append("tx_pps")
+    interface_event_str_arr.append("rx_eps")
+    interface_event_str_arr.append("tx_eps")
+    interface_event_str_arr.append("rx_dps")
+    interface_event_str_arr.append("tx_dps")
 
     print node_event_str_arr + interface_event_str_arr
     

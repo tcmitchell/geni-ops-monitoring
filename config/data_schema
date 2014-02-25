@@ -27,17 +27,59 @@
 	       ["units","percent"]
              ]
 ,
-"ops_rx_bytes":  [
+"ops_rx_bps":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","int8"],
-	       ["units","bytes"]
+	       ["v","float8"],
+	       ["units","bps"]
               ]
 ,
-"ops_tx_bytes":  [
+"ops_tx_bps":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
-	       ["v","int8"],
-	       ["units","bytes"]
+	       ["v","float8"],
+	       ["units","bps"]
+              ]
+,
+"ops_rx_pps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
+              ]
+,
+"ops_tx_pps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
+              ]
+,
+"ops_rx_eps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
+              ]
+,
+"ops_tx_eps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
+              ]
+,
+"ops_tx_dps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
+              ]
+,
+"ops_rx_dps":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","float8"],
+	       ["units","pps"]
               ]
 }
