@@ -506,12 +506,15 @@ def get_refs(tm, table_str, object_id):
     try:
 
         # two queries avoids regex split with ,
-        cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
+        if tm.database_program == "postgres":
+            cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
+        elif tm.database_program == "mysql":
+            cur.execute("select selfRef from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
         self_ref = q_res[0] # removes outer garbage
 
-        cur.execute("select \"urn\" from " + table_str + " where id = '" + object_id + "' limit 1")
+        cur.execute("select urn from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
         urn = q_res[0] # removes outer garbage
@@ -536,17 +539,21 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
     try:
         # three queries avoids regex split with ,
-        cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + slice_id + "'")
+        if tm.database_program == "postgres":
+            cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + slice_id + "'")
+        elif tm.database_program == "mysql":
+            cur.execute("select distinct selfRef from " + table_str + " where id = '" + slice_id + "'")
+
         q_res = cur.fetchone()
         tm.con.commit()
         href = q_res[0] # removes outer garbage
 
-        cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + slice_id + "'")
+        cur.execute("select distinct urn from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
         urn = q_res[0] # removes outer garbage
 
-        cur.execute("select distinct \"role\" from " + table_str + " where id = '" + slice_id + "'")
+        cur.execute("select distinct role from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
         role = q_res[0] # removes outer garbage
