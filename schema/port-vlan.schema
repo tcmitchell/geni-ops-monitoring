@@ -11,12 +11,18 @@
   "properties": {
     "tag": {
       "description": "numeric identifier of VLAN on the parent device",
-      "type": "string",
+      "type": "integer",
       "required": true
     },
     "port": {
       "description": "parent interface of which this VLAN is a subinterface",
       "type": "string",
+      "type": [
+        {
+          "urn": "string",
+          "$ref": "http://json-schema.org/draft-03/links#"
+        }
+      ],
       "required": true
     }
   }
