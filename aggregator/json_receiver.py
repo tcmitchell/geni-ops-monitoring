@@ -87,29 +87,6 @@ def get_psql_entry(col_type, value):
 def main():
     json_text = '{"response_type": "data_poll", "data_type": "memory_util", "results": [{"resource_id": "compute_node_1", "measurements": [{"v": 37.8, "ts": 1391036714.17}, {"v": 37.8, "ts": 1391036818.49}, {"v": 37.8, "ts": 1391036818.71}], "aggregate_id": "404-ig"},{"resource_id": "compute_node_2", "measurements": [{"v": 37.8, "ts": 1391036714.17}, {"v": 37.8, "ts": 1391036818.49}, {"v": 37.8, "ts": 1391036818.71}], "aggregate_id": "404-ig"}]}'
     
-    print json_text
-
-    table_str = "memory_util"
-    thread_name = "thread-test"
-
-    # Dense lines to get schema_dict
-    db_templates = json.load(open("../config/db_templates"))
-    event_types = json.load(open("../config/event_types"))
-    schema_dict = {}
-    for ev_t in event_types.keys():
-        schema_dict[ev_t] = db_templates[event_types[ev_t]["db_template"]] + [["v",event_types[ev_t]["v_col_type"]]]
-    # end dense lines to get schema_dict
-
-
-    jr = JsonReceiver(schema_dict)
-    
-    (r_code, rows) = jr.json_to_psql(json_text, table_str, thread_name)
-    
-    print r_code
-    print 'all rows', len(rows)
-    print rows
-    print rows[0]
-    print rows[1]
     
 if __name__ == "__main__":
     main()
