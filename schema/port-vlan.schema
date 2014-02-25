@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#",
+  "description": "subinterface representing a tagged VLAN on an interface",
+  "name": "port-vlan",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/port#"
+  },
+  "properties": {
+    "tag": {
+      "description": "numeric identifier of VLAN on the parent device",
+      "type": "string",
+      "required": true
+    },
+    "port": {
+      "description": "parent interface of which this VLAN is a subinterface",
+      "type": "string",
+      "required": true
+    }
+  }
+}
