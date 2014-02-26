@@ -1,28 +1,3 @@
-This is GPO code for the GENI operational monitoring project.
-There should be one subdirectory for each component.  For links to all
-documentation of the operational monitoring project, see:
-
-  http://groups.geni.net/geni/wiki/OperationalMonitoring
-
-This codebase is a set of reference components which fully or partially
-implement parts of the monitoring component model listed at:
-
-  http://www.gpolab.bbn.com/monitoring/components/
-
-Contents of this directory:
- * Directories which implement components of the ops monitoring model:
-   * alerting/: reference alerting utilities (component (a)) - incomplete
-   * aggregator/: reference aggregator (component (b)) - incomplete
-   * schema/: schema/examples for datastore polling API (component (c))
-              - working prototype
-   * local/: reference local datastore (component (d)) - working prototype
- * Directories containing helper code:
-   * common/: python libraries used by multiple components
-   * config/: python configuration files used by multiple components
-   * test/: generic utilities for testing code
-
-All files are:
-
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -46,3 +21,9 @@ All files are:
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+class apt::client {
+  exec {
+    "apt_client_update":
+      command => "/usr/bin/apt-get update";
+  }
+}

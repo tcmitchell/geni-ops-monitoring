@@ -1,28 +1,3 @@
-This is GPO code for the GENI operational monitoring project.
-There should be one subdirectory for each component.  For links to all
-documentation of the operational monitoring project, see:
-
-  http://groups.geni.net/geni/wiki/OperationalMonitoring
-
-This codebase is a set of reference components which fully or partially
-implement parts of the monitoring component model listed at:
-
-  http://www.gpolab.bbn.com/monitoring/components/
-
-Contents of this directory:
- * Directories which implement components of the ops monitoring model:
-   * alerting/: reference alerting utilities (component (a)) - incomplete
-   * aggregator/: reference aggregator (component (b)) - incomplete
-   * schema/: schema/examples for datastore polling API (component (c))
-              - working prototype
-   * local/: reference local datastore (component (d)) - working prototype
- * Directories containing helper code:
-   * common/: python libraries used by multiple components
-   * config/: python configuration files used by multiple components
-   * test/: generic utilities for testing code
-
-All files are:
-
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -46,3 +21,36 @@ All files are:
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+node default {
+
+  ## Defaults
+
+  # Always run apt-get update before trying to install packages
+  Package {
+    require => Exec["apt_client_update"],
+  }
+
+  $database_type = "postgresql"
+  $populate_data = true
+
+  # since these passwords are being committed to a repo, never use
+  # them anywhere outside a vagrant instance running on localhost
+  $postgres_superuser_password = "d86LJY278htqSkrP2oNx"
+  $postgres_localstore_password = "yz9nQxB9TbF74jmMQbXs"
+
+  include "local"
+}
+
+class local {
+
+  include "apt::client"
+  include "apache::server"
+  include "flask::server"
+  include "local::server"
+  include "${database_type}::server"
+
+  # if you want to populate the fake data, you need psutil
+  if $populate_data {
+    include "psutil::base"
+  }
+}
