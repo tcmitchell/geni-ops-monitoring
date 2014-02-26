@@ -24,7 +24,7 @@
 class local::server {
 
   if $populate_data {
-    $local_setup_script = "local_restart_node_interface_stats.py"
+    $local_setup_script = "local_restart_node_interface_stats.py -b http://localhost:8088"
   } else {
     $local_setup_script = "local_table_reset.py"
   }
