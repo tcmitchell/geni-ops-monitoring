@@ -1,8 +1,8 @@
 {
   "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
-  "id": "5",
+  "id": "rx_bps:instageni.gpolab.bbn.com_interface_pc1:eth0",
   "subject": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1:eth0",
-  "eventType": "ops_monitoring:rx_bytes",
+  "eventType": "ops_monitoring:rx_bps",
   "description": "bytes per second received on this interface",
   "units": "float",
   "tsdata": [
