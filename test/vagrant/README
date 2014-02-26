@@ -1,0 +1,21 @@
+This is configuration for the vagrant tool for fast VM
+deployment/configuration.  The goal of this configuration is to make it
+easy to stand up a test version of new code, so we can do system-level
+regression tests without a lot of effort or error.
+
+To use it:
+ 1. look at the file: manifests/init.pp
+   * In the "default" node class in that file, set any variables you
+     like to appropriate values for what you want to test, and include the
+     correct class for what you want to test (N.B. as of now, the only
+     database supported is postgresql, and the only class supported is
+     "local").
+ 2. Start the VM:
+
+vagrant up
+    
+    This should start up a vagrant VM, and run a bunch of puppet commands,
+    ideally successfully.  Once it's done, if everything has gone well,
+    you should be able to browse to URLs under:
+      http://localhost:8088/
+    and see pieces of the site
