@@ -23,7 +23,6 @@
 #----------------------------------------------------------------------
 
 import psycopg2
-import MySQLdb as mysqldb
 import json
 import sys
 import threading
@@ -77,7 +76,9 @@ class TableManager:
 
     def init_mysql_conn(self, db_name, config_path):
 
-        # load a 2-function package for reading database config
+	import MySQLdb as mysqldb
+       
+	# load a 2-function package for reading database config
         sys.path.append(config_path)
         import database_conf_loader
 
