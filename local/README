@@ -2,8 +2,12 @@ Reference Local Datastore README
 
 1. Aptitude packages
 
-    (1) sudo apt-get install postgresql
-    (2) sudo apt-get install python-psycopg2 python-requests 	
+   * IF using postgres
+      (1) sudo apt-get install postgresql python-psycopg2
+   * IF using mysql
+      (1) sudo apt-get install mysql-server mysql-client python-mysqldb
+
+    (2) sudo apt-get install python-requests 	
 
     For the Python-Flask webserver:
     (3) sudo apt-get install python-flask
@@ -12,7 +16,7 @@ Reference Local Datastore README
     (4) sudo apt-get install apache2 libapache2-mod-wsgi
 
 
-2. PostgreSQL Configuration
+2a. PostgreSQL Configuration
 
    We use <LOCAL_OPERATOR_NAME>=localstore, but any name you like
    should work.
@@ -23,6 +27,11 @@ Reference Local Datastore README
           --no-superuser <LOCAL_OPERATOR_NAME>
     (3) sudo -u postgres psql -c '\password <LOCAL_OPERATOR_NAME>' postgres
     (4) sudo -u postgres createdb --owner=<LOCAL_OPERATOR_NAME> local
+
+2b. MySQL Configuration
+
+    (1) echo "CREATE DATABASE local" | mysql -u root -p
+    (2) echo "GRANT ALL ON local.* TO <LOCAL_OPERATOR_NAME>@localhost IDENTIFIED BY '<LOCAL_PASSWORD>'" | mysql -u root -p
 
 3. PSutil Install and Configuration (optional)
 
@@ -48,6 +57,7 @@ Reference Local Datastore README
     (3) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
         * set username: <LOCAL_OPERATOR_NAME>
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
+        * IF you are using mysql, set dbtype: mysql in the [main] section
 
 5. Apache WSGI and Flask Configuration
 

@@ -38,8 +38,7 @@ class local::server {
       cwd => "/usr/local/ops-monitoring/local/unit-test",
       require => [
         File["/usr/local/ops-monitoring/config/local_datastore_operator.conf"],
-        Exec["postgresql_set_postgres_passwords"],
-        Package["python-psycopg2"]
+        Exec["${database_type}_set_passwords"]
       ];
   }
 

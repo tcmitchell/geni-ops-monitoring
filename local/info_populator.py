@@ -22,7 +22,6 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import psycopg2
 import time
 import psutil
 import sys

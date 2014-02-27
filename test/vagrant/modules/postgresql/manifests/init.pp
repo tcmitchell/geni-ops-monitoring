@@ -35,12 +35,13 @@ class postgresql::server {
   }
 
   exec {
-    "postgresql_set_postgres_passwords":
+    "postgresql_set_passwords":
       command => "/usr/local/sbin/set_postgresql_passwords",
       user => "postgres",
       require => [
         File["/usr/local/sbin/set_postgresql_passwords"],
-        Package["postgresql"]
+        Package["postgresql"],
+        Package["python-psycopg2"]
       ];
   }
 }

@@ -23,6 +23,18 @@
 
 import ConfigParser
 
+def main_local(config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path + "/local_datastore_operator.conf")
+    dbtype = config.get("main", "dbtype")
+    return [dbtype]
+
+def main_aggregator(config_path):
+    config = ConfigParser.ConfigParser()
+    config.read(config_path + "/aggregator_operator.conf")
+    dbtype = config.get("main", "dbtype")
+    return [dbtype]
+
 def psql_local(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/local_datastore_operator.conf")

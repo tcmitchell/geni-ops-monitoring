@@ -22,7 +22,6 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import psycopg2
 import json
 import sys
 import threading
@@ -30,16 +29,28 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, db_name, config_path, database_program="postgres"):
-        if database_program == "postgres":
+    def __init__(self, db_name, config_path):
+
+        # load a 2-function package for reading database config
+        sys.path.append(config_path)
+        import database_conf_loader
+
+        self.conf_loader = database_conf_loader
+
+        if db_name == "local":
+            [dbtype_] = self.conf_loader.main_local(config_path)
+        elif db_name == "aggregator":
+            [dbtype_] = self.conf_loader.main_aggregator(config_path)
+
+        if dbtype_ == "postgres":
             self.con = self.init_psql_conn(db_name, config_path)
-        elif database_program == "mysql":
+        elif dbtype_ == "mysql":
             self.con = self.init_mysql_conn(db_name, config_path)
         else:
-            print database_program, "is not a valid database program"
+            print dbtype_, "is not a valid database program"
             sys.exit(1)
             
-        self.database_program = database_program
+        self.database_program = dbtype_
         self.db_lock = threading.Lock()
 
         info_schema = json.load(open(config_path + "info_schema"))
@@ -53,15 +64,14 @@ class TableManager:
 
     def init_psql_conn(self, db_name, config_path):
 
-
-        # load a 2-function package for reading database config
-        sys.path.append(config_path)
-        import database_conf_loader
+        import psycopg2
 
         if db_name == "local":
-            [database_, username_, password_, host_, port_] = database_conf_loader.psql_local(config_path)
+            [database_, username_, password_, host_, port_] = \
+                self.conf_loader.psql_local(config_path)
         elif db_name == "aggregator":
-            [database_, username_, password_, host_, port_] = database_conf_loader.psql_aggregator(config_path)
+            [database_, username_, password_, host_, port_] = \
+                self.conf_loader.psql_aggregator(config_path)
         else:
             print "No aggregator or local database selected.  Exiting\n"
             sys.exit(1)
@@ -78,14 +88,12 @@ class TableManager:
 
 	import MySQLdb as mysqldb
        
-	# load a 2-function package for reading database config
-        sys.path.append(config_path)
-        import database_conf_loader
-
         if db_name == "local":
-            [database_, username_, password_, host_, port_] = database_conf_loader.mysql_local(config_path)
+            [database_, username_, password_, host_, port_] = \
+                self.conf_loader.mysql_local(config_path)
         elif db_name == "aggregator":
-            [database_, username_, password_, host_, port_] = database_conf_loader.mysql_aggregator(config_path)
+            [database_, username_, password_, host_, port_] = \
+                self.conf_loader.mysql_aggregator(config_path)
         else:
             print "No aggregator or local database selected.  Exiting\n"
             sys.exit(1)
@@ -361,7 +369,7 @@ def main():
         print local_or_agg + " is not a valid response.  Enter L or A"
         sys.exit(1)
 
-    tm = TableManager(db_name, config_path, "mysql")
+    tm = TableManager(db_name, config_path)
 
     # get all tables all event types (data_schema) and info types
     # (info_schema) for local datastore database or aggregator

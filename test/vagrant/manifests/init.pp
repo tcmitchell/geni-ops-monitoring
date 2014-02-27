@@ -30,13 +30,14 @@ node default {
     require => Exec["apt_client_update"],
   }
 
-  $database_type = "postgresql"
+  $database_type = "mysql"
   $populate_data = true
 
   # since these passwords are being committed to a repo, never use
   # them anywhere outside a vagrant instance running on localhost
   $postgres_superuser_password = "d86LJY278htqSkrP2oNx"
   $postgres_localstore_password = "yz9nQxB9TbF74jmMQbXs"
+  $mysql_localstore_password = "JU63p3MBGjnUmzbv3apQ"
 
   include "local"
 }

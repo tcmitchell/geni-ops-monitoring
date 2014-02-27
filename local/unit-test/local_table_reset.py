@@ -23,7 +23,6 @@
 
 import sys
 import json
-import psycopg2
 
 common_path = "../../common/"
 
