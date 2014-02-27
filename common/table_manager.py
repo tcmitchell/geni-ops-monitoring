@@ -381,7 +381,7 @@ def main():
         print "\nNo tables passed as arguments, selecting all tables."
         print "Next time, provide at least one argument for which "
         print "table(s) to be reset"
-        print "Example usage `python table_manager.py mem_used cpu_util"
+        print "Example usage `python table_manager.py mem_used_kb cpu_util"
         info_schema = json.load(open(config_path + "info_schema"))
         data_schema = json.load(open(config_path + "data_schema"))
         table_str_arr = info_schema.keys() + data_schema.keys()

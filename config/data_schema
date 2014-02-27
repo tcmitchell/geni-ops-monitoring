@@ -6,7 +6,7 @@
 	       ["units","percent"]
              ]
 ,
-"ops_mem_used":  [
+"ops_mem_used_kb":  [
 	       ["id", "varchar"],
                ["ts", "int8"],
 	       ["v","int8"],

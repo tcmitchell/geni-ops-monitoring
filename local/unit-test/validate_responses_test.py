@@ -121,8 +121,6 @@ user  = base_url + "info/user/tupty"
 opsconfig = base_url + "info/opsconfig/geni-prod"
 
 
-
-
 urls = {}
 urls["opsconfig"] = opsconfig
 urls["node"] = node

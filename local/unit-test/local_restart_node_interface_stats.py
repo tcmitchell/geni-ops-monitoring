@@ -93,7 +93,7 @@ def main(argv):
     
     # data population
     node_event_str_arr = []
-    node_event_str_arr.append("mem_used")
+    node_event_str_arr.append("mem_used_kb")
     node_event_str_arr.append("cpu_util")
     node_event_str_arr.append("disk_part_max_used")
     node_event_str_arr.append("swap_free")

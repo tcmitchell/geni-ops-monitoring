@@ -132,4 +132,4 @@ Reference Local Datastore README
 Data queries:
  http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps"],"ts":{"gte":3},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth0"]}}}
 
- http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:mem_used","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":3},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}
+ http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":3},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}

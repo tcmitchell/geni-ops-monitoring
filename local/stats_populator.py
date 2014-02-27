@@ -115,7 +115,7 @@ def get_data(event_type):
     global ts_last_rx_dps
     global ts_last_tx_dps
 
-    if event_type == "mem_used":
+    if event_type == "mem_used_kb":
         return psutil.virtual_memory().used
     elif event_type == "swap_free":
         return (100.0 - psutil.swap_memory().percent)
@@ -244,7 +244,7 @@ def main():
 
 
     node_id="instageni.gpolab.bbn.com_node_pc1"
-    event_types_arr = ["mem_used","cpu_util","disk_part_max_used"]
+    event_types_arr = ["mem_used_kb","cpu_util","disk_part_max_used"]
     nsp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
  
     iface_id="instageni.gpolab.bbn.com_interface_pc1:eth0"
