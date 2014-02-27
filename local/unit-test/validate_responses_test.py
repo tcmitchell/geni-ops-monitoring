@@ -144,9 +144,9 @@ for key in urls:
 
 
 
-node_data_url = base_url + "data/?q={%22filters%22:{%22eventType%22:[%22ops_monitoring:mem_used_kb%22,%22ops_monitoring:cpu_util%22,%22ops_monitoring:disk_part_max_used%22],%22ts%22:{%22gte%22:3},%22obj%22:{%22type%22:%22node%22,%22id%22:[%22instageni.gpolab.bbn.com_node_pc1%22]}}}"
+node_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":3},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}'
 
-interface_data_url = base_url + "data/?q={%22filters%22:{%22eventType%22:[%22ops_monitoring:rx_bps%22,%22ops_monitoring:tx_eps%22],%22ts%22:{%22gte%22:3},%22obj%22:{%22type%22:%22interface%22,%22id%22:[%22instageni.gpolab.bbn.com_interface_pc1:eth0%22]}}}"
+interface_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps","ops_monitoring:rx_pps","ops_monitoring:tx_pps","ops_monitoring:rx_dps","ops_monitoring:tx_dps","ops_monitoring:rx_eps","ops_monitoring:tx_eps"],"ts":{"gte":3},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth0"]}}}'
 
 resp = json.load(urllib2.urlopen(node_data_url))
 print "node_data response is valid?", validate_list_of_responses(json_schema["data"], resp)
