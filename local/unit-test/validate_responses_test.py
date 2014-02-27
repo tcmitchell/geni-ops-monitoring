@@ -46,18 +46,17 @@ def has_keys_values(schema, a_dict):
         if values[i] == 'schema:string':
             if not isinstance(a_dict[keys[i]], unicode):
                 return False
-        elif values[i] == 'schema:integer':
-            if not isinstance(a_dict[keys[i]], int):
+        elif values[i] == 'schema:number':
+            if not (isinstance(a_dict[keys[i]], int) or isinstance(a_dict[keys[i]], float)):
                 return False
-        elif values[i] == 'schema:float':
-            if not isinstance(a_dict[keys[i]], float):
-                return False
+       
 
     return True
 
 
 def check_list(schema, resp):
     del schema["schema:type"]
+    #print "LIST", resp, "is of schema:", schema
     for obj_i in resp:
         if not has_keys_values(schema, obj_i):
             return False
@@ -91,16 +90,21 @@ def validate_response(schema, resp):
         elif schema[k] == 'schema:string':
             if not isinstance(resp[k], unicode):
                 return (False, schema[k] + " is not a string")
-        elif schema[k] == 'schema:integer':
-            if not isinstance(resp[k], int):
-                return (False, schema[k] + " is not an integer")
-        elif schema[k] == 'schema:float': 
-            if not isinstance(resp[k], float):
-                return (False, schema[k] + " is not a float")
+        elif schema[k] == 'schema:number':
+            if not (isinstance(resp[k], int) or isinstance(resp[k], float)):
+                return (False, schema[k] + " is not an number")
         else:
             "no match in type"
 
-    return True
+    return (True, "")
+
+def validate_list_of_responses(schema, resp):
+    for resp_i in resp:
+        (t_or_f, ret_str) = validate_response(schema, resp_i)
+        if (t_or_f == False):
+            return (t_or_f, ret_str)
+
+    return (True, "")
 
 
 # refresh database at local store
@@ -108,7 +112,7 @@ def validate_response(schema, resp):
 
 json_schema_path = "./"
 json_schema = json.load(open(json_schema_path + "json_schema"))
-pprint(json_schema)
+#pprint(json_schema)
 base_url = "http://127.0.0.1:5000/"
 
 aggregate = base_url + "info/aggregate/gpo-ig"
@@ -119,6 +123,7 @@ sliver  = base_url + "info/sliver/instageni.gpolab.bbn.com_sliver_26947"
 authority = base_url + "info/authority/ch.geni.net"
 user  = base_url + "info/user/tupty"
 opsconfig = base_url + "info/opsconfig/geni-prod"
+
 
 
 urls = {}
@@ -139,3 +144,12 @@ for key in urls:
 
 
 
+node_data_url = base_url + "data/?q={%22filters%22:{%22eventType%22:[%22ops_monitoring:mem_used_kb%22,%22ops_monitoring:cpu_util%22,%22ops_monitoring:disk_part_max_used%22],%22ts%22:{%22gte%22:3},%22obj%22:{%22type%22:%22node%22,%22id%22:[%22instageni.gpolab.bbn.com_node_pc1%22]}}}"
+
+interface_data_url = base_url + "data/?q={%22filters%22:{%22eventType%22:[%22ops_monitoring:rx_bps%22,%22ops_monitoring:tx_eps%22],%22ts%22:{%22gte%22:3},%22obj%22:{%22type%22:%22interface%22,%22id%22:[%22instageni.gpolab.bbn.com_interface_pc1:eth0%22]}}}"
+
+resp = json.load(urllib2.urlopen(node_data_url))
+print "node_data response is valid?", validate_list_of_responses(json_schema["data"], resp)
+
+resp = json.load(urllib2.urlopen(interface_data_url))
+print "interface_data response is valid?", validate_list_of_responses(json_schema["data"], resp)

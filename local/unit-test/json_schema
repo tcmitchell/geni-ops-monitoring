@@ -11,7 +11,7 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer"
+		"ts":"schema:number"
 	     }
 ,
 "interface": {
@@ -19,7 +19,7 @@
 
 		"address": {"schema:type":"schema:dict", "type":"schema:string", "address":"schema:string"},
 
-		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "role":"schema:string", "max_bps":"schema:integer", "max_pps":"schema:integer"},
+		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "role":"schema:string", "max_bps":"schema:number", "max_pps":"schema:number"},
 
 
 		"id":"schema:string",
@@ -28,7 +28,7 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer"
+		"ts":"schema:number"
 	     }
 ,
 "node": {
@@ -36,7 +36,7 @@
 
 		"ports": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
 
-		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "mem_total_kb":"schema:integer"},
+		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "mem_total_kb":"schema:number"},
 
 
 		"id":"schema:string",
@@ -45,7 +45,7 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer"
+		"ts":"schema:number"
 	     }
 ,
 "aggregate": {
@@ -63,7 +63,7 @@
 
 		"measRef":"schema:string",
 
-		"ts":"schema:integer"
+		"ts":"schema:number"
 	     }
 ,
 "authority": {
@@ -79,7 +79,7 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer"
+		"ts":"schema:number"
 	     }
 ,
 "slice": {
@@ -97,11 +97,11 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer",
+		"ts":"schema:number",
 
-		"created":"schema:integer",
+		"created":"schema:number",
 
-		"expires":"schema:integer"
+		"expires":"schema:number"
 	     }
 ,
 "sliver": {
@@ -125,11 +125,11 @@
 
 		"creator":"schema:string",
 
-		"ts":"schema:integer",
+		"ts":"schema:number",
 
-		"created":"schema:integer",
+		"created":"schema:number",
 
-		"expires":"schema:integer"
+		"expires":"schema:number"
 	     }
 ,
 "user": {
@@ -143,10 +143,27 @@
 
 		"selfRef":"schema:string",
 
-		"ts":"schema:integer",
+		"ts":"schema:number",
 
 		"fullname":"schema:string",
 
 		"email":"schema:string"
+	     }
+,
+"data": {
+		"$schema":"schema:string",
+
+		"id":"schema:string",
+
+		"subject":"schema:string",
+
+		"eventType":"schema:string",
+
+		"description":"schema:string",
+
+		"units":"schema:string",
+
+		"tsdata": {"schema:type":"schema:list", "ts":"schema:number", "v":"schema:number"}
+
 	     }
  }
