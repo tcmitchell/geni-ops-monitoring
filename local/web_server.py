@@ -40,8 +40,7 @@ class LocalDatastoreServer:
 
         # uses postgres by default
         self.tm = table_manager.TableManager(self.db_name, self.config_path)
-        #self.tm = table_manager.TableManager(self.db_name, self.config_path, "mysql")
-
+        
         self.app = Flask(__name__)
        
         @self.app.route('/info/aggregate/<agg_id>', methods = ['GET'])
