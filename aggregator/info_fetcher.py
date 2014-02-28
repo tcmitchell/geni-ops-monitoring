@@ -156,9 +156,33 @@ class InfoFetcher:
                 # insert into aggregator db
                 info_insert(self.tbl_mgr, "ops_node_interface", node_iface_list)
 
+    # Get aggregate sliver mapping indepently of other polls
+    # does require a sliver list to exist in atlas
     def poll_aggregate_sliver_info(self):
-        pass
+        self.agg_atlas["aggregate_sliver"] = []
+        
+        for aggregate_i in self.agg_atlas["aggregate"]:
+            resp = requests.get(aggregate_i["selfRef"])
+            aggregate_dict = json.loads(resp.content)
+            aggregate_id = aggregate_dict["id"]
+            slivers = aggregate_dict["slivers"]
+            for sliver_i in slivers:
+                sliver_i_self_ref = sliver_i["href"]
+                sliver_i_urn = sliver_i["urn"]
+                
+                # get resource id
+                resp = requests.get(sliver_i_self_ref)
+                sliver_i_dict = json.loads(resp.content)
+                sliver_i_id = sliver_i_dict["id"]
+                
+                # temporary variables for readbility
+                aggregate_sliver_list = [sliver_i_id, aggregate_id, sliver_i_urn, sliver_i_self_ref];
+                aggregate_sliver_dict = {"id":sliver_i_id, "aggregate_id":aggregate_id, "urn":sliver_i_urn, "selfRef":sliver_i_self_ref}          
 
+                # append to atlas
+                self.agg_atlas["aggregate_sliver"].append(aggregate_sliver_dict)
+                # insert into aggregator db
+                info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggregate_sliver_list)
 
     # Get info about interfaces with hrefs in the agg_atlas
     def poll_interface_info(self):
@@ -309,13 +333,12 @@ def main():
     if_ftr.refresh_resource_info()
     if_ftr.refresh_interface_info()
     if_ftr.refresh_sliver_info()
-
-
     
     if_ftr.refresh_aggregate_resource_info()
     if_ftr.refresh_node_interface_info()
-    
-    #pprint(if_ftr.agg_atlas)
+    if_ftr.refresh_aggregate_sliver_info()
+
+    pprint(if_ftr.agg_atlas)
 
 if __name__ == "__main__":
     main()
