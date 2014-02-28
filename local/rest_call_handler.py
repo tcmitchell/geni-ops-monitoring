@@ -80,7 +80,7 @@ def handle_node_info_query(tm, node_id):
 
     node_info = get_object_info(tm, table_str, node_id)
 
-    if node_info != None:
+    if node_info is not None:
         ifaces = get_related_objects(tm, "ops_node_interface", "node_id", node_id)
         for iface_id in ifaces:
             iface_refs.append(get_refs(tm, "ops_interface", iface_id))
@@ -99,7 +99,7 @@ def handle_interface_info_query(tm, iface_id):
 
     iface_info = get_object_info(tm, table_str, iface_id)
 
-    if iface_info != None:
+    if iface_info is not None:
         return json.dumps(get_interface_info_dict(iface_schema, iface_info))
     else:
         return "interface not found"
@@ -115,7 +115,7 @@ def handle_sliver_info_query(tm, sliver_id):
 
     sliver_info = get_object_info(tm, table_str, sliver_id)
 
-    if sliver_info != None:
+    if sliver_info is not None:
 
         resources = get_related_objects(tm, "ops_sliver_resource", "sliver_id", sliver_id);
 
@@ -138,7 +138,7 @@ def handle_aggregate_info_query(tm, agg_id):
     slv_refs = []
 
     agg_info = get_object_info(tm, table_str, agg_id)
-    if agg_info != None:
+    if agg_info is not None:
 
         resources = get_related_objects(tm, "ops_aggregate_resource", "aggregate_id", agg_id)
 
@@ -165,7 +165,7 @@ def handle_authority_info_query(tm, auth_id):
     slice_refs = []
 
     auth_info = get_object_info(tm, table_str, auth_id)
-    if auth_info != None:
+    if auth_info is not None:
 
         users = get_related_objects(tm, "ops_authority_user", "authority_id", auth_id)
         for user_i in users:
@@ -190,7 +190,7 @@ def handle_slice_info_query(tm, slice_id):
     user_refs = []    
 
     slice_info = get_object_info(tm, table_str, slice_id)
-    if slice_info != None:
+    if slice_info is not None:
 
         users = get_related_objects(tm, "ops_slice_user", "slice_id", slice_id)
 
@@ -210,7 +210,7 @@ def handle_user_info_query(tm, user_id):
     con = tm.con
 
     user_info = get_object_info(tm, table_str, user_id)
-    if user_info != None:
+    if user_info is not None:
         return json.dumps(get_user_info_dict(user_schema, user_info))
     else:
         return "user not found"
@@ -226,7 +226,7 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
     auth_refs = []
 
     opsconfig_info = get_object_info(tm, table_str, opsconfig_id)
-    if opsconfig_info != None:
+    if opsconfig_info is not None:
         
         aggs = get_related_objects(tm, "ops_opsconfig_aggregate", "opsconfig_id", opsconfig_id)
 
