@@ -107,7 +107,7 @@ class InfoFetcher:
                 # append to atlas
                 self.agg_atlas["aggregate_resource"].append(agg_res_dict)
                 # insert into aggregator db
-                info_insert(self.tbl_mgr, "aggregate_resource", agg_res_list)
+                info_insert(self.tbl_mgr, "ops_aggregate_resource", agg_res_list)
 
 
     # Get info about resources with hrefs in the agg_atlas
@@ -154,10 +154,10 @@ class InfoFetcher:
                 # append to atlas
                 self.agg_atlas["node_interface"].append(node_iface_dict)
                 # insert into aggregator db
-                info_insert(self.tbl_mgr, "node_interface", node_iface_list)
+                info_insert(self.tbl_mgr, "ops_node_interface", node_iface_list)
 
     def poll_aggregate_sliver_info(self):
-
+        pass
 
 
     # Get info about interfaces with hrefs in the agg_atlas
@@ -189,62 +189,42 @@ class InfoFetcher:
     # Polls am hrefs, then drops/inserts aggregate table
     def refresh_am_info(self):
         self.poll_am_info()
-        self.tbl_mgr.drop_table("aggregate") 
-        self.tbl_mgr.establish_table("aggregate")
+        self.tbl_mgr.drop_table("ops_aggregate") 
+        self.tbl_mgr.establish_table("ops_aggregate")
 
-        schema = self.tbl_mgr.schema_dict["aggregate"]
+        schema = self.tbl_mgr.schema_dict["ops_aggregate"]
 
         for am_i in self.agg_atlas["aggregate"]:
             am_info_list = []
             for key in schema:  
                 am_info_list.append(am_i[key[0]])
-            info_insert(self.tbl_mgr, "aggregate", am_info_list)
+            info_insert(self.tbl_mgr, "ops_aggregate", am_info_list)
 
     # Polls res hrefs, then drops/inserts node table (and potentially
     # other types of resources tables)
     def refresh_res_info(self):
         self.poll_res_info()
-        self.tbl_mgr.drop_table("node") 
-        self.tbl_mgr.establish_table("node")
+        self.tbl_mgr.drop_table("ops_node") 
+        self.tbl_mgr.establish_table("ops_node")
 
-        schema = self.tbl_mgr.schema_dict["node"]
-
+        schema = self.tbl_mgr.schema_dict["ops_node"]
         for node_i in self.agg_atlas["node"]:
-            node_info_list = []
-            for key in schema:  
-                node_info_list.append(node_i[key[0]])
-            info_insert(self.tbl_mgr, "node", node_info_list)
-
-    # Polls aggregate info and then resource info to get resource ids
-    def refresh_aggregate_resource_info(self):
-        self.tbl_mgr.drop_table("aggregate_resource") 
-        self.tbl_mgr.establish_table("aggregate_resource")
-        self.poll_aggregate_resource_info()
-
-    # Polls node info and then interface info to get interface ids
-    def refresh_node_interface_info(self):
-        self.tbl_mgr.drop_table("node_interface") 
-        self.tbl_mgr.establish_table("node_interface")
-        self.poll_node_interface_info()
-
-    # refresh_aggregate_sliver
-    def refresh_aggregate_sliver_info(self):
-        self.tbl_mgr.drop_table("aggregate_sliver") 
-        self.tbl_mgr.establish_table("aggregate_sliver")
-        self.poll_aggregate_sliver_info()
-
-    # refresh_sliver_resource
-
-    # slices?
-
+            node_info_list = []            
+            for key in schema:
+                # extract parts of properties dictionary
+                if key[0].startswith("properties$"): 
+                    node_info_list.append(node_i["properties"]["ops_monitoring"][key[0].split('$')[1]])
+                else:
+                    node_info_list.append(node_i[key[0]])
+            info_insert(self.tbl_mgr, "ops_node", node_info_list)
 
     # Polls interface hrefs, then drops/inserts interface table
     def refresh_iface_info(self):
         self.poll_iface_info()
-        self.tbl_mgr.drop_table("interface") 
-        self.tbl_mgr.establish_table("interface")
+        self.tbl_mgr.drop_table("ops_interface") 
+        self.tbl_mgr.establish_table("ops_interface")
 
-        schema = self.tbl_mgr.schema_dict["interface"]
+        schema = self.tbl_mgr.schema_dict["ops_interface"]
 
         for iface_i in self.agg_atlas["interface"]:
             iface_info_list = []
@@ -256,9 +236,35 @@ class InfoFetcher:
                 elif key[0] == "address_address":
                     iface_info_list.append(iface_i["address"]["address"])
                 else:
-                    iface_info_list.append(iface_i[key[0]])
-            
-            info_insert(self.tbl_mgr, "interface", iface_info_list)
+                    if key[0].startswith("properties$"): 
+                        iface_info_list.append(iface_i["properties"]["ops_monitoring"][key[0].split('$')[1]])
+                    else:
+                        iface_info_list.append(iface_i[key[0]])
+
+            info_insert(self.tbl_mgr, "ops_interface", iface_info_list)
+
+    # Polls aggregate info and then resource info to get resource ids
+    def refresh_aggregate_resource_info(self):
+        self.tbl_mgr.drop_table("ops_aggregate_resource") 
+        self.tbl_mgr.establish_table("ops_aggregate_resource")
+        self.poll_aggregate_resource_info()
+
+    # Polls node info and then interface info to get interface ids
+    def refresh_node_interface_info(self):
+        self.tbl_mgr.drop_table("ops_node_interface") 
+        self.tbl_mgr.establish_table("ops_node_interface")
+        self.poll_node_interface_info()
+
+    # refresh_aggregate_sliver
+    def refresh_aggregate_sliver_info(self):
+        self.tbl_mgr.drop_table("ops_aggregate_sliver") 
+        self.tbl_mgr.establish_table("ops_aggregate_sliver")
+        self.poll_aggregate_sliver_info()
+
+    # refresh_sliver_resource
+
+    # slices?
+
              
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
@@ -277,18 +283,19 @@ def main():
     tbl_mgr = table_manager.TableManager(db_name, config_path)
 
     am_urls_urns = []
-    am_urls_urns.append({"href":"http://127.0.0.1:5000/info/aggregate/404-ig", "urn":"404-ig-urn"})
+    am_urls_urns.append({"href":"http://127.0.0.1:5000/info/aggregate/gpo-ig", "urn":"gpo-ig-urn"})
     if_ftr = InfoFetcher(tbl_mgr, am_urls_urns)    
 
     info_schema = json.load(open("../config/info_schema"))
     tbl_mgr.drop_tables(info_schema.keys())
     tbl_mgr.establish_tables(info_schema.keys())
 
-    
+
     if_ftr.refresh_am_info()
+
     if_ftr.refresh_res_info()
     if_ftr.refresh_iface_info()
-
+    
     if_ftr.refresh_aggregate_resource_info()
     if_ftr.refresh_node_interface_info()
     
