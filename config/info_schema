@@ -100,7 +100,7 @@
 		 ["selfRef","varchar"]
 	 ]
 ,
-"ops_sliver_node" : [
+"ops_sliver_resource" : [
 	         ["id","varchar"],
 		 ["sliver_id","varchar"],
 		 ["urn","varchar"],

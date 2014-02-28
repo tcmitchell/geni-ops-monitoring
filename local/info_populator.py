@@ -173,7 +173,7 @@ class InfoPopulator(threading.Thread):
          slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
          slivernode1.append(url_local_info + "node/" + slivernode1[0])
          
-         info_dict["ops_sliver_node"] = slivernode1
+         info_dict["ops_sliver_resource"] = slivernode1
 
          sliceuser1 = []
          sliceuser1.append("tupty")

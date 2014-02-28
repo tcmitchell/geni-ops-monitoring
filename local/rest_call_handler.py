@@ -117,7 +117,7 @@ def handle_sliver_info_query(tm, sliver_id):
 
     if sliver_info != None:
 
-        resources = get_related_objects(tm, "ops_sliver_node", "sliver_id", sliver_id);
+        resources = get_related_objects(tm, "ops_sliver_resource", "sliver_id", sliver_id);
 
         for res_i in resources:
             res_refs.append(get_refs(tm, "ops_node", res_i))
