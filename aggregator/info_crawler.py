@@ -85,9 +85,65 @@ class InfoCrawler:
                             node_info_list.append(res_dict[key[0]])
                     # add/update ops_node table
                     info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list) 
+
                 # add/update aggregate resource table
                 agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                 info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
+
+
+    # Updates all nodes information
+    def refresh_all_interfaces_info(self):
+
+         node_ids = get_all_nodes_of_aggregate(self.tbl_mgr, self.aggregate_id)
+         schema = self.tbl_mgr.schema_dict["ops_interface"]
+         for node_id in node_ids:
+             node_dict = handle_request(self.local_datastore + '/node/' + node_id)
+             if "ports" in node_dict:
+                 for port in node_dict["ports"]:
+                     interface_dict = handle_request(port["href"])
+
+                     # get each attribute out of response into list
+                     interface_info_list = []
+                     for key in schema: 
+                         # ugly parsing of properties dictionary and schema
+                         if key[0].startswith("properties$"): 
+                             if "ops_monitoring" in interface_dict["properties"]:
+                                 if key[0].split('$')[1] in interface_dict["properties"]["ops_monitoring"]:
+                                     interface_info_list.append(interface_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
+
+                         elif key[0] == "address_type":
+                             interface_info_list.append(interface_dict["address"]["type"])
+                         elif key[0] == "address_address":
+                             interface_info_list.append(interface_dict["address"]["address"])
+                         else:
+                             interface_info_list.append(interface_dict[key[0]])
+                     # add/update ops_node table
+                     print interface_info_list
+                     info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list) 
+                     node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
+                     info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list)
+
+
+def get_all_nodes_of_aggregate(tbl_mgr, aggregate_id):
+    cur = tbl_mgr.con.cursor()
+    res = [];
+    tbl_mgr.db_lock.acquire()
+    try:
+        cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+        q_res = cur.fetchall()
+
+        tbl_mgr.con.commit()
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i][0]) # gets first of single tuple
+            
+    except Exception, e:
+        print e
+        tbl_mgr.con.commit()
+        
+    cur.close()
+    tbl_mgr.db_lock.release()
+        
+    return res
 
 def handle_request(url):
 
@@ -141,6 +197,7 @@ def main():
 
     ic.refresh_aggregate_info()
     ic.refresh_all_nodes_info()
+    ic.refresh_all_interfaces_info()
 
 if __name__ == "__main__":
     main()
