@@ -217,9 +217,90 @@ class InfoPopulator(threading.Thread):
          
          info_dict["ops_opsconfig_authority"] = opsconfigauth1
 
-
+         # inserts info dict values into table key (not great)
          for k in info_dict:
              info_insert(self.tbl_mgr, k, info_dict[k])
+
+         aggres1 = []
+         aggres1.append("instageni.gpolab.bbn.com_node_pc2")
+         aggres1.append("gpo-ig")
+         aggres1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
+         aggres1.append(url_local_info + "node/" + aggres1[0])
+         
+         info_dict["ops_aggregate_resource"] = aggres1
+         
+         aggsliv1 = []
+         aggsliv1.append("instageni.gpolab.bbn.com_sliver_26950")
+         aggsliv1.append("gpo-ig")
+         aggsliv1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
+         aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
+         
+         info_dict["ops_aggregate_sliver"] = aggsliv1
+
+         node1 = []
+         node1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
+         node1.append("instageni.gpolab.bbn.com_node_pc2")
+         node1.append(url_local_info + "node/" + node1[1])
+         node1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
+         node1.append(str(int(time.time()*1000000)))
+         node1.append(str(2*1000000)) # mem_total_kb
+         
+         info_dict["ops_node"] = node1
+         
+         interface1 = []
+         interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
+         interface1.append(url_local_info + "interface/" + interface1[1])
+         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
+         interface1.append(str(int(time.time()*1000000)))
+         interface1.append("ipv4") # addr type
+         interface1.append("192.1.242.140") # addr
+         interface1.append("control") # role
+         interface1.append(str(10000000)) #max bps
+         interface1.append(str(1000000)) #max pps
+         
+         info_dict["ops_interface"] = interface1
+
+         nodeiface1 = []
+         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
+         nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
+         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0")
+         nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
+         
+         info_dict["ops_node_interface"] = nodeiface1
+
+                   
+         sliver1 = []
+         sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
+         sliver1.append("instageni.gpolab.bbn.com_sliver_26950")
+         sliver1.append(url_local_info + "sliver/" + sliver1[1])
+         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950")
+         sliver1.append("30752b06-8ea8-11e3-8d30-000005000000") #uuid
+         sliver1.append(str(int(time.time()*1000000))) #current ts
+         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
+         sliver1.append(url_local_info + "aggregates/gpo-ig") # agg_href
+         sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2") # slice_urn
+         sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
+         sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
+         sliver1.append(str(int(1391626683000000))) # created
+         sliver1.append(str(int(1391708989000000))) # expires   
+
+         info_dict["ops_sliver"] = sliver1
+         
+
+         slivernode1 = []
+         slivernode1.append("instageni.gpolab.bbn.com_node_pc2")
+         slivernode1.append("instageni.gpolab.bbn.com_sliver_26950")
+         slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
+         slivernode1.append(url_local_info + "node/" + slivernode1[0])
+         
+         info_dict["ops_sliver_resource"] = slivernode1
+
+         # inserts info dict values into table key (not great)
+         for k in info_dict:
+             info_insert(self.tbl_mgr, k, info_dict[k])
+
+
 
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
