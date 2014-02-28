@@ -63,6 +63,7 @@ class InfoFetcher:
         self.agg_atlas["aggregate_resource"] = {}
         self.agg_atlas["aggregate_sliver"] = {}
         self.agg_atlas["node_interface"] = {}
+        self.agg_atlas["sliver_resource"] = {}
 
 
     # Get info about all aggregates with hrefs in the agg_atlas
@@ -170,7 +171,7 @@ class InfoFetcher:
                 sliver_i_self_ref = sliver_i["href"]
                 sliver_i_urn = sliver_i["urn"]
                 
-                # get resource id
+                # get sliver id
                 resp = requests.get(sliver_i_self_ref)
                 sliver_i_dict = json.loads(resp.content)
                 sliver_i_id = sliver_i_dict["id"]
@@ -183,6 +184,35 @@ class InfoFetcher:
                 self.agg_atlas["aggregate_sliver"].append(aggregate_sliver_dict)
                 # insert into aggregator db
                 info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggregate_sliver_list)
+
+    # Get aggregate sliver mapping indepently of other polls
+    # does require a sliver list to exist in atlas
+    def poll_sliver_resource_info(self):
+        self.agg_atlas["sliver_resource"] = []
+        
+        for sliver_i in self.agg_atlas["sliver"]:
+            resp = requests.get(sliver_i["selfRef"])
+            sliver_dict = json.loads(resp.content)
+            sliver_id = sliver_dict["id"]
+            resources = sliver_dict["resources"]
+            for resource_i in resources:
+                resource_i_self_ref = resource_i["href"]
+                resource_i_urn = resource_i["urn"]
+                
+                # get resource id
+                resp = requests.get(resource_i_self_ref)
+                resource_i_dict = json.loads(resp.content)
+                resource_i_id = resource_i_dict["id"]
+                
+                # temporary variables for readbility
+                sliver_resource_list = [resource_i_id, sliver_id, resource_i_urn, resource_i_self_ref];
+                sliver_resource_dict = {"id":resource_i_id, "sliver_id":sliver_id, "urn":resource_i_urn, "selfRef":resource_i_self_ref}          
+
+                # append to atlas
+                self.agg_atlas["sliver_resource"].append(sliver_resource_dict)
+                # insert into aggregator db
+                info_insert(self.tbl_mgr, "ops_sliver_resource", sliver_resource_list)
+
 
     # Get info about interfaces with hrefs in the agg_atlas
     def poll_interface_info(self):
@@ -300,7 +330,11 @@ class InfoFetcher:
         self.poll_aggregate_sliver_info()
 
     # refresh_sliver_resource
-
+    def refresh_sliver_resource_info(self):
+        self.tbl_mgr.drop_table("ops_sliver_resource") 
+        self.tbl_mgr.establish_table("ops_sliver_resource")
+        self.poll_sliver_resource_info()
+    
     # slices?
 
              
@@ -337,6 +371,7 @@ def main():
     if_ftr.refresh_aggregate_resource_info()
     if_ftr.refresh_node_interface_info()
     if_ftr.refresh_aggregate_sliver_info()
+    if_ftr.refresh_sliver_resource_info()
 
     pprint(if_ftr.agg_atlas)
 
