@@ -478,13 +478,11 @@ def get_related_objects(tm, table_str, colname_str, id_str):
     res = [];
     tm.db_lock.acquire()
     try:
-
         cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
         q_res = cur.fetchall()
         tm.con.commit()
-        q_res = q_res[0] # removes outer garbage
         for res_i in range(len(q_res)):
-            res.append(q_res[res_i])
+            res.append(q_res[res_i][0]) # gets first of single tuple
 
     except Exception, e:
         print e
@@ -512,12 +510,12 @@ def get_refs(tm, table_str, object_id):
             cur.execute("select selfRef from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
-        self_ref = q_res[0] # removes outer garbage
+        self_ref = q_res[0] # gets first of single tuple
 
         cur.execute("select urn from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # removes outer garbage
+        urn = q_res[0] # gets first of single tuple
         refs = [self_ref, urn] 
 
     except Exception, e:
@@ -526,7 +524,7 @@ def get_refs(tm, table_str, object_id):
 
     cur.close()
     tm.db_lock.release()
-        
+    
     return refs
 
 
@@ -546,17 +544,17 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
         q_res = cur.fetchone()
         tm.con.commit()
-        href = q_res[0] # removes outer garbage
+        href = q_res[0] # gets first of single tuple
 
         cur.execute("select distinct urn from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # removes outer garbage
+        urn = q_res[0] # gets first of single tuple
 
         cur.execute("select distinct role from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        role = q_res[0] # removes outer garbage
+        role = q_res[0] # gets first of single tuple
 
         refs = [href, urn, role] 
 
@@ -582,17 +580,17 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
         cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        href = q_res[0] # removes outer garbage
+        href = q_res[0] # gets first of single tuple
 
         cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # removes outer garbage
+        urn = q_res[0] # gets first of single tuple
 
         cur.execute("select distinct \"amtype\" from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        role = q_res[0] # removes outer garbage
+        role = q_res[0] # gets first of single tuple
 
         refs = [href, urn, role] 
 
