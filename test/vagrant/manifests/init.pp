@@ -33,6 +33,8 @@ node default {
   $database_type = "mysql"
   $populate_data = true
 
+  $database_name = "local"
+
   # since these passwords are being committed to a repo, never use
   # them anywhere outside a vagrant instance running on localhost
   $postgres_superuser_password = "d86LJY278htqSkrP2oNx"
