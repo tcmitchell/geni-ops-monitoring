@@ -32,7 +32,7 @@ sys.path.append(common_path)
 import table_manager
 
 # agg is for aggregator 
-# am is for aggregate manager 
+# aggregate is for aggregate manager 
 
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
 # the am urn
@@ -66,7 +66,7 @@ class InfoFetcher:
 
 
     # Get info about all aggregates with hrefs in the agg_atlas
-    def poll_am_info(self):
+    def poll_aggregate_info(self):
         self.agg_atlas["aggregate"] = []
         for am_urn in self.agg_atlas["href"]["aggregate"]:
             resp = requests.get(self.agg_atlas["href"]["aggregate"][am_urn])
@@ -111,7 +111,7 @@ class InfoFetcher:
 
 
     # Get info about resources with hrefs in the agg_atlas
-    def poll_res_info(self):
+    def poll_resource_info(self):
         self.agg_atlas["node"] = []    
         for res_urn in self.agg_atlas["href"]["resource"]:
             resp = requests.get(self.agg_atlas["href"]["resource"][res_urn])
@@ -161,7 +161,7 @@ class InfoFetcher:
 
 
     # Get info about interfaces with hrefs in the agg_atlas
-    def poll_iface_info(self):
+    def poll_interface_info(self):
         self.agg_atlas["interface"] = []    
         for iface_urn in self.agg_atlas["href"]["interface"]:
             resp = requests.get(self.agg_atlas["href"]["interface"][iface_urn])
@@ -171,11 +171,8 @@ class InfoFetcher:
                 iface_i[key] = iface_dict[key]
             self.agg_atlas["interface"].append(iface_i)
  
-    # Not implemented on the local side 
-            #NOT WORKING
+    # Get info about slivers with hrefs in the agg_atlas
     def poll_sliver_info(self):
-        pass
-        '''
         self.agg_atlas["sliver"] = []    
         for slv_urn in self.agg_atlas["href"]["sliver"]:
             resp = requests.get(self.agg_atlas["href"]["sliver"][slv_urn])
@@ -184,11 +181,11 @@ class InfoFetcher:
             for key in slv_dict:
                 slv_i[key] = slv_dict[key]
             self.agg_atlas["sliver"].append(slv_i)
-            '''
+
 
     # Polls am hrefs, then drops/inserts aggregate table
-    def refresh_am_info(self):
-        self.poll_am_info()
+    def refresh_aggregate_info(self):
+        self.poll_aggregate_info()
         self.tbl_mgr.drop_table("ops_aggregate") 
         self.tbl_mgr.establish_table("ops_aggregate")
 
@@ -202,8 +199,8 @@ class InfoFetcher:
 
     # Polls res hrefs, then drops/inserts node table (and potentially
     # other types of resources tables)
-    def refresh_res_info(self):
-        self.poll_res_info()
+    def refresh_resource_info(self):
+        self.poll_resource_info()
         self.tbl_mgr.drop_table("ops_node") 
         self.tbl_mgr.establish_table("ops_node")
 
@@ -219,8 +216,8 @@ class InfoFetcher:
             info_insert(self.tbl_mgr, "ops_node", node_info_list)
 
     # Polls interface hrefs, then drops/inserts interface table
-    def refresh_iface_info(self):
-        self.poll_iface_info()
+    def refresh_interface_info(self):
+        self.poll_interface_info()
         self.tbl_mgr.drop_table("ops_interface") 
         self.tbl_mgr.establish_table("ops_interface")
 
@@ -228,8 +225,6 @@ class InfoFetcher:
 
         for iface_i in self.agg_atlas["interface"]:
             iface_info_list = []
-            pprint(iface_i)
-            pprint(schema)
             for key in schema:  
                 if key[0] == "address_type":
                     iface_info_list.append(iface_i["address"]["type"])
@@ -242,6 +237,25 @@ class InfoFetcher:
                         iface_info_list.append(iface_i[key[0]])
 
             info_insert(self.tbl_mgr, "ops_interface", iface_info_list)
+
+    # Polls sliver hrefs
+    def refresh_sliver_info(self):
+        self.poll_sliver_info()
+        self.tbl_mgr.drop_table("ops_sliver")
+        self.tbl_mgr.establish_table("ops_sliver")
+
+        schema = self.tbl_mgr.schema_dict["ops_sliver"]
+        for sliver_i in self.agg_atlas["sliver"]:
+            sliver_info_list = []
+            for key in schema:
+                if key[0] == "aggregate_urn":
+                    sliver_info_list.append(sliver_i["aggregate"]["urn"])
+                elif key[0] == "aggregate_href":
+                    sliver_info_list.append(sliver_i["aggregate"]["href"])
+                else:
+                    sliver_info_list.append(sliver_i[key[0]])
+
+            info_insert(self.tbl_mgr, "ops_sliver", sliver_info_list)
 
     # Polls aggregate info and then resource info to get resource ids
     def refresh_aggregate_resource_info(self):
@@ -291,15 +305,17 @@ def main():
     tbl_mgr.establish_tables(info_schema.keys())
 
 
-    if_ftr.refresh_am_info()
+    if_ftr.refresh_aggregate_info()
+    if_ftr.refresh_resource_info()
+    if_ftr.refresh_interface_info()
+    if_ftr.refresh_sliver_info()
 
-    if_ftr.refresh_res_info()
-    if_ftr.refresh_iface_info()
+
     
     if_ftr.refresh_aggregate_resource_info()
     if_ftr.refresh_node_interface_info()
     
-    pprint(if_ftr.agg_atlas)
+    #pprint(if_ftr.agg_atlas)
 
 if __name__ == "__main__":
     main()
