@@ -115,25 +115,28 @@ class InfoFetcher:
     def poll_resource_info(self):
         self.agg_atlas["node"] = []    
         for res_urn in self.agg_atlas["href"]["resource"]:
+            print "Polling at", self.agg_atlas["href"]["resource"][res_urn]
             resp = requests.get(self.agg_atlas["href"]["resource"][res_urn])
             res_dict = json.loads(resp.content)
               
             if res_dict["$schema"].endswith("node#"):
                 node_i = {}
                 for key in res_dict:
-                    if key == "ports":
+                    if key == "ports" and res_dict[key] is not None:
                         for res_i in res_dict[key]:
                             self.agg_atlas["href"]["interface"][res_i["urn"]] = res_i["href"]
                     else:
                         node_i[key] = res_dict[key]
                 self.agg_atlas["node"].append(node_i)
 
+                # Add to database here instead
+                
+
     # Gets node to interface mapping indepently of other polls
     # requires node list to exist in atlas
     # alternatively populate href with node hrefs
     def poll_node_interface_info(self):
         self.agg_atlas["node_interface"] = []
-
         for node_i in self.agg_atlas["node"]: 
             resp = requests.get(node_i["selfRef"])
             node_dict = json.loads(resp.content)
@@ -218,6 +221,7 @@ class InfoFetcher:
     def poll_interface_info(self):
         self.agg_atlas["interface"] = []    
         for iface_urn in self.agg_atlas["href"]["interface"]:
+            print "Polling at", self.agg_atlas["href"]["interface"][iface_urn]
             resp = requests.get(self.agg_atlas["href"]["interface"][iface_urn])
             iface_dict = json.loads(resp.content)
             iface_i = {}
@@ -264,7 +268,9 @@ class InfoFetcher:
             for key in schema:
                 # extract parts of properties dictionary
                 if key[0].startswith("properties$"): 
-                    node_info_list.append(node_i["properties"]["ops_monitoring"][key[0].split('$')[1]])
+                    if "ops_monitoring" in node_i["properties"]:
+                        if key[0].split('$')[1] in node_i["properties"]:
+                            node_info_list.append(node_i["properties"]["ops_monitoring"][key[0].split('$')[1]])
                 else:
                     node_info_list.append(node_i[key[0]])
             info_insert(self.tbl_mgr, "ops_node", node_info_list)
@@ -335,9 +341,7 @@ class InfoFetcher:
         self.tbl_mgr.establish_table("ops_sliver_resource")
         self.poll_sliver_resource_info()
     
-    # slices?
-
-             
+               
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
     for val in row_arr:
@@ -356,6 +360,8 @@ def main():
 
     am_urls_urns = []
     am_urls_urns.append({"href":"http://127.0.0.1:5000/info/aggregate/gpo-ig", "urn":"gpo-ig-urn"})
+
+    am_urls_urns.append({"href":"http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu", "urn":"urn:publicid:IDN+ion.internet2.edu+authority+cm"})
     if_ftr = InfoFetcher(tbl_mgr, am_urls_urns)    
 
     info_schema = json.load(open("../config/info_schema"))
@@ -366,14 +372,20 @@ def main():
     if_ftr.refresh_aggregate_info()
     if_ftr.refresh_resource_info()
     if_ftr.refresh_interface_info()
+
+    '''
     if_ftr.refresh_sliver_info()
     
     if_ftr.refresh_aggregate_resource_info()
     if_ftr.refresh_node_interface_info()
     if_ftr.refresh_aggregate_sliver_info()
     if_ftr.refresh_sliver_resource_info()
-
+    '''
     pprint(if_ftr.agg_atlas)
 
 if __name__ == "__main__":
     main()
+
+'''
+Rearchitect this to do an insert after every poll in case one poll fails
+''

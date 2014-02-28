@@ -144,6 +144,24 @@ class TableManager:
 
         self.db_lock.release()
 
+    # deletes done here to handle cursor write locking
+    def delete_stmt(self, table_name, obj_id):
+
+        self.db_lock.acquire()
+
+        try:
+            cur = self.con.cursor()            
+            del_str = "delete from " + table_name + " where id = '" + obj_id + "';";
+            print del_str
+            cur.execute(del_str);
+            self.con.commit() 
+            cur.close()
+        except Exception, e:
+            print "Trouble deleting " + obj_id + " as id from " + table_name + "."
+            print e
+
+        self.db_lock.release()
+
     def close_con(self):
         try:
             self.con.close()
@@ -257,10 +275,9 @@ class TableManager:
         
         if self.table_exists(table_str):
        
-            print "\nINFO: table " + table_str + " already exists with schema:"
-            print self.get_col_names(table_str)
+            print "INFO: table " + table_str + " already exists with schema:"
             print "Current schema_str " + schema_str
-            print "Skipping creation of " + table_str + "\n"
+            print "Skipping creation of " + table_str
             
         else:
             self.db_lock.acquire()
@@ -299,6 +316,30 @@ class TableManager:
             print e, table_str
 
         self.db_lock.release()
+
+
+    def get_all_ids_from_table(self, table_str):
+        cur = self.con.cursor()
+        res = [];
+        self.db_lock.acquire()
+        try:
+            cur.execute("select distinct id from " + table_str + ";") 
+            q_res = cur.fetchall()
+            print q_res
+            self.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
+
+        except Exception, e:
+            print e
+            self.con.commit()
+
+        cur.close()
+        self.db_lock.release()
+
+        return res
+
+
 
 def translate_table_schema_to_schema_str(table_schema_dict, table_str, database_program):
         schema_str = "("
