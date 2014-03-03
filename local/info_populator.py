@@ -85,7 +85,7 @@ class InfoPopulator(threading.Thread):
          info_dict["ops_sliver"] = sliver1
 
          link1 = []
-         link1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/link#")
          link1.append("arbitrary_link_id_001")
          link1.append(url_local_info + "interface/" + link1[1])
          link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
@@ -108,7 +108,7 @@ class InfoPopulator(threading.Thread):
          info_dict["ops_interface"] = interface1
 
          interfacevlan1 = []
-         interfacevlan1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#")
          interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
          interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
          interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
@@ -293,7 +293,7 @@ class InfoPopulator(threading.Thread):
          info_dict["ops_interface"] = interface1
 
          interfacevlan1 = []
-         interfacevlan1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#")
          interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
          interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
          interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
