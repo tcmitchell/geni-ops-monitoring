@@ -117,14 +117,14 @@ base_url = "http://127.0.0.1:5000/"
 
 aggregate = base_url + "info/aggregate/gpo-ig"
 node = base_url + "info/node/instageni.gpolab.bbn.com_node_pc1"
-interface = base_url + "info/interface/instageni.gpolab.bbn.com_interface_pc1:eth0"
+interface = base_url + "info/interface/instageni.gpolab.bbn.com_interface_pc1:eth1"
 slice_  = base_url + "info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive"
 sliver  = base_url + "info/sliver/instageni.gpolab.bbn.com_sliver_26947"
 authority = base_url + "info/authority/ch.geni.net"
 user  = base_url + "info/user/tupty"
 opsconfig = base_url + "info/opsconfig/geni-prod"
-
-
+link = base_url + "info/link/arbitrary_link_id_001"
+interfacevlan = base_url + "info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750"
 
 urls = {}
 urls["opsconfig"] = opsconfig
@@ -135,9 +135,12 @@ urls["authority"] = authority
 urls["slice"] = slice_
 urls["sliver"] = sliver
 urls["user"] = user
+urls["link"] = link
+urls["interfacevlan"] = interfacevlan
 
 
 for key in urls:
+    print "testing", key, "at", urls[key]
     resp = json.load(urllib2.urlopen(urls[key]))
     schema = json_schema[key]
     print key,"response is valid?",validate_response(schema, resp)

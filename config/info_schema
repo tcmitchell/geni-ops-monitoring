@@ -17,6 +17,14 @@
 		 ["properties$mem_total_kb","int8"]
           ]
 ,
+"ops_link": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"]
+          ]
+,
 "ops_sliver": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
@@ -44,6 +52,17 @@
 		 ["properties$role","varchar"],
 		 ["properties$max_bps","int8"],
 		 ["properties$max_pps","int8"]
+          ]
+,
+"ops_interfacevlan": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["tag","int8"],
+		 ["interface_urn","varchar"],
+		 ["interface_href","varchar"]
           ]
 ,
 "ops_slice": [
@@ -89,6 +108,13 @@
 "ops_aggregate_resource" : [
 	         ["id","varchar"],
 		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
+,
+"ops_link_interfacevlan" : [
+	         ["id","varchar"],
+		 ["link_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	  ]

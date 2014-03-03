@@ -122,9 +122,11 @@ Reference Local Datastore README
  Info queries:
  http://127.0.0.1:5000/info/aggregate/gpo-ig
  http://127.0.0.1:5000/info/node/instageni.gpolab.bbn.com_node_pc1
- http://127.0.0.1:5000/info/interface/instageni.gpolab.bbn.com_interface_pc1:eth0
+ http://127.0.0.1:5000/info/interface/instageni.gpolab.bbn.com_interface_pc1:eth1
  http://127.0.0.1:5000/info/sliver/instageni.gpolab.bbn.com_sliver_26947
  http://127.0.0.1:5000/info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive
+ http://127.0.0.1:5000/info/link/arbitrary_link_id_001
+ http://127.0.0.1:5000/info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750
  http://127.0.0.1:5000/info/authority/ch.geni.net
  http://127.0.0.1:5000/info/user/tupty
  http://127.0.0.1:5000/info/opsconfig/geni-prod

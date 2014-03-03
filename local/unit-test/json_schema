@@ -31,6 +31,23 @@
 		"ts":"schema:number"
 	     }
 ,
+"interfacevlan": {
+		"$schema":"schema:string",
+
+		"port": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
+
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:number",
+
+		"tag":"schema:number"
+	     }
+,
 "node": {
 		"$schema":"schema:string",
 
@@ -38,6 +55,20 @@
 
 		"properties": {"schema:type":"schema:props-dict", "schema:props-dict-key":"ops_monitoring", "mem_total_kb":"schema:number"},
 
+
+		"id":"schema:string",
+
+		"urn":"schema:string",
+
+		"selfRef":"schema:string",
+
+		"ts":"schema:number"
+	     }
+,
+"link": {
+		"$schema":"schema:string",
+
+		"endpoints": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
 
 		"id":"schema:string",
 

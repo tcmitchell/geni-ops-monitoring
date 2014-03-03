@@ -105,6 +105,20 @@ def handle_interface_info_query(tm, iface_id):
         return "interface not found"
 
 
+# Main handle interface queries
+def handle_interfacevlan_info_query(tm, ifacevlan_id):
+    table_str = "ops_interfacevlan"
+    iface_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    ifacevlan_info = get_object_info(tm, table_str, ifacevlan_id)
+
+    if ifacevlan_info is not None:
+        return json.dumps(get_interfacevlan_info_dict(iface_schema, ifacevlan_info))
+    else:
+        return "interfacevlan not found"
+
+
 # Main handle for sliver queries
 def handle_sliver_info_query(tm, sliver_id):
     table_str = "ops_sliver"
@@ -216,6 +230,27 @@ def handle_user_info_query(tm, user_id):
         return "user not found"
 
 
+# Main handle for link info queries
+def handle_link_info_query(tm, link_id):
+    table_str = "ops_link"
+    link_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    endpt_refs = []    
+
+    link_info = get_object_info(tm, table_str, link_id)
+    if link_info is not None:
+
+        endpts = get_related_objects(tm, "ops_link_interfacevlan", "link_id", link_id)
+        for endpt_i in endpts:
+            endpt_refs.append(get_refs(tm, "ops_interfacevlan", endpt_i))
+
+        return json.dumps(get_link_info_dict(link_schema, link_info, endpt_refs))
+
+    else:
+        return "link not found"
+
+
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id):
     table_str = "ops_opsconfig"
@@ -283,12 +318,29 @@ def get_interface_info_dict(schema, info_row):
         elif schema[col_i][0].startswith("properties$"):
             # parse off properties$ and place into properties dict
             json_dict["properties"]["ops_monitoring"][schema[col_i][0].split("$")[1]] = info_row[col_i]
-
-
         else:
             json_dict[schema[col_i][0]] = info_row[col_i]
             
     json_dict["address"] = {"address":addr,"type":addr_type}
+
+    return json_dict
+
+
+# Forms interfacevlan info dictionary (to be made to JSON)
+def get_interfacevlan_info_dict(schema, info_row):
+
+    json_dict = {}
+
+    # NOT all of info_row goes into top level dictionary
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "interface_urn":
+            iface_urn = info_row[col_i]
+        elif schema[col_i][0] == "interface_href":
+            iface_href = info_row[col_i]
+        else:
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["port"] = {"urn":iface_urn,"href":iface_href}
 
     return json_dict
 
@@ -399,6 +451,23 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
             json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
+    return json_dict
+
+
+# Forms link info dictionary (to be made to JSON)
+def get_link_info_dict(schema, info_row, endpt_refs):
+
+    json_dict = {}
+    
+    # All of info_row goes into top level dictionary
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+
+    if endpt_refs:
+        json_dict["endpoints"] = []
+        for endpt_ref in endpt_refs:
+            json_dict["endpoints"].append({"href":endpt_ref[0],"urn":endpt_ref[1]})
+
     return json_dict
 
 

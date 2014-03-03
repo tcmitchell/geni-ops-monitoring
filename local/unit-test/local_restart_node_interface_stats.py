@@ -128,9 +128,9 @@ def main(argv):
     for t in threads:
         t.join()
 
-    for ev in (node_event_str_arr + interface_event_str_arr):
-        cur.execute("select * from ops_" + ev + " limit 1");
-        print ev, "has this entry:\n", cur.fetchone()
+    #for ev in (node_event_str_arr + interface_event_str_arr):
+    #    cur.execute("select * from ops_" + ev + " limit 1");
+    #    print ev, "has this entry:\n", cur.fetchone()
 
     cur.close()
     tbl_mgr.con.close()

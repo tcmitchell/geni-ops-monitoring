@@ -56,11 +56,20 @@ class LocalDatastoreServer:
         def info_interface_args(iface_id): 
             return rest_call_handler.handle_interface_info_query(
                 self.tm, iface_id)
+
+        @self.app.route('/info/interfacevlan/<path:ifacevlan_id>', methods = ['GET'])
+        def info_interfacevlan_args(ifacevlan_id): 
+            return rest_call_handler.handle_interfacevlan_info_query(
+                self.tm, ifacevlan_id)
         
         @self.app.route('/info/sliver/<path:sliver_id>', methods = ['GET'])
         def info_sliver_args(sliver_id): 
             return rest_call_handler.handle_sliver_info_query(
                 self.tm, sliver_id)
+
+        @self.app.route('/info/link/<path:link_id>', methods = ['GET'])
+        def info_link_args(link_id): 
+            return rest_call_handler.handle_link_info_query(self.tm, link_id)
         
         @self.app.route('/info/slice/<path:slice_id>', methods = ['GET'])
         def info_slice_args(slice_id): 

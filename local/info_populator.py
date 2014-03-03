@@ -83,12 +83,21 @@ class InfoPopulator(threading.Thread):
          sliver1.append(str(int(1391708989000000))) # expires
 
          info_dict["ops_sliver"] = sliver1
+
+         link1 = []
+         link1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         link1.append("arbitrary_link_id_001")
+         link1.append(url_local_info + "interface/" + link1[1])
+         link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
+         link1.append(str(int(time.time()*1000000)))
+         
+         info_dict["ops_link"] = link1
          
          interface1 = []
          interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
-         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth0")
+         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
          interface1.append(url_local_info + "interface/" + interface1[1])
-         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0")
+         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
          interface1.append(str(int(time.time()*1000000)))
          interface1.append("ipv4") # addr type
          interface1.append("192.1.242.140") # addr
@@ -97,6 +106,18 @@ class InfoPopulator(threading.Thread):
          interface1.append(str(1000000)) #max pps
          
          info_dict["ops_interface"] = interface1
+
+         interfacevlan1 = []
+         interfacevlan1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
+         interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
+         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
+         interfacevlan1.append(str(int(time.time()*1000000)))
+         interfacevlan1.append(str(1750)) # tag type
+         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1") # port urn
+         interfacevlan1.append(url_local_info + "interface/" + interface1[1]) # port href
+
+         info_dict["ops_interfacevlan"] = interfacevlan1
 
          slice1 = []
          slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/slice#")
@@ -160,12 +181,20 @@ class InfoPopulator(threading.Thread):
          info_dict["ops_aggregate_sliver"] = aggsliv1
          
          nodeiface1 = []
-         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth0")
+         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
          nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
-         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0")
+         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
          nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
          
          info_dict["ops_node_interface"] = nodeiface1
+
+         linkifacevlan1 = []
+         linkifacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
+         linkifacevlan1.append("arbitrary_link_id_001")
+         linkifacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
+         linkifacevlan1.append(url_local_info + "interfacevlan/" + linkifacevlan1[0])
+         
+         info_dict["ops_link_interfacevlan"] = linkifacevlan1
 
          slivernode1 = []
          slivernode1.append("instageni.gpolab.bbn.com_node_pc1")
@@ -221,6 +250,8 @@ class InfoPopulator(threading.Thread):
          for k in info_dict:
              info_insert(self.tbl_mgr, k, info_dict[k])
 
+         ### additional inserts ###
+
          aggres1 = []
          aggres1.append("instageni.gpolab.bbn.com_node_pc2")
          aggres1.append("gpo-ig")
@@ -249,9 +280,9 @@ class InfoPopulator(threading.Thread):
          
          interface1 = []
          interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
-         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
+         interface1.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
          interface1.append(url_local_info + "interface/" + interface1[1])
-         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
+         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
          interface1.append(str(int(time.time()*1000000)))
          interface1.append("ipv4") # addr type
          interface1.append("192.1.242.140") # addr
@@ -261,10 +292,30 @@ class InfoPopulator(threading.Thread):
          
          info_dict["ops_interface"] = interface1
 
+         interfacevlan1 = []
+         interfacevlan1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
+         interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
+         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
+         interfacevlan1.append(str(int(time.time()*1000000)))
+         interfacevlan1.append(str(1750)) # tag type
+         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1") # port urn
+         interfacevlan1.append(url_local_info + "interface/" + interface1[1]) # port href
+
+         info_dict["ops_interfacevlan"] = interfacevlan1
+
+         linkifacevlan1 = []
+         linkifacevlan1.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
+         linkifacevlan1.append("arbitrary_link_id_001")
+         linkifacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
+         linkifacevlan1.append(url_local_info + "interfacevlan/" + linkifacevlan1[0])
+         
+         info_dict["ops_link_interfacevlan"] = linkifacevlan1
+
          nodeiface1 = []
-         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
-         nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
-         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0")
+         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
+         nodeiface1.append("instageni.gpolab.bbn.com_node_pc2")
+         nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
          nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
          
          info_dict["ops_node_interface"] = nodeiface1
