@@ -394,7 +394,8 @@ def get_node_info_dict(schema, info_row, port_refs):
     if port_refs:
         json_dict["ports"] = []
         for port_ref in port_refs:
-            json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
+            if len(port_ref) > 0:
+                json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
             
     return json_dict
 
@@ -411,12 +412,14 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs):
     if agg_refs:
         json_dict["aggregates"] = []
         for agg_ref in agg_refs:
-            json_dict["aggregates"].append({"href":agg_ref[0],"urn":agg_ref[1],"amtype":agg_ref[2]})
+            if len(agg_ref) > 0:
+                json_dict["aggregates"].append({"href":agg_ref[0],"urn":agg_ref[1],"amtype":agg_ref[2]})
 
     if auth_refs:
         json_dict["authorities"] = []
         for auth_ref in auth_refs:
-            json_dict["authorities"].append({"href":auth_ref[0],"urn":auth_ref[1]})
+            if len(auth_ref) > 0:
+                json_dict["authorities"].append({"href":auth_ref[0],"urn":auth_ref[1]})
             
     return json_dict
 
@@ -440,7 +443,8 @@ def get_sliver_info_dict(schema, info_row, res_refs):
     if res_refs:
         json_dict["resources"] = []
         for res_ref in res_refs:
-            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+            if len(res_ref) > 0:
+                json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
             
     return json_dict
 
@@ -457,12 +461,14 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
     if res_refs:
         json_dict["resources"] = []
         for res_ref in res_refs:
-            json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+            if len(res_ref) > 0:
+                json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
 
     if slv_refs:
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
-            json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
+            if len(slv_ref) > 0:
+                json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
     return json_dict
 
 
@@ -478,7 +484,8 @@ def get_link_info_dict(schema, info_row, endpt_refs):
     if endpt_refs:
         json_dict["endpoints"] = []
         for endpt_ref in endpt_refs:
-            json_dict["endpoints"].append({"href":endpt_ref[0],"urn":endpt_ref[1]})
+            if len(endpt_ref) > 0:
+                json_dict["endpoints"].append({"href":endpt_ref[0],"urn":endpt_ref[1]})
 
     return json_dict
 
@@ -502,7 +509,8 @@ def get_slice_info_dict(schema, info_row, user_refs):
     if user_refs:
         json_dict["members"] = []
         for member_ref in user_refs:
-            json_dict["members"].append({"href":member_ref[0],"urn":member_ref[1],"role":member_ref[2]})
+            if len(member_ref) > 0:
+                json_dict["members"].append({"href":member_ref[0],"urn":member_ref[1],"role":member_ref[2]})
             
     return json_dict
 
@@ -519,12 +527,14 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
     if user_refs:
         json_dict["users"] = []
         for user_ref in user_refs:
-            json_dict["users"].append({"href":user_ref[0],"urn":user_ref[1]})
+            if len(user_ref) > 0:
+                json_dict["users"].append({"href":user_ref[0],"urn":user_ref[1]})
 
     if slice_refs:
         json_dict["slices"] = []
         for slice_ref in slice_refs:
-            json_dict["slices"].append({"href":slice_ref[0],"urn":slice_ref[1]})
+            if len(slice_ref) > 0:
+                json_dict["slices"].append({"href":slice_ref[0],"urn":slice_ref[1]})
             
     return json_dict
 
