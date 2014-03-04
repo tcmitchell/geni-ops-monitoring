@@ -41,7 +41,7 @@ class InfoPopulator(threading.Thread):
         self.tbl_mgr = tbl_mgr 
         self.url_base = url_base
 
-    def ins_fake_info(self):
+    def ins_fake_info(self): 
          info_dict = {}
          url_local_info = self.url_base + "/info/"
          url_local_data = self.url_base + "/data/"
@@ -251,6 +251,7 @@ class InfoPopulator(threading.Thread):
              info_insert(self.tbl_mgr, k, info_dict[k])
 
          ### additional inserts ###
+         info_dict = {}
 
          aggres1 = []
          aggres1.append("instageni.gpolab.bbn.com_node_pc2")
@@ -351,7 +352,18 @@ class InfoPopulator(threading.Thread):
          for k in info_dict:
              info_insert(self.tbl_mgr, k, info_dict[k])
 
+         info_dict = {}
+         aggres1 = []
+         aggres1.append("arbitrary_link_id_001")
+         aggres1.append("gpo-ig")
+         aggres1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
+         aggres1.append(url_local_info + "link/" + aggres1[0])
 
+         info_dict["ops_aggregate_resource"] = aggres1
+
+         # inserts info dict values into table key (not great)
+         for k in info_dict:
+             info_insert(self.tbl_mgr, k, info_dict[k])
 
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "'"
