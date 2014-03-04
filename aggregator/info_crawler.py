@@ -59,12 +59,43 @@ class InfoCrawler:
             for key in schema:
                 am_info_list.append(am_dict[key[0]])
             info_update(self.tbl_mgr, "ops_aggregate", am_dict["id"], am_info_list)
-        
 
-        
+
     # Updates all nodes information
-    def refresh_all_nodes_info(self):
+    def refresh_all_links_info(self):
 
+        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
+        if am_dict:
+            schema = self.tbl_mgr.schema_dict["ops_link"]
+
+            for res_i in am_dict["resources"]:
+                res_dict = handle_request(res_i["href"])
+                if res_dict["$schema"].endswith("link#"): # if a link
+                    
+                    # get each attribute out of response into list
+                    link_info_list = self.get_link_attributes(res_dict, schema)
+                    info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list) 
+                agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
+        
+
+    def refresh_all_slivers_info(self):
+
+        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
+        if am_dict:
+            schema = self.tbl_mgr.schema_dict["ops_sliver"]
+
+            for slv_i in am_dict["slivers"]:
+                slv_dict = handle_request(slv_i["href"])
+                
+                # get each attribute out of response into list
+                slv_info_list = self.get_sliver_attributes(slv_dict, schema)
+                info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list) 
+                agg_slv_info_list = [slv_dict["id"], am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
+                info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list)
+
+
+    def refresh_all_nodes_info(self):
         am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
@@ -74,24 +105,31 @@ class InfoCrawler:
                 if res_dict["$schema"].endswith("node#"): # if a node
                     
                     # get each attribute out of response into list
-                    node_info_list = []
-                    for key in schema: 
-                        # ugly parsing of properties dictionary and schema
-                        if key[0].startswith("properties$"): 
-                            if "ops_monitoring" in res_dict["properties"]:
-                                if key[0].split('$')[1] in res_dict["properties"]["ops_monitoring"]:
-                                    node_info_list.append(res_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
-                        else:
-                            node_info_list.append(res_dict[key[0]])
-                    # add/update ops_node table
+                    node_info_list = self.get_node_attributes(res_dict, schema)
                     info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list) 
-
-                # add/update aggregate resource table
                 agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                 info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
 
 
-    # Updates all nodes information
+    def refresh_all_interfacevlans_info(self):
+
+        link_ids = get_all_links_of_aggregate(self.tbl_mgr, self.aggregate_id)
+        schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
+        for link_id in link_ids:
+            link_dict = handle_request(self.local_datastore + '/link/' + link_id)
+            if "endpoints" in link_dict:
+                for endpt in link_dict["endpoints"]:
+                    ifacevlan_dict = handle_request(endpt["href"])
+                    ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
+                    info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list) 
+                    link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
+                    info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list)
+        
+
+
+    # Updates all interfaces information
+    # First queries all nodes at aggregate and looks for their ports
+    # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
 
          node_ids = get_all_nodes_of_aggregate(self.tbl_mgr, self.aggregate_id)
@@ -101,27 +139,75 @@ class InfoCrawler:
              if "ports" in node_dict:
                  for port in node_dict["ports"]:
                      interface_dict = handle_request(port["href"])
-
-                     # get each attribute out of response into list
-                     interface_info_list = []
-                     for key in schema: 
-                         # ugly parsing of properties dictionary and schema
-                         if key[0].startswith("properties$"): 
-                             if "ops_monitoring" in interface_dict["properties"]:
-                                 if key[0].split('$')[1] in interface_dict["properties"]["ops_monitoring"]:
-                                     interface_info_list.append(interface_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
-
-                         elif key[0] == "address_type":
-                             interface_info_list.append(interface_dict["address"]["type"])
-                         elif key[0] == "address_address":
-                             interface_info_list.append(interface_dict["address"]["address"])
-                         else:
-                             interface_info_list.append(interface_dict[key[0]])
-                     # add/update ops_node table
-                     print interface_info_list
+                     interface_info_list = self.get_interface_attributes(interface_dict, schema)
                      info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list) 
                      node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
                      info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list)
+
+
+    def get_node_attributes(self, res_dict, schema):
+        node_info_list = []
+        for key in schema: 
+            # ugly parsing of properties dictionary and schema
+            if key[0].startswith("properties$"): 
+                if "ops_monitoring" in res_dict["properties"]:
+                    if key[0].split('$')[1] in res_dict["properties"]["ops_monitoring"]:
+                        node_info_list.append(res_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
+            else:
+                node_info_list.append(res_dict[key[0]])
+
+        return node_info_list
+
+
+    def get_link_attributes(self, res_dict, schema):
+        link_info_list = []
+        for key in schema: 
+            link_info_list.append(res_dict[key[0]])
+        return link_info_list
+
+
+    def get_sliver_attributes(self, slv_dict, schema):
+        slv_info_list = []
+        for key in schema: 
+            if key[0] == "aggregate_href":
+                slv_info_list.append(slv_dict["aggregate"]["href"])
+            elif key[0] == "aggregate_urn":
+                slv_info_list.append(slv_dict["aggregate"]["urn"])
+            else:
+                slv_info_list.append(slv_dict[key[0]])
+        return slv_info_list
+
+
+    def get_interfacevlan_attributes(self, ifv_dict, schema):
+        ifv_info_list = []
+        for key in schema: 
+            if key[0] == "interface_href":
+                ifv_info_list.append(ifv_dict["port"]["href"])
+            elif key[0] == "interface_urn":
+                ifv_info_list.append(ifv_dict["port"]["urn"])
+            else:
+                ifv_info_list.append(ifv_dict[key[0]])
+        return ifv_info_list
+
+
+    def get_interface_attributes(self, interface_dict, schema):
+        # get each attribute out of response into list
+        interface_info_list = []
+        for key in schema: 
+            # ugly parsing of properties dictionary and schema
+            if key[0].startswith("properties$"): 
+                if "ops_monitoring" in interface_dict["properties"]:
+                    if key[0].split('$')[1] in interface_dict["properties"]["ops_monitoring"]:
+                        interface_info_list.append(interface_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
+                        
+            elif key[0] == "address_type":
+                interface_info_list.append(interface_dict["address"]["type"])
+            elif key[0] == "address_address":
+                interface_info_list.append(interface_dict["address"]["address"])
+            else:
+                interface_info_list.append(interface_dict[key[0]])
+
+        return interface_info_list
 
 
 def get_all_nodes_of_aggregate(tbl_mgr, aggregate_id):
@@ -144,6 +230,29 @@ def get_all_nodes_of_aggregate(tbl_mgr, aggregate_id):
     tbl_mgr.db_lock.release()
         
     return res
+
+
+def get_all_links_of_aggregate(tbl_mgr, aggregate_id):
+    cur = tbl_mgr.con.cursor()
+    res = [];
+    tbl_mgr.db_lock.acquire()
+    try:
+        cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+        q_res = cur.fetchall()
+
+        tbl_mgr.con.commit()
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i][0]) # gets first of single tuple
+            
+    except Exception, e:
+        print e
+        tbl_mgr.con.commit()
+        
+    cur.close()
+    tbl_mgr.db_lock.release()
+        
+    return res
+
 
 def handle_request(url):
 
@@ -197,7 +306,11 @@ def main():
 
     ic.refresh_aggregate_info()
     ic.refresh_all_nodes_info()
+    ic.refresh_all_links_info()
+    ic.refresh_all_slivers_info()
     ic.refresh_all_interfaces_info()
+    ic.refresh_all_interfacevlans_info()
+
 
 if __name__ == "__main__":
     main()

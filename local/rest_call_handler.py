@@ -134,8 +134,14 @@ def handle_sliver_info_query(tm, sliver_id):
         resources = get_related_objects(tm, "ops_sliver_resource", "sliver_id", sliver_id);
 
         for res_i in resources:
-            res_refs.append(get_refs(tm, "ops_node", res_i))
-
+            # not sure if resource is a node or link.  Query for both add proper result.
+            node_ref = get_refs(tm, "ops_node", res_i)
+            link_ref = get_refs(tm, "ops_link", res_i)
+            if len(node_ref) > 0:
+                res_refs.append(node_ref)
+            elif len(link_ref) > 0:
+                res_refs.append(link_ref)
+            
         return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
 
     else:
@@ -156,8 +162,14 @@ def handle_aggregate_info_query(tm, agg_id):
 
         resources = get_related_objects(tm, "ops_aggregate_resource", "aggregate_id", agg_id)
 
-        for res_i in resources:
-            res_refs.append(get_refs(tm, "ops_node", res_i))
+        for res_i in resources: 
+            # not sure if resource is a node or link.  Query for both add proper result.
+            node_ref = get_refs(tm, "ops_node", res_i)
+            link_ref = get_refs(tm, "ops_link", res_i)
+            if len(node_ref) > 0:
+                res_refs.append(node_ref)
+            elif len(link_ref) > 0:
+                res_refs.append(link_ref)
 
         slivers = get_related_objects(tm, "ops_aggregate_sliver", "aggregate_id", agg_id)
         for slv_i in slivers:
@@ -579,13 +591,16 @@ def get_refs(tm, table_str, object_id):
             cur.execute("select selfRef from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
-        self_ref = q_res[0] # gets first of single tuple
+        self_ref = None
+        if q_res is not None:
+            self_ref = q_res[0] # gets first of single tuple
 
         cur.execute("select urn from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # gets first of single tuple
-        refs = [self_ref, urn] 
+        if q_res is not None and self_ref is not None:
+            urn = q_res[0] # gets first of single tuple
+            refs = [self_ref, urn] 
 
     except Exception, e:
         print e
