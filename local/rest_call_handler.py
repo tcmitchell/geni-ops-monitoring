@@ -134,8 +134,14 @@ def handle_sliver_info_query(tm, sliver_id):
         resources = get_related_objects(tm, "ops_sliver_resource", "sliver_id", sliver_id);
 
         for res_i in resources:
-            res_refs.append(get_refs(tm, "ops_node", res_i))
-
+            # not sure if resource is a node or link.  Query for both add proper result.
+            node_ref = get_refs(tm, "ops_node", res_i)
+            link_ref = get_refs(tm, "ops_link", res_i)
+            if len(node_ref) > 0:
+                res_refs.append(node_ref)
+            elif len(link_ref) > 0:
+                res_refs.append(link_ref)
+            
         return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
 
     else:
