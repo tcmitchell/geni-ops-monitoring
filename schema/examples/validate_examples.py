@@ -39,16 +39,27 @@ import json
 import urllib2
 import validictory
 
+def parse_schema(schemaurl):
+  schema = json.load(urllib2.urlopen(schemaurl))
+  if 'extends' in schema and '$ref' in schema['extends']:
+    parent_schema = parse_schema(schema['extends']['$ref'])
+    for key in sorted(parent_schema.keys()):
+      if key not in schema:
+        schema[key] = parent_schema[key]
+  return schema
+
 def validate_file(datafile):
   try:
     data = json.load(open(datafile))
-    schema = json.load(urllib2.urlopen(data['$schema']))
+    schema = parse_schema(data['$schema'])
+#    validictory.validate(data, schema, disallow_unknown_properties=True)
     validictory.validate(data, schema)
     print "JSON file %s is valid" % datafile
     return True
   except Exception, e:
     print "Received exception %s while trying to validate: %s\n  %s" % (
       str(e), datafile, traceback.format_exc())
+    sys.exit(0)
   return False
 
 def find_json_files(dirname):
