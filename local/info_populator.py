@@ -87,7 +87,7 @@ class InfoPopulator(threading.Thread):
          link1 = []
          link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/link#")
          link1.append("arbitrary_link_id_001")
-         link1.append(url_local_info + "interface/" + link1[1])
+         link1.append(url_local_info + "link/" + link1[1])
          link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
          link1.append(str(int(time.time()*1000000)))
          

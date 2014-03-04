@@ -98,4 +98,4 @@ class LocalDatastoreServer:
 if __name__ == '__main__':
 
     server = LocalDatastoreServer('..')
-    server.app.run(debug = True)
+    server.app.run(debug = True, port = 5000)
