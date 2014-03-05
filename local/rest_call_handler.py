@@ -670,18 +670,23 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
     refs = [];
 
     try:
+        
         # three queries avoids regex split with ,
-        cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        if tm.database_program == "postgres":
+            cur.execute("select distinct \"selfRef\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        elif tm.database_program == "mysql":
+            cur.execute("select distinct selfRef from " + table_str + " where id = '" + opsconfig_id + "'")
+
         q_res = cur.fetchone()
         tm.con.commit()
         href = q_res[0] # gets first of single tuple
 
-        cur.execute("select distinct \"urn\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        cur.execute("select distinct urn from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
         urn = q_res[0] # gets first of single tuple
 
-        cur.execute("select distinct \"amtype\" from " + table_str + " where id = '" + opsconfig_id + "'")
+        cur.execute("select distinct amtype from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
         role = q_res[0] # gets first of single tuple
