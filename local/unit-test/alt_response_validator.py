@@ -70,14 +70,18 @@ class UrlChecker:
   def __init__(self, expected_type, url):
     self.expected_type = expected_type
     self.url = url
-    self.resp = json.load(urllib2.urlopen(self.url))
     self.errors = []
-    self.validate_response()
+    self.hrefs_found = []
+    try:
+      self.resp = json.load(urllib2.urlopen(self.url))
+      self.validate_response()
+    except urllib2.HTTPError, e:
+      self.errors.append("Received HTTP error while loading URL: %s" % str(e))
 
   def validate_response(self):
     if '$schema' in self.resp:
       schema_lastpart = self.resp['$schema'].split('/')[-1].split('#')[0]
-      if not schema_lastpart == self.expected_type:
+      if self.expected_type and not schema_lastpart == self.expected_type:
         self.errors.append(
           'Expected schema of type %s, but got %s (inferred type %s)' % (
             self.expected_type, self.resp['$schema'], schema_lastpart))
@@ -209,6 +213,8 @@ class UrlChecker:
       subproptype = proptype[0][subprop]
       if subprop == '$ref':
         expprop = 'href'
+        if expprop in propresp:
+          self.hrefs_found.append(propresp[expprop])
       else:
         expprop = subprop
       if expprop in propresp:
@@ -223,7 +229,33 @@ class UrlChecker:
           "Property %s (%s) is missing required subproperty %s" % \
           (prop, propresp, subprop))
 
+def test_found_hrefs(hrefs_found, hrefs_checked):
+  print ""
+  hrefs_to_check = []
+  for href in sorted(hrefs_found.keys()):
+    if not href in hrefs_checked:
+      hrefs_to_check.append(href)
+  if len(hrefs_to_check) == 0:
+    print "All found URLs have now been checked"
+    return False
+  for href in hrefs_to_check:
+    print "testing discovered URL %s (referenced by: %s):" % (href, ", ".join(hrefs_found[href])),
+    check = UrlChecker(None, href)
+    if len(check.errors) > 0:
+      print ""
+      for error in check.errors:
+        print "  ERROR: " + error
+    else:
+      print "OK"
+    hrefs_checked.append(href)
+    for newhref in check.hrefs_found:
+      hrefs_found.setdefault(newhref, [])
+      hrefs_found[newhref].append(check.url)
+  return True
+
 def test_all_cases(cases):
+  hrefs_found = {}
+  hrefs_checked = []
   for case in cases:
     print "testing URL %s (type %s):" % (case[1], case[0]),
     check = UrlChecker(case[0], case[1])
@@ -233,6 +265,12 @@ def test_all_cases(cases):
         print "  ERROR: " + error
     else:
       print "OK"
+    hrefs_checked.append(case[1])
+    for newhref in check.hrefs_found:
+      hrefs_found.setdefault(newhref, [])
+      hrefs_found[newhref].append(check.url)
+  while test_found_hrefs(hrefs_found, hrefs_checked):
+    continue
 
 testcases = parse_test_data(sys.argv[1])
 test_all_cases(testcases)
