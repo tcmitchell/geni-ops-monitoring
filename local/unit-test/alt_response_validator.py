@@ -124,6 +124,8 @@ class UrlChecker:
   def validate_prop_as_type(self, propresp, prop, propattrs, proptype):
     if type(proptype) == types.ListType:
       self.validate_prop_as_type_dict(propresp, prop, propattrs, proptype)
+    elif proptype == 'object' and 'properties' in propattrs:
+      self.validate_prop_as_type_object(propresp, prop, propattrs, proptype)
     elif proptype == 'string':
       self.validate_prop_type_in_list(
         propresp, prop, 'string', [types.StringType, types.UnicodeType])
@@ -177,6 +179,22 @@ class UrlChecker:
           propattrs['items']['type']
         )
 
+  def validate_prop_as_type_object(self, propresp, prop, propattrs, proptype):
+    subprops = propattrs['properties']
+    for subprop in sorted(subprops.keys()):
+      subproptype = subprops[subprop]['type']
+      if subprop in propresp:
+        self.validate_prop_as_type(
+          propresp[subprop],
+          "%s [subobject %s]" % (prop, subprop),
+          subprops[subprop],
+          subproptype
+        )
+      else:
+        self.errors.append(
+          "Property %s (%s) is missing required object subproperty %s" % \
+            (prop, propresp, subprop))
+
   def validate_prop_as_type_dict(self, propresp, prop, propattrs, proptype):
     if type(proptype[0]) != types.DictType:
       self.errors.append(
@@ -204,8 +222,6 @@ class UrlChecker:
         self.errors.append(
           "Property %s (%s) is missing required subproperty %s" % \
           (prop, propresp, subprop))
-  #  print propresp
-  #  print proptype
 
 def test_all_cases(cases):
   for case in cases:
