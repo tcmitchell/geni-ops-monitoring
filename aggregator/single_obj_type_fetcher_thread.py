@@ -100,7 +100,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         elif obj_type == "interface":
             self.info_crawler.refresh_all_nodes_info()
             self.info_crawler.refresh_all_interfaces_info() 
-            #obj_ids = self.info_crawler.get_all_interfaces_of_aggregate()
+            obj_ids = self.info_crawler.get_all_interfaces_of_aggregate()
            
         elif obj_type == "interfacevlan":
             ic.refresh_all_links_info()
@@ -124,6 +124,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
                         "ts": {"gt": self.time_of_last_update}}}
 
         url = self.meas_ref + "?q=" + str(q)
+        #url = self.meas_ref + "q?=" + str(q)
         url = url.replace(' ', '%20')
 
         resp = requests.get(url)
@@ -217,30 +218,40 @@ def main():
 
     tbl_mgr = table_manager.TableManager(db_name, config_path)
 
-    datastore_info_url = "http://127.0.0.1:5000/info/"
+    #datastore_info_url = "http://127.0.0.1:5000/info/"
+    datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
+    #datastore_info_url = "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/"
+
 
     # Set time of last update to 5 minutes in the past
-    # change 5000 to 5
-    time_of_last_update = (time.time()-(5000*60))*1000000
+    # TODO remove 0#
+    time_of_last_update = 0#(time.time()-(5*60))*1000000
 
     # Sleep period in seconds (should be larger than 60 for production)
     sleep_period_sec = 1
 
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
+    #aggregate_id = "ion.internet2.edu"
 
     # Object type to look up in aggregator db
-    obj_type = "node"
+    #obj_type = "node"
+    obj_type = "interface"
 
     thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
     
-    event_types = node_event_types
+    #event_types = node_event_types
+    event_types = interface_event_types
 
-    ic = single_local_datastore_crawler.InfoCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
+    tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
-    threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, ic, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
+    sldc = single_local_datastore_crawler.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
+
+    threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
 
     threads[thread_name].start()
+
+    
 
     print "Exiting main thread"
 

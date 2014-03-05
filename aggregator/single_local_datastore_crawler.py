@@ -38,7 +38,7 @@ import table_manager
 
 # This program populates the aggregator database on every fetch
 
-class InfoCrawler:
+class SingleLocalDatastoreCrawler:
     
     def __init__(self, tbl_mgr, local_datastore, aggregate_id):
         self.tbl_mgr = tbl_mgr
@@ -236,6 +236,31 @@ class InfoCrawler:
         return res
 
 
+    def get_all_interfaces_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
+
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'));")
+
+            q_res = cur.fetchall()
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return res
+
+
     def get_all_links_of_aggregate(self):
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
@@ -246,7 +271,7 @@ class InfoCrawler:
         try:
             cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
-
+            
             tbl_mgr.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
@@ -288,6 +313,7 @@ class InfoCrawler:
         
         return meas_ref
 
+
 def handle_request(url):
 
     resp = None
@@ -321,7 +347,7 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr):
     tbl_mgr.insert_stmt(table_str, val_str)
 
 
-def main():
+def main(): 
 
     db_name = "aggregator"
     config_path = "../config/"
@@ -332,18 +358,18 @@ def main():
     aggregate_id = "gpo-ig"
 
     #am_urls_urns.append({"href":"http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu", "urn":"urn:publicid:IDN+ion.internet2.edu+authority+cm"})
-    ic = InfoCrawler(tbl_mgr, datastore_url, aggregate_id)    
+    sldc = SingleLocalDatastoreCrawler(tbl_mgr, datastore_url, aggregate_id)    
 
     info_schema = json.load(open("../config/info_schema"))
     #tbl_mgr.drop_tables(info_schema.keys())
     tbl_mgr.establish_tables(info_schema.keys())
 
-    ic.refresh_aggregate_info()
-    ic.refresh_all_nodes_info()
-    ic.refresh_all_links_info()
-    ic.refresh_all_slivers_info()
-    ic.refresh_all_interfaces_info()
-    ic.refresh_all_interfacevlans_info()
+    sldc.refresh_aggregate_info()
+    sldc.refresh_all_nodes_info()
+    sldc.refresh_all_links_info()
+    sldc.refresh_all_slivers_info()
+    sldc.refresh_all_interfaces_info()
+    sldc.refresh_all_interfacevlans_info()
 
 
 if __name__ == "__main__":
