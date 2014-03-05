@@ -42,6 +42,7 @@ class InfoCrawler:
     
     def __init__(self, tbl_mgr, local_datastore, aggregate_id):
         self.tbl_mgr = tbl_mgr
+        self.tbl_mgr.establish_all_tables()
 
         if local_datastore[-1] == '/':
             local_datastore = local_datastore[:-1]
@@ -113,7 +114,7 @@ class InfoCrawler:
 
     def refresh_all_interfacevlans_info(self):
 
-        link_ids = get_all_links_of_aggregate(self.tbl_mgr, self.aggregate_id)
+        link_ids = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         for link_id in link_ids:
             link_dict = handle_request(self.local_datastore + '/link/' + link_id)
@@ -132,7 +133,7 @@ class InfoCrawler:
     # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
 
-         node_ids = get_all_nodes_of_aggregate(self.tbl_mgr, self.aggregate_id)
+         node_ids = self.get_all_nodes_of_aggregate()
          schema = self.tbl_mgr.schema_dict["ops_interface"]
          for node_id in node_ids:
              node_dict = handle_request(self.local_datastore + '/node/' + node_id)
@@ -210,49 +211,82 @@ class InfoCrawler:
         return interface_info_list
 
 
-def get_all_nodes_of_aggregate(tbl_mgr, aggregate_id):
-    cur = tbl_mgr.con.cursor()
-    res = [];
-    tbl_mgr.db_lock.acquire()
-    try:
-        cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-        q_res = cur.fetchall()
+    def get_all_nodes_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
 
-        tbl_mgr.con.commit()
-        for res_i in range(len(q_res)):
-            res.append(q_res[res_i][0]) # gets first of single tuple
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            q_res = cur.fetchall()
+
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
             
-    except Exception, e:
-        print e
-        tbl_mgr.con.commit()
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
         
-    cur.close()
-    tbl_mgr.db_lock.release()
+        cur.close()
+        tbl_mgr.db_lock.release()
         
-    return res
+        return res
 
 
-def get_all_links_of_aggregate(tbl_mgr, aggregate_id):
-    cur = tbl_mgr.con.cursor()
-    res = [];
-    tbl_mgr.db_lock.acquire()
-    try:
-        cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-        q_res = cur.fetchall()
+    def get_all_links_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
 
-        tbl_mgr.con.commit()
-        for res_i in range(len(q_res)):
-            res.append(q_res[res_i][0]) # gets first of single tuple
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            q_res = cur.fetchall()
+
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
             
-    except Exception, e:
-        print e
-        tbl_mgr.con.commit()
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
         
-    cur.close()
-    tbl_mgr.db_lock.release()
+        cur.close()
+        tbl_mgr.db_lock.release()
         
-    return res
+        return res
 
+    def get_meas_ref(self):
+        tbl_mgr = self.tbl_mgr
+        object_id = self.aggregate_id
+        cur = tbl_mgr.con.cursor()
+        res = []
+        meas_ref = None
+        tbl_mgr.db_lock.acquire()
+        try:
+
+            # two queries avoids regex split with ,
+            if tbl_mgr.database_program == "postgres":
+                cur.execute("select \"measRef\" from ops_aggregate where id = '" + object_id + "' limit 1")
+            elif tbl_mgr.database_program == "mysql":
+                cur.execute("select measRef from ops_aggregate where id = '" + object_id + "' limit 1")
+            q_res = cur.fetchone()
+            tbl_mgr.con.commit()
+            if q_res is not None:
+                meas_ref = q_res[0] # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return meas_ref
 
 def handle_request(url):
 

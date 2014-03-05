@@ -53,9 +53,9 @@ class TableManager:
         self.database_program = dbtype_
         self.db_lock = threading.Lock()
 
-        info_schema = json.load(open(config_path + "info_schema"))
-        data_schema = json.load(open(config_path + "data_schema"))
-        self.schema_dict = self.create_schema_dict(data_schema, info_schema)
+        self.info_schema = json.load(open(config_path + "/info_schema"))
+        self.data_schema = json.load(open(config_path + "/data_schema"))
+        self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
 
         print "Schema loaded with keys:" 
         print self.schema_dict.keys() 
@@ -266,7 +266,16 @@ class TableManager:
 
     def establish_tables(self, table_str_arr):
         for table_str in table_str_arr:
-            self.establish_table(table_str)
+            # Ensures table_str is in ops_ namespace
+            if table_str.startswith("ops_"):
+                self.establish_table(table_str)
+
+
+    def establish_all_tables(self):
+        self.establish_tables(self.schema_dict.keys())
+
+    def purge_outdated_resources_from_info_tables(self):
+        pass # TODO fill in
 
 
     def establish_table(self, table_str):
@@ -342,6 +351,7 @@ class TableManager:
 
 
 def translate_table_schema_to_schema_str(table_schema_dict, table_str, database_program):
+    
         schema_str = "("
         if database_program == "postgres":
             for col_i in range(len(table_schema_dict)):
