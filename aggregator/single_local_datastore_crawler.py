@@ -310,16 +310,16 @@ def handle_request(url):
         return json_dict
     else:
         return None
-     
 
 
 def info_update(tbl_mgr, table_str, obj_id, row_arr):
     tbl_mgr.delete_stmt(table_str, obj_id)
-    val_str = "'"
+    val_str = "('"
     for val in row_arr:
         val_str += str(val) + "','" # join won't do this
-    val_str = val_str[:-2] # remove last 2 of 3: ','
+    val_str = val_str[:-2] + ")" # remove last 2 of 3: ',' add )
     tbl_mgr.insert_stmt(table_str, val_str)
+
 
 def main():
 

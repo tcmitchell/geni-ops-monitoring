@@ -86,7 +86,7 @@ class StatsPopulator(threading.Thread):
         time_sec_epoch = int(time.time()*1000000)
         data = get_data(ev_t)
         if data != None:
-            val_str = "'" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) 
+            val_str = "('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ")" 
             #ins_str = "INSERT INTO " + ev_t + " VALUES ('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ");" 
             self.tbl_mgr.insert_stmt("ops_" + ev_t, val_str)
         else:

@@ -132,7 +132,7 @@ class TableManager:
 
         try:
             cur = self.con.cursor()            
-            ins_str = "insert into " + table_name + " values (" + val_str + ");";
+            ins_str = "insert into " + table_name + " values " + val_str + ";";
             print ins_str
             cur.execute(ins_str);
             self.con.commit() 

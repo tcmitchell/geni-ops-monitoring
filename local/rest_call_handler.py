@@ -58,7 +58,7 @@ def handle_ts_data_query(tm, filters):
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
                 if (ts_arr != None):
                     resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
-                    resp_i["id"] = obj_id + ":" + event_type
+                    resp_i["id"] = event_type + ":" + obj_id
                     resp_i["subject"] = obj_id
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type

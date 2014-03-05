@@ -383,12 +383,12 @@ class InfoPopulator(threading.Thread):
 
 
 def info_insert(tbl_mgr, table_str, row_arr):
-    val_str = "'"
+    val_str = "('"
 
     for val in row_arr:
         val_str += val + "','" # join won't do this
 
-    val_str = val_str[:-2] # remove last 2 of 3 chars: ','
+    val_str = val_str[:-2] + ")" # remove last 2 of 3 chars: ',' and add )
 
     tbl_mgr.insert_stmt(table_str, val_str)
 

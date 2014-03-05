@@ -29,25 +29,27 @@ import json_receiver
 import sys
 import requests
 from pprint import pprint as pprint
-import info_crawler
+import single_local_datastore_crawler
 sys.path.append("../common/")
 import table_manager
 
 class SingleObjectTypeFetcherThread(threading.Thread):
 
-    def __init__(self, tbl_mgr, info_crawler, thread_name, local_datastore_url, obj_type, event_types, sleep_period_sec, time_of_last_update):
+    def __init__(self, tbl_mgr, info_crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update):
         threading.Thread.__init__(self)
 
         self.tbl_mgr = tbl_mgr
         self.thread_name = thread_name
 
         # The local datastore this thread queries
-        self.local_datastore_url = local_datastore_url
+        self.aggregate_id = aggregate_id
 
         # Interval between aggregator queries in seconds
         self.sleep_period_sec = sleep_period_sec
 
         # Internal counter of the number of queries
+        # TODO every 100th query or some time window, have the
+        # info_crawler update the tables
         self.counter = 0
         
         # Set parameter to avoid query for all history since epoch = 0
@@ -58,8 +60,13 @@ class SingleObjectTypeFetcherThread(threading.Thread):
 
         # Query filter parameters
         self.obj_type = obj_type
+
+        self.tbl_mgr.establish_tables(event_types)
         self.db_event_tables = event_types
+
+        # removes "ops_" (first 4 chars) from each string
         self.event_types = ["ops_monitoring:" + ev_str[4:] for ev_str in event_types]
+
         [self.meas_ref, self.obj_ids] = self.refresh_info_for_type(obj_type)
 
         #self.json_receiver = json_receiver.JsonReceiver(schema_dict)
@@ -161,16 +168,24 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
 
         # poll datastore
         json_text = sotft.poll_datastore()
-        pprint(json_text)
-             
-        # convert response to json
-        #(r_code, rows) = sotft.json_receiver.json_to_psql(json_text, sotft.table_str, sotft.thread_name, sotft.resource_id)
 
-        #print "Received " + str(len(rows)) + " updates"
-        
-        #if len(rows) > 0:
-            # insert into database
-            #sotft.insert_query(rows)
+        try:
+            data = json.loads(json_text)
+        except Exception, e:
+            print "Unable to load response in json\n"+e
+
+        for result in data:
+            pprint(result)
+            event_type = result["eventType"]
+            if event_type.startswith("ops_monitoring:"):
+                table_str = "ops_" + event_type[15:]
+                id_str = result["id"]
+                # if id is of like event:obj_id_that_was_queried,
+                # remove event:
+                # TODO straighten out protocol with monitoring group
+                obj_id = sotft.aggregate_id + ":" + id_str[id_str.find(':')+1:]
+                tsdata = result["tsdata"]
+                tsdata_insert(sotft.tbl_mgr, obj_id, table_str, tsdata)
 
         sotft.counter = sotft.counter + 1
     
@@ -178,12 +193,22 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
             break; # Exits loop and thread_main()
         else: 
             sotft.thread_sleep();
-        
+  
+
+def tsdata_insert(tbl_mgr, obj_id, table_str, tsdata):
+    vals_str = ""
+    for tsdata_i in tsdata:
+        vals_str += "('" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
+
+    vals_str = vals_str[:-1] # remove last ','
+
+    tbl_mgr.insert_stmt(table_str, vals_str)
+      
 def main(): 
 
 
     threads = {} 
-    db_name = "local"
+    db_name = "aggregator"
     config_path = "../config"
 
     # Event types to query, TODO, less hard coding of this is needed
@@ -211,7 +236,7 @@ def main():
     
     event_types = node_event_types
 
-    ic = info_crawler.InfoCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
+    ic = single_local_datastore_crawler.InfoCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
 
     threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, ic, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
 
