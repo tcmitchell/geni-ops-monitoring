@@ -88,7 +88,7 @@ class InfoPopulator(threading.Thread):
          sliver1.append("30752b06-8ea8-11e3-8d30-000000000000") #uuid
          sliver1.append(str(int(time.time()*1000000))) #current ts
          sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
-         sliver1.append(url_local_info + "aggregates/gpo-ig") # agg_href
+         sliver1.append(url_local_info + "aggregate/gpo-ig") # agg_href
          sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive") # slice_urn
          sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
          sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
@@ -106,7 +106,7 @@ class InfoPopulator(threading.Thread):
          sliver2.append("30752b06-8ea8-11e3-8d30-000005000000") #uuid
          sliver2.append(str(int(time.time()*1000000))) #current ts
          sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
-         sliver2.append(url_local_info + "aggregates/gpo-ig") # agg_href
+         sliver2.append(url_local_info + "aggregate/gpo-ig") # agg_href
          sliver2.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2") # slice_urn
          sliver2.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
          sliver2.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
