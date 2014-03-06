@@ -164,8 +164,12 @@ class UrlChecker:
         propresp, prop, type(propresp), typename))
 
   def validate_prop_as_type_array(self, propresp, prop, propattrs):
+    preerrs = len(self.errors)
     self.validate_prop_type_in_list(propresp, prop, 'array',
       [types.ListType, ])
+    posterrs = len(self.errors)
+    if preerrs < posterrs:
+      return
     schemavalid = True
     if 'items' in propattrs:
       if not 'type' in propattrs['items']:
