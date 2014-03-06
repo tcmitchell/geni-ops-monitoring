@@ -53,6 +53,13 @@ LEGACY_PROP_TYPES = {
   'role': 'string',
 }
 
+# Translate obvious schema typoes as a workaround because these block
+# further testing until corrected
+SCHEMA_URL_TYPOES = {
+  'http://unis.incntre.iu.edu/schema/20120709/aggregate#':
+    'http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#',
+}
+
 def parse_schema(schemaurl):
   schema = json.load(urllib2.urlopen(schemaurl))
   if 'extends' in schema and '$ref' in schema['extends']:
@@ -96,14 +103,21 @@ class UrlChecker:
           'Expected schema of type %s, but got %s (inferred type %s)' % (
             self.expected_type, self.resp['$schema'], schema_lastpart))
       try:
-        self.schema = parse_schema(self.resp['$schema'])
+        schemaurl = self.resp['$schema']
+        if schemaurl in SCHEMA_URL_TYPOES:
+          self.errors.append(
+            "Known invalid schema URL %s, assumed to be a typo for %s" % (
+              schemaurl, SCHEMA_URL_TYPOES[schemaurl]))
+          schemaurl = SCHEMA_URL_TYPOES[schemaurl]
+        
+        self.schema = parse_schema(schemaurl)
         self.validate_response_against_schema()
       except urllib2.HTTPError, e:
         self.errors.append("Received HTTP error while loading schema %s: %s" % (
-          self.resp['$schema'], str(e)))
+          schemaurl, str(e)))
       except ValueError, e:
         self.errors.append("Received ValueError while loading schema %s: %s" % (
-          self.resp['$schema'], str(e)))
+          schemaurl, str(e)))
 
       # required, but the schema verify will complain if it's not present
       if 'selfRef' in self.resp:
