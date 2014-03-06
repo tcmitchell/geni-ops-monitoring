@@ -95,8 +95,15 @@ class UrlChecker:
         self.errors.append(
           'Expected schema of type %s, but got %s (inferred type %s)' % (
             self.expected_type, self.resp['$schema'], schema_lastpart))
-      self.schema = parse_schema(self.resp['$schema'])
-      self.validate_response_against_schema()
+      try:
+        self.schema = parse_schema(self.resp['$schema'])
+        self.validate_response_against_schema()
+      except urllib2.HTTPError, e:
+        self.errors.append("Received HTTP error while loading schema %s: %s" % (
+          self.resp['$schema'], str(e)))
+      except ValueError, e:
+        self.errors.append("Received ValueError while loading schema %s: %s" % (
+          self.resp['$schema'], str(e)))
 
       # required, but the schema verify will complain if it's not present
       if 'selfRef' in self.resp:
