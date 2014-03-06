@@ -25,7 +25,6 @@
 import threading
 import time 
 import json
-import json_receiver
 import sys
 import requests
 from pprint import pprint as pprint
@@ -69,9 +68,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
 
         [self.meas_ref, self.obj_ids] = self.refresh_info_for_type(obj_type)
 
-        #self.json_receiver = json_receiver.JsonReceiver(schema_dict)
-
-
+       
     def run(self):
 
         print "Starting " + self.name
@@ -190,7 +187,7 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
 
         sotft.counter = sotft.counter + 1
     
-        if(sotft.counter) > 3:
+        if(sotft.counter) > 100: # TODO remove for indefinite running
             break; # Exits loop and thread_main()
         else: 
             sotft.thread_sleep();
@@ -217,9 +214,10 @@ def main():
     interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
 
     tbl_mgr = table_manager.TableManager(db_name, config_path)
+    tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
-    #datastore_info_url = "http://127.0.0.1:5000/info/"
-    datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
+    datastore_info_url = "http://127.0.0.1:5000/info/"
+    #datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
     #datastore_info_url = "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/"
 
 
@@ -228,29 +226,38 @@ def main():
     time_of_last_update = 0#(time.time()-(5*60))*1000000
 
     # Sleep period in seconds (should be larger than 60 for production)
-    sleep_period_sec = 1
+    sleep_period_sec = 15
 
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
     #aggregate_id = "ion.internet2.edu"
 
+
     # Object type to look up in aggregator db
-    #obj_type = "node"
-    obj_type = "interface"
-
+    obj_type = "node"
     thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-    
-    #event_types = node_event_types
-    event_types = interface_event_types
-
-    tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
+    event_types = node_event_types
 
     sldc = single_local_datastore_crawler.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
 
     threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
 
-    threads[thread_name].start()
 
+    # Another thread about interface data
+    obj_type = "interface"
+    event_types = interface_event_types
+    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
+
+    threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
+
+
+    for thread_name in threads:
+        threads[thread_name].start()
+
+    print threads, "running"
+
+    for thread_name in threads:
+        threads[thread_name].join()
     
 
     print "Exiting main thread"
