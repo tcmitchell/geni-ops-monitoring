@@ -7,7 +7,7 @@
   "additionalProperties": true,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/link"
-  }
+  },
   "properties": {
     "endpoints": {
       "required": true,
