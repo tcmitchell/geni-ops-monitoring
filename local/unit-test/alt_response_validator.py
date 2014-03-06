@@ -77,6 +77,8 @@ class UrlChecker:
       self.validate_response()
     except urllib2.HTTPError, e:
       self.errors.append("Received HTTP error while loading URL: %s" % str(e))
+    except ValueError, e:
+      self.errors.append("Received ValueError while loading URL: %s" % str(e))
 
   def validate_response(self):
     if '$schema' in self.resp:
