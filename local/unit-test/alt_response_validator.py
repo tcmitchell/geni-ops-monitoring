@@ -45,6 +45,14 @@ VERIFY_KNOWN_TOP_LEVEL_KEYS = [
   'description',
 ]
 
+# Expected types for sub-responses of legacy node property classes
+LEGACY_PROP_TYPES = {
+  'max_bps': 'integer',
+  'max_pps': 'integer',
+  'mem_total_kb': 'integer',
+  'role': 'string',
+}
+
 def parse_schema(schemaurl):
   schema = json.load(urllib2.urlopen(schemaurl))
   if 'extends' in schema and '$ref' in schema['extends']:
@@ -132,6 +140,8 @@ class UrlChecker:
       self.validate_prop_as_type_dict(propresp, prop, propattrs, proptype)
     elif proptype == 'object' and 'properties' in propattrs:
       self.validate_prop_as_type_object(propresp, prop, propattrs, proptype)
+    elif proptype == 'object' and prop == PROPERTIES_KEYNAME:
+      self.validate_prop_as_legacy_object(propresp, prop, propattrs, proptype)
     elif proptype == 'string':
       self.validate_prop_type_in_list(
         propresp, prop, 'string', [types.StringType, types.UnicodeType])
@@ -188,6 +198,25 @@ class UrlChecker:
           propattrs['items'],
           propattrs['items']['type']
         )
+
+  def validate_prop_as_legacy_object(self, propresp, prop, propattrs, proptype):
+    '''This uses hardcoded expectations about the non-schema compliant
+    "properties" examples we included in pre-GEC19 data examples'''
+    if 'ops_monitoring' in propresp:
+      for key in propresp['ops_monitoring']:
+        value = propresp['ops_monitoring'][key]
+        if key in LEGACY_PROP_TYPES:
+          self.validate_prop_as_type(
+            value, 'legacy ops_monitoring [subkey %s]' % key, propattrs,
+            LEGACY_PROP_TYPES[key])
+        else:
+          self.errors.append(
+            "Unexpected legacy ops_monitoring subkey %s with value %s" % (
+            key, value))
+    else:
+      self.errors.append(
+        "Legacy 'properties' response %s missing 'ops_monitoring' subkey" % \
+          propresp)
 
   def validate_prop_as_type_object(self, propresp, prop, propattrs, proptype):
     subprops = propattrs['properties']
