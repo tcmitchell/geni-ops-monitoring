@@ -125,6 +125,23 @@ class TableManager:
 
         return schema_dict
 
+    def purge_old_tsdata(self, table_name, delete_older_than_ts):
+        self.db_lock.acquire()
+
+        try: 
+            cur = self.con.cursor()            
+            del_str = "delete from " + table_name + " where ts < " + str(delete_older_than_ts) + ";";
+            #print del_str
+            cur.execute(del_str);
+            self.con.commit() 
+            cur.close()
+        except Exception, e:
+            print "Trouble deleting data to " + table_name + "."
+            print "delete_older_than_ts " + delete_older_than_ts
+            print e
+
+        self.db_lock.release()
+   
     # inserts done here to handle cursor write locking
     def insert_stmt(self, table_name, val_str):
 
@@ -133,7 +150,7 @@ class TableManager:
         try:
             cur = self.con.cursor()            
             ins_str = "insert into " + table_name + " values " + val_str + ";";
-            print ins_str
+            #print ins_str
             cur.execute(ins_str);
             self.con.commit() 
             cur.close()
