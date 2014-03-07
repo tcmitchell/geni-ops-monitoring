@@ -133,33 +133,11 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         return resp.content
 
 
-    def insert_query(self, rows):
-        num_rows = len(rows)
-        ins_str = self.insert_base_str
-
-        for i in range(num_rows-1):
-            ins_str = ins_str + rows[i]
-            ins_str = ins_str + ","
-        ins_str = ins_str + rows[num_rows-1] + ";"
-         
-        print "Insert Query = ", ins_str
-
-        self.psql_lock.acquire()
-
-        cur = self.con.cursor()
-        cur.execute(ins_str) # todo try execption block
-        self.con.commit() 
-        cur.close()
-
-        self.psql_lock.release()
-
-        print "Committed"
-
     def thread_sleep(self):
         time.sleep(self.sleep_period_sec)
 
 
-# thread main outside of thread class, is this a good idea? 
+# thread main outside of thread class
 def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
     
     while (True): 
@@ -173,26 +151,31 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
             print "Unable to load response in json\n"+e
 
         for result in data:
-            pprint(result)
+            print "Result received from %s about:" % sotft.aggregate_id
+            pprint(result["id"])
+
             event_type = result["eventType"]
             if event_type.startswith("ops_monitoring:"):
                 table_str = "ops_" + event_type[15:]
-                id_str = result["id"]
+
                 # if id is of like event:obj_id_that_was_queried,
-                # remove event:
                 # TODO straighten out protocol with monitoring group
+                id_str = result["id"]
+
+                # remove event: and prepend aggregate_id:
                 obj_id = sotft.aggregate_id + ":" + id_str[id_str.find(':')+1:]
+
                 tsdata = result["tsdata"]
                 tsdata_insert(sotft.tbl_mgr, obj_id, table_str, tsdata)
 
         sotft.counter = sotft.counter + 1
     
-        if(sotft.counter) > 100: # TODO remove for indefinite running
-            break; # Exits loop and thread_main()
-        else: 
-            sotft.thread_sleep();
+        #if(sotft.counter) > 100: # TODO remove for indefinite running
+        #    break; # Exits loop and thread_main()
+        #else: 
+        sotft.thread_sleep();
   
-
+# Builds the multi-row insert value string
 def tsdata_insert(tbl_mgr, obj_id, table_str, tsdata):
     vals_str = ""
     for tsdata_i in tsdata:
@@ -216,7 +199,8 @@ def main():
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
-    datastore_info_url = "http://127.0.0.1:5000/info/"
+    #datastore_info_url = "http://127.0.0.1:5000/info/"
+    datastore_info_url = "http://starkville.bbn.com/info/"
     #datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
     #datastore_info_url = "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/"
 
@@ -226,7 +210,7 @@ def main():
     time_of_last_update = 0#(time.time()-(5*60))*1000000
 
     # Sleep period in seconds (should be larger than 60 for production)
-    sleep_period_sec = 15
+    sleep_period_sec = 30
 
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
