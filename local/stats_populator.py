@@ -37,9 +37,9 @@ import table_manager
 
 # global variables for interface rate calculations
 ts_last_rx_bps = int(time.time()*1000000)
-bytes_last_rx_bps = psutil.network_io_counters().bytes_recv
+bits_last_rx_bps = psutil.network_io_counters().bytes_recv*8
 ts_last_tx_bps = int(time.time()*1000000)
-bytes_last_tx_bps = psutil.network_io_counters().bytes_sent
+bits_last_tx_bps = psutil.network_io_counters().bytes_sent*8
 
 ts_last_rx_pps = int(time.time()*1000000)
 pkts_last_rx_pps = psutil.network_io_counters().packets_recv
@@ -79,12 +79,13 @@ class StatsPopulator(threading.Thread):
     def run_stats_main(self):
 
         for i in range(self.num_inserts):
+            print "%d %s wakeup and sample" % (time.time()*1000000, self.obj_id)
             for ev_t in self.event_types_arr:
                 self.stat_insert(ev_t)
             time.sleep(self.sleep_period_sec)    
 
     def stat_insert(self, ev_t):    
-        
+
         time_sec_epoch = int(time.time()*1000000)
         data = get_data(ev_t)
         if data != None:
@@ -129,8 +130,8 @@ def get_data(event_type):
     elif event_type == "disk_part_max_used":
         return psutil.disk_usage('/').percent
     elif event_type == "rx_bps":
-        prev_val = bytes_last_rx_bps
-        curr_val = psutil.network_io_counters().bytes_recv
+        prev_val = bits_last_rx_bps
+        curr_val = psutil.network_io_counters().bytes_recv * 8
         prev_ts = ts_last_rx_bps
         curr_ts = int(time.time()*1000000)
         rx_bps = ((curr_val - prev_val)/(curr_ts - prev_ts))/1000000
@@ -138,8 +139,8 @@ def get_data(event_type):
         bytes_last_rx_bps = curr_val
         return max(0, rx_bps) # TODO handle rollover
     elif event_type == "tx_bps":
-        prev_val = bytes_last_tx_bps
-        curr_val = psutil.network_io_counters().bytes_sent
+        prev_val = bits_last_tx_bps
+        curr_val = psutil.network_io_counters().bytes_sent * 8
         prev_ts = ts_last_tx_bps
         curr_ts = int(time.time()*1000000)
         tx_bps = ((curr_val - prev_val)/(curr_ts - prev_ts))/1000000
