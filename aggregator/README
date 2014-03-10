@@ -32,7 +32,24 @@ Reference Aggregator README
     (1) echo "CREATE DATABASE aggregator" | mysql -u root -p
     (2) echo "GRANT ALL ON aggregator.* TO <AGGREGATOR_OPERATOR_NAME>@localhost IDENTIFIED BY '<AGGREGATOR_PASSWORD>'" | mysql -u root -p
 
-3. Running the aggregator in a screen session
+3. Configuring the aggregator to point to local datastore(s)
+
+   (1) Query the current config store in a web-browser:
+   http://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod
+
+   Inspect the output and find the href(s) of the local datastore(s)
+   you are interested in querying.
+
+   (2) Open the file 'config/aggregator_operator.conf'.
+   Under the [main] section add the json-style dictionaries to the
+   datastores_dict item in the format:
+   "<aggregate_id>":"<local_datastore_url_for_info_queries>"
+
+   As an example,
+   The href, "http://tamassos.gpolab.bbn.com/info/gpo-ig", translates to
+   {"gpo-ig":"http://tamassos.gpolab.bbn.com/info/"}
+
+4. Running the aggregator in a screen session
 
    Since the aggregator spends a lot of time sleeping in between
    fetching updates and it needs to run a long time, the first
