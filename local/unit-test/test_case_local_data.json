@@ -18,6 +18,11 @@
         "eventType": [ "ops_monitoring:mem_used", "ops_monitoring:cpu_util"],
         "ts": {"gte": 0},
         "obj": { "type": "node", "id": ["instageni.gpolab.bbn.com_node_pc1"]}
+      },
+      {
+        "eventType": [ "ops_monitoring:rx_bps", "ops_monitoring:tx_bps"],
+        "ts": {"gte": 3},
+        "obj": {"type": "interface", "id": ["instageni.gpolab.bbn.com_interface_pc1:eth0"]}
       }
     ]
   }
