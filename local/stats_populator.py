@@ -35,26 +35,6 @@ common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
 
-# global variables for interface rate calculations
-ts_last_rx_bps = int(time.time())
-bits_last_rx_bps = psutil.network_io_counters().bytes_recv*8
-ts_last_tx_bps = int(time.time())
-bits_last_tx_bps = psutil.network_io_counters().bytes_sent*8
-
-ts_last_rx_pps = int(time.time())
-pkts_last_rx_pps = psutil.network_io_counters().packets_recv
-ts_last_tx_pps = int(time.time())
-pkts_last_tx_pps = psutil.network_io_counters().packets_sent
-
-ts_last_rx_eps = int(time.time())
-pkts_last_rx_eps = psutil.network_io_counters().errin
-ts_last_tx_eps = int(time.time())
-pkts_last_tx_eps = psutil.network_io_counters().errout
-
-ts_last_rx_dps = int(time.time())
-pkts_last_rx_dps = psutil.network_io_counters().dropin
-ts_last_tx_dps = int(time.time())
-pkts_last_tx_dps = psutil.network_io_counters().dropout
 
 
 class StatsPopulator(threading.Thread):
@@ -66,7 +46,27 @@ class StatsPopulator(threading.Thread):
         self.sleep_period_sec = sleep_period_sec
         self.event_types_arr = event_types_arr
         self.data_life_time_sec = data_life_time_sec
-        print data_life_time_sec
+
+        self.ts_last_rx_bps = int(time.time())
+        self.bits_last_rx_bps = psutil.network_io_counters().bytes_recv
+        self.ts_last_tx_bps = int(time.time())
+        self.bits_last_tx_bps = psutil.network_io_counters().bytes_sent
+        
+        self.ts_last_rx_pps = int(time.time())
+        self.pkts_last_rx_pps = psutil.network_io_counters().packets_recv
+        self.ts_last_tx_pps = int(time.time())
+        self.pkts_last_tx_pps = psutil.network_io_counters().packets_sent
+        
+        self.ts_last_rx_eps = int(time.time())
+        self.pkts_last_rx_eps = psutil.network_io_counters().errin
+        self.ts_last_tx_eps = int(time.time())
+        self.pkts_last_tx_eps = psutil.network_io_counters().errout
+        
+        self.ts_last_rx_dps = int(time.time())
+        self.pkts_last_rx_dps = psutil.network_io_counters().dropin
+        self.ts_last_tx_dps = int(time.time())
+        self.pkts_last_tx_dps = psutil.network_io_counters().dropout
+
 
     def run(self):
 
@@ -87,7 +87,7 @@ class StatsPopulator(threading.Thread):
     def stat_insert(self, ev_t):    
 
         time_sec_epoch = int(time.time()*1000000)
-        data = get_data(ev_t)
+        data = self.get_data(ev_t)
         if data != None:
             val_str = "('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ")" 
             table_str = "ops_" + ev_t
@@ -98,135 +98,116 @@ class StatsPopulator(threading.Thread):
         else:
             print "No data received for event_type:", ev_t
 
-# Simple calls to get data
-# These should be non-blocking
-def get_data(event_type):
+    # Simple calls to get data
+    # These should be non-blocking
+    def get_data(self, event_type):
     
-    # global variables for handling rates, could add to class
-    global bytes_last_rx_bps
-    global bytes_last_tx_bps
-    global pkts_last_rx_pps
-    global pkts_last_tx_pps
-    global pkts_last_rx_eps
-    global pkts_last_tx_eps
-    global pkts_last_rx_dps
-    global pkts_last_tx_dps
-
-    global ts_last_rx_bps
-    global ts_last_tx_bps
-    global ts_last_rx_pps
-    global ts_last_tx_pps
-    global ts_last_rx_eps
-    global ts_last_tx_eps
-    global ts_last_rx_dps
-    global ts_last_tx_dps
-
-    if event_type == "mem_used_kb":
-        return psutil.virtual_memory().used
-    elif event_type == "swap_free":
-        return (100.0 - psutil.swap_memory().percent)
-    elif event_type == "cpu_util":
-        return psutil.cpu_percent(interval=0)
-    elif event_type == "disk_part_max_used":
-        return psutil.disk_usage('/').percent
-    elif event_type == "rx_bps":
-        prev_val = bits_last_rx_bps
-        curr_val = psutil.network_io_counters().bytes_recv * 8
-        prev_ts = ts_last_rx_bps
-        curr_ts = int(time.time())
-        if curr_ts != prev_ts:
-            rx_bps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            rx_bps = 0
-        ts_last_rx_bps = curr_ts
-        bytes_last_rx_bps = curr_val
-        return max(0, rx_bps) # TODO handle rollover
-    elif event_type == "tx_bps":
-        prev_val = bits_last_tx_bps
-        curr_val = psutil.network_io_counters().bytes_sent * 8
-        prev_ts = ts_last_tx_bps
-        curr_ts = int(time.time())
-        if curr_ts != prev_ts:
-            tx_bps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            tx_bps = 0
-        ts_last_tx_bps = curr_ts
-        bytes_last_tx_bps = curr_val
-        return max(0, tx_bps) # TODO handle rollover
-    elif event_type == "rx_pps":
-        prev_val = pkts_last_rx_pps
-        curr_val = psutil.network_io_counters().packets_recv
-        prev_ts = ts_last_rx_pps
-        curr_ts = int(time.time())
-        if curr_ts != prev_ts:
-            rx_pps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            rx_pps = 0
-        ts_last_rx_pps = curr_ts
-        pkts_last_rx_pps = curr_val
-        return max(0, rx_pps) # TODO handle rollover
-    elif event_type == "tx_pps":
-        prev_val = pkts_last_tx_pps
-        curr_val = psutil.network_io_counters().packets_sent
-        prev_ts = ts_last_tx_pps
-        curr_ts = int(time.time())
-        if curr_ts != prev_ts:
-            tx_pps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            tx_pps = 0
-        ts_last_tx_pps = curr_ts
-        pkts_last_tx_pps = curr_val
-        return max(0, tx_pps) # TODO handle rollover
-    elif event_type == "rx_eps":
-        prev_val = pkts_last_rx_eps
-        curr_val = psutil.network_io_counters().errin
-        prev_ts = ts_last_rx_eps
-        curr_ts = int(time.time())
-        if curr_ts != prev_ts:
-            rx_eps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            rx_eps = 0
-        ts_last_rx_eps = curr_ts
-        pkts_last_rx_eps = curr_val
-        return max(0, rx_eps) # TODO handle rollover
-    elif event_type == "tx_eps":
-        prev_val = pkts_last_tx_eps
-        curr_val = psutil.network_io_counters().errout
-        prev_ts = ts_last_tx_eps
-        curr_ts = int(time.time()) 
-        if curr_ts != prev_ts:
-            tx_eps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            tx_eps = 0
-        ts_last_tx_eps = curr_ts
-        pkts_last_tx_eps = curr_val
-        return max(0, tx_eps) # TODO handle rollover
-    elif event_type == "rx_dps":
-        prev_val = pkts_last_rx_dps
-        curr_val = psutil.network_io_counters().dropin
-        prev_ts = ts_last_rx_dps
-        curr_ts = int(time.time()) 
-        if curr_ts != prev_ts:
-            rx_dps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            rx_dps = 0
-        ts_last_rx_dps = curr_ts
-        pkts_last_rx_dps = curr_val
-        return max(0, rx_dps) # TODO handle rollover
-    elif event_type == "tx_dps":
-        prev_val = pkts_last_tx_dps
-        curr_val = psutil.network_io_counters().dropout
-        prev_ts = ts_last_tx_dps
-        curr_ts = int(time.time()) 
-        if curr_ts != prev_ts:
-            tx_dps = (curr_val - prev_val)/(curr_ts - prev_ts)
-        else:
-            tx_dps = 0
-        ts_last_tx_dps = curr_ts
-        pkts_last_tx_dps = curr_val
-        return max(0, tx_dps) # TODO handle rollover
-    else: # TODO add more
-        return None
+        if event_type == "mem_used_kb":
+            return psutil.virtual_memory().used
+        elif event_type == "swap_free":
+            return (100.0 - psutil.swap_memory().percent)
+        elif event_type == "cpu_util":
+            return psutil.cpu_percent(interval=0)
+        elif event_type == "disk_part_max_used":
+            return psutil.disk_usage('/').percent
+        elif event_type == "rx_bps":
+            prev_val = self.bits_last_rx_bps
+            curr_val = psutil.network_io_counters().bytes_recv
+            prev_ts = self.ts_last_rx_bps
+            curr_ts = int(time.time())
+            if curr_ts != prev_ts:
+                rx_bps = 8*(curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                rx_bps = 0
+            self.ts_last_rx_bps = curr_ts
+            self.bits_last_rx_bps = curr_val
+            return max(0, rx_bps) # TODO handle rollover
+        elif event_type == "tx_bps":
+            prev_val = self.bits_last_tx_bps
+            curr_val = psutil.network_io_counters().bytes_sent
+            prev_ts = self.ts_last_tx_bps
+            curr_ts = int(time.time())
+            if curr_ts != prev_ts:
+                tx_bps = 8*(curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                tx_bps = 0
+            self.ts_last_tx_bps = curr_ts
+            self.bits_last_tx_bps = curr_val
+            return max(0, tx_bps) # TODO handle rollover
+        elif event_type == "rx_pps":
+            prev_val = self.pkts_last_rx_pps
+            curr_val = psutil.network_io_counters().packets_recv
+            prev_ts = self.ts_last_rx_pps
+            curr_ts = int(time.time())
+            if curr_ts != prev_ts:
+                rx_pps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                rx_pps = 0
+            self.ts_last_rx_pps = curr_ts
+            self.pkts_last_rx_pps = curr_val
+            return max(0, rx_pps) # TODO handle rollover
+        elif event_type == "tx_pps":
+            prev_val = self.pkts_last_tx_pps
+            curr_val = psutil.network_io_counters().packets_sent
+            prev_ts = self.ts_last_tx_pps
+            curr_ts = int(time.time())
+            if curr_ts != prev_ts:
+                tx_pps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                tx_pps = 0
+            self.ts_last_tx_pps = curr_ts
+            self.pkts_last_tx_pps = curr_val
+            return max(0, tx_pps) # TODO handle rollover
+        elif event_type == "rx_eps":
+            prev_val = self.pkts_last_rx_eps
+            curr_val = psutil.network_io_counters().errin
+            prev_ts = self.ts_last_rx_eps
+            curr_ts = int(time.time())
+            if curr_ts != prev_ts:
+                rx_eps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                rx_eps = 0
+            self.ts_last_rx_eps = curr_ts
+            self.pkts_last_rx_eps = curr_val
+            return max(0, rx_eps) # TODO handle rollover
+        elif event_type == "tx_eps":
+            prev_val = self.pkts_last_tx_eps
+            curr_val = psutil.network_io_counters().errout
+            prev_ts = self.ts_last_tx_eps
+            curr_ts = int(time.time()) 
+            if curr_ts != prev_ts:
+                tx_eps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                tx_eps = 0
+            self.ts_last_tx_eps = curr_ts
+            self.pkts_last_tx_eps = curr_val
+            return max(0, tx_eps) # TODO handle rollover
+        elif event_type == "rx_dps":
+            prev_val = self.pkts_last_rx_dps
+            curr_val = psutil.network_io_counters().dropin
+            prev_ts = self.ts_last_rx_dps
+            curr_ts = int(time.time()) 
+            if curr_ts != prev_ts:
+                rx_dps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                rx_dps = 0
+            self.ts_last_rx_dps = curr_ts
+            self.pkts_last_rx_dps = curr_val
+            return max(0, rx_dps) # TODO handle rollover
+        elif event_type == "tx_dps":
+            prev_val = self.pkts_last_tx_dps
+            curr_val = psutil.network_io_counters().dropout
+            prev_ts = self.ts_last_tx_dps
+            curr_ts = int(time.time()) 
+            if curr_ts != prev_ts:
+                tx_dps = (curr_val - prev_val)/(curr_ts - prev_ts)
+            else:
+                tx_dps = 0
+            self.ts_last_tx_dps = curr_ts
+            self.pkts_last_tx_dps = curr_val
+            return max(0, tx_dps) # TODO handle rollover
+        else: # TODO add more
+            return None
 
 def arg_parser(argv):
 
