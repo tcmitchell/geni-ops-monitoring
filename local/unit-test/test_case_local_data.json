@@ -11,5 +11,14 @@
     [ "opsconfig", "info/opsconfig/geni-prod" ],
     [ "link", "info/link/arbitrary_link_id_001" ],
     [ "port-vlan", "info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750" ]
-  ]
+  ],
+  "data": {
+    "info/aggregate/gpo-ig": [
+      {
+        "eventType": [ "ops_monitoring:mem_used", "ops_monitoring:cpu_util"],
+        "ts": {"gte": 0},
+        "obj": { "type": "node", "id": ["instageni.gpolab.bbn.com_node_pc1"]}
+      }
+    ]
+  }
 }
