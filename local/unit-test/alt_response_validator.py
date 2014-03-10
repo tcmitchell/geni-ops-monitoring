@@ -78,18 +78,31 @@ def parse_test_data(filename):
   testdata = json.load(open(filename))
   cases = []
   for case in testdata['cases']:
-    cases.append([case[0], testdata['base_url'] + case[1]])
+    if case[1] in testdata['data']:
+      casedata = testdata['data'][case[1]]
+    else:
+      casedata = []
+    cases.append([case[0], testdata['base_url'] + case[1], casedata])
   return cases
 
 class UrlChecker:
-  def __init__(self, expected_type, url):
+  def __init__(self, expected_type, url, datachecks):
     self.expected_type = expected_type
     self.url = url
+    self.datachecks = datachecks
     self.errors = []
     self.hrefs_found = []
     try:
       self.resp = json.load(urllib2.urlopen(self.url))
       self.validate_response()
+      for datacheck in self.datachecks:
+        if self.measRef:
+          dparams = json.dumps(datacheck, separators=(',', ':'))
+          durl = self.measRef + '?q={"filters":%s}' % dparams
+          dresult = DataUrlChecker(durl)
+          for derror in dresult.errors:
+            self.errors.append("%s (during data check for %s)" % (
+              derror, dparams))
     except urllib2.HTTPError, e:
       self.errors.append("Received HTTP error while loading URL: %s" % str(e))
     except ValueError, e:
@@ -125,6 +138,16 @@ class UrlChecker:
           self.errors.append(
             'URL queried was %s, but response reported selfRef of %s' % (
               self.url, self.resp['selfRef']))
+
+      # if the config file requested data checks, that's implicitly
+      # requiring the datastore to have a measRef parameter
+      if self.datachecks:
+        if 'measRef' in self.resp:
+          self.measRef = self.resp['measRef']
+        else:
+          self.measRef = None
+          self.errors.append(
+            'Data checks requested by config, but response has no measRef parameter')
     else:
       self.errors.append('"$schema" parameter missing from response')
 
@@ -165,10 +188,13 @@ class UrlChecker:
       self.validate_prop_as_legacy_object(propresp, prop, propattrs, proptype)
     elif proptype == 'string':
       self.validate_prop_type_in_list(
-        propresp, prop, 'string', [types.StringType, types.UnicodeType])
+        propresp, prop, 'string', [types.StringType, types.UnicodeType, ])
     elif proptype == 'integer':
       self.validate_prop_type_in_list(
         propresp, prop, 'integer', [types.IntType, ])
+    elif proptype == 'number':
+      self.validate_prop_type_in_list(
+        propresp, prop, 'number', [types.IntType, types.FloatType, ])
     elif proptype == 'array':
       self.validate_prop_as_type_array(propresp, prop, propattrs)
     elif proptype.startswith('http://'):
@@ -285,49 +311,83 @@ class UrlChecker:
           "Property %s (%s) is missing required subproperty %s" % \
           (prop, propresp, subprop))
 
+class DataUrlChecker(UrlChecker):
+  def __init__(self, url):
+    UrlChecker.__init__(self, 'data', url, [])
+
+  def validate_response(self):
+    self.dataresp = self.resp
+    if type(self.resp) == types.ListType:
+      for resp in self.dataresp:
+        self.resp = resp
+        UrlChecker.validate_response(self)
+    else:
+      self.errors.append(
+        "Data response %s is not a list" % self.dataresp)
+
 def test_found_hrefs(hrefs_found, hrefs_checked):
   print ""
   hrefs_to_check = []
+  nchecked = 0
+  nerrors = 0
   for href in sorted(hrefs_found.keys()):
     if not href in hrefs_checked:
       hrefs_to_check.append(href)
   if len(hrefs_to_check) == 0:
     print "All found URLs have now been checked"
-    return False
+    return [nchecked, nerrors]
   for href in hrefs_to_check:
     print "testing discovered URL %s (referenced by: %s):" % (href, ", ".join(hrefs_found[href])),
-    check = UrlChecker(None, href)
+    check = UrlChecker(None, href, [])
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
+        nerrors += 1
         print "  ERROR: " + error
     else:
       print "OK"
+    nchecked += 1
     hrefs_checked.append(href)
     for newhref in check.hrefs_found:
       hrefs_found.setdefault(newhref, [])
       hrefs_found[newhref].append(check.url)
-  return True
+  return [nchecked, nerrors]
 
 def test_all_cases(cases):
   hrefs_found = {}
   hrefs_checked = []
-  for case in cases:
-    print "testing URL %s (type %s):" % (case[1], case[0]),
-    check = UrlChecker(case[0], case[1])
+  nchecked = 0
+  nerrors = 0
+  for [casetype, caseurl, casedata] in cases:
+    print "testing URL %s (type %s):" % (caseurl, casetype),
+    check = UrlChecker(casetype, caseurl, casedata)
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
+        nerrors += 1
         print "  ERROR: " + error
     else:
       print "OK"
-    hrefs_checked.append(case[1])
+    nchecked += 1
+    hrefs_checked.append(caseurl)
     for newhref in check.hrefs_found:
       hrefs_found.setdefault(newhref, [])
       hrefs_found[newhref].append(check.url)
-  while test_found_hrefs(hrefs_found, hrefs_checked):
-    continue
+  while True:
+    [newchecked, newerrors] = test_found_hrefs(hrefs_found, hrefs_checked)
+    nchecked += newchecked
+    nerrors += newerrors
+    if newchecked == 0:
+      break
+  print "TOTAL: %d %s from %d checks" % (
+    nerrors,
+    (nerrors == 1) and 'error' or 'errors',
+    nchecked
+  )
+  if nerrors > 0:
+    return 1
+  return 0
 
 testcases = parse_test_data(sys.argv[1])
-test_all_cases(testcases)
-
+retval = test_all_cases(testcases)
+sys.exit(retval)
