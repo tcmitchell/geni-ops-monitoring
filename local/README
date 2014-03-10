@@ -18,7 +18,7 @@ Reference Local Datastore README
 
 2a. PostgreSQL Configuration
 
-   We use <LOCAL_OPERATOR_NAME>=localstore, but any name you like
+   We use <LOCAL_OPERATOR_NAME>=localuser, but any name you like
    should work.
 
     Omit (1) if you already have a postgres user
