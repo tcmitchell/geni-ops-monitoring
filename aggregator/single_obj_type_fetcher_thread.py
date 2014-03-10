@@ -27,6 +27,7 @@ import time
 import json
 import sys
 import requests
+import ConfigParser
 from pprint import pprint as pprint
 import single_local_datastore_crawler
 sys.path.append("../common/")
@@ -189,14 +190,14 @@ def main():
 
 
     threads = {} 
-    db_name = "aggregator"
+    db_type = "aggregator"
     config_path = "../config"
 
     # Event types to query, TODO, less hard coding of this is needed
     node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
     interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
 
-    tbl_mgr = table_manager.TableManager(db_name, config_path)
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
     #datastore_info_url = "http://127.0.0.1:5000/info/"
@@ -204,17 +205,19 @@ def main():
     #datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
     #datastore_info_url = "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/"
 
+    cp = ConfigParser.ConfigParser()
+    cp.read(config_path + "/aggregator_operator.conf") 
+
+    datastores_dict = json.loads(cp.get("main","datastores_dict"))
+    sleep_period_sec = int(json.loads(cp.get("main","sleep_period_sec")))
 
     # Set time of last update to 5 minutes in the past
     # TODO remove 0#
     time_of_last_update = 0#(time.time()-(5*60))*1000000
 
-    # Sleep period in seconds (should be larger than 60 for production)
-    sleep_period_sec = 30
-
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
-    #aggregate_id = "ion.internet2.edu"
+
 
 
     # Object type to look up in aggregator db
