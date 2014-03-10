@@ -27,7 +27,7 @@
 import argparse
 import datetime
 import nagiosplugin
-from psql_queries import AggregatorQuerier
+from psql_queries import AggregatorQuerier,ValueUnknownException
 
 class SharedNodeInterfaceRxUtil(nagiosplugin.Resource):
 
@@ -37,6 +37,7 @@ class SharedNodeInterfaceRxUtil(nagiosplugin.Resource):
 
     def probe(self):
         # Query the aggregator data store
+
         results = self._querier.get_last_interface_rx_util(self._aggregate)
 
         name = {}
@@ -46,7 +47,7 @@ class SharedNodeInterfaceRxUtil(nagiosplugin.Resource):
         for resource in results:
             name[resource] = '%s_if_rx_util' % resource
             value[resource] = results[resource]
-            metric.append(nagiosplugin.Metric(name[resource], value[respource], min=0,
+            metric.append(nagiosplugin.Metric(name[resource], value[resource], min=0,
                                               context='util'))
 
         return metric

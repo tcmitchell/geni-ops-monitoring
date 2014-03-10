@@ -136,7 +136,7 @@ class AggregatorQuerier():
                 max_bps = self._get_max_bps(interface)
                 rx_utilization = (cur_rx / max_bps) * 100
             else:
-                # FIXME: throw something like VALUE UNKNOWN exception
+                # Return a negative value if the resource doesn't have data 
                 rx_utilization = -1
 
             ### Set the return value for this resource
@@ -342,6 +342,20 @@ class AggregatorQuerier():
                 (resource, result[resource])
 
         return 0
+
+class ValueUnknownException(Exception):
+
+    def __init__(self, aggregate, resource, metric):
+       self._aggregate = aggregate
+       self._resource = resource
+       self._metric = metric
+
+    def __str__(self):
+       message = "No value known for:"
+       message = message + "  Aggregate %s" % self._aggregate
+       message = message + "  Resource %s" % self._resource
+       message = message + "  Metric %s" % self._metric
+       return message
 
 if __name__ == "__main__":
     querier = AggregatorQuerier("aggregator", "tupty")
