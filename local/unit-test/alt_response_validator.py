@@ -105,6 +105,8 @@ class UrlChecker:
               derror, dparams))
     except urllib2.HTTPError, e:
       self.errors.append("Received HTTP error while loading URL: %s" % str(e))
+    except urllib2.URLError, e:
+      self.errors.append("Received URL error while loading URL: %s" % str(e))
     except ValueError, e:
       self.errors.append("Received ValueError while loading URL: %s" % str(e))
 
@@ -127,6 +129,9 @@ class UrlChecker:
         self.validate_response_against_schema()
       except urllib2.HTTPError, e:
         self.errors.append("Received HTTP error while loading schema %s: %s" % (
+          schemaurl, str(e)))
+      except urllib2.URLError, e:
+        self.errors.append("Received URL error while loading schema %s: %s" % (
           schemaurl, str(e)))
       except ValueError, e:
         self.errors.append("Received ValueError while loading schema %s: %s" % (
