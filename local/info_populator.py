@@ -373,6 +373,32 @@ class InfoPopulator(threading.Thread):
          
          info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg1)
 
+         opsconfigagg2 = []
+         opsconfigagg2.append("ion.internet2.edu")
+         opsconfigagg2.append("geni-prod")
+         opsconfigagg2.append("ion")
+         opsconfigagg2.append("urn:publicid:IDN+ion.internet2.edu+authority+cm")
+         opsconfigagg2.append("http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/" + opsconfigagg2[0])
+         
+         info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg2)
+
+         opsconfigagg3 = []
+         opsconfigagg3.append("dragon.maxgigapop.net")
+         opsconfigagg3.append("geni-prod")
+         opsconfigagg3.append("ion")
+         opsconfigagg3.append("urn:publicid:IDN+al2s.net.internet2.edu+authority+cm")
+         opsconfigagg3.append("http://maxam.maxgigapop.net:5000/info/aggregate/" + opsconfigagg3[0])
+         
+         info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg3)
+
+         opsconfigagg4 = []
+         opsconfigagg4.append("al2s.net.internet2.edu")
+         opsconfigagg4.append("geni-prod")
+         opsconfigagg4.append("al2s")
+         opsconfigagg4.append("urn:publicid:IDN+al2s.net.internet2.edu+authority+cm")
+         opsconfigagg4.append("http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/" + opsconfigagg4[0])
+         
+         info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg4)
 
          opsconfigauth1 = []
          opsconfigauth1.append("ch.geni.net")
