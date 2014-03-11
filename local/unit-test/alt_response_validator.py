@@ -22,6 +22,7 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+import datetime
 import json
 import os
 import sys
@@ -78,18 +79,19 @@ def parse_schema(schemaurl):
 def parse_test_data(filename):
   testdata = json.load(open(filename))
   cases = []
-  for case in testdata['cases']:
-    if 'data' in testdata and case[1] in testdata['data']:
-      casedata = testdata['data'][case[1]]
+  for [casetype, casesuburl, casechecks] in testdata['cases']:
+    if 'data' in testdata and casesuburl in testdata['data']:
+      casedata = testdata['data'][casesuburl]
     else:
       casedata = []
-    cases.append([case[0], testdata['base_url'] + case[1], casedata])
+    cases.append([casetype, testdata['base_url'] + casesuburl, casechecks, casedata])
   return cases
 
 class UrlChecker:
-  def __init__(self, expected_type, url, datachecks):
+  def __init__(self, expected_type, url, contentchecks, datachecks):
     self.expected_type = expected_type
     self.url = url
+    self.contentchecks = contentchecks
     self.datachecks = datachecks
     self.errors = []
     self.hrefs_found = []
@@ -98,12 +100,22 @@ class UrlChecker:
       self.validate_response()
       for datacheck in self.datachecks:
         if self.measRef:
+          if 'ts' in datacheck and 'lastmins' in datacheck['ts']:
+            interval_end = datetime.datetime.now()
+            interval_start = datetime.datetime.now() - datetime.timedelta(
+              minutes=int(datacheck['ts']['lastmins']))
+            datacheck['ts']['lt'] = str(int(interval_end.strftime('%s')) * 1000000)
+            datacheck['ts']['gte'] = str(int(interval_start.strftime('%s')) * 1000000)
+            datacheck['ts'].pop('lastmins')
           dparams = json.dumps(datacheck, separators=(',', ':'))
-          durl = self.measRef + '?q={"filters":%s}' % dparams
+          durl = self.measRef
+          if not durl.endswith('/'):
+            durl += '/'
+          durl += '?q={"filters":%s}' % dparams
           dresult = DataUrlChecker(durl)
           for derror in dresult.errors:
-            self.errors.append("%s (during data check for %s)" % (
-              derror, dparams))
+            self.errors.append("%s (during data check of %s)" % (
+              derror, durl))
     except urllib2.HTTPError, e:
       self.errors.append("Received HTTP error while loading URL: %s" % str(e))
     except urllib2.URLError, e:
@@ -128,6 +140,7 @@ class UrlChecker:
         
         self.schema = parse_schema(schemaurl)
         self.validate_response_against_schema()
+        self.validate_response_contents(self.resp, self.contentchecks)
       except urllib2.HTTPError, e:
         self.errors.append("Received HTTP error while loading schema %s: %s" % (
           schemaurl, str(e)))
@@ -165,6 +178,28 @@ class UrlChecker:
         self.validate_response_properties()
         continue
       self.errors.append("Unknown schema top-level key %s: %s" % (key, self.schema[key]))
+
+  def validate_response_contents(self, resp, checks):
+    for checkkey in sorted(checks.keys()):
+      if checkkey == 'VERIFY': continue
+      checkval = checks[checkkey]
+      if checkkey in resp:
+        if 'VERIFY' in checkval:
+          for verifykey in sorted(checkval['VERIFY'].keys()):
+            verifyval = checkval['VERIFY'][verifykey]
+            if verifykey == 'minlength':
+              if len(resp[checkkey]) < int(verifyval):
+                self.errors.append(
+                  "Content problem: found %d < %d values in key %s response %s" % (
+                  len(resp[checkkey]), int(verifyval), checkkey, resp[checkkey]))
+            else:
+              self.errors.append(
+                "Config error: don't know how to run verification check %s requested on key %s response %s" % (
+                verifykey, checkkey, resp[checkkey]))
+        self.validate_response_contents(resp[checkkey], checkval)
+      else:
+        self.errors.append(
+          "Content problem: key %s missing from response %s" % (checkkey, resp))
 
   def validate_response_properties(self):
     for prop in self.schemaprops.keys():
@@ -266,10 +301,6 @@ class UrlChecker:
           self.errors.append(
             "Unexpected legacy ops_monitoring subkey %s with value %s" % (
             key, value))
-    else:
-      self.errors.append(
-        "Legacy 'properties' response %s missing 'ops_monitoring' subkey" % \
-          propresp)
 
   def validate_prop_as_type_object(self, propresp, prop, propattrs, proptype):
     subprops = propattrs['properties']
@@ -319,7 +350,7 @@ class UrlChecker:
 
 class DataUrlChecker(UrlChecker):
   def __init__(self, url):
-    UrlChecker.__init__(self, 'data', url, [])
+    UrlChecker.__init__(self, 'data', url, {}, [])
 
   def validate_response(self):
     self.dataresp = self.resp
@@ -344,7 +375,7 @@ def test_found_hrefs(hrefs_found, hrefs_checked):
     return [nchecked, nerrors]
   for href in hrefs_to_check:
     print "testing discovered URL %s (referenced by: %s):" % (href, ", ".join(hrefs_found[href])),
-    check = UrlChecker(None, href, [])
+    check = UrlChecker(None, href, {}, [])
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
@@ -364,9 +395,9 @@ def test_all_cases(cases):
   hrefs_checked = []
   nchecked = 0
   nerrors = 0
-  for [casetype, caseurl, casedata] in cases:
+  for [casetype, caseurl, casechecks, casedata] in cases:
     print "testing URL %s (type %s):" % (caseurl, casetype),
-    check = UrlChecker(casetype, caseurl, casedata)
+    check = UrlChecker(casetype, caseurl, casechecks, casedata)
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
