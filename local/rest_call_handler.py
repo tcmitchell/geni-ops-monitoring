@@ -45,6 +45,11 @@ def handle_ts_data_query(tm, filters):
         return fail_str # returns why filters failed
 
     ts_where_str = build_ts_where_str(ts_filters)
+
+    # ts
+    if ts_where_str == "":
+        return "[]"
+
     resp_arr = []    
     
     for event_type in event_types:
