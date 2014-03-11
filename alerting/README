@@ -1,0 +1,92 @@
+For the reference implementation, we are using nagios and nrpe.
+
+
+1. Architecture
+---------------
+
+1.1. Overview Diagram
+---------------------
+__________________________________________
+| | Alert  | | Email/text | |  Basic   | |
+| | Web UI | |   alerts   | | Trending | |
+| |________| |____________| |__________| |
+|                                        |
+|            Nagios server               |
+|           _______________              |
+|           | NRPE Plugin |              |
+|___________|_____________|______________|
+                  |         
+                  |  
+   _______________|__________________
+   |        | NRPE Server |         |
+   |        |_____________|         |
+   |           |       |            |
+   |     ______|___ ___|______      |
+   |     | Plugin | | Plugin |      |
+   |     |________| |________|      |
+   |           |       |            |
+   |         __|_______|__          |
+   |         |   Query   |          |
+   |         |  Library  |          |
+   |         |___________|          |
+   |               |                |
+   |         ______|_______         |
+   |         | Aggregator |         |
+   |         |  Database  |         |
+   |         |____________|         |
+   |                                |
+   |         Nagios Client          |
+   |      (Aggregator Server)       |
+   |________________________________|
+
+
+
+The architecture for alerting is broken up into two major components:
+ * Nagios Server
+ * Nagios Client (must run on aggregator server)
+
+This split is done in order to allow for an aggregator to be integrated 
+with an existing nagios server.  It is also possible to deploy both the 
+nagios server and the aggregator server on the same host, for those who
+need to stand up a new nagios server.
+
+1.2. Nagios Server
+------------------
+The nagios server can be a standard nagios server with the nrpe plugin
+installed.  Customized configuration files for the nagios server are
+in the can be found in the following directory:
+
+    alerting/nagios-server/config
+
+The following are descriptions of the config files:
+
+ * aggregates.cfg: All host and service checks should be defined here.
+                   Currently, we define a template for a service check, and
+                   then use that template for individual hosts.  In the
+                   reference config, a host corresponds to an aggregate.
+
+ * cgi.cfg:        This is the standard cgi.cfg file.  Some authentication
+                   config changes have been made for the reference
+                   implementation.
+
+ * commands.cfg:   This is the standard commands.cfg file.  In here, the 
+                   nrpe commands for the aggregator must be defined, and 
+                   they must point at the aggregator host
+
+ * nagios.cfg:     This is a standard nagios.cfg file.  In the reference
+                   implementation, localhost checks are disabled, and there
+                   is a cfg_file defined for the path to aggregates.cfg
+
+1.2. Nagios Client
+------------------
+Most of the work development work happens on the nagios client,
+specifically in the nagios plugins and the query library.
+
+
+1.2.1. Nagios Plugins
+---------------------
+
+
+1.2.2. Query Library
+--------------------
+
