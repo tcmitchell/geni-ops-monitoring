@@ -27,7 +27,8 @@
       "items": {
         "type": [
           {
-            "$ref": "http://unis.incntre.iu.edu/schema/20120709/tsdatum#"
+            "ts": "number",
+            "v": "number"
           }
         ]
       }

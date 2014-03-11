@@ -373,7 +373,6 @@ class InfoPopulator(threading.Thread):
          
          info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg1)
 
-
          opsconfigauth1 = []
          opsconfigauth1.append("ch.geni.net")
          opsconfigauth1.append("geni-prod")

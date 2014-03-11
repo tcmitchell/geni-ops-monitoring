@@ -45,6 +45,11 @@ def handle_ts_data_query(tm, filters):
         return fail_str # returns why filters failed
 
     ts_where_str = build_ts_where_str(ts_filters)
+
+    # ts
+    if ts_where_str == "":
+        return "[]"
+
     resp_arr = []    
     
     for event_type in event_types:
@@ -706,20 +711,36 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 # builds timestamp filter as a where clause for SQL statement
 def build_ts_where_str(ts_dict):
     ts_where_str = ""
+    ts_filters = []
+
+    if 'gte' not in ts_dict and 'gt' not in ts_dict:
+        print "must past a ts filter for (lt or lte) and (gt or gte)"
+        print "missing gt or gte filter"
+        return ts_where_str
+
+    if 'lte' not in ts_dict and 'lt' not in ts_dict:
+        print "must past a ts filter for (lt or lte) and (gt or gte)"
+        print "missing lt or lte filter"
+        return ts_where_str
 
     try:
         for ts_k in ts_dict:
             ts_v = ts_dict[ts_k]
             if ts_k == 'gte':
-                ts_where_str += "ts >= " + str(ts_v) + " "
+                ts_filters.append("ts >= " + str(ts_v))
             elif ts_k == 'gt':
-                ts_where_str += "ts > " + str(ts_v) + " "
+                ts_filters.append("ts > " + str(ts_v))
             elif ts_k == 'lte':
-                ts_where_str += "ts <= " + str(ts_v) + " "
+                ts_filters.append("ts <= " + str(ts_v))
             elif ts_k == 'lt':
-                ts_where_str += "ts < " + str(ts_v) + " "
+                ts_filters.append("ts < " + str(ts_v))
     except Exception, e:
         print str(e), "ts filters has invalid key or value:"
+    
+    try:
+        ts_where_str = ts_filters[0] + " and " +  ts_filters[1]
+    except Exception, e:
+        print str(e), "must past a ts filter for (lt or lte) and (gt or gte)"
 
     return ts_where_str
 

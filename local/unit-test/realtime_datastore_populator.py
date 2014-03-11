@@ -109,12 +109,12 @@ def main(argv):
     interface_event_str_arr.append("tx_dps")
 
     print node_event_str_arr + interface_event_str_arr
-    
+    tsdata_lifespan_sec = 60 
 
-    node_sp = stats_populator.StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, node_event_str_arr)
+    node_sp = stats_populator.StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, node_event_str_arr,tsdata_lifespan_sec)
 
 
-    interface_sp = stats_populator.StatsPopulator(tbl_mgr, interface_id, num_ins, per_sec, interface_event_str_arr)
+    interface_sp = stats_populator.StatsPopulator(tbl_mgr, interface_id, num_ins, per_sec, interface_event_str_arr,tsdata_lifespan_sec)
 
     # start threads
     node_sp.start()
