@@ -1,3 +1,4 @@
+#!/usr/bin/python
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -78,7 +79,7 @@ def parse_test_data(filename):
   testdata = json.load(open(filename))
   cases = []
   for case in testdata['cases']:
-    if case[1] in testdata['data']:
+    if 'data' in testdata and case[1] in testdata['data']:
       casedata = testdata['data'][case[1]]
     else:
       casedata = []
