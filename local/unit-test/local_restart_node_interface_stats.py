@@ -35,7 +35,7 @@ import info_populator
 import stats_populator
 
 def usage():
-    print 'local_restart_node_interface_stats.py -b <local-store-base-url> -n <node-id> -i <interface-id> -r <num-inserts> -s <sleep-period-seconds>'
+    print('local_restart_node_interface_stats.py -b <local-store-base-url> -n <node-id> -i <interface-id> -r <num-inserts> -s <sleep-period-seconds>')
     sys.exit(2)
 
 def parse_args(argv):
