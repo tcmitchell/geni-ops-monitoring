@@ -85,16 +85,26 @@ def parse_test_data(filename):
     else:
       casedata = []
     cases.append([casetype, testdata['base_url'] + casesuburl, casechecks, casedata])
-  return cases
+  if 'checkprefs' in testdata:
+    checkprefs = testdata['checkprefs']
+  else:
+    checkprefs = {}
+  return [cases, checkprefs]
 
 class UrlChecker:
-  def __init__(self, expected_type, url, contentchecks, datachecks):
+  def __init__(self, expected_type, url, contentchecks, datachecks, checkprefs):
     self.expected_type = expected_type
     self.url = url
     self.contentchecks = contentchecks
     self.datachecks = datachecks
     self.errors = []
     self.hrefs_found = []
+
+    # Particular properties content properties across this set of checks
+    self.checkprefs = checkprefs
+    if 'VERIFY' in self.contentchecks:
+      self.checkprefs = self.contentchecks['VERIFY']
+
     try:
       self.resp = json.load(urllib2.urlopen(self.url))
       self.validate_response()
@@ -231,9 +241,11 @@ class UrlChecker:
     elif proptype == 'integer':
       self.validate_prop_type_in_list(
         propresp, prop, 'integer', [types.IntType, ])
+      self.validate_prop_number_checks(propresp, prop, propattrs, proptype)
     elif proptype == 'number':
       self.validate_prop_type_in_list(
         propresp, prop, 'number', [types.IntType, types.FloatType, ])
+      self.validate_prop_number_checks(propresp, prop, propattrs, proptype)
     elif proptype == 'array':
       self.validate_prop_as_type_array(propresp, prop, propattrs)
     elif proptype.startswith('http://'):
@@ -258,6 +270,12 @@ class UrlChecker:
     if not type(propresp) in typelist:
       self.errors.append("Response %s for property %s is of type %s not %s" % (
         propresp, prop, type(propresp), typename))
+
+  def validate_prop_number_checks(self, propresp, prop, propattrs, proptype):
+    if 'nonzero_numbers' in self.checkprefs and self.checkprefs['nonzero_numbers']:
+      if propresp == 0:
+        self.errors.append("Response %s for property %s has value zero" % (
+          propresp, prop))
 
   def validate_prop_as_type_array(self, propresp, prop, propattrs):
     preerrs = len(self.errors)
@@ -348,7 +366,7 @@ class UrlChecker:
 
 class DataUrlChecker(UrlChecker):
   def __init__(self, url, contentchecks):
-    UrlChecker.__init__(self, 'data', url, contentchecks, [])
+    UrlChecker.__init__(self, 'data', url, contentchecks, [], {})
 
   def validate_response(self):
     self.dataresp = self.resp
@@ -371,7 +389,7 @@ class DataUrlChecker(UrlChecker):
       self.errors.append(
         "Data response %s is not a list" % self.dataresp)
 
-def test_found_hrefs(hrefs_found, hrefs_checked):
+def test_found_hrefs(hrefs_found, hrefs_checked, checkprefs):
   print ""
   hrefs_to_check = []
   nchecked = 0
@@ -384,7 +402,7 @@ def test_found_hrefs(hrefs_found, hrefs_checked):
     return [nchecked, nerrors]
   for href in hrefs_to_check:
     print "testing discovered URL %s (referenced by: %s):" % (href, ", ".join(hrefs_found[href])),
-    check = UrlChecker(None, href, {}, [])
+    check = UrlChecker(None, href, {}, [], checkprefs)
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
@@ -399,14 +417,14 @@ def test_found_hrefs(hrefs_found, hrefs_checked):
       hrefs_found[newhref].append(check.url)
   return [nchecked, nerrors]
 
-def test_all_cases(cases):
+def test_all_cases(cases, checkprefs):
   hrefs_found = {}
   hrefs_checked = []
   nchecked = 0
   nerrors = 0
   for [casetype, caseurl, casechecks, casedata] in cases:
     print "testing URL %s (type %s):" % (caseurl, casetype),
-    check = UrlChecker(casetype, caseurl, casechecks, casedata)
+    check = UrlChecker(casetype, caseurl, casechecks, casedata, checkprefs)
     if len(check.errors) > 0:
       print ""
       for error in check.errors:
@@ -420,7 +438,7 @@ def test_all_cases(cases):
       hrefs_found.setdefault(newhref, [])
       hrefs_found[newhref].append(check.url)
   while True:
-    [newchecked, newerrors] = test_found_hrefs(hrefs_found, hrefs_checked)
+    [newchecked, newerrors] = test_found_hrefs(hrefs_found, hrefs_checked, checkprefs)
     nchecked += newchecked
     nerrors += newerrors
     if newchecked == 0:
@@ -434,6 +452,6 @@ def test_all_cases(cases):
     return 1
   return 0
 
-testcases = parse_test_data(sys.argv[1])
-retval = test_all_cases(testcases)
+[testcases, checkprefs] = parse_test_data(sys.argv[1])
+retval = test_all_cases(testcases, checkprefs)
 sys.exit(retval)
