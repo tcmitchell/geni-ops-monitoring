@@ -98,7 +98,7 @@ class UrlChecker:
     try:
       self.resp = json.load(urllib2.urlopen(self.url))
       self.validate_response()
-      for datacheck in self.datachecks:
+      for [datacheck, dataverify] in self.datachecks:
         if self.measRef:
           if 'ts' in datacheck and 'lastmins' in datacheck['ts']:
             interval_end = datetime.datetime.now()
@@ -112,7 +112,7 @@ class UrlChecker:
           if not durl.endswith('/'):
             durl += '/'
           durl += '?q={"filters":%s}' % dparams
-          dresult = DataUrlChecker(durl)
+          dresult = DataUrlChecker(durl, dataverify)
           for derror in dresult.errors:
             self.errors.append("%s (during data check of %s)" % (
               derror, durl))
@@ -193,9 +193,7 @@ class UrlChecker:
                   "Content problem: found %d < %d values in key %s response %s" % (
                   len(resp[checkkey]), int(verifyval), checkkey, resp[checkkey]))
             else:
-              self.errors.append(
-                "Config error: don't know how to run verification check %s requested on key %s response %s" % (
-                verifykey, checkkey, resp[checkkey]))
+              raise ValueError, "Don't know how to deal with verify key %s in UrlChecker" % verifykey
         self.validate_response_contents(resp[checkkey], checkval)
       else:
         self.errors.append(
@@ -349,12 +347,23 @@ class UrlChecker:
           (prop, propresp, subprop))
 
 class DataUrlChecker(UrlChecker):
-  def __init__(self, url):
-    UrlChecker.__init__(self, 'data', url, {}, [])
+  def __init__(self, url, contentchecks):
+    UrlChecker.__init__(self, 'data', url, contentchecks, [])
 
   def validate_response(self):
     self.dataresp = self.resp
     if type(self.resp) == types.ListType:
+      if 'VERIFY' in self.contentchecks:
+        for verifykey in sorted(self.contentchecks['VERIFY']):
+          verifyval = int(self.contentchecks['VERIFY'][verifykey])
+          if verifykey == 'minlength':
+            if len(self.resp) < verifyval:
+              self.errors.append(
+                "Found %s < %s values at URL %s" % (len(self.resp), verifyval, self.url))
+          else:
+            raise ValueError, "Don't know how to deal with verify key %s in DataUrlChecker" % verifykey
+              
+          
       for resp in self.dataresp:
         self.resp = resp
         UrlChecker.validate_response(self)
