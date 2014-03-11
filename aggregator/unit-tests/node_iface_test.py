@@ -29,16 +29,17 @@ import sys
 import requests
 import ConfigParser
 from pprint import pprint as pprint
-import single_local_datastore_crawler
-sys.path.append("../common/")
+
+sys.path.append("../../common/")
 import table_manager
-import single_obj_type_fetcher_thread
+sys.path.append("../")
+import single_local_datastore_crawler as sldc
+import single_obj_type_fetcher_thread as sotft
 
-def main(): 
-
+def main():
     threads = {} 
     db_type = "aggregator"
-    config_path = "../config"
+    config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
     node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
@@ -47,40 +48,40 @@ def main():
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
-    cp = ConfigParser.ConfigParser()
-    cp.read(config_path + "/aggregator_operator.conf") 
+    # length of sleep between data fetches
+    sleep_period_sec = 2
 
-    # Gets multiple datastores from the configuration file
-    datastores_dict = json.loads(cp.get("main","datastores_dict"))
+    # Info url
+    datastore_info_url = "http://127.0.0.1:5000/info/"
 
-    sleep_period_sec = int(json.loads(cp.get("main","sleep_period_sec")))
+    # Aggregate ID to look up in aggregator db
+    aggregate_id = "gpo-ig"
 
-    # time of last update set to 15 minutes in the past
-    time_of_last_update = int((time.time() - 15*60)*1000000)
+    # Set time of last update to 5 minutes in the past
+    time_of_last_update = (time.time()-(5*60))*1000000
+    
+    # Stop conditions
+    run_indefinitely = False
+    stop_cnt = 2
 
-    for agg_id in datastores_dict:
+    # Object type to look up in aggregator db
+    obj_type = "node"
+    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
+    event_types = node_event_types
 
-        # Aggregate ID to look up in aggregator db
-        aggregate_id = agg_id
-        datastore_info_url = datastores_dict[agg_id]
+    crawler = sldc.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
+    
+    threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
 
-        # Object type to look up in aggregator db
-        obj_type = "node"
-        thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-        event_types = node_event_types
 
-        sldc = single_local_datastore_crawler.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
-        
-        threads[thread_name] = single_obj_type_fetcher_thread.SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
-        
-        # Another thread about interface data
-        obj_type = "interface"
-        event_types = interface_event_types
-        thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-        
-        threads[thread_name] = single_obj_type_fetcher_thread.SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
-        
-        
+    # Another thread about interface data
+    obj_type = "interface"
+    event_types = interface_event_types
+    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
+
+    threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
+
+
     for thread_name in threads:
         threads[thread_name].start()
 

@@ -35,7 +35,7 @@ import table_manager
 
 class SingleObjectTypeFetcherThread(threading.Thread):
 
-    def __init__(self, tbl_mgr, info_crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update):
+    def __init__(self, tbl_mgr, info_crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely = True, stop_cnt = 0):
         threading.Thread.__init__(self)
 
         self.tbl_mgr = tbl_mgr
@@ -67,6 +67,10 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         # removes "ops_" (first 4 chars) from each string
         self.event_types = ["ops_monitoring:" + ev_str[4:] for ev_str in event_types]
 
+        # stop conditions
+        self.run_indefinitely = run_indefinitely
+        self.stop_cnt = stop_cnt
+
         [self.meas_ref, self.obj_ids] = self.refresh_info_for_type(obj_type)
 
        
@@ -93,6 +97,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
 
         elif obj_type == "sliver":
             self.info_crawler.refresh_all_slivers_info()
+            # TODO implement and test
             #obj_ids = self.info_crawler.get_all_slivers_of_aggregate()
 
         elif obj_type == "interface":
@@ -103,6 +108,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         elif obj_type == "interfacevlan":
             ic.refresh_all_links_info()
             ic.refresh_all_interfacevlans_info()
+            # TODO implement and test
             #obj_ids = self.info_crawler.get_all_interfacevlans_of_aggregate()
 
         else:
@@ -114,16 +120,21 @@ class SingleObjectTypeFetcherThread(threading.Thread):
 
     def poll_datastore(self):
         
+        # current time for lt filter and record keeping
         req_time = int(time.time()*1000000)
 
         q = {"filters":{"eventType":self.event_types, 
                         "obj":{"type": self.obj_type,
                                "id": self.obj_ids},
-                        "ts": {"gt": self.time_of_last_update}}}
+                        "ts": {"gt": self.time_of_last_update,
+                               "lt": req_time}
+                        }
+             }
 
         url = self.meas_ref + "?q=" + str(q)
-        #url = self.meas_ref + "q?=" + str(q)
         url = url.replace(' ', '%20')
+
+        print url
 
         resp = requests.get(url)
              
@@ -133,7 +144,6 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         # need to handle response codes
         return resp.content
 
-
     def thread_sleep(self):
         time.sleep(self.sleep_period_sec)
 
@@ -142,6 +152,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
 def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
     
     while (True): 
+        print sotft.thread_name, "woke up"
 
         # poll datastore
         json_text = sotft.poll_datastore()
@@ -168,13 +179,13 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
 
                 tsdata = result["tsdata"]
                 tsdata_insert(sotft.tbl_mgr, obj_id, table_str, tsdata)
-
+                
         sotft.counter = sotft.counter + 1
     
-        #if(sotft.counter) > 100: # TODO remove for indefinite running
-        #    break; # Exits loop and thread_main()
-        #else: 
-        sotft.thread_sleep();
+        if(sotft.counter) > sotft.stop_cnt and sotft.run_indefinitely is False:
+            break; # Exits loop and thread_main()
+        else: 
+            sotft.thread_sleep();
   
 # Builds the multi-row insert value string
 def tsdata_insert(tbl_mgr, obj_id, table_str, tsdata):
@@ -187,67 +198,7 @@ def tsdata_insert(tbl_mgr, obj_id, table_str, tsdata):
     tbl_mgr.insert_stmt(table_str, vals_str)
       
 def main(): 
-
-
-    threads = {} 
-    db_type = "aggregator"
-    config_path = "../config"
-
-    # Event types to query, TODO, less hard coding of this is needed
-    node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
-    interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
-
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
-
-    #datastore_info_url = "http://127.0.0.1:5000/info/"
-    datastore_info_url = "http://starkville.bbn.com/info/"
-    #datastore_info_url = "https://wvn-hn.exogeni.net/ops-monitoring/info/"
-    #datastore_info_url = "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/"
-
-    cp = ConfigParser.ConfigParser()
-    cp.read(config_path + "/aggregator_operator.conf") 
-
-    datastores_dict = json.loads(cp.get("main","datastores_dict"))
-    sleep_period_sec = int(json.loads(cp.get("main","sleep_period_sec")))
-
-    # Set time of last update to 5 minutes in the past
-    # TODO remove 0#
-    time_of_last_update = 0#(time.time()-(5*60))*1000000
-
-    # Aggregate ID to look up in aggregator db
-    aggregate_id = "gpo-ig"
-
-
-
-    # Object type to look up in aggregator db
-    obj_type = "node"
-    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-    event_types = node_event_types
-
-    sldc = single_local_datastore_crawler.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
-
-    threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
-
-
-    # Another thread about interface data
-    obj_type = "interface"
-    event_types = interface_event_types
-    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-
-    threads[thread_name] = SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
-
-
-    for thread_name in threads:
-        threads[thread_name].start()
-
-    print threads, "running"
-
-    for thread_name in threads:
-        threads[thread_name].join()
-    
-
-    print "Exiting main thread"
+    print "no unit test here, see unit-tests directory"
 
 
 if __name__ == "__main__":
