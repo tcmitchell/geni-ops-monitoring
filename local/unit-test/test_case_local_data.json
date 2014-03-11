@@ -21,7 +21,7 @@
     "info/aggregate/gpo-ig": [
       [ {
           "eventType": [ "ops_monitoring:mem_used", "ops_monitoring:cpu_util"],
-          "ts": {"gte": 0},
+          "ts": { "lastmins": "1000000" },
           "obj": { "type": "node", "id": ["instageni.gpolab.bbn.com_node_pc1"]}
         },
         { "VERIFY": { "minlength": 1 },
@@ -31,8 +31,8 @@
       [
         {
           "eventType": [ "ops_monitoring:rx_bps", "ops_monitoring:tx_bps"],
-          "ts": {"gte": 3},
-          "obj": {"type": "interface", "id": ["instageni.gpolab.bbn.com_interface_pc0:eth0"]}
+          "ts": { "lastmins": "1000000" },
+          "obj": {"type": "interface", "id": ["instageni.gpolab.bbn.com_interface_pc1:eth0"]}
         },
         { "VERIFY": { "minlength": 1 },
           "tsdata": { "VERIFY": { "minlength": 1 }}
