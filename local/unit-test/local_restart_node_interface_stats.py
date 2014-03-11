@@ -41,7 +41,7 @@ def usage():
 def parse_args(argv):
     base_url = "http://127.0.0.1:5000"
     node_id = "instageni.gpolab.bbn.com_node_pc1"
-    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth0"
+    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
     num_ins = 10;
     per_sec = 0.2;
 
