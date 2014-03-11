@@ -22,6 +22,7 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+import datetime
 import json
 import os
 import sys
@@ -98,12 +99,22 @@ class UrlChecker:
       self.validate_response()
       for datacheck in self.datachecks:
         if self.measRef:
+          if 'ts' in datacheck and 'lastmins' in datacheck['ts']:
+            interval_end = datetime.datetime.now()
+            interval_start = datetime.datetime.now() - datetime.timedelta(
+              minutes=int(datacheck['ts']['lastmins']))
+            datacheck['ts']['lt'] = str(int(interval_end.strftime('%s')) * 1000000)
+            datacheck['ts']['gte'] = str(int(interval_start.strftime('%s')) * 1000000)
+            datacheck['ts'].pop('lastmins')
           dparams = json.dumps(datacheck, separators=(',', ':'))
-          durl = self.measRef + '?q={"filters":%s}' % dparams
+          durl = self.measRef
+          if not durl.endswith('/'):
+            durl += '/'
+          durl += '?q={"filters":%s}' % dparams
           dresult = DataUrlChecker(durl)
           for derror in dresult.errors:
-            self.errors.append("%s (during data check for %s)" % (
-              derror, dparams))
+            self.errors.append("%s (during data check of %s)" % (
+              derror, durl))
     except urllib2.HTTPError, e:
       self.errors.append("Received HTTP error while loading URL: %s" % str(e))
     except urllib2.URLError, e:
@@ -266,10 +277,6 @@ class UrlChecker:
           self.errors.append(
             "Unexpected legacy ops_monitoring subkey %s with value %s" % (
             key, value))
-    else:
-      self.errors.append(
-        "Legacy 'properties' response %s missing 'ops_monitoring' subkey" % \
-          propresp)
 
   def validate_prop_as_type_object(self, propresp, prop, propattrs, proptype):
     subprops = propattrs['properties']
