@@ -40,7 +40,7 @@ import table_manager
 # This program populates the aggregator database on every fetch
 
 def usage():
-    print('single_local_datastore_info_crawler.py -b <local-store-info-base-url> -a <aggregate-id> -o <objects-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
+    print('single_local_datastore_info_crawler.py -b <local-store-info-base-url> -a <aggregate-id> -o <objecttypess-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -49,10 +49,10 @@ def parse_args(argv):
 
     base_url = ""
     aggregate_id = ""
-    objects = ""
+    objecttypes = ""
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","objects="])
+        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","objecttypes="])
     except getopt.GetoptError:
         usage()
 
@@ -63,12 +63,12 @@ def parse_args(argv):
             base_url = arg
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
-        elif opt in ("-o", "--objects"):
-            objects = arg
+        elif opt in ("-o", "--objecttypes"):
+            objecttypes = arg
         else:
             usage()
 
-    return [base_url, aggregate_id, objects]
+    return [base_url, aggregate_id, objecttypes]
 
 class SingleLocalDatastoreInfoCrawler:
     
@@ -381,7 +381,7 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr):
 
 def main(argv): 
 
-    [info_url, aggregate_id, objects] = parse_args(argv)
+    [info_url, aggregate_id, objecttypes] = parse_args(argv)
 
     if info_url == "" or aggregate_id == "":
         usage()
@@ -399,17 +399,17 @@ def main(argv):
     # Always do the head aggregate info query
     crawler.refresh_aggregate_info()
 
-    # depending on what is in the objects string, get other object
+    # depending on what is in the objecttypes string, get other object
     # info.  Order of these should stay as is (v after l, i after n).
-    if 'n' in objects:
+    if 'n' in objecttypes:
         crawler.refresh_all_nodes_info()
-    if 'l' in objects:
+    if 'l' in objecttypes:
         crawler.refresh_all_links_info()
-    if 's' in objects:
+    if 's' in objecttypes:
         crawler.refresh_all_slivers_info()
-    if 'i' in objects:
+    if 'i' in objecttypes:
         crawler.refresh_all_interfaces_info()
-    if 'v' in objects:
+    if 'v' in objecttypes:
         crawler.refresh_all_interfacevlans_info()
 
 
