@@ -114,7 +114,10 @@ class UrlChecker:
             interval_end = datetime.datetime.now()
             interval_start = datetime.datetime.now() - datetime.timedelta(
               minutes=int(datacheck['ts']['lastmins']))
-            datacheck['ts']['lt'] = str(int(interval_end.strftime('%s')) * 1000000)
+            if 'legacyts' in datacheck['ts']:
+              datacheck['ts'].pop('legacyts')
+            else:
+              datacheck['ts']['lt'] = str(int(interval_end.strftime('%s')) * 1000000)
             datacheck['ts']['gte'] = str(int(interval_start.strftime('%s')) * 1000000)
             datacheck['ts'].pop('lastmins')
           dparams = json.dumps(datacheck, separators=(',', ':'))
