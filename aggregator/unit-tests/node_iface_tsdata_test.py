@@ -33,7 +33,6 @@ from pprint import pprint as pprint
 sys.path.append("../../common/")
 import table_manager
 sys.path.append("../")
-import single_local_datastore_crawler as sldc
 import single_obj_type_fetcher_thread_no_info_crawling as sotft
 
 def main():
@@ -46,7 +45,6 @@ def main():
     interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
 
     tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
     # length of sleep between data fetches
     sleep_period_sec = 2
@@ -66,18 +64,9 @@ def main():
 
     # Object type to look up in aggregator db
     obj_type = "node"
-    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
     event_types = node_event_types
-
-    crawler = sldc.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
-        
-    crawler.refresh_aggregate_info()
-    crawler.refresh_all_nodes_info()
-    crawler.refresh_all_links_info()
-    crawler.refresh_all_slivers_info()
-    crawler.refresh_all_interfaces_info()
-    crawler.refresh_all_interfacevlans_info()
-
+    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
+    
     threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
 
 

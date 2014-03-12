@@ -35,7 +35,7 @@ import table_manager
 
 class SingleObjectTypeFetcherThread(threading.Thread):
 
-    def __init__(self, tbl_mgr, info_crawler, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely = True, stop_cnt = 0):
+    def __init__(self, tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely = True, stop_cnt = 0):
         threading.Thread.__init__(self)
 
         self.tbl_mgr = tbl_mgr
@@ -48,15 +48,10 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         self.sleep_period_sec = sleep_period_sec
 
         # Internal counter of the number of queries
-        # TODO every 100th query or some time window, have the
-        # info_crawler update the tables
         self.counter = 0
         
         # Set parameter to avoid query for all history since epoch = 0
         self.time_of_last_update = time_of_last_update
-
-        # Periodic updates
-        self.info_crawler = info_crawler
 
         # Query filter parameters
         self.obj_type = obj_type
@@ -83,33 +78,28 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         print "Exiting " + self.name
 
 
-    # Has the info crawler go update resource information
+    # Retrieves these from the aggregator database
     def refresh_info_for_type(self, obj_type):
 
         obj_ids = []
-
-        self.info_crawler.refresh_aggregate_info()
-        meas_ref = self.info_crawler.get_meas_ref()
+       
+        meas_ref = self.get_meas_ref()
 
         if obj_type == "node":
-            self.info_crawler.refresh_all_nodes_info()
-            obj_ids = self.info_crawler.get_all_nodes_of_aggregate()
+            obj_ids = self.get_all_nodes_of_aggregate()
 
         elif obj_type == "sliver":
-            self.info_crawler.refresh_all_slivers_info()
+            pass
             # TODO implement and test
             #obj_ids = self.info_crawler.get_all_slivers_of_aggregate()
 
         elif obj_type == "interface":
-            self.info_crawler.refresh_all_nodes_info()
-            self.info_crawler.refresh_all_interfaces_info() 
-            obj_ids = self.info_crawler.get_all_interfaces_of_aggregate()
+            obj_ids = self.get_all_interfaces_of_aggregate()
            
         elif obj_type == "interfacevlan":
-            ic.refresh_all_links_info()
-            ic.refresh_all_interfacevlans_info()
+            pass
             # TODO implement and test
-            #obj_ids = self.info_crawler.get_all_interfacevlans_of_aggregate()
+            #obj_ids = self.get_all_interfacevlans_of_aggregate()
 
         else:
             print "Invalid object type", obj_type
@@ -147,12 +137,117 @@ class SingleObjectTypeFetcherThread(threading.Thread):
     def thread_sleep(self):
         time.sleep(self.sleep_period_sec)
 
+    def get_all_nodes_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
+
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            q_res = cur.fetchall()
+
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return res
+
+
+    def get_all_interfaces_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
+
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'));")
+
+            q_res = cur.fetchall()
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return res
+
+
+    def get_all_links_of_aggregate(self):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
+
+        cur = tbl_mgr.con.cursor()
+        res = [];
+        tbl_mgr.db_lock.acquire()
+        try:
+            cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            q_res = cur.fetchall()
+            
+            tbl_mgr.con.commit()
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0]) # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return res
+
+
+    def get_meas_ref(self):
+        tbl_mgr = self.tbl_mgr
+        object_id = self.aggregate_id
+        cur = tbl_mgr.con.cursor()
+        res = []
+        meas_ref = None
+        tbl_mgr.db_lock.acquire()
+        try:
+
+            # two queries avoids regex split with ,
+            if tbl_mgr.database_program == "postgres":
+                cur.execute("select \"measRef\" from ops_aggregate where id = '" + object_id + "' limit 1")
+            elif tbl_mgr.database_program == "mysql":
+                cur.execute("select measRef from ops_aggregate where id = '" + object_id + "' limit 1")
+            q_res = cur.fetchone()
+            tbl_mgr.con.commit()
+            if q_res is not None:
+                meas_ref = q_res[0] # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return meas_ref
+
+
 
 # thread main outside of thread class
 def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
     
     while (True): 
         print sotft.thread_name, "woke up"
+        [sotft.meas_ref, sotft.obj_ids] = sotft.refresh_info_for_type(sotft.obj_type)
 
         # poll datastore
         json_text = sotft.poll_datastore()
@@ -170,7 +265,7 @@ def thread_main(sotft): # sotft = SingleObjectTypeFetcherThread
             if event_type.startswith("ops_monitoring:"):
                 table_str = "ops_" + event_type[15:]
 
-                # if id is of like event:obj_id_that_was_queried,
+                # if id is event:obj_id_that_was_queried,
                 # TODO straighten out protocol with monitoring group
                 id_str = result["id"]
 

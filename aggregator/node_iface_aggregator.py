@@ -29,10 +29,10 @@ import sys
 import requests
 import ConfigParser
 from pprint import pprint as pprint
-import single_local_datastore_crawler
+import single_local_datastore_crawler as sldc
 sys.path.append("../common/")
 import table_manager
-import single_obj_type_fetcher_thread
+import single_obj_type_fetcher_thread as sotft
 
 def main(): 
 
@@ -54,9 +54,12 @@ def main():
     datastores_dict = json.loads(cp.get("main","datastores_dict"))
 
     sleep_period_sec = int(json.loads(cp.get("main","sleep_period_sec")))
-
+    sleep_period_sec = 2
     # time of last update set to 15 minutes in the past
     time_of_last_update = int((time.time() - 15*60)*1000000)
+
+    # Set to true, <don't care>, and remove time_of_last_update
+    run_indefinitely, stop_cnt, time_of_last_update = False, 2, 0
 
     for agg_id in datastores_dict:
 
@@ -69,16 +72,28 @@ def main():
         thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
         event_types = node_event_types
 
-        sldc = single_local_datastore_crawler.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
+        print datastore_info_url
+
+        # Crawl datastore for info population
+        crawler = sldc.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
         
-        threads[thread_name] = single_obj_type_fetcher_thread.SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
+        # TODO put in function to avoid calling all of these
+        crawler.refresh_aggregate_info()
+        crawler.refresh_all_nodes_info()
+        crawler.refresh_all_links_info()
+        crawler.refresh_all_slivers_info()
+        crawler.refresh_all_interfaces_info()
+        crawler.refresh_all_interfacevlans_info()
+
+
+        threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
         
         # Another thread about interface data
         obj_type = "interface"
         event_types = interface_event_types
         thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
         
-        threads[thread_name] = single_obj_type_fetcher_thread.SingleObjectTypeFetcherThread(tbl_mgr, sldc, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update)
+        threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
         
         
     for thread_name in threads:
@@ -89,7 +104,6 @@ def main():
     for thread_name in threads:
         threads[thread_name].join()
     
-
     print "Exiting main thread"
 
 

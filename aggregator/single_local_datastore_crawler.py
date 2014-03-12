@@ -77,7 +77,7 @@ class SingleLocalDatastoreCrawler:
                     link_info_list = self.get_link_attributes(res_dict, schema)
                     info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list) 
                 agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_resource", + res_dict["id"], agg_res_info_list)
+                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
         
 
     def refresh_all_slivers_info(self):

@@ -34,7 +34,6 @@ sys.path.append("../../common/")
 import table_manager
 sys.path.append("../")
 import single_local_datastore_crawler as sldc
-import single_obj_type_fetcher_thread_no_info_crawling as sotft
 
 def main():
     threads = {} 
@@ -48,8 +47,6 @@ def main():
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
-    # length of sleep between data fetches
-    sleep_period_sec = 2
 
     # Info url
     datastore_info_url = "http://127.0.0.1:5000/info/"
@@ -57,20 +54,12 @@ def main():
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
 
-    # Set time of last update to 5 minutes in the past
-    time_of_last_update = 0 #(time.time()-(5*60))*1000000
-    
-    # Stop conditions
-    run_indefinitely = False
-    stop_cnt = 2
-
-    # Object type to look up in aggregator db
-    obj_type = "node"
-    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-    event_types = node_event_types
 
     crawler = sldc.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
-        
+
+
+    tbl_mgr.establish_tables(tbl_mgr.info_schema.keys())
+
     crawler.refresh_aggregate_info()
     crawler.refresh_all_nodes_info()
     crawler.refresh_all_links_info()
@@ -78,27 +67,6 @@ def main():
     crawler.refresh_all_interfaces_info()
     crawler.refresh_all_interfacevlans_info()
 
-    threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
-
-
-    # Another thread about interface data
-    obj_type = "interface"
-    event_types = interface_event_types
-    thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
-
-    threads[thread_name] = sotft.SingleObjectTypeFetcherThread(tbl_mgr, thread_name, aggregate_id, obj_type, event_types, sleep_period_sec, time_of_last_update, run_indefinitely, stop_cnt)
-
-
-    for thread_name in threads:
-        threads[thread_name].start()
-
-    print threads, "running"
-
-    for thread_name in threads:
-        threads[thread_name].join()
-    
-
-    print "Exiting main thread"
 
 
 if __name__ == "__main__":
