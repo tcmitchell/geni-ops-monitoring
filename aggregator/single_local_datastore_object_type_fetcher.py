@@ -82,7 +82,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         self.event_types = ["ops_monitoring:" + ev_str[4:] for ev_str in event_types]
 
         # Set parameter to avoid query for all history since epoch = 0
-        self.time_of_last_update = 0 # TODO write function
+        self.time_of_last_update = self.get_latest_ts()
 
         self.meas_ref = self.get_meas_ref()
         self.obj_ids = self.get_object_ids(obj_type)
@@ -116,6 +116,14 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 tsdata = result["tsdata"]
                 tsdata_insert(self.tbl_mgr, obj_id, table_str, tsdata)
 
+
+    def get_latest_ts(self):
+        max_ts = 0
+        for table_str in self.db_event_tables:
+            ts = self.get_latest_ts_at_table(table_str)
+            if ts > max_ts:
+                max_ts = ts
+        return max_ts
 
     # Retrieves these from the aggregator database
     def get_object_ids(self, obj_type):
@@ -176,6 +184,28 @@ class SingleLocalDatastoreObjectTypeFetcher:
         
         # need to handle response codes
         return resp.content
+
+
+    def get_latest_ts_at_table(self, table_str):
+        tbl_mgr = self.tbl_mgr
+        aggregate_id = self.aggregate_id
+        res = 0
+        cur = tbl_mgr.con.cursor()
+        tbl_mgr.db_lock.acquire()
+        try:
+            # TODO make this per aggregate...
+            cur.execute("select max(ts) from " + table_str)
+            q_res = cur.fetchall()
+            res = q_res[0][0] # gets first of single tuple
+            
+        except Exception, e:
+            print e
+            tbl_mgr.con.commit()
+        
+        cur.close()
+        tbl_mgr.db_lock.release()
+        
+        return res
 
 
     def get_all_nodes_of_aggregate(self):

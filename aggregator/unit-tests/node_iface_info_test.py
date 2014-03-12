@@ -49,10 +49,10 @@ def main():
 
 
     # Info url
-    datastore_info_url = "http://127.0.0.1:5000/info/"
+    datastore_info_url = "http://datastore.utah.geniracks.net:5001/info/"
 
     # Aggregate ID to look up in aggregator db
-    aggregate_id = "gpo-ig"
+    aggregate_id = "ig-utah"
 
 
     crawler = sldc.SingleLocalDatastoreCrawler(tbl_mgr, datastore_info_url, aggregate_id)    
@@ -62,10 +62,7 @@ def main():
 
     crawler.refresh_aggregate_info()
     crawler.refresh_all_nodes_info()
-    crawler.refresh_all_links_info()
-    crawler.refresh_all_slivers_info()
     crawler.refresh_all_interfaces_info()
-    crawler.refresh_all_interfacevlans_info()
 
 
 

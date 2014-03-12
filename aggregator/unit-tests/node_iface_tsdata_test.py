@@ -33,7 +33,7 @@ from pprint import pprint as pprint
 sys.path.append("../../common/")
 import table_manager
 sys.path.append("../")
-import single_obj_type_fetcher_thread_no_info_crawling as sotft
+import single_obj_type_fetcher_thread as sotft
 
 def main():
     threads = {} 
@@ -50,13 +50,13 @@ def main():
     sleep_period_sec = 2
 
     # Info url
-    datastore_info_url = "http://127.0.0.1:5000/info/"
+    datastore_info_url = "http://datastore.utah.geniracks.net:5001/info/"
 
     # Aggregate ID to look up in aggregator db
-    aggregate_id = "gpo-ig"
+    aggregate_id = "ig-utah"
 
     # Set time of last update to 5 minutes in the past
-    time_of_last_update = 0 #(time.time()-(5*60))*1000000
+    time_of_last_update = (time.time()-(50*60))*1000000
     
     # Stop conditions
     run_indefinitely = False

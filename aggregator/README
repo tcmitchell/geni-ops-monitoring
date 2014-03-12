@@ -9,11 +9,9 @@ Reference Aggregator README
 
     (2) sudo apt-get install python-requests 	
    
-    For running the aggregator in a screen session
-    (3) sudo apt-get install screen
-
     For running the aggregator with cron jobs
-    (4)
+    (3)
+
 
 2a. PostgreSQL Configuration
 
@@ -49,13 +47,35 @@ Reference Aggregator README
    The href, "http://tamassos.gpolab.bbn.com/info/gpo-ig", translates to
    {"gpo-ig":"http://tamassos.gpolab.bbn.com/info/"}
 
-4. Running the aggregator in a screen session
+4. Aggregator programs:
 
-   Since the aggregator spends a lot of time sleeping in between
-   fetching updates and it needs to run a long time, the first
-   prototype runs in a screen session.
+   The datastores_dict item in '/config/aggregator_operator.conf' is
+   the collection of local datastores to be queried.  Use these to
+   form arguments in the execution of the aggregator programs.
 
-   Initiate a screen session:
-   (1) screen
+   (1) single_local_datastore_info_crawler.py performs information
+   fetching. It puts data in the aggregator database.  It needs to be
+   called with three arguments:
 
+     -b or --baseurl with <url_of_info_url> 
+        This starts with "http://" and the convention is to end with "/info"
+     -a or --aggregateid with aggregate_id at -b's datastore (i.e., gpo-ig)
+     -o or --object-types with letters of object types to get info on
+     	n: for node
+	i: for interface
+	s: for sliver
+	l: for link
+	v: for vlan
+	So argument -o nislv will get information on all object types
    
+   
+   (2) single_local_datastore_object_type_fetcher.py does a single fetch
+   of timeseries data. It needs to be called with two arguments:
+
+     -a or --aggregateid of the aggregate in the ops_aggregate table
+     -o or --object-type of object to get (note singularity). Valid object 
+        types are (only one is passed, unlike the info_crawler above):
+	n: for node
+	i: for interface
+	So argument -o n will get ts data for all node events and all nodes
+	at the datastore

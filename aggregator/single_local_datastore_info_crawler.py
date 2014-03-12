@@ -52,7 +52,7 @@ def parse_args(argv):
     objecttypes = ""
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","objecttypes="])
+        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","object-types="])
     except getopt.GetoptError:
         usage()
 
@@ -63,7 +63,7 @@ def parse_args(argv):
             base_url = arg
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
-        elif opt in ("-o", "--objecttypes"):
+        elif opt in ("-o", "--object-types"):
             objecttypes = arg
         else:
             usage()
