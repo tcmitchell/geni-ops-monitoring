@@ -26,9 +26,5 @@ The library uses the following design to construct nagios checks:
               | Summary |                 |
               +---------+                /
 
-The resource class has a "probe" command that is responsible for obtaining the
-data to polulate the Metric object.  We can create commands for constructing
-values that we care about in the geniprobes.py library, and reuse those 
-commands in probe methods for multiple Resource objects to create more complex
-(but contextualized) checks, thus reducing the number of checks that need to 
-run total.
+The resource class has a "probe" command that is responsible for obtaining 
+the data to polulate the Metric object.
