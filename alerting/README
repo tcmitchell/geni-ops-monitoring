@@ -1,11 +1,12 @@
-For the reference implementation, we are using nagios and nrpe.
-
-
 1. Architecture
 ---------------
+Section 1 introduces the basic architecture of the alerting system in the
+reference implementation.
 
-1.1. Overview Diagram
----------------------
+For the reference implementation, we are using nagios and nrpe.
+
+1.1. Overview
+-------------
 __________________________________________
 | | Alert  | | Email/text | |  Basic   | |
 | | Web UI | |   alerts   | | Trending | |
@@ -40,7 +41,6 @@ __________________________________________
    |________________________________|
 
 
-
 The architecture for alerting is broken up into two major components:
  * Nagios Server
  * Nagios Client (must run on aggregator server)
@@ -53,8 +53,29 @@ need to stand up a new nagios server.
 1.2. Nagios Server
 ------------------
 The nagios server can be a standard nagios server with the nrpe plugin
-installed.  Customized configuration files for the nagios server are
-in the can be found in the following directory:
+installed.
+
+1.3. Nagios Client
+------------------
+The nagios client must be running on the aggregator server.  The nagios 
+client may run on the same host as the nagios server, or it can be split
+off and run on a separate server, allowing for easier integration with 
+existing nagios server deployments.
+
+Most of the development work for alerting happens on the nagios client, 
+specifically in the nagios plugins and the query library.
+
+
+2. Environment Setup
+--------------------
+
+2.1. Nagios Server
+------------------
+
+2.1.1. Nagios Server Config
+---------------------------
+Customized configuration files for the nagios server can be found in the 
+following directory:
 
     alerting/nagios-server/config
 
@@ -77,16 +98,97 @@ The following are descriptions of the config files:
                    implementation, localhost checks are disabled, and there
                    is a cfg_file defined for the path to aggregates.cfg
 
-1.2. Nagios Client
+2.1.2 Adding a New Service Check
+--------------------------------
+To add a check for a new metric, you will modify aggregates.cfg.  Add a 
+template for a specific type of service check near the top of the file.
+
+After doing this, add a new service check in the host sections for each
+aggregate you want to run the check against, and use the service check
+template by leveraging the "use" declaration.
+
+2.2. Nagios Client
 ------------------
-Most of the work development work happens on the nagios client,
-specifically in the nagios plugins and the query library.
+
+2.2.1. Nagios Plugins Environment Setup
+---------------------------------------
+Currently, nagios plugins are developed using the nagiosplugin python
+package.  We are using version 1.2.  To install this package on the nagios
+client host, log into the host and run the following commands:
 
 
-1.2.1. Nagios Plugins
----------------------
+cd ~
+wget https://pypi.python.org/packages/source/n/nagiosplugin/nagiosplugin-1.2.tar.gz#md5=2f2d26e8a1b846fd4db936ef00a1a4e3
+tar xvzf ~/nagiosplugin-1.2.tar.gz
+cd ~/nagiosplugin-1.2
+sudo python setup.py install
 
 
-1.2.2. Query Library
+Nagios plugins are run run using the NRPE server package.  Please install 
+the package using your host's package manager.  Known package names:
+ * Ubuntu: nagios-nrpe-server
+ * CentOS: nagios-nrpe
+
+
+2.2.2. Nagios Client Config
+---------------------------
+Customized configuration files for the nagios client can be found in the 
+following directory:
+
+    alerting/nagios-client/config
+
+The following are descriptions of the config files:
+
+ * geni_plugins.cfg: This is where all commands are defined for plugins
+                     that run on the nagios client host.  This shouldn't
+                     need to be modified from the reference implementation
+                     unless you want to add more plugins or modify the
+                     WARNING and CRITICAL levels of a given plugin.
+
+ * nrpe.cfg:         This is the standard nrpe.cfg file.  Make sure that
+                     allowed_hosts includes the nagios server, and ensure
+                     that dont_blame_nrpe is set to 1, because plugins 
+                     defined in the reference implementation require 
+                     arguments to be passed to the plugins.
+
+2.2.3. Plugin Development
+-------------------------
+Documentation on using the library can be found at:
+
+    http://pythonhosted.org/nagiosplugin/
+
+Example plugins can be found under:
+
+    alerting/nagios-client/plugins
+
+Plugins should make calls to the query library for the aggregator, and
+based on that information, it should be able to form metrics that are
+returned back to nagios.  Plugins should *never* make calls directly to the
+aggregator database.  If there is a query that needs to be added, please
+provide a new method in the query library under the aggregator module.
+
+2.2.4. Deploying a Plugin
+-------------------------
+Once your plugin is ready, copy it over into the following directory:
+
+    /usr/lib/nagios/plugins/
+
+Ensure that the permissions match those of other plugins.  Once that is
+done, add a command definition for the new plugin in the following file:
+
+    geni_plugins.cfg
+
+After that is complete, restart the nrpe service, and the plugin should
+be ready to go.
+
+2.3. Query Library
 --------------------
+The query library is part of the aggregator module.  Please see the
+aggregator module for more information.
 
+3. Database Access
+------------------
+TBD
+
+The plugins need to access the aggregator database, but the model for how
+to set this up properly is still under discussion.
