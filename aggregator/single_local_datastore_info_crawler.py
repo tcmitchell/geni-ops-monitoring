@@ -24,6 +24,7 @@
 import json
 import sys
 import requests
+import getopt
 from pprint import pprint
 
 common_path = "../common/"
@@ -38,21 +39,52 @@ import table_manager
 
 # This program populates the aggregator database on every fetch
 
-class SingleLocalDatastoreCrawler:
+def usage():
+    print('single_local_datastore_info_crawler.py -b <local-store-info-base-url> -a <aggregate-id> -o <objects-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
+    sys.exit(1)
+
+def parse_args(argv):
+    if argv == []:
+        usage()
+
+    base_url = ""
+    aggregate_id = ""
+    objects = ""
+
+    try:
+        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","objects="])
+    except getopt.GetoptError:
+        usage()
+
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+        elif opt in ("-b", "--baseurl"):
+            base_url = arg
+        elif opt in ("-a", "--aggregateid"):
+            aggregate_id = arg
+        elif opt in ("-o", "--objects"):
+            objects = arg
+        else:
+            usage()
+
+    return [base_url, aggregate_id, objects]
+
+class SingleLocalDatastoreInfoCrawler:
     
-    def __init__(self, tbl_mgr, local_datastore, aggregate_id):
+    def __init__(self, tbl_mgr, info_url, aggregate_id):
         self.tbl_mgr = tbl_mgr
         self.tbl_mgr.establish_all_tables()
 
-        if local_datastore[-1] == '/':
-            local_datastore = local_datastore[:-1]
-        self.local_datastore = local_datastore
+        if info_url[-1] == '/':
+            info_url = info_url[:-1]
+        self.info_url = info_url
         self.aggregate_id = aggregate_id
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
         
-        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)            
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)            
         if am_dict:
             self.tbl_mgr.establish_table("ops_aggregate")
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
@@ -65,7 +97,7 @@ class SingleLocalDatastoreCrawler:
     # Updates all nodes information
     def refresh_all_links_info(self):
 
-        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_link"]
 
@@ -82,7 +114,7 @@ class SingleLocalDatastoreCrawler:
 
     def refresh_all_slivers_info(self):
 
-        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_sliver"]
 
@@ -97,7 +129,7 @@ class SingleLocalDatastoreCrawler:
 
 
     def refresh_all_nodes_info(self):
-        am_dict = handle_request(self.local_datastore + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
 
@@ -117,7 +149,7 @@ class SingleLocalDatastoreCrawler:
         link_ids = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         for link_id in link_ids:
-            link_dict = handle_request(self.local_datastore + '/link/' + link_id)
+            link_dict = handle_request(self.info_url + '/link/' + link_id)
             if "endpoints" in link_dict:
                 for endpt in link_dict["endpoints"]:
                     ifacevlan_dict = handle_request(endpt["href"])
@@ -136,7 +168,7 @@ class SingleLocalDatastoreCrawler:
          node_ids = self.get_all_nodes_of_aggregate()
          schema = self.tbl_mgr.schema_dict["ops_interface"]
          for node_id in node_ids:
-             node_dict = handle_request(self.local_datastore + '/node/' + node_id)
+             node_dict = handle_request(self.info_url + '/node/' + node_id)
              if "ports" in node_dict:
                  for port in node_dict["ports"]:
                      interface_dict = handle_request(port["href"])
@@ -347,31 +379,40 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr):
     tbl_mgr.insert_stmt(table_str, val_str)
 
 
-def main(): 
+def main(argv): 
 
-    db_name = "aggregator"
+    [info_url, aggregate_id, objects] = parse_args(argv)
+
+    if info_url == "" or aggregate_id == "":
+        usage()
+
+    db_type = "aggregator"
     config_path = "../config/"
-
-    tbl_mgr = table_manager.TableManager(db_name, config_path)
-
-    datastore_url = "http://127.0.0.1:5000/info/"
-    aggregate_id = "gpo-ig"
-
-    #am_urls_urns.append({"href":"http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu", "urn":"urn:publicid:IDN+ion.internet2.edu+authority+cm"})
-    sldc = SingleLocalDatastoreCrawler(tbl_mgr, datastore_url, aggregate_id)    
-
     info_schema = json.load(open("../config/info_schema"))
-    #tbl_mgr.drop_tables(info_schema.keys())
+
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
+    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id)
+
+    # ensures tables exist in database
     tbl_mgr.establish_tables(info_schema.keys())
 
-    sldc.refresh_aggregate_info()
-    sldc.refresh_all_nodes_info()
-    sldc.refresh_all_links_info()
-    sldc.refresh_all_slivers_info()
-    sldc.refresh_all_interfaces_info()
-    sldc.refresh_all_interfacevlans_info()
+    # Always do the head aggregate info query
+    crawler.refresh_aggregate_info()
+
+    # depending on what is in the objects string, get other object
+    # info.  Order of these should stay as is (v after l, i after n).
+    if 'n' in objects:
+        crawler.refresh_all_nodes_info()
+    if 'l' in objects:
+        crawler.refresh_all_links_info()
+    if 's' in objects:
+        crawler.refresh_all_slivers_info()
+    if 'i' in objects:
+        crawler.refresh_all_interfaces_info()
+    if 'v' in objects:
+        crawler.refresh_all_interfacevlans_info()
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
