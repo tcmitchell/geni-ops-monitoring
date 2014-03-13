@@ -64,6 +64,9 @@ Reference Aggregator README
 	l: for link
 	v: for vlan
 	So argument -o nislv will get information on all object types
+     -d or --debug will print what would be added to the aggregator database
+        to the screen and does not add anything to the database
+     -h or --help prints the usage() function, repeat of this info
    
    
    (2) single_local_datastore_object_type_fetcher.py does a single fetch
@@ -76,6 +79,9 @@ Reference Aggregator README
 	i: for interface
 	So argument -o n will get ts data for all node events and all nodes
 	at the datastore
+     -d or --debug will print what would be added to the aggregator database
+        to the screen and does not add anything to the database
+     -h or --help prints the usage() function, repeat of this info
 
    (3) Running these programs as cron jobs.
 
@@ -94,8 +100,8 @@ Reference Aggregator README
     aggregate_id the same as for the info crawler. Save and exit
     crontab.
 
-    30 23 * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_info_crawler.py -b http://starkville.bbn.com/info/ -a gpo-ig -o ni)
+    30 23 * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_info_crawler.py -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
 
-    */5 * * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
+    */5 * * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
 
-    */5 * * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)
+    */5 * * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)

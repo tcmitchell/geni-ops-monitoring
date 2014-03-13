@@ -45,18 +45,18 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"ha:o:d",["baseurl=","aggregateid=","object-type="])
+        opts, args = getopt.getopt(argv,"ha:o:d",["baseurl=","aggregateid=","object-type=","help","debug"])
     except getopt.GetoptError:
         usage()
 
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ("-h", "--help"):
             usage()
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
         elif opt in ("-o", "--object-type"):
             object_type = arg
-        elif opt == '-d':
+        elif opt in ("-d" or "--debug"):
             debug = True
         else:
             usage()
