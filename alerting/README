@@ -198,7 +198,18 @@ aggregator module for more information.
 
 3. Database Access
 ------------------
-TBD
+In order to set up a read-only nagios user, run the following commands
+in a psql session on the aggregator database:
 
-The plugins need to access the aggregator database, but the model for how
-to set this up properly is still under discussion.
+# I didn't actually do this part
+CREATE ROLE nagios LOGIN PASSWORD '___';
+
+# Allow the nagios user to connect
+GRANT CONNECT ON DATABASE aggregator TO nagios;
+GRANT USAGE ON SCHEMA public TO nagios;
+
+# Grant access to existing tables
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO nagios;
+
+# As new tables get created, grant access to nagios user
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO nagios;
