@@ -28,12 +28,19 @@ import argparse
 import datetime
 import nagiosplugin
 from psql_queries import AggregatorQuerier,ValueUnknownException
+from geni_alerting import GeniAlertingHelper
 
 class SharedNodeInterfaceRxUtil(nagiosplugin.Resource):
 
     def __init__(self, aggregate):
         self._aggregate = aggregate
-        self._querier = AggregatorQuerier("aggregator", "tupty")
+        self._helper = GeniAlertingHelper()
+        self._username = self._helper.getUsername()
+        self._password = self._helper.getPassword()
+        self._database = self._helper.getDatabase()
+        self._host = self._helper.getHost()
+        self._querier = AggregatorQuerier(self._database, self._host, 
+                                          self._username, self._password)
 
     def probe(self):
         # Query the aggregator data store

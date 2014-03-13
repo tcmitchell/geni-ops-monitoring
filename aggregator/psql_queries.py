@@ -50,14 +50,15 @@ class AggregatorQuerier():
     # Constructors
     ###########################################################################
 
-    def __init__(self, dbname, dbuser, dbpassword, query_window=_DEFAULT_QUERY_WINDOW):
+    def __init__(self, dbname, hostname, dbuser, dbpassword, 
+                 query_window=_DEFAULT_QUERY_WINDOW):
 
         self._query_window = query_window
 
         try:
             # Connect to localhost to force password authentication with
             # default postgres config
-            self._con = psycopg2.connect(database=dbname, host="localhost", 
+            self._con = psycopg2.connect(database=dbname, host=hostname, 
                                          user=dbuser, password=dbpassword)
         except psycopg2.Error as e:
             # FIXME: do something else, probably cascade the exception
@@ -212,8 +213,9 @@ class AggregatorQuerier():
         #  Pass the table name to avoid added quotes
         #  Pass all other parameters using the normal psycopg2 method
         query = "SELECT id,ts,v FROM %s " % metric
-        query = query + "WHERE (ts > %s) AND (id=%s) ORDER BY ts DESC;"
-        args = (since, resource, )
+        query = query + "WHERE (ts > %s) AND (id=%s) AND (aggregate_id=%s)"
+        query = query + "ORDER BY ts DESC;"
+        args = (since, resource, agg_shortname, )
 
         try:
             # Get a cursor and make the query
@@ -360,7 +362,7 @@ class ValueUnknownException(Exception):
        return message
 
 if __name__ == "__main__":
-    querier = AggregatorQuerier("aggregator", "nagios", "19dnH4N,dkv")
+    querier = AggregatorQuerier("aggregator", "localhost", "nagios", "19dnH4N,dkv")
     val = querier.run_unit_test("gpo-ig")
     querier.close()
     sys.exit(val)
