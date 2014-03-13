@@ -50,12 +50,15 @@ class AggregatorQuerier():
     # Constructors
     ###########################################################################
 
-    def __init__(self, dbname, dbuser, query_window=_DEFAULT_QUERY_WINDOW):
+    def __init__(self, dbname, dbuser, dbpassword, query_window=_DEFAULT_QUERY_WINDOW):
 
         self._query_window = query_window
 
         try:
-            self._con = psycopg2.connect(database=dbname, user=dbuser)
+            # Connect to localhost to force password authentication with
+            # default postgres config
+            self._con = psycopg2.connect(database=dbname, host="localhost", 
+                                         user=dbuser, password=dbpassword)
         except psycopg2.Error as e:
             # FIXME: do something else, probably cascade the exception
             print e
@@ -210,8 +213,7 @@ class AggregatorQuerier():
         #  Pass all other parameters using the normal psycopg2 method
         query = "SELECT id,ts,v FROM %s " % metric
         query = query + "WHERE (ts > %s) AND (id=%s) ORDER BY ts DESC;"
-        resource_id = agg_shortname + ":" + resource
-        args = (since, resource_id, )
+        args = (since, resource, )
 
         try:
             # Get a cursor and make the query
@@ -358,7 +360,7 @@ class ValueUnknownException(Exception):
        return message
 
 if __name__ == "__main__":
-    querier = AggregatorQuerier("aggregator", "tupty")
+    querier = AggregatorQuerier("aggregator", "nagios", "19dnH4N,dkv")
     val = querier.run_unit_test("gpo-ig")
     querier.close()
     sys.exit(val)
