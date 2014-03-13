@@ -9,9 +9,6 @@ Reference Aggregator README
 
     (2) sudo apt-get install python-requests 	
    
-    For running the aggregator with cron jobs
-    (3)
-
 
 2a. PostgreSQL Configuration
 
@@ -79,3 +76,26 @@ Reference Aggregator README
 	i: for interface
 	So argument -o n will get ts data for all node events and all nodes
 	at the datastore
+
+   (3) Running these programs as cron jobs.
+
+    Go into crontab:
+
+    crontab -e
+
+    Add the jobs you wish to run; examples are below.  In the first
+    example, the info crawler is run once per day at 11:30pm.  It
+    fetches objects of type n and i (-o ni).  Substitute the
+    aggregate_id and url of the datastore you wish to aggregate data
+    from.
+    
+    In the last two examples, the data fetchers nodes (-o n) and
+    interfaces (-o i) runs every 5 minutes.  Substitute the
+    aggregate_id the same as for the info crawler. Save and exit
+    crontab.
+
+    30 23 * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_info_crawler.py -b http://starkville.bbn.com/info/ -a gpo-ig -o ni)
+
+    */5 * * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
+
+    */5 * * * * (cd /home/rirwin/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)
