@@ -161,6 +161,12 @@ The following are descriptions of the config files:
                      defined in the reference implementation require 
                      arguments to be passed to the plugins.
 
+ * aggregator.conf:  This is a file that plugins use to figure out the
+                     parameters needed to access the aggregator database.
+                     These should match the credentials for the database
+                     user that gets set up in "3. Database Access".  This
+                     file should be placed in /etc/nagios/
+
 2.2.3. Plugin Development
 -------------------------
 Documentation on using the library can be found at:
@@ -176,6 +182,10 @@ based on that information, it should be able to form metrics that are
 returned back to nagios.  Plugins should *never* make calls directly to the
 aggregator database.  If there is a query that needs to be added, please
 provide a new method in the query library under the aggregator module.
+
+Plugins use a helper library for fetching the credentials needed to
+access the aggregator database.  This library is found in the geni_alerting.py
+file.  This file should be placed in the same directory as the plugins.
 
 2.2.4. Deploying a Plugin
 -------------------------
