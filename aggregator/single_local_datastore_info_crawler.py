@@ -40,7 +40,7 @@ import table_manager
 # This program populates the aggregator database on every fetch
 
 def usage():
-    print('single_local_datastore_info_crawler.py -b <local-store-info-base-url> -a <aggregate-id> -o <objecttypess-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
+    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -o <objecttypess-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -50,14 +50,15 @@ def parse_args(argv):
     base_url = ""
     aggregate_id = ""
     objecttypes = ""
+    debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:o:",["baseurl=","aggregateid=","object-types="])
+        opts, args = getopt.getopt(argv,"hb:a:o:d",["baseurl=","aggregateid=","object-types=","help","debug"])
     except getopt.GetoptError:
         usage()
 
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in("-h","--help"):
             usage()
         elif opt in ("-b", "--baseurl"):
             base_url = arg
@@ -65,14 +66,16 @@ def parse_args(argv):
             aggregate_id = arg
         elif opt in ("-o", "--object-types"):
             objecttypes = arg
+        elif opt in ("-d", "--debug"):
+            debug = True
         else:
             usage()
 
-    return [base_url, aggregate_id, objecttypes]
+    return [base_url, aggregate_id, objecttypes, debug]
 
 class SingleLocalDatastoreInfoCrawler:
     
-    def __init__(self, tbl_mgr, info_url, aggregate_id):
+    def __init__(self, tbl_mgr, info_url, aggregate_id, debug):
         self.tbl_mgr = tbl_mgr
         self.tbl_mgr.establish_all_tables()
 
@@ -80,6 +83,8 @@ class SingleLocalDatastoreInfoCrawler:
             info_url = info_url[:-1]
         self.info_url = info_url
         self.aggregate_id = aggregate_id
+        self.debug = debug
+
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
@@ -91,7 +96,7 @@ class SingleLocalDatastoreInfoCrawler:
             am_info_list = []
             for key in schema:
                 am_info_list.append(am_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_aggregate", am_dict["id"], am_info_list)
+            info_update(self.tbl_mgr, "ops_aggregate", am_dict["id"], am_info_list, self.debug)
 
 
     # Updates all nodes information
@@ -107,9 +112,9 @@ class SingleLocalDatastoreInfoCrawler:
                     
                     # get each attribute out of response into list
                     link_info_list = self.get_link_attributes(res_dict, schema)
-                    info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list) 
+                    info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug) 
                 agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
+                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
         
 
     def refresh_all_slivers_info(self):
@@ -123,9 +128,9 @@ class SingleLocalDatastoreInfoCrawler:
                 
                 # get each attribute out of response into list
                 slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list) 
+                info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug) 
                 agg_slv_info_list = [slv_dict["id"], am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list)
+                info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
 
 
     def refresh_all_nodes_info(self):
@@ -139,9 +144,9 @@ class SingleLocalDatastoreInfoCrawler:
                     
                     # get each attribute out of response into list
                     node_info_list = self.get_node_attributes(res_dict, schema)
-                    info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list) 
+                    info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug) 
                 agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list)
+                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
 
 
     def refresh_all_interfacevlans_info(self):
@@ -154,9 +159,9 @@ class SingleLocalDatastoreInfoCrawler:
                 for endpt in link_dict["endpoints"]:
                     ifacevlan_dict = handle_request(endpt["href"])
                     ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                    info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list) 
+                    info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug) 
                     link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
-                    info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list)
+                    info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug)
         
 
 
@@ -173,9 +178,9 @@ class SingleLocalDatastoreInfoCrawler:
                  for port in node_dict["ports"]:
                      interface_dict = handle_request(port["href"])
                      interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                     info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list) 
+                     info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
                      node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                     info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list)
+                     info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
 
 
     def get_node_attributes(self, res_dict, schema):
@@ -370,18 +375,26 @@ def handle_request(url):
         return None
 
 
-def info_update(tbl_mgr, table_str, obj_id, row_arr):
-    tbl_mgr.delete_stmt(table_str, obj_id)
+def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
+    if debug:
+        print "<print only> delete " + obj_id + " from " + table_str
+    else:
+        tbl_mgr.delete_stmt(table_str, obj_id)
+
     val_str = "('"
     for val in row_arr:
         val_str += str(val) + "','" # join won't do this
     val_str = val_str[:-2] + ")" # remove last 2 of 3: ',' add )
-    tbl_mgr.insert_stmt(table_str, val_str)
+
+    if debug:
+        print "<print only> insert " + table_str + " values: " + val_str
+    else:
+        tbl_mgr.insert_stmt(table_str, val_str)
 
 
 def main(argv): 
 
-    [info_url, aggregate_id, objecttypes] = parse_args(argv)
+    [info_url, aggregate_id, objecttypes, debug] = parse_args(argv)
 
     if info_url == "" or aggregate_id == "":
         usage()
@@ -391,7 +404,7 @@ def main(argv):
     info_schema = json.load(open("../config/info_schema"))
 
     tbl_mgr = table_manager.TableManager(db_type, config_path)
-    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id)
+    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, debug)
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(info_schema.keys())

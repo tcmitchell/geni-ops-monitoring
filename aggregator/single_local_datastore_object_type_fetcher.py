@@ -33,7 +33,7 @@ sys.path.append("../common/")
 import table_manager
 
 def usage():
-    print('single_datastore_object_type_fetcher.py -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans)>')
+    print('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -42,28 +42,31 @@ def parse_args(argv):
 
     aggregate_id = ""
     object_type = ""
+    debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"ha:o:",["baseurl=","aggregateid=","object-type="])
+        opts, args = getopt.getopt(argv,"ha:o:d",["baseurl=","aggregateid=","object-type=","help","debug"])
     except getopt.GetoptError:
         usage()
 
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ("-h", "--help"):
             usage()
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
         elif opt in ("-o", "--object-type"):
             object_type = arg
+        elif opt in ("-d" or "--debug"):
+            debug = True
         else:
             usage()
 
-    return [aggregate_id, object_type]
+    return [aggregate_id, object_type, debug]
 
 
 class SingleLocalDatastoreObjectTypeFetcher:
 
-    def __init__(self, tbl_mgr, aggregate_id, obj_type, event_types):
+    def __init__(self, tbl_mgr, aggregate_id, obj_type, event_types, debug):
 
         self.tbl_mgr = tbl_mgr
 
@@ -83,6 +86,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         # Set parameter to avoid query for all history since epoch = 0
         self.time_of_last_update = self.get_latest_ts()
+
+        self.debug = debug
 
         self.meas_ref = self.get_meas_ref()
         self.obj_ids = self.get_object_ids(obj_type)
@@ -115,7 +120,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 obj_id = id_str[id_str.find(':')+1:]
 
                 tsdata = result["tsdata"]
-                tsdata_insert(self.tbl_mgr, agg_id, obj_id, table_str, tsdata)
+                tsdata_insert(self.tbl_mgr, agg_id, obj_id, table_str, tsdata, self.debug)
 
 
     def get_latest_ts(self):
@@ -318,19 +323,22 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
   
 # Builds the multi-row insert value string
-def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata):
+def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     vals_str = ""
     for tsdata_i in tsdata:
         vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
 
     vals_str = vals_str[:-1] # remove last ','
 
-    tbl_mgr.insert_stmt(table_str, vals_str)
+    if debug:
+        print "<print only> insert " + table_str + " values: " + vals_str
+    else:
+        tbl_mgr.insert_stmt(table_str, vals_str)
 
       
 def main(argv): 
 
-    [aggregate_id, object_type_param] = parse_args(argv)
+    [aggregate_id, object_type_param, debug] = parse_args(argv)
     if aggregate_id == "" or object_type_param == "":
         usage()
 
@@ -357,7 +365,7 @@ def main(argv):
         print "invalid object type arg", object_type_param
         sys.exit(1)
 
-    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types)
+    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, debug)
 
     fetcher.fetch()
 
