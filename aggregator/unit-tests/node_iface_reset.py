@@ -29,6 +29,7 @@ def main():
 
     # Info url
     datastore_info_url = "http://127.0.0.1:5000/info/"
+    #datastore_info_url = "http://starkville.bbn.com/info/"
 
     # Aggregate ID to look up in aggregator db
     aggregate_id = "gpo-ig"
@@ -37,9 +38,15 @@ def main():
     os.system("python aggregator_table_reset.py");
 
     # Performs the info crawling
-    os.system("cd ../; python single_local_datastore_info_crawler.py -b http://127.0.0.1:5000/info/ -a gpo-ig -o nlsiv; cd -;")
+    os.system("cd ../; python single_local_datastore_info_crawler.py -b " + datastore_info_url + " -a " +  aggregate_id + " -o ni; cd -;")
 
     # Performs a single fetch for node types at aggregate (node: -o n)
+    os.system("cd ../; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n; cd -;")
+
+    # Performs a single fetch for interface types at aggregate (interface: -o i)
+    os.system("cd ../; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i; cd -;")
+
+   # Performs a single fetch for node types at aggregate (node: -o n)
     os.system("cd ../; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n; cd -;")
 
     # Performs a single fetch for interface types at aggregate (interface: -o i)
