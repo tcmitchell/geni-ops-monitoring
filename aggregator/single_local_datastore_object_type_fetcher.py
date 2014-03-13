@@ -194,8 +194,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         cur = tbl_mgr.con.cursor()
         tbl_mgr.db_lock.acquire()
         try:
-            # TODO make this per aggregate...
-            cur.execute("select max(ts) from " + table_str)
+            cur.execute("select max(ts) from " + table_str + " where aggregate_id = '" + aggregate_id + "'")
             q_res = cur.fetchall()
             res = q_res[0][0] # gets first of single tuple
             
