@@ -111,10 +111,11 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 id_str = result["id"]
 
                 # remove event: and prepend aggregate_id:
-                obj_id = self.aggregate_id + ":" + id_str[id_str.find(':')+1:]
+                agg_id = self.aggregate_id
+                obj_id = id_str[id_str.find(':')+1:]
 
                 tsdata = result["tsdata"]
-                tsdata_insert(self.tbl_mgr, obj_id, table_str, tsdata)
+                tsdata_insert(self.tbl_mgr, agg_id, obj_id, table_str, tsdata)
 
 
     def get_latest_ts(self):
@@ -309,14 +310,19 @@ class SingleLocalDatastoreObjectTypeFetcher:
         cur.close()
         tbl_mgr.db_lock.release()
         
+        if meas_ref is None:
+            print "ERROR: No measurement ref found for aggregate", self.aggregate_id
+            print "Run the info_crawler to find this"
+            sys.exit(1)
+
         return meas_ref
 
   
 # Builds the multi-row insert value string
-def tsdata_insert(tbl_mgr, obj_id, table_str, tsdata):
+def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata):
     vals_str = ""
     for tsdata_i in tsdata:
-        vals_str += "('" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
+        vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
 
     vals_str = vals_str[:-1] # remove last ','
 

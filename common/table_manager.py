@@ -37,6 +37,9 @@ class TableManager:
 
         self.conf_loader = database_conf_loader
 
+        # TODO db_name -> db_type
+        # TODO dbtype_ -> db_prog
+
         if db_name == "local":
             [dbtype_] = self.conf_loader.main_local(config_path)
         elif db_name == "aggregator":
@@ -49,8 +52,9 @@ class TableManager:
         else:
             print dbtype_, "is not a valid database program"
             sys.exit(1)
-            
-        self.database_program = dbtype_
+
+        self.database_type = db_name # local or aggregator
+        self.database_program = dbtype_ # postgres or mysql
         self.db_lock = threading.Lock()
 
         self.info_schema = json.load(open(config_path + "/info_schema"))
@@ -117,7 +121,12 @@ class TableManager:
         for ds_k in data_schema.keys():
             # last of list is units
             # 2nd of tuple is a string of what unit type is (i.e., percent)
-            schema_dict[ds_k] = data_schema[ds_k][:-1] 
+            if self.database_type == "local":
+                schema_dict[ds_k] = data_schema[ds_k][:-1] 
+            elif self.database_type == "aggregator":
+                l = data_schema[ds_k][:-1]
+                l.insert(0,["aggregate_id","varchar"])
+                schema_dict[ds_k] = l
             schema_dict["units"][ds_k] = data_schema[ds_k][-1][1] 
 
         for is_k in info_schema.keys():
@@ -169,7 +178,7 @@ class TableManager:
         try:
             cur = self.con.cursor()            
             del_str = "delete from " + table_name + " where id = '" + obj_id + "';";
-            print del_str
+            #print del_str
             cur.execute(del_str);
             self.con.commit() 
             cur.close()
@@ -297,7 +306,7 @@ class TableManager:
 
     def establish_table(self, table_str):
 
-        schema_str = translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str, self.database_program)
+        schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
         
         if self.table_exists(table_str):
        
@@ -367,10 +376,10 @@ class TableManager:
 
 
 
-def translate_table_schema_to_schema_str(table_schema_dict, table_str, database_program):
+    def translate_table_schema_to_schema_str(self, table_schema_dict, table_str):
     
         schema_str = "("
-        if database_program == "postgres":
+        if self.database_program == "postgres":
             for col_i in range(len(table_schema_dict)):
                 schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         else:
