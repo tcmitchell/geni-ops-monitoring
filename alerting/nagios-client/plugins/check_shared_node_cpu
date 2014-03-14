@@ -53,8 +53,8 @@ class SharedNodeCpu(nagiosplugin.Resource):
         for resource in results:
             name[resource] = '%s_cpu_util' % resource
             value[resource] = results[resource]
-            metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
-                                              max=100, context='load'))
+            metric.append(nagiosplugin.Metric(name[resource], value[resource],
+                                              min=0, max=100, context='load'))
 
         return metric
 
