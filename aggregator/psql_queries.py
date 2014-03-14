@@ -115,10 +115,6 @@ class AggregatorQuerier():
                 mem_used = mem_used_internal[node][0]["value"]
                 mem_total_kb = self._get_mem_total_kb(node)
                 mem_utilization = (mem_used / mem_total_kb) * 100
-
-                print "Mem used " + str(mem_used)
-                print "Mem total " + str(mem_total_kb)
-                print "Mem util " + str(mem_utilization)
             else:
                 # Return a negative value if the resource doesn't have data 
                 mem_utilization = -1
