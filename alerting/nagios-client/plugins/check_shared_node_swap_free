@@ -24,8 +24,12 @@
 
 """Checks the percentage of free swap space on a shared node"""
 
-import nagiosplugin
 import argparse
+import nagiosplugin
+import sys 
+
+sys.path.append("/usr/local/lib/")
+
 from psql_queries import AggregatorQuerier,ValueUnknownException
 from geni_alerting import GeniAlertingHelper
 

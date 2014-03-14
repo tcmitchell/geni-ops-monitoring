@@ -26,6 +26,10 @@
 
 import argparse
 import nagiosplugin
+import sys 
+
+sys.path.append("/usr/local/lib/")
+
 from psql_queries import AggregatorQuerier,ValueUnknownException
 from geni_alerting import GeniAlertingHelper
 

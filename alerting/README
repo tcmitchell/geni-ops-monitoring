@@ -184,7 +184,8 @@ The following are descriptions of the config files:
                      that run on the nagios client host.  This shouldn't
                      need to be modified from the reference implementation
                      unless you want to add more plugins or modify the
-                     WARNING and CRITICAL levels of a given plugin.
+                     WARNING and CRITICAL levels of a given plugin.  This
+                     file goes in the /etc/nagios/nrpe.d/ directory.
 
  * nrpe.cfg:         This is the standard nrpe.cfg file.  Make sure that
                      allowed_hosts includes the nagios server, and ensure
@@ -235,4 +236,6 @@ be ready to go.
 2.3. Query Library
 ------------------
 The query library is part of the aggregator module.  Please see the
-aggregator module for more information.
+aggregator module for more information.  Note that plugins currently
+assume that the query library is either in /usr/local/lib/, or that it
+is already in the python path somewhere.
