@@ -96,6 +96,49 @@ class AggregatorQuerier():
             
         return external_result
 
+    def get_last_node_swap_free(self, aggregate, since=None):
+        """
+        Get the latest value of the percentage of swap free for a given
+        aggregate's resources
+        """
+        # FIXME: we should probably get the shortname from the database, but
+        # that is currently what nagios queries uses for aggregates as well
+        agg_shortname = aggregate
+
+        # Get IDs for all nodes
+        nodes = self._get_ops_nodes_by_aggregate(agg_shortname)
+
+        # initialize return value
+        external_result = {}
+
+        # Look at the information for each interface at this aggregate
+        for node in nodes:
+            ### Do magic parsing to get resource name for nagios
+            # Remove the parts of the resource associated with the aggregate
+            node_components = node.split(self._DB_RES_MINOR_SEP)
+
+            # The node name is the last element
+            node_name = node_components[len(node_components) - 1]
+
+            ### Get the measured throughput for this interface
+            swap_free_internal = self._get_metric_by_resource(node, 
+                                                              agg_shortname, 
+                                                              "ops_swap_free")
+            
+            nagios_res_name = node_name
+
+            ### Calculate the interface utilization
+            if node in swap_free_internal:
+                swap_free = swap_free_internal[node][0]["value"]
+            else:
+                # Return a negative value if the resource doesn't have data 
+                swap_free = -1
+
+            ### Set the return value for this resource
+            external_result[nagios_res_name] = swap_free
+
+        return external_result
+
     def get_last_node_cpu_util(self, aggregate, since=None):
         """
         Get the latest value of CPU utilization for a given
@@ -455,8 +498,6 @@ class AggregatorQuerier():
             # FIXME: do something else, probably cascade the exception
             print e
 
-
-
     ###########################################################################
     # Unit testing code 
     ###########################################################################
@@ -465,13 +506,25 @@ class AggregatorQuerier():
         result = self.get_last_interface_rx_util(aggregate)
         
         for resource in result:
-            print "gpo-ig[%s] latest interface utilization is: %s" % \
+            print "gpo-ig[%s] latest interface rx utilization is: %s" % \
+                (resource, result[resource])
+
+        result = self.get_last_interface_tx_util(aggregate)
+        
+        for resource in result:
+            print "gpo-ig[%s] latest interface tx utilization is: %s" % \
                 (resource, result[resource])
 
         result = self.get_last_node_cpu_util(aggregate)
         
         for resource in result:
             print "gpo-ig[%s] latest cpu utilization is: %s" % \
+                (resource, result[resource])
+
+        result = self.get_last_node_swap_free(aggregate)
+        
+        for resource in result:
+            print "gpo-ig[%s] latest percentage of swap free is: %s" % \
                 (resource, result[resource])
 
         return 0
