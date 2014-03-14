@@ -32,7 +32,6 @@ node default {
 
   $database_type = "mysql"
   $populate_data = true
-
   $database_name = "local"
 
   # since these passwords are being committed to a repo, never use

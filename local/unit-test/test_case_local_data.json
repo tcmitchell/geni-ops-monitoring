@@ -33,7 +33,7 @@
         {
           "eventType": [ "ops_monitoring:rx_bps", "ops_monitoring:tx_bps"],
           "ts": { "lastmins": "1000000" },
-          "obj": {"type": "interface", "id": ["instageni.gpolab.bbn.com_interface_pc1:eth0"]}
+          "obj": {"type": "interface", "id": ["instageni.gpolab.bbn.com_interface_pc1:eth1"]}
         },
         { "VERIFY": { "minlength": 1 },
           "tsdata": { "VERIFY": { "minlength": 1 }}
