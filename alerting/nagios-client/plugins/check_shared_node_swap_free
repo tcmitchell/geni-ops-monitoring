@@ -22,28 +22,39 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-"""Checks the swap usage of a shared node"""
+"""Checks the percentage of free swap space on a shared node"""
 
 import nagiosplugin
 import argparse
+from psql_queries import AggregatorQuerier,ValueUnknownException
+from geni_alerting import GeniAlertingHelper
 
 class SharedNodeSwapFree(nagiosplugin.Resource):
 
     def __init__(self, aggregate):
         self._aggregate = aggregate
+        self._helper = GeniAlertingHelper()
+        self._username = self._helper.getUsername()
+        self._password = self._helper.getPassword()
+        self._database = self._helper.getDatabase()
+        self._host = self._helper.getHost()
+        self._querier = AggregatorQuerier(self._database, self._host, 
+                                          self._username, self._password)
 
     def probe(self):
         # Query the aggregator data store
-        # FIXME: Fake data for now
-        hosts = ['pc1', 'pc2', 'pc5']
+
+        results = self._querier.get_last_node_swap_free(self._aggregate)
+
         name = {}
         value = {}
         metric = []
 
-        for host in hosts:
-            name[host] = '%s_swap_free' % host
-            value[host] = 4000
-            metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
+        for resource in results:
+            name[resource] = '%s_swap_free' % resource
+            value[resource] = results[resource]
+            metric.append(nagiosplugin.Metric(name[resource], value[resource],
+                                              min=0, max=100, 
                                               context='swapfree'))
 
         return metric
