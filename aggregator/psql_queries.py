@@ -97,10 +97,61 @@ class AggregatorQuerier():
         return external_result
 
 
+    def get_last_interface_tx_util(self, aggregate, since=None):
+        """
+        Get the latest value of tx utilization for a given
+        aggregatei's resources
+        """
+        # FIXME: we should probably get the shortname from the database, but
+        # that is currently what nagios queries uses for aggregates as well
+        agg_shortname = aggregate
+
+        # Get IDs for all interfaces
+        interfaces = self._get_ops_interfaces_by_aggregate(agg_shortname)
+
+        # initialize return value
+        external_result = {}
+
+        # Look at the information for each interface at this aggregate
+        for interface in interfaces:
+            ### Do magic parsing to get resource name for nagios
+            # Remove the parts of the resource associated with the aggregate
+            if_components = interface.split(self._DB_RES_MAJOR_SEP)
+
+            # The interface name is the last element
+            if_name = if_components[len(if_components) - 1]
+
+            # The node ID is the second-to-last element
+            node_id = if_components[len(if_components) - 2]
+            node_components = node_id.split(self._DB_RES_MINOR_SEP)
+            node_name = node_components[len(node_components) - 1]
+
+            # Use a nagios-friendly separator
+            nagios_res_name = node_name + self._NAGIOS_RES_SEP + if_name
+
+            ### Get the measured throughput for this interface
+            cur_tx_internal = self._get_metric_by_resource(interface, 
+                                                           agg_shortname, 
+                                                           "ops_tx_bps")
+            
+            ### Calculate the interface utilization
+            if interface in cur_tx_internal:
+                cur_tx = cur_tx_internal[interface][0]["value"]
+                max_bps = self._get_max_bps(interface)
+                tx_utilization = (cur_tx / max_bps) * 100
+            else:
+                # Return a negative value if the resource doesn't have data 
+                tx_utilization = -1
+
+            ### Set the return value for this resource
+            external_result[nagios_res_name] = tx_utilization
+
+        return external_result
+
     def get_last_interface_rx_util(self, aggregate, since=None):
         """
         Get the latest value of rx utilization for a given
-        aggregates resources
+        aggregate's resources
         """
         # FIXME: we should probably get the shortname from the database, but
         # that is currently what nagios queries uses for aggregates as well
