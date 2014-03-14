@@ -81,19 +81,51 @@ class AggregatorQuerier():
     # Public aggregator queries
     ###########################################################################
 
-    def get_last_memory_util(self, aggregate, since=None):
+    def get_last_node_mem_util(self, aggregate, since=None):
         """
         Get the latest value of memory utilization for a given aggregate
         """
-        internal_result = self._get_metric_by_aggregate(aggregate, 
-                                                        "memory_util", since)
+        # FIXME: we should probably get the shortname from the database, but
+        # that is currently what nagios queries uses for aggregates as well
+        agg_shortname = aggregate
 
+        # Get IDs for all nodes
+        nodes = self._get_ops_nodes_by_aggregate(agg_shortname)
+
+        # initialize return value
         external_result = {}
 
-        for resource in internal_result:
-            # This assumes that the query sorted descending by time
-            external_result[resource] = internal_result[resource][0]["value"]
+        # Look at the information for each interface at this aggregate
+        for node in nodes:
+            ### Do magic parsing to get resource name for nagios
+            # Remove the parts of the resource associated with the aggregate
+            node_components = node.split(self._DB_RES_MINOR_SEP)
+
+            # The node name is the last element
+            node_name = node_components[len(node_components) - 1]
+
+            ### Get the measured percentage swap free
+            mem_used_internal = self._get_metric_by_resource(node, 
+                                     agg_shortname, "ops_mem_used_kb")
             
+            nagios_res_name = node_name
+
+            ### Calculate the memory utilization
+            if node in mem_used_internal:
+                mem_used = mem_used_internal[node][0]["value"]
+                mem_total_kb = self._get_mem_total_kb(node)
+                mem_utilization = (mem_used / mem_total_kb) * 100
+
+                print "Mem used " + str(mem_used)
+                print "Mem total " + str(mem_total_kb)
+                print "Mem util " + str(mem_utilization)
+            else:
+                # Return a negative value if the resource doesn't have data 
+                mem_utilization = -1
+
+            ### Set the return value for this resource
+            external_result[nagios_res_name] = mem_utilization
+
         return external_result
 
     def get_last_node_swap_free(self, aggregate, since=None):
@@ -120,14 +152,14 @@ class AggregatorQuerier():
             # The node name is the last element
             node_name = node_components[len(node_components) - 1]
 
-            ### Get the measured throughput for this interface
+            ### Get the measured percentage swap free
             swap_free_internal = self._get_metric_by_resource(node, 
                                                               agg_shortname, 
                                                               "ops_swap_free")
             
             nagios_res_name = node_name
 
-            ### Calculate the interface utilization
+            ### Set the appropriate swap free 
             if node in swap_free_internal:
                 swap_free = swap_free_internal[node][0]["value"]
             else:
@@ -163,14 +195,14 @@ class AggregatorQuerier():
             # The node name is the last element
             node_name = node_components[len(node_components) - 1]
 
-            ### Get the measured throughput for this interface
+            ### Get the measured CPU utilization for this node 
             cur_cpu_internal = self._get_metric_by_resource(node, 
                                                             agg_shortname, 
                                                             "ops_cpu_util")
             
             nagios_res_name = node_name
 
-            ### Calculate the interface utilization
+            ### Set the appropriate CPU itilization
             if node in cur_cpu_internal:
                 cpu_util = cur_cpu_internal[node][0]["value"]
             else:
@@ -481,9 +513,6 @@ class AggregatorQuerier():
             if record is not None:
                 max_bps = record[0]
             else:
-                # This is an error condition... metrics exist for a resource
-                # that is not known to the info tables
-                #
                 # FIXME: for now, just bomb out like we would have if we
                 # weren't checking for this at all, but print a warning
                 print "MAX BPS for %s not known" % db_resource
@@ -493,6 +522,38 @@ class AggregatorQuerier():
             cur.close()
 
             return max_bps 
+
+        except psycopg2.Error as e:
+            # FIXME: do something else, probably cascade the exception
+            print e
+
+    def _get_mem_total_kb(self, db_resource):
+        """
+        Gets the mem_total_kb property of a node using the db resource ID
+        """
+        query = "SELECT properties$mem_total_kb FROM ops_node WHERE (id=%s);"
+        args = (db_resource, )
+
+        try:
+            # Get a cursor and make the query
+            cur = self._con.cursor()
+            cur.execute(query, args)
+
+            # Build the return value from the records
+            record = cur.fetchone()
+
+            if record is not None:
+                mem_total_kb = record[0]
+            else:
+                # FIXME: for now, just bomb out like we would have if we
+                # weren't checking for this at all, but print a warning
+                print "Mem total KB for %s not known" % db_resource
+                mem_total_kb = record[0]
+
+            # Close the cursor now that our object is built
+            cur.close()
+
+            return mem_total_kb
 
         except psycopg2.Error as e:
             # FIXME: do something else, probably cascade the exception
@@ -525,6 +586,12 @@ class AggregatorQuerier():
         
         for resource in result:
             print "gpo-ig[%s] latest percentage of swap free is: %s" % \
+                (resource, result[resource])
+
+        result = self.get_last_node_mem_util(aggregate)
+        
+        for resource in result:
+            print "gpo-ig[%s] latest mem utilization: %s" % \
                 (resource, result[resource])
 
         return 0

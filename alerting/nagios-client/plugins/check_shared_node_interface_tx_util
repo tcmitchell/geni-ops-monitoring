@@ -51,7 +51,7 @@ class SharedNodeInterfaceTxUtil(nagiosplugin.Resource):
         metric = []
 
         for resource in results:
-            name[resource] = '%s_if_tx_util' % resource
+            name[resource] = '%s_tx_util' % resource
             value[resource] = results[resource]
             metric.append(nagiosplugin.Metric(name[resource], value[resource], min=0,
                                               context='util'))
