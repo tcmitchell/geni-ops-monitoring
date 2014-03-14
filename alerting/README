@@ -85,6 +85,8 @@ The following are descriptions of the config files:
                    Currently, we define a template for a service check, and
                    then use that template for individual hosts.  In the
                    reference config, a host corresponds to an aggregate.
+                   This file goes undre the objects directory of the nagios
+                   configuration.
 
  * cgi.cfg:        This is the standard cgi.cfg file.  Some authentication
                    config changes have been made for the reference
@@ -98,16 +100,28 @@ The following are descriptions of the config files:
                    implementation, localhost checks are disabled, and there
                    is a cfg_file defined for the path to aggregates.cfg
 
-2.1.2 Adding a New Service Check
+2.1.2 NRPE Plugin Setup
+-----------------------
+The NRPE plugin needs to be installed on the nagios server.  Please install 
+the package using your host's package manager.  Known package names:
+ * CentOS: nagios-plugins-nrpe
+ * Ubuntu: nagios-plugins-nrpe
+
+2.1.3 Adding a New Service Check
 --------------------------------
 To add a check for a new metric, you will modify aggregates.cfg.  Add a 
 template for a specific type of service check near the top of the file.
-
 After doing this, add a new service check in the host sections for each
 aggregate you want to run the check against, and use the service check
 template by leveraging the "use" declaration.
 
-2.1.3 Configuring Who to Alert
+After the service check has been defined in the aggregates.cfg file, restart
+the nagios service.
+
+Make sure that the command is defined on the nagios client 
+(see 2.2.6. Deploying a Plugin).
+
+2.1.4 Configuring Who to Alert
 ------------------------------
 In the file /etc/nagios/objects/contacts.cfg, there should be a line that
 looks something like:
@@ -120,12 +134,11 @@ sent to.
 2.2. Nagios Client
 ------------------
 
-2.2.1. Nagios Plugins Environment Setup
----------------------------------------
+2.2.1. nagiosplugins Package Setup
+----------------------------------
 Currently, nagios plugins are developed using the nagiosplugin python
 package.  We are using version 1.2.  To install this package on the nagios
 client host, log into the host and run the following commands:
-
 
 cd ~
 wget https://pypi.python.org/packages/source/n/nagiosplugin/nagiosplugin-1.2.tar.gz#md5=2f2d26e8a1b846fd4db936ef00a1a4e3
@@ -133,14 +146,32 @@ tar xvzf ~/nagiosplugin-1.2.tar.gz
 cd ~/nagiosplugin-1.2
 sudo python setup.py install
 
-
+2.2.2. NRPE Server Setup
+------------------------
 Nagios plugins are run run using the NRPE server package.  Please install 
 the package using your host's package manager.  Known package names:
  * Ubuntu: nagios-nrpe-server
  * CentOS: nagios-nrpe
 
+2.2.3. Nagios Database Access
+-----------------------------
+In order to set up a read-only nagios user, run the following commands
+in a psql session on the aggregator database:
 
-2.2.2. Nagios Client Config
+-- Create the nagios user and specify a password
+CREATE ROLE nagios LOGIN PASSWORD '___';
+
+-- Allow the nagios user to connect
+GRANT CONNECT ON DATABASE aggregator TO nagios;
+GRANT USAGE ON SCHEMA public TO nagios;
+
+-- Grant access to existing tables
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO nagios;
+
+-- As new tables get created, grant access to nagios user
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO nagios;
+
+2.2.4. Nagios Client Config
 ---------------------------
 Customized configuration files for the nagios client can be found in the 
 following directory:
@@ -167,7 +198,7 @@ The following are descriptions of the config files:
                      user that gets set up in "3. Database Access".  This
                      file should be placed in /etc/nagios/
 
-2.2.3. Plugin Development
+2.2.5. Plugin Development
 -------------------------
 Documentation on using the library can be found at:
 
@@ -187,7 +218,7 @@ Plugins use a helper library for fetching the credentials needed to
 access the aggregator database.  This library is found in the geni_alerting.py
 file.  This file should be placed in the same directory as the plugins.
 
-2.2.4. Deploying a Plugin
+2.2.6. Deploying a Plugin
 -------------------------
 Once your plugin is ready, copy it over into the following directory:
 
@@ -202,24 +233,6 @@ After that is complete, restart the nrpe service, and the plugin should
 be ready to go.
 
 2.3. Query Library
---------------------
+------------------
 The query library is part of the aggregator module.  Please see the
 aggregator module for more information.
-
-3. Database Access
-------------------
-In order to set up a read-only nagios user, run the following commands
-in a psql session on the aggregator database:
-
-# I didn't actually do this part
-CREATE ROLE nagios LOGIN PASSWORD '___';
-
-# Allow the nagios user to connect
-GRANT CONNECT ON DATABASE aggregator TO nagios;
-GRANT USAGE ON SCHEMA public TO nagios;
-
-# Grant access to existing tables
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO nagios;
-
-# As new tables get created, grant access to nagios user
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO nagios;
