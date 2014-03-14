@@ -96,11 +96,53 @@ class AggregatorQuerier():
             
         return external_result
 
+    def get_last_node_cpu_util(self, aggregate, since=None):
+        """
+        Get the latest value of CPU utilization for a given
+        aggregate's resources
+        """
+        # FIXME: we should probably get the shortname from the database, but
+        # that is currently what nagios queries uses for aggregates as well
+        agg_shortname = aggregate
+
+        # Get IDs for all nodes
+        nodes = self._get_ops_nodes_by_aggregate(agg_shortname)
+
+        # initialize return value
+        external_result = {}
+
+        # Look at the information for each interface at this aggregate
+        for node in nodes:
+            ### Do magic parsing to get resource name for nagios
+            # Remove the parts of the resource associated with the aggregate
+            node_components = node.split(self._DB_RES_MINOR_SEP)
+
+            # The node name is the last element
+            node_name = node_components[len(node_components) - 1]
+
+            ### Get the measured throughput for this interface
+            cur_cpu_internal = self._get_metric_by_resource(node, 
+                                                            agg_shortname, 
+                                                            "ops_cpu_util")
+            
+            nagios_res_name = node_name
+
+            ### Calculate the interface utilization
+            if node in cur_cpu_internal:
+                cpu_util = cur_cpu_internal[node][0]["value"]
+            else:
+                # Return a negative value if the resource doesn't have data 
+                cpu_util = -1
+
+            ### Set the return value for this resource
+            external_result[nagios_res_name] = cpu_util
+
+        return external_result
 
     def get_last_interface_tx_util(self, aggregate, since=None):
         """
         Get the latest value of tx utilization for a given
-        aggregatei's resources
+        aggregate's resources
         """
         # FIXME: we should probably get the shortname from the database, but
         # that is currently what nagios queries uses for aggregates as well
@@ -211,6 +253,36 @@ class AggregatorQuerier():
         query = query + "(SELECT id FROM ops_node WHERE id IN "
         query = query + "(SELECT id FROM ops_aggregate_resource WHERE "
         query = query + "aggregate_id=%s));"
+
+        args = (aggregate, )
+
+        try:
+            # Get a cursor and make the query
+            cur = self._con.cursor()
+            cur.execute(query, args)
+
+            result = []
+
+            # Build the return value from the records
+            for record in cur:
+                result.append(record[0])
+
+            # Close the cursor now that our object is built
+            cur.close()
+
+            return result
+
+        except psycopg2.Error as e:
+            # FIXME: do something else, probably cascade the exception
+            print e
+
+    def _get_ops_nodes_by_aggregate(self, aggregate):
+        """
+        Return a list of resource IDs for nodes at an aggregate
+        """
+        query = "SELECT id FROM ops_node WHERE id IN "
+        query = query + "(SELECT id FROM ops_aggregate_resource WHERE "
+        query = query + "aggregate_id=%s);"
 
         args = (aggregate, )
 
@@ -394,6 +466,12 @@ class AggregatorQuerier():
         
         for resource in result:
             print "gpo-ig[%s] latest interface utilization is: %s" % \
+                (resource, result[resource])
+
+        result = self.get_last_node_cpu_util(aggregate)
+        
+        for resource in result:
+            print "gpo-ig[%s] latest cpu utilization is: %s" % \
                 (resource, result[resource])
 
         return 0

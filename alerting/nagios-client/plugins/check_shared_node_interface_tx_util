@@ -25,7 +25,6 @@
 """Checks the interface tx utilization of a shared node"""
 
 import argparse
-import datetime
 import nagiosplugin
 from psql_queries import AggregatorQuerier,ValueUnknownException
 from geni_alerting import GeniAlertingHelper
