@@ -25,30 +25,36 @@
 """Checks the memory utilization of a shared node"""
 
 import argparse
-import datetime
 import nagiosplugin
 from psql_queries import AggregatorQuerier
+from geni_alerting import GeniAlertingHelper
 
 class SharedNodeMemUtil(nagiosplugin.Resource):
 
     def __init__(self, aggregate):
         self._aggregate = aggregate
-        self._querier = AggregatorQuerier("aggregator", "nagios")
+        self._helper = GeniAlertingHelper()
+        self._username = self._helper.getUsername()
+        self._password = self._helper.getPassword()
+        self._database = self._helper.getDatabase()
+        self._host = self._helper.getHost()
+        self._querier = AggregatorQuerier(self._database, self._host, 
+                                          self._username, self._password)
 
     def probe(self):
         # Query the aggregator data store
-        results = self._querier.get_last_memory_util(self._aggregate, \
-                  datetime.datetime.utcfromtimestamp(0)) #FIXME: don't specify timestamp
+
+        results = self._querier.get_last_node_mem_util(self._aggregate)
 
         name = {}
         value = {}
         metric = []
 
-        for host in results:
-            name[host] = '%s_mem_used' % host
-            value[host] = results[host]
-            metric.append(nagiosplugin.Metric(name[host], value[host], min=0,
-                                              context='mem'))
+        for resource in results:
+            name[resource] = '%s_mem_util' % resource
+            value[resource] = results[resource]
+            metric.append(nagiosplugin.Metric(name[resource], value[resource],
+                                              min=0, context='mem'))
 
         return metric
 
