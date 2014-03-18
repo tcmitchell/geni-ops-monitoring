@@ -55,7 +55,7 @@ class SharedNodeMemUtil(nagiosplugin.Resource):
         metric = []
 
         for resource in results:
-            name[resource] = '%s_mem_util' % resource
+            name[resource] = '%s_mem_util' % resource.split('+')[-1]
             value[resource] = results[resource]
             metric.append(nagiosplugin.Metric(name[resource], value[resource],
                                               min=0, context='mem'))
