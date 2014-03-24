@@ -11,8 +11,9 @@ implement parts of the monitoring component model listed at:
 
 Contents of this directory:
  * Directories which implement components of the ops monitoring model:
-   * alerting/: reference alerting utilities (component (a)) - incomplete
-   * aggregator/: reference aggregator (component (b)) - incomplete
+   * alerting/: reference alerting utilities (component (a)) - working 
+                prototype
+   * collector/: reference aggregator (component (b)) - working prototype
    * schema/: schema/examples for datastore polling API (component (c))
               - working prototype
    * local/: reference local datastore (component (d)) - working prototype
