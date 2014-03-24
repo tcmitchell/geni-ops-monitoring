@@ -35,7 +35,7 @@ class local::server {
 
     "local_setup":
       command => "/usr/bin/python ./${local_setup_script}",
-      cwd => "/usr/local/ops-monitoring/local/unit-test",
+      cwd => "/usr/local/ops-monitoring/local/unit-tests",
       require => [
         File["/usr/local/ops-monitoring/config/local_datastore_operator.conf"],
         Exec["${database_type}_set_passwords"]
