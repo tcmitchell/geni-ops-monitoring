@@ -30,7 +30,7 @@ import requests
 import ConfigParser
 from pprint import pprint as pprint
 import single_local_datastore_crawler as sldc
-sys.path.append("../common/")
+sys.path.append("../../common/")
 import table_manager
 import single_obj_type_fetcher_thread as sotft
 
@@ -38,7 +38,7 @@ def main():
 
     threads = {} 
     db_type = "aggregator"
-    config_path = "../config"
+    config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
     node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
@@ -48,7 +48,7 @@ def main():
     tbl_mgr.drop_tables(tbl_mgr.schema_dict.keys())
 
     cp = ConfigParser.ConfigParser()
-    cp.read(config_path + "/aggregator_operator.conf") 
+    cp.read(config_path + "/collector_operator.conf") 
 
     # Gets multiple datastores from the configuration file
     datastores_dict = json.loads(cp.get("main","datastores_dict"))

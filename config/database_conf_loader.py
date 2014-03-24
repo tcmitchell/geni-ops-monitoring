@@ -31,7 +31,7 @@ def main_local(config_path):
 
 def main_aggregator(config_path):
     config = ConfigParser.ConfigParser()
-    config.read(config_path + "/aggregator_operator.conf")
+    config.read(config_path + "/collector_operator.conf")
     dbtype = config.get("main", "dbtype")
     return [dbtype]
 
@@ -47,7 +47,7 @@ def psql_local(config_path):
 
 def psql_aggregator(config_path):
     config = ConfigParser.ConfigParser()
-    config.read(config_path + "/aggregator_operator.conf")
+    config.read(config_path + "/collector_operator.conf")
     database = config.get("postgres","database")
     username = config.get("postgres","username")
     password = config.get("postgres","password")
@@ -67,7 +67,7 @@ def mysql_local(config_path):
 
 def mysql_aggregator(config_path):
     config = ConfigParser.ConfigParser()
-    config.read(config_path + "/aggregator_operator.conf")
+    config.read(config_path + "/collector_operator.conf")
     database = config.get("mysql","database")
     username = config.get("mysql","username")
     password = config.get("mysql","password")

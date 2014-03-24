@@ -35,7 +35,7 @@ Reference Aggregator README
    Inspect the output and find the href(s) of the local datastore(s)
    you are interested in querying.
 
-   (2) Open the file 'config/aggregator_operator.conf'.
+   (2) Open the file 'config/collector_operator.conf'.
    Under the [main] section add the json-style dictionaries to the
    datastores_dict item in the format:
    "<aggregate_id>":"<local_datastore_url_for_info_queries>"
@@ -46,7 +46,7 @@ Reference Aggregator README
 
 4. Aggregator programs:
 
-   The datastores_dict item in '/config/aggregator_operator.conf' is
+   The datastores_dict item in '/config/collector_operator.conf' is
    the collection of local datastores to be queried.  Use these to
    form arguments in the execution of the aggregator programs.
 
