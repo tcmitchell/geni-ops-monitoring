@@ -1,4 +1,4 @@
-Reference Aggregator README
+Reference Collector README
 
 1. Aptitude packages
 
@@ -12,22 +12,22 @@ Reference Aggregator README
 
 2a. PostgreSQL Configuration
 
-   We use <AGGREGATOR_OPERATOR_NAME>=agguser, but any name you like
+   We use <COLLECTOR_OPERATOR_NAME>=agguser, but any name you like
    should work.
 
     Omit (1) if you already have a postgres user
     (1) sudo -u postgres psql -c '\password postgres' postgres
     (2) sudo -u postgres createuser --no-createdb --no-createrole \
-          --no-superuser <AGGREGATOR_OPERATOR_NAME>
-    (3) sudo -u postgres psql -c '\password <AGGREGATOR_OPERATOR_NAME>' postgres
-    (4) sudo -u postgres createdb --owner=<AGGREGATOR_OPERATOR_NAME> aggregator
+          --no-superuser <COLLECTOR_OPERATOR_NAME>
+    (3) sudo -u postgres psql -c '\password <COLLECTOR_OPERATOR_NAME>' postgres
+    (4) sudo -u postgres createdb --owner=<COLLECTOR_OPERATOR_NAME> collector
 
 2b. MySQL Configuration
 
-    (1) echo "CREATE DATABASE aggregator" | mysql -u root -p
-    (2) echo "GRANT ALL ON aggregator.* TO <AGGREGATOR_OPERATOR_NAME>@localhost IDENTIFIED BY '<AGGREGATOR_PASSWORD>'" | mysql -u root -p
+    (1) echo "CREATE DATABASE collector" | mysql -u root -p
+    (2) echo "GRANT ALL ON collector.* TO <COLLECTOR_OPERATOR_NAME>@localhost IDENTIFIED BY '<COLLECTOR_PASSWORD>'" | mysql -u root -p
 
-3. Configuring the aggregator to point to local datastore(s)
+3. Configuring the collector to point to local datastore(s)
 
    (1) Query the current config store in a web-browser:
    http://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod
@@ -44,14 +44,14 @@ Reference Aggregator README
    The href, "http://tamassos.gpolab.bbn.com/info/gpo-ig", translates to
    {"gpo-ig":"http://tamassos.gpolab.bbn.com/info/"}
 
-4. Aggregator programs:
+4. Collector programs:
 
    The datastores_dict item in '/config/collector_operator.conf' is
    the collection of local datastores to be queried.  Use these to
-   form arguments in the execution of the aggregator programs.
+   form arguments in the execution of the collector programs.
 
    (1) single_local_datastore_info_crawler.py performs information
-   fetching. It puts data in the aggregator database.  It needs to be
+   fetching. It puts data in the collector database.  It needs to be
    called with three arguments:
 
      -b or --baseurl with <url_of_info_url> 
@@ -64,7 +64,7 @@ Reference Aggregator README
 	l: for link
 	v: for vlan
 	So argument -o nislv will get information on all object types
-     -d or --debug will print what would be added to the aggregator database
+     -d or --debug will print what would be added to the collector database
         to the screen and does not add anything to the database
      -h or --help prints the usage() function, repeat of this info
    
@@ -79,7 +79,7 @@ Reference Aggregator README
 	i: for interface
 	So argument -o n will get ts data for all node events and all nodes
 	at the datastore
-     -d or --debug will print what would be added to the aggregator database
+     -d or --debug will print what would be added to the collector database
         to the screen and does not add anything to the database
      -h or --help prints the usage() function, repeat of this info
 
@@ -100,15 +100,15 @@ Reference Aggregator README
     aggregate_id the same as for the info crawler. Save and exit
     crontab.
 
-    30 23 * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_info_crawler.py -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
+    30 23 * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_info_crawler.py -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
 
-    */5 * * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
+    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
 
-    */5 * * * * (cd /usr/local/ops-monitoring/aggregator; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)
+    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)
 
 5. Query Library
 
-   The query library is used by services that sit on top of the aggregator.
-   The query library is currently contained in the aggregator module under
+   The query library is used by services that sit on top of the collector.
+   The query library is currently contained in the collector module under
    the file psql_queries.py.  This file should be installed under 
    /usr/local/lib/ at this time.

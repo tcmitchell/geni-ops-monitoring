@@ -132,7 +132,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 max_ts = ts
         return max_ts
 
-    # Retrieves these from the aggregator database
+    # Retrieves these from the collector database
     def get_object_ids(self, obj_type):
 
         obj_ids = []
@@ -342,7 +342,7 @@ def main(argv):
     if aggregate_id == "" or object_type_param == "":
         usage()
 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../config/"
     data_schema = json.load(open("../config/data_schema"))
 

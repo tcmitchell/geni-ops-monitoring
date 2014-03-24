@@ -29,7 +29,7 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, db_name, config_path, debug=False):
+    def __init__(self, db_type, config_path, debug=False):
 
         # load a 2-function package for reading database config
         sys.path.append(config_path)
@@ -43,13 +43,16 @@ class TableManager:
             [db_prog] = self.conf_loader.main_local(config_path)
         elif db_type == "collector":
             [db_prog] = self.conf_loader.main_collector(config_path)
+        else:
+            sys.stderr.write("%s is not a valid database type (local or collector)\n" % db_type)
+            sys.exit(1)
 
         if db_prog == "postgres":
             self.con = self.init_psql_conn(db_type, config_path)
         elif db_prog == "mysql":
             self.con = self.init_mysql_conn(db_type, config_path)
         else:
-            print db_prog, "is not a valid database program"
+            sys.stderr.write("%s is not a valid database program\n" % db_prog)
             sys.exit(1)
 
         self.database_type = db_type # local or collector
@@ -76,13 +79,13 @@ class TableManager:
             [database_, username_, password_, host_, port_] = \
                 self.conf_loader.psql_collector(config_path)
         else:
-            print "No collector or local database selected.  Exiting\n"
+            sys.stderr.write("No collector or local database selected.  Exiting\n")
             sys.exit(1)
 
         try:
             con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
         except Exception, e:
-            print e, "\nCannot open a connection to database " + database_ + ". \n Exiting."
+            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
             sys.exit(1)
 
         return con
@@ -98,14 +101,14 @@ class TableManager:
             [database_, username_, password_, host_, port_] = \
                 self.conf_loader.mysql_collector(config_path)
         else:
-            print "No collector or local database selected.  Exiting\n"
+            sys.stderr.write("No collector or local database selected.  Exiting\n\n")
             sys.exit(1)
 
         try:
 
             con = mysqldb.connect(db = database_, user = username_, passwd = password_, host = host_, port = int(port_))
         except Exception, e:
-            print e, "\nCannot open a connection to database " + database_ + ". \n Exiting."
+            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
             sys.exit(1)
 
         return con
@@ -114,7 +117,7 @@ class TableManager:
         schema_dict = {}
         schema_dict["units"] = {}
         if (len(dict(data_schema.items() + info_schema.items())) != len(data_schema) + len(info_schema)):
-            print "Error: table namespace collision"
+            sys.stderr.write("Error: table namespace collision\n")
             return None
 
         for ds_k in data_schema.keys():
@@ -139,14 +142,15 @@ class TableManager:
         try: 
             cur = self.con.cursor()            
             del_str = "delete from " + table_name + " where ts < " + str(delete_older_than_ts) + ";";
-            #print del_str
+            if self.debug:
+                print del_str
             cur.execute(del_str);
             self.con.commit() 
             cur.close()
         except Exception, e:
-            print "Trouble deleting data to " + table_name + "."
-            print "delete_older_than_ts " + delete_older_than_ts
-            print e
+            sys.stderr.write("Trouble deleting data to %s.\n" % table_name)
+            sys.stderr.write("delete_older_than_ts %s\n" % delete_older_than_ts)
+            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
    
@@ -158,14 +162,15 @@ class TableManager:
         try:
             cur = self.con.cursor()            
             ins_str = "insert into " + table_name + " values " + val_str + ";";
-            #print ins_str
+            if self.debug:
+                print ins_str
             cur.execute(ins_str);
             self.con.commit() 
             cur.close()
         except Exception, e:
-            print "Trouble inserting data to " + table_name + "."
-            print "val str " + val_str
-            print e
+            sys.stderr.write("Trouble inserting data to %s.\n" % table_name)
+            sys.stderr.write("val str %s\n" % val_str)
+            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
 
@@ -177,13 +182,14 @@ class TableManager:
         try:
             cur = self.con.cursor()            
             del_str = "delete from " + table_name + " where id = '" + obj_id + "';";
-            #print del_str
+            if self.debug:
+                print del_str
             cur.execute(del_str);
             self.con.commit() 
             cur.close()
         except Exception, e:
-            print "Trouble deleting " + obj_id + " as id from " + table_name + "."
-            print e
+            sys.stderr.write("Trouble deleting %s as id from %s.\n" % (obj_id, table_name))
+            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
 
@@ -191,7 +197,7 @@ class TableManager:
         try:
             self.con.close()
         except Exception, e:
-            print e, "\nCannot close connection to database."
+            sys.stderr.write("%s\nCannot close connection to database.\n" % e)
 
     '''
     Not allowed in a transaction block, connection implies a database 
@@ -234,7 +240,7 @@ class TableManager:
                 exists = True
             cur.close()
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
         self.db_lock.release()
 
         return exists
@@ -249,7 +255,7 @@ class TableManager:
             exists = cur.fetchone()[0]
             cur.close()
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
         self.db_lock.release()
 
         return exists
@@ -272,7 +278,7 @@ class TableManager:
             col_names = [desc[0] for desc in cur.description]
             cur.close()
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
         return col_names
@@ -324,7 +330,8 @@ class TableManager:
 
                 cur.close()
             except Exception, e:
-                print e, "Exception while creating table" + table + schema_str
+                sys.stderr.write("%s\n" % e)
+                sys.stderr.write("Exception while creating table %s %s" % (table, schema_str))
             
             self.db_lock.release()
 
@@ -340,14 +347,15 @@ class TableManager:
 
         try:
             cur = self.con.cursor() 
-            print "drop table if exists " + table_str
+            if self.debug:
+                print "drop table if exists " + table_str
             cur.execute("drop table if exists " + table_str)
             self.con.commit()
-
-            print "Dropping table", table_str
+            if self.debug:
+                print "Dropping table", table_str
             cur.close()
         except Exception, e:
-            print e, table_str
+            sys.stderr.write("%s\n%s" % (e, table_str))
 
         self.db_lock.release()
 
@@ -359,13 +367,14 @@ class TableManager:
         try:
             cur.execute("select distinct id from " + table_str + ";") 
             q_res = cur.fetchall()
-            print q_res
+            if self.debug:
+                print q_res
             self.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
 
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             self.con.commit()
 
         cur.close()
@@ -405,7 +414,7 @@ def arg_parser(argv, dict_keys):
         try:
             table_str = str(arg)
         except ValueError:
-            print "Not a string."
+            sys.stderr.write("%s Not a string.\n" % arg)
             sys.exit(1)
         if table_str not in dict_keys:
             print "Argument " + arg + " converted to string " + table_str + " was not found in schema dictionary keys:"
@@ -435,14 +444,14 @@ def main():
     config_path = "../config/"
 
     print "Running table_manager manually"
-    local_or_agg = raw_input("Do you want to connect to the local database or collector database (Enter L or A)? ")
+    local_or_col = raw_input("Do you want to connect to the local database or collector database (Enter L or C)? ")
 
-    if local_or_agg == 'l' or local_or_agg == 'L':
+    if local_or_col == 'l' or local_or_col == 'L':
         db_type = "local"
-    elif local_or_agg == 'a' or local_or_agg == 'A':
+    elif local_or_col == 'c' or local_or_col == 'C':
         db_type = "collector"
     else:
-        print local_or_agg + " is not a valid response.  Enter L or A"
+        print local_or_col + " is not a valid response.  Enter L or C"
         sys.exit(1)
 
     tm = TableManager(db_type, config_path)

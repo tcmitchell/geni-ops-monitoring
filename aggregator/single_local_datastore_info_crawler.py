@@ -31,13 +31,11 @@ common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
 
-# agg is for aggregator 
-# aggregate is for aggregate manager 
 
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
 # the am urn
 
-# This program populates the aggregator database on every fetch
+# This program populates the collector database on every fetch
 
 def usage():
     print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -o <objecttypess-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
@@ -399,7 +397,7 @@ def main(argv):
     if info_url == "" or aggregate_id == "":
         usage()
 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../config/"
     info_schema = json.load(open("../config/info_schema"))
 

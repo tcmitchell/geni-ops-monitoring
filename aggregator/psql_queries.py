@@ -25,7 +25,7 @@ import datetime
 import psycopg2
 import sys
 
-class AggregatorQuerier():
+class CollectorQuerier():
     """
     Class for making queries to the database, not thread safe
     """
@@ -78,7 +78,7 @@ class AggregatorQuerier():
             print "Couldn't close DB connection"
 
     ###########################################################################
-    # Public aggregator queries
+    # Public collector queries
     ###########################################################################
 
     def get_last_node_mem_util(self, aggregate, since=None):
@@ -385,7 +385,7 @@ class AggregatorQuerier():
         epoch = datetime.datetime.utcfromtimestamp(0)
         delta = dt - epoch
 
-        # Multiply by 1M to match what is used in the aggregator database
+        # Multiply by 1M to match what is used in the collector database
         return delta.total_seconds() * 1000000
 
     # get metric by resource
@@ -607,7 +607,7 @@ class ValueUnknownException(Exception):
        return message
 
 if __name__ == "__main__":
-    querier = AggregatorQuerier("aggregator", "localhost", "nagios", "19dnH4N,dkv")
+    querier = CollectorQuerier("collector", "localhost", "nagios", "19dnH4N,dkv")
     val = querier.run_unit_test("gpo-ig")
     querier.close()
     sys.exit(val)
