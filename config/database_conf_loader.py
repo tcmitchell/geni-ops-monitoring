@@ -29,7 +29,7 @@ def main_local(config_path):
     dbtype = config.get("main", "dbtype")
     return [dbtype]
 
-def main_aggregator(config_path):
+def main_collector(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/collector_operator.conf")
     dbtype = config.get("main", "dbtype")
@@ -45,7 +45,7 @@ def psql_local(config_path):
     port = config.get("postgres","port")
     return [database, username, password, host, port]
 
-def psql_aggregator(config_path):
+def psql_collector(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/collector_operator.conf")
     database = config.get("postgres","database")
@@ -65,7 +65,7 @@ def mysql_local(config_path):
     port = config.get("mysql","port")
     return [database, username, password, host, port]
 
-def mysql_aggregator(config_path):
+def mysql_collector(config_path):
     config = ConfigParser.ConfigParser()
     config.read(config_path + "/collector_operator.conf")
     database = config.get("mysql","database")

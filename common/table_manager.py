@@ -39,24 +39,21 @@ class TableManager:
 
         self.debug = debug
 
-        # TODO db_name -> db_type
-        # TODO dbtype_ -> db_prog
+        if db_type == "local":
+            [db_prog] = self.conf_loader.main_local(config_path)
+        elif db_type == "collector":
+            [db_prog] = self.conf_loader.main_collector(config_path)
 
-        if db_name == "local":
-            [dbtype_] = self.conf_loader.main_local(config_path)
-        elif db_name == "aggregator":
-            [dbtype_] = self.conf_loader.main_aggregator(config_path)
-
-        if dbtype_ == "postgres":
-            self.con = self.init_psql_conn(db_name, config_path)
-        elif dbtype_ == "mysql":
-            self.con = self.init_mysql_conn(db_name, config_path)
+        if db_prog == "postgres":
+            self.con = self.init_psql_conn(db_type, config_path)
+        elif db_prog == "mysql":
+            self.con = self.init_mysql_conn(db_type, config_path)
         else:
-            print dbtype_, "is not a valid database program"
+            print db_prog, "is not a valid database program"
             sys.exit(1)
 
-        self.database_type = db_name # local or aggregator
-        self.database_program = dbtype_ # postgres or mysql
+        self.database_type = db_type # local or collector
+        self.database_program = db_prog # postgres or mysql
         self.db_lock = threading.Lock()
 
         self.info_schema = json.load(open(config_path + "/info_schema"))
@@ -68,18 +65,18 @@ class TableManager:
             print ""
 
 
-    def init_psql_conn(self, db_name, config_path):
+    def init_psql_conn(self, db_type, config_path):
 
         import psycopg2
 
-        if db_name == "local":
+        if db_type == "local":
             [database_, username_, password_, host_, port_] = \
                 self.conf_loader.psql_local(config_path)
-        elif db_name == "aggregator":
+        elif db_type == "collector":
             [database_, username_, password_, host_, port_] = \
-                self.conf_loader.psql_aggregator(config_path)
+                self.conf_loader.psql_collector(config_path)
         else:
-            print "No aggregator or local database selected.  Exiting\n"
+            print "No collector or local database selected.  Exiting\n"
             sys.exit(1)
 
         try:
@@ -90,18 +87,18 @@ class TableManager:
 
         return con
 
-    def init_mysql_conn(self, db_name, config_path):
+    def init_mysql_conn(self, db_type, config_path):
 
 	import MySQLdb as mysqldb
        
-        if db_name == "local":
+        if db_type == "local":
             [database_, username_, password_, host_, port_] = \
                 self.conf_loader.mysql_local(config_path)
-        elif db_name == "aggregator":
+        elif db_type == "collector":
             [database_, username_, password_, host_, port_] = \
-                self.conf_loader.mysql_aggregator(config_path)
+                self.conf_loader.mysql_collector(config_path)
         else:
-            print "No aggregator or local database selected.  Exiting\n"
+            print "No collector or local database selected.  Exiting\n"
             sys.exit(1)
 
         try:
@@ -125,7 +122,7 @@ class TableManager:
             # 2nd of tuple is a string of what unit type is (i.e., percent)
             if self.database_type == "local":
                 schema_dict[ds_k] = data_schema[ds_k][:-1] 
-            elif self.database_type == "aggregator":
+            elif self.database_type == "collector":
                 l = data_schema[ds_k][:-1]
                 l.insert(0,["aggregate_id","varchar"])
                 schema_dict[ds_k] = l
@@ -438,20 +435,20 @@ def main():
     config_path = "../config/"
 
     print "Running table_manager manually"
-    local_or_agg = raw_input("Do you want to connect to the local database or aggregator database (Enter L or A)? ")
+    local_or_agg = raw_input("Do you want to connect to the local database or collector database (Enter L or A)? ")
 
     if local_or_agg == 'l' or local_or_agg == 'L':
-        db_name = "local"
+        db_type = "local"
     elif local_or_agg == 'a' or local_or_agg == 'A':
-        db_name = "aggregator"
+        db_type = "collector"
     else:
         print local_or_agg + " is not a valid response.  Enter L or A"
         sys.exit(1)
 
-    tm = TableManager(db_name, config_path)
+    tm = TableManager(db_type, config_path)
 
     # get all tables all event types (data_schema) and info types
-    # (info_schema) for local datastore database or aggregator
+    # (info_schema) for local datastore database or collector
     # database to have a table for all event types
 
     if (len(sys.argv) > 1):
@@ -465,7 +462,8 @@ def main():
         data_schema = json.load(open(config_path + "data_schema"))
         table_str_arr = info_schema.keys() + data_schema.keys()
 
-    clear_tables = raw_input("\nDo you want to reset the following tables from database " + db_name + ": \n\n" + str(table_str_arr) + " \n\n (Enter y or n)? ")
+    # db_type used for database name
+    clear_tables = raw_input("\nDo you want to reset the following tables from database " + db_type + ": \n\n" + str(table_str_arr) + " \n\n (Enter y or n)? ")
     if clear_tables == 'y' or clear_tables == 'Y':
         tm.drop_tables(table_str_arr)
         tm.establish_tables(table_str_arr)
