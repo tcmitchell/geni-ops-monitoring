@@ -33,7 +33,7 @@ sys.path.append("../common/")
 import table_manager
 
 def usage():
-    print('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans)>')
+    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -101,11 +101,12 @@ class SingleLocalDatastoreObjectTypeFetcher:
         try:
             data = json.loads(json_text)
         except Exception, e:
-            print "Unable to load response in json\n"+e
+            sys.stderr.write("Unable to load response in json %s" % e)
 
         for result in data:
-            print "Result received from %s about:" % self.aggregate_id
-            pprint(result["id"])
+            if self.debug:
+                print "Result received from %s about:" % self.aggregate_id
+                pprint(result["id"])
 
             event_type = result["eventType"]
             if event_type.startswith("ops_monitoring:"):
@@ -151,7 +152,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             #obj_ids = self.get_all_interfacevlans_of_aggregate()
 
         else:
-            print "Invalid object type", obj_type
+            sys.stderr.write("Invalid object type %s" % obj_type)
             sys.exit(1)
 
         return obj_ids
@@ -180,8 +181,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         url = self.meas_ref + "?q=" + str(q)
         url = url.replace(' ', '%20')
-
-        print url
+        if self.debug:
+            print url
 
         resp = requests.get(url)
              
@@ -204,7 +205,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             res = q_res[0][0] # gets first of single tuple
             
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             tbl_mgr.con.commit()
         
         cur.close()
@@ -229,7 +230,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             tbl_mgr.con.commit()
         
         cur.close()
@@ -254,7 +255,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             tbl_mgr.con.commit()
         
         cur.close()
@@ -279,7 +280,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             tbl_mgr.con.commit()
         
         cur.close()
@@ -308,15 +309,14 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 meas_ref = q_res[0] # gets first of single tuple
             
         except Exception, e:
-            print e
+            sys.stderr.write("%s\n" % e)
             tbl_mgr.con.commit()
         
         cur.close()
         tbl_mgr.db_lock.release()
         
         if meas_ref is None:
-            print "ERROR: No measurement ref found for aggregate", self.aggregate_id
-            print "Run the info_crawler to find this"
+            sys.stderr.write("ERROR: No measurement ref found for aggregate: %s\nRun the info_crawler to find this or wrong argument passed \n" % self.aggregate_id)
             sys.exit(1)
 
         return meas_ref
@@ -346,7 +346,7 @@ def main(argv):
     config_path = "../config/"
     data_schema = json.load(open("../config/data_schema"))
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
+    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(data_schema.keys())
@@ -362,7 +362,7 @@ def main(argv):
         event_types = interface_event_types
         object_type = "interface"
     else:
-        print "invalid object type arg", object_type_param
+        sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
 
     fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, debug)

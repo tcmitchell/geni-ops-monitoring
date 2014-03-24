@@ -29,13 +29,15 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, db_name, config_path):
+    def __init__(self, db_name, config_path, debug=False):
 
         # load a 2-function package for reading database config
         sys.path.append(config_path)
         import database_conf_loader
 
         self.conf_loader = database_conf_loader
+
+        self.debug = debug
 
         # TODO db_name -> db_type
         # TODO dbtype_ -> db_prog
@@ -60,10 +62,10 @@ class TableManager:
         self.info_schema = json.load(open(config_path + "/info_schema"))
         self.data_schema = json.load(open(config_path + "/data_schema"))
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
-
-        print "Schema loaded with keys:" 
-        print self.schema_dict.keys() 
-        print ""
+        if self.debug:
+            print "Schema loaded with keys:" 
+            print self.schema_dict.keys() 
+            print ""
 
 
     def init_psql_conn(self, db_name, config_path):
@@ -309,10 +311,10 @@ class TableManager:
         schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
         
         if self.table_exists(table_str):
-       
-            print "INFO: table " + table_str + " already exists with schema:"
-            print "Current schema_str " + schema_str
-            print "Skipping creation of " + table_str
+            if self.debug:
+                print "INFO: table " + table_str + " already exists with schema:"
+                print "Current schema_str " + schema_str
+                print "Skipping creation of " + table_str
             
         else:
             self.db_lock.acquire()
