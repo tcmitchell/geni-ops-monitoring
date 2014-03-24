@@ -37,7 +37,7 @@ import single_local_datastore_crawler as sldc
 
 def main():
     threads = {} 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
@@ -51,7 +51,7 @@ def main():
     # Info url
     datastore_info_url = "http://datastore.utah.geniracks.net:5001/info/"
 
-    # Aggregate ID to look up in aggregator db
+    # Aggregate ID to look up in collector db
     aggregate_id = "ig-utah"
 
 

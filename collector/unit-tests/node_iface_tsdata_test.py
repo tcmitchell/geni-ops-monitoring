@@ -37,7 +37,7 @@ import single_obj_type_fetcher_thread as sotft
 
 def main():
     threads = {} 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
@@ -52,7 +52,7 @@ def main():
     # Info url
     datastore_info_url = "http://datastore.utah.geniracks.net:5001/info/"
 
-    # Aggregate ID to look up in aggregator db
+    # Aggregate ID to look up in collector db
     aggregate_id = "ig-utah"
 
     # Set time of last update to 5 minutes in the past
@@ -62,7 +62,7 @@ def main():
     run_indefinitely = False
     stop_cnt = 2
 
-    # Object type to look up in aggregator db
+    # Object type to look up in collector db
     obj_type = "node"
     event_types = node_event_types
     thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"

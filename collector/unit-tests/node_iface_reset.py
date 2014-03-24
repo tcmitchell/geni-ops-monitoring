@@ -31,11 +31,11 @@ def main():
     datastore_info_url = "http://127.0.0.1:5000/info/"
     #datastore_info_url = "http://starkville.bbn.com/info/"
 
-    # Aggregate ID to look up in aggregator db
+    # Aggregate ID to look up in collector db
     aggregate_id = "gpo-ig"
 
-    # Drops and creates tables at aggregator
-    os.system("python aggregator_table_reset.py");
+    # Drops and creates tables at collector
+    os.system("python collector_table_reset.py");
 
     # Performs the info crawling
     os.system("cd ../; python single_local_datastore_info_crawler.py -b " + datastore_info_url + " -a " +  aggregate_id + " -o ni; cd -;")

@@ -25,7 +25,7 @@ import ConfigParser
 
 class GeniAlertingHelper():
 
-    _DEFAULT_CONFIG_FILE="/etc/nagios/aggregator.conf"
+    _DEFAULT_CONFIG_FILE="/etc/nagios/collector.conf"
 
     def __init__(self, config_file=_DEFAULT_CONFIG_FILE):
         self._config_file = config_file

@@ -38,7 +38,7 @@ import single_obj_type_fetcher_thread_no_info_crawling as sotft
 
 def main():
     threads = {} 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
@@ -54,7 +54,7 @@ def main():
     # Info url
     datastore_info_url = "http://127.0.0.1:5000/info/"
 
-    # Aggregate ID to look up in aggregator db
+    # Aggregate ID to look up in collector db
     aggregate_id = "gpo-ig"
 
     # Set time of last update to 5 minutes in the past
@@ -64,7 +64,7 @@ def main():
     run_indefinitely = False
     stop_cnt = 2
 
-    # Object type to look up in aggregator db
+    # Object type to look up in collector db
     obj_type = "node"
     thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
     event_types = node_event_types

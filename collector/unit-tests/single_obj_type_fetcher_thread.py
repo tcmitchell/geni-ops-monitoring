@@ -44,7 +44,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         # The local datastore this thread queries
         self.aggregate_id = aggregate_id
 
-        # Interval between aggregator queries in seconds
+        # Interval between collector queries in seconds
         self.sleep_period_sec = sleep_period_sec
 
         # Internal counter of the number of queries
@@ -78,7 +78,7 @@ class SingleObjectTypeFetcherThread(threading.Thread):
         print "Exiting " + self.name
 
 
-    # Retrieves these from the aggregator database
+    # Retrieves these from the collector database
     def refresh_info_for_type(self, obj_type):
 
         obj_ids = []

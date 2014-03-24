@@ -37,7 +37,7 @@ import single_obj_type_fetcher_thread as sotft
 def main(): 
 
     threads = {} 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../../config"
 
     # Event types to query, TODO, less hard coding of this is needed
@@ -63,11 +63,11 @@ def main():
 
     for agg_id in datastores_dict:
 
-        # Aggregate ID to look up in aggregator db
+        # Aggregate ID to look up in collector db
         aggregate_id = agg_id
         datastore_info_url = datastores_dict[agg_id]
 
-        # Object type to look up in aggregator db
+        # Object type to look up in collector db
         obj_type = "node"
         thread_name = aggregate_id + ":" + obj_type + ":" + "all_events"
         event_types = node_event_types

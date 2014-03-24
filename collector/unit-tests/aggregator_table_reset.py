@@ -31,7 +31,7 @@ import table_manager
 
 def main():
 
-    db_type = "aggregator"
+    db_type = "collector"
     config_path = "../../config/"
     tbl_mgr = table_manager.TableManager(db_type, config_path)
 
