@@ -345,6 +345,7 @@ def main(argv):
     db_type = "collector"
     config_path = "../config/"
     data_schema = json.load(open("../config/data_schema"))
+    event_types = json.load(open("../config/event_types"))
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
 
@@ -353,6 +354,11 @@ def main(argv):
 
     # Event types to query, TODO, less hard coding of this is needed
     node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
+    
+    print node_event_types
+    print event_types["node"]
+    node_event_types = event_types["node"]
+
     interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
 
     if object_type_param == 'n':
