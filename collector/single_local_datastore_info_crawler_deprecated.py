@@ -184,11 +184,11 @@ class SingleLocalDatastoreInfoCrawler:
     def get_node_attributes(self, res_dict, schema):
         node_info_list = []
         for key in schema: 
-
+            # ugly parsing of properties dictionary and schema
             if key[0].startswith("properties$"): 
-                key_property = "ops_monitoring:" + key[0].split('$')[1]
-                if key_property in res_dict:
-                    node_info_list.append(res_dict[key_property])
+                if "ops_monitoring" in res_dict["properties"]:
+                    if key[0].split('$')[1] in res_dict["properties"]["ops_monitoring"]:
+                        node_info_list.append(res_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
             else:
                 node_info_list.append(res_dict[key[0]])
 
@@ -230,11 +230,12 @@ class SingleLocalDatastoreInfoCrawler:
         # get each attribute out of response into list
         interface_info_list = []
         for key in schema: 
-
+            # ugly parsing of properties dictionary and schema
             if key[0].startswith("properties$"): 
-                key_property = "ops_monitoring:" + key[0].split('$')[1]
-                if key_property in interface_dict:
-                    interface_info_list.append(interface_dict[key_property])
+                if "ops_monitoring" in interface_dict["properties"]:
+                    if key[0].split('$')[1] in interface_dict["properties"]["ops_monitoring"]:
+                        interface_info_list.append(interface_dict["properties"]["ops_monitoring"][key[0].split('$')[1]])
+                        
             elif key[0] == "address_type":
                 interface_info_list.append(interface_dict["address"]["type"])
             elif key[0] == "address_address":

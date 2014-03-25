@@ -323,6 +323,9 @@ def check_data_query_keys(q_dict):
 def get_interface_info_dict(schema, info_row):
 
     json_dict = {}
+    json_dict["properties"] = {}
+    json_dict["properties"]["ops_monitoring"] = {}
+
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0] == "address_address":
@@ -330,8 +333,8 @@ def get_interface_info_dict(schema, info_row):
         elif schema[col_i][0] == "address_type":
             addr_type = info_row[col_i]
         elif schema[col_i][0].startswith("properties$"):
-            # parse off properties$
-            json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
+            # parse off properties$ and place into properties dict
+            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split("$")[1]] = info_row[col_i]
         else:
             json_dict[schema[col_i][0]] = info_row[col_i]
             
@@ -382,12 +385,14 @@ def get_user_info_dict(schema, info_row):
 def get_node_info_dict(schema, info_row, port_refs):
 
     json_dict = {}
+    json_dict["properties"] = {}
+    json_dict["properties"]["ops_monitoring"] = {}
 
     # Not all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if schema[col_i][0].startswith("properties$"):
-            # parse off properties$ 
-            json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
+            # parse off properties$ and place into properties dict
+            json_dict["properties"]["ops_monitoring"][schema[col_i][0].split("$")[1]] = info_row[col_i]
         else:
             json_dict[schema[col_i][0]] = info_row[col_i]        
 
