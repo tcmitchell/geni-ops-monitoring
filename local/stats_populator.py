@@ -103,7 +103,7 @@ class StatsPopulator(threading.Thread):
     def get_data(self, event_type):
     
         if event_type == "mem_used_kb":
-            return psutil.virtual_memory().used
+            return psutil.virtual_memory().used/1000
         elif event_type == "swap_free":
             return (100.0 - psutil.swap_memory().percent)
         elif event_type == "cpu_util":
