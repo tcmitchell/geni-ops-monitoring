@@ -97,6 +97,7 @@ def main(argv):
     node_event_str_arr.append("cpu_util")
     node_event_str_arr.append("disk_part_max_used")
     node_event_str_arr.append("swap_free")
+    node_event_str_arr.append("is_available")
 
     interface_event_str_arr = []
     interface_event_str_arr.append("rx_bps")

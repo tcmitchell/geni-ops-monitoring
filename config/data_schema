@@ -20,6 +20,13 @@
 	       ["units","percent"]
               ]
 ,
+"ops_is_available":  [
+	       ["id", "varchar"],
+               ["ts", "int8"],
+	       ["v","int2"],
+	       ["units","boolean"]
+              ]
+,
 "ops_disk_part_max_used": [
 	       ["id", "varchar"],
                ["ts", "int8"],

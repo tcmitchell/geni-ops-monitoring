@@ -206,6 +206,8 @@ class StatsPopulator(threading.Thread):
             self.ts_last_tx_dps = curr_ts
             self.pkts_last_tx_dps = curr_val
             return max(0, tx_dps) # TODO handle rollover
+        elif event_type == "is_available":
+            return 1
         else: # TODO add more
             return None
 

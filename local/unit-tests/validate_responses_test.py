@@ -23,6 +23,7 @@
 
 import json
 import os
+import time
 import urllib2
 from pprint import pprint as pprint
 
@@ -147,9 +148,9 @@ for key in urls:
 
 
 
-node_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":3},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}'
+node_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used","ops_monitoring:is_available"],"ts":{"gte":3,"lt":' + str(int(time.time() * 1000000)) + '},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}'
 
-interface_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps","ops_monitoring:rx_pps","ops_monitoring:tx_pps","ops_monitoring:rx_dps","ops_monitoring:tx_dps","ops_monitoring:rx_eps","ops_monitoring:tx_eps"],"ts":{"gte":3},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth0"]}}}'
+interface_data_url = base_url + 'data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps","ops_monitoring:rx_pps","ops_monitoring:tx_pps","ops_monitoring:rx_dps","ops_monitoring:tx_dps","ops_monitoring:rx_eps","ops_monitoring:tx_eps"],"ts":{"gte":3,"lt":' + str(int(time.time() * 1000000)) + '},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth0"]}}}'
 
 resp = json.load(urllib2.urlopen(node_data_url))
 print "node_data response is valid?", validate_list_of_responses(json_schema["data"], resp)
