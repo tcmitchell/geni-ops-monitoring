@@ -21,7 +21,7 @@
   "data": {
     "info/aggregate/gpo-ig": [
       [ {
-          "eventType": [ "ops_monitoring:mem_used", "ops_monitoring:cpu_util"],
+          "eventType": [ "ops_monitoring:mem_used_kb", "ops_monitoring:cpu_util"],
           "ts": { "lastmins": "1000000" },
           "obj": { "type": "node", "id": ["instageni.gpolab.bbn.com_node_pc1"]}
         },
