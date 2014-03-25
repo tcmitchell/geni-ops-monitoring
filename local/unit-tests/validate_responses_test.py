@@ -30,9 +30,6 @@ from pprint import pprint as pprint
 # TODO if response has an extra key, exception is thrown and currently
 # not handled, ok
 
-def properties_dict(props_schema, props_dict):
-
-    return True
 
 
 def has_keys_values(schema, a_dict):
