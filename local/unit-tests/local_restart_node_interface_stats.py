@@ -78,6 +78,8 @@ def main(argv):
 
     info_schema = json.load(open(config_path + "info_schema"))
     data_schema = json.load(open(config_path + "data_schema"))
+    event_types = json.load(open(config_path + "event_types"))
+    
     table_str_arr = info_schema.keys() + data_schema.keys()
 
     tbl_mgr.drop_tables(table_str_arr)
@@ -92,22 +94,9 @@ def main(argv):
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
     # data population
-    node_event_str_arr = []
-    node_event_str_arr.append("mem_used_kb")
-    node_event_str_arr.append("cpu_util")
-    node_event_str_arr.append("disk_part_max_used")
-    node_event_str_arr.append("swap_free")
-    node_event_str_arr.append("is_available")
-
-    interface_event_str_arr = []
-    interface_event_str_arr.append("rx_bps")
-    interface_event_str_arr.append("tx_bps")
-    interface_event_str_arr.append("rx_pps")
-    interface_event_str_arr.append("tx_pps")
-    interface_event_str_arr.append("rx_eps")
-    interface_event_str_arr.append("tx_eps")
-    interface_event_str_arr.append("rx_dps")
-    interface_event_str_arr.append("tx_dps")
+    # list comprehension (4:) removes ops_ before event types
+    node_event_str_arr = [ev[4:] for ev in event_types["node"]]
+    interface_event_str_arr = [ev[4:] for ev in event_types["interface"]]
 
     print node_event_str_arr + interface_event_str_arr
     
