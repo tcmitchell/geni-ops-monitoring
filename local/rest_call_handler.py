@@ -61,10 +61,12 @@ def handle_ts_data_query(tm, filters):
                 resp_i = {}
                         
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
+                obj_schema = get_object_schema(tm, obj_type, obj_id)
+            
                 if (ts_arr != None):
                     resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
                     resp_i["id"] = event_type + ":" + obj_id
-                    resp_i["subject"] = obj_id
+                    resp_i["subject"] = {"href":obj_schema}
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
                     resp_i["units"] = schema_dict["units"]["ops_"+event_type]
@@ -758,6 +760,37 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
         
     except Exception, e:
         print "query failed: select ts,v from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
+        print e
+        tm.con.commit()
+
+    cur.close()
+    tm.db_lock.release()
+
+    return res
+
+
+def get_object_schema(tm, obj_type, obj_id):
+     
+    tm.db_lock.acquire()
+    cur = tm.con.cursor()
+    res = None
+    try:
+    
+        # assumes an id for obj_id in table event_type with ops_ prepended
+        if tm.database_program == "postgres":
+            cur.execute("select \"$schema\" from ops_" + obj_type + " where id = '" + obj_id + "'")
+        elif tm.database_program == "mysql":
+            cur.execute("select $schema from ops_" + obj_type + " where id = '" + obj_id + "'")
+
+        q_res = cur.fetchall()
+        tm.con.commit()
+
+        if len(q_res) > 0:
+            res = q_res[0][0]
+            print res[0][0]
+        
+    except Exception, e:
+        print "query failed: select $schema from ops_" + obj_type + " where id = '" + obj_id + "'"
         print e
         tm.con.commit()
 
