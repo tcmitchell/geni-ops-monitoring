@@ -8,11 +8,7 @@
     "type": "ipv4",
     "address": "192.1.242.140"
   },
-  "properties": {
-    "ops_monitoring": {
-      "role": "control",
-      "max_bps": 10000000,
-      "max_pps": 1000000
-    }
-  }
+  "ops_monitoring:role": "control",
+  "ops_monitoring:max_bps": 10000000,
+  "ops_monitoring:max_pps": 1000000
 }

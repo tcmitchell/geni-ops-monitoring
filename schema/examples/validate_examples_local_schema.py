@@ -21,8 +21,12 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+# This file is the same as validate_examples.py except that it tries to
+# load the schema files local for testing prior to publishing them 
+#
+#
 # Invoke this as:
-#   python validate_examples.py [/path/to/validictory]
+#   python validate_examples_local_schema.py [/path/to/validictory]
 
 # If you provide a path to validictory, it'll assume that it's not
 # installed in your normal python path, and include the path you provide
@@ -31,6 +35,7 @@ import os
 import subprocess
 import sys
 import traceback
+from pprint import pprint as pprint
 
 if len(sys.argv) > 1:
   sys.path.append(sys.argv[1])
@@ -39,10 +44,15 @@ import json
 import urllib2
 import validictory
 
-
 def parse_schema(schemaurl):
 
-  schema = json.load(urllib2.urlopen(schemaurl))
+  try:
+    # attempts to open .schema file in parent directory
+    local_schema_path = "../" + schemaurl[schemaurl.rfind('/')+1:-1] + ".schema"
+    schema = json.load(open(local_schema_path))
+  except Exception, e:
+    # gets it from the web by the url if not found locally
+    schema = json.load(urllib2.urlopen(schemaurl))
 
   if 'extends' in schema and '$ref' in schema['extends']:
     parent_schema = json.load(urllib2.urlopen(schema['extends']['$ref']))
@@ -59,19 +69,21 @@ def parse_schema(schemaurl):
       else:
         break; # essentially a do while loop
 
-
   return schema
-
-
-
 
 def validate_file(datafile):
   try:
     data = json.load(open(datafile))
     schema = parse_schema(data['$schema'])
-#    validictory.validate(data, schema, disallow_unknown_properties=True)
+
+    # Manually set to false here
+    # not needed if top level schema sets to false
+    # with current implementation in parse_schema()
+    schema['additionalProperties'] = False 
+
     validictory.validate(data, schema)
     print "JSON file %s is valid" % datafile
+    #sys.exit(0)
     return True
   except Exception, e:
     print "Received exception %s while trying to validate: %s\n  %s" % (

@@ -4,24 +4,25 @@
   "description": "interface with some extensions for GENI monitoring use",
   "name": "port",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/port#"
   },
   "properties": {
-    "subports": {
-      "description": "subinterfaces of this interface",
-      "type": "array",
-      "required": false,
-      "items": {
-        "type": [
-          {
-            "urn": "string",
-            "$ref":
-              "http://www.gpolab.bbn.com/monitoring/schema/20140131/port#"
-          }
-        ]
-      }
+    "ops_monitoring:role": { 
+       "description":"Role of interface (experimental, control)",
+       "type":"string",
+       "required":false
+    },
+    "ops_monitoring:max_bps": {
+       "description":"Maximum bps on interface",
+       "type":"number",
+       "required":false
+    },
+    "ops_monitoring:max_pps": {
+       "description":"Maximum bps on interface",
+       "type":"number",
+       "required":false    
     }
   }
 }
