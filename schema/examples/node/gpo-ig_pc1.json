@@ -4,11 +4,7 @@
   "ts": 1391192705275101,
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
-  "properties": {
-    "ops_monitoring": {
-      "mem_total_kb": 50331648
-    }
-  },
+  "ops_monitoring:mem_total_kb": 50331648,
   "ports": [
     { 
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0",
