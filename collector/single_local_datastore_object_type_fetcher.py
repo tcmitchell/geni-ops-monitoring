@@ -351,15 +351,9 @@ def main(argv):
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(data_schema.keys())
-
-    # Event types to query, TODO, less hard coding of this is needed
-    node_event_types = ["ops_cpu_util","ops_mem_used_kb","ops_swap_free","ops_disk_part_max_used"]
     
-    print node_event_types
-    print event_types["node"]
     node_event_types = event_types["node"]
-
-    interface_event_types = ["ops_rx_bps","ops_tx_bps","ops_rx_pps","ops_tx_pps","ops_rx_dps","ops_tx_dps","ops_rx_eps","ops_tx_eps"]
+    interface_event_types = event_types["interface"]
 
     if object_type_param == 'n':
         event_types = node_event_types
@@ -374,7 +368,7 @@ def main(argv):
     fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, debug)
 
     fetcher.fetch()
-
+    fetcher.tbl_mgr.close_con()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
