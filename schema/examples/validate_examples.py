@@ -63,8 +63,6 @@ def parse_schema(schemaurl):
   return schema
 
 
-
-
 def validate_file(datafile):
   try:
     data = json.load(open(datafile))

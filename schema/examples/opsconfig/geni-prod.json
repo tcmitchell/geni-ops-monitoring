@@ -15,5 +15,90 @@
       "urn": "urn:publicid:IDN+ch.geni.net+authority+ch",
       "href": "https://datastore.ch.geni.net/authorities/ch.geni.net"
     }
-  ]
+  ],
+  "events": 
+    {
+      "node": [
+          {    "name": "cpu_util",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "float4",
+	       "units": "percent"
+          },
+          {    "name": "mem_used_kb",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "int8",
+	       "units": "kilobytes"
+          },  	
+	  {    "name": "swap_free",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "float4",
+	       "units": "percent"
+          },
+	  {    "name": "is_available",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "int2",
+	       "units": "boolean"
+          },
+	  {    "name": "disk_part_max_used",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "float4",
+	       "units":"percent"
+          }
+       ],
+       "interface": [
+          {    "name": "rx_bps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"bps"
+          },
+	  {    "name": "tx_bps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"bps"
+          },
+	  {    "name":"rx_pps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_pps",  
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"rx_eps",  
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_eps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_dps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"rx_dps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          }
+       ]
+    }
 }

@@ -37,6 +37,27 @@
           }
         ]
       }
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "node": {
+	  "description": "node events",
+	  "type": "array",
+	  "required": true,
+	  "items": {
+	    "type": [
+	      {
+	        "name": "string",
+	        "id": "string",
+	        "ts": "string",
+	        "v" : "string",
+	        "units": "string"
+	      }
+	    ]
+	  }
+	}
+      }
     }
   }
 }
