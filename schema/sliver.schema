@@ -19,7 +19,7 @@
       "type": [
         {
           "urn": "string",
-          "$ref": "http://json-schema.org/draft-03/links#"
+          "$ref": "http://www.gpolab.bbn.com/monitoring/schema/20140131/link#"
         }
       ],
       "required": true
