@@ -397,10 +397,10 @@ def main():
    
     db_name = "local"
     config_path = "../config"
-
-    tbl_mgr = table_manager.TableManager(db_name, config_path)
-
-    data_schema = json.load(open("../config/data_schema"))
+    config_store_url = "/schema/examples/opsconfig/geni-prod.json"
+    debug = False
+    tbl_mgr = table_manager.TableManager(db_name, config_path, config_store_url, debug)
+    
     info_schema = json.load(open("../config/info_schema"))
    
 

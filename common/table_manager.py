@@ -29,7 +29,7 @@ from pprint import pprint as pprint
 
 class TableManager:
 
-    def __init__(self, db_type, config_path, debug=False):
+    def __init__(self, db_type, config_path, config_store_url, debug=False):
 
         # load a 2-function package for reading database config
         sys.path.append(config_path)
@@ -60,13 +60,32 @@ class TableManager:
         self.db_lock = threading.Lock()
 
         self.info_schema = json.load(open(config_path + "/info_schema"))
-        self.data_schema = json.load(open(config_path + "/data_schema"))
+        self.data_schema = self.load_data_schema(config_store_url)
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
+
         if self.debug:
             print "Schema loaded with keys:" 
             print self.schema_dict.keys() 
             print ""
 
+    # process the data schema from the 
+    def load_data_schema(self,config_store_url):
+
+        # hard code until we get the schema online
+        opsconfig_file = config_store_url
+        opsconfig = json.load(open(opsconfig_file))
+        
+        data_schema = {}
+
+        # node event types
+        for ev_i in opsconfig["events"]["node"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+
+        # interface event types
+        for ev_i in opsconfig["events"]["interface"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+        
+        return data_schema
 
     def init_psql_conn(self, db_type, config_path):
 
@@ -440,48 +459,8 @@ def test_mysql(con):
 
 
 def main():
-
-    config_path = "../config/"
-
-    print "Running table_manager manually"
-    local_or_col = raw_input("Do you want to connect to the local database or collector database (Enter L or C)? ")
-
-    if local_or_col == 'l' or local_or_col == 'L':
-        db_type = "local"
-    elif local_or_col == 'c' or local_or_col == 'C':
-        db_type = "collector"
-    else:
-        print local_or_col + " is not a valid response.  Enter L or C"
-        sys.exit(1)
-
-    tm = TableManager(db_type, config_path)
-
-    # get all tables all event types (data_schema) and info types
-    # (info_schema) for local datastore database or collector
-    # database to have a table for all event types
-
-    if (len(sys.argv) > 1):
-        table_str_arr = arg_parser(sys.argv,info_schema.keys() + data_schema.keys())
-    else:
-        print "\nNo tables passed as arguments, selecting all tables."
-        print "Next time, provide at least one argument for which "
-        print "table(s) to be reset"
-        print "Example usage `python table_manager.py mem_used_kb cpu_util"
-        info_schema = json.load(open(config_path + "info_schema"))
-        data_schema = json.load(open(config_path + "data_schema"))
-        table_str_arr = info_schema.keys() + data_schema.keys()
-
-    # db_type used for database name
-    clear_tables = raw_input("\nDo you want to reset the following tables from database " + db_type + ": \n\n" + str(table_str_arr) + " \n\n (Enter y or n)? ")
-    if clear_tables == 'y' or clear_tables == 'Y':
-        tm.drop_tables(table_str_arr)
-        tm.establish_tables(table_str_arr)
-    elif clear_tables == 'n' or clear_tables == 'N':
-        print "Not reseting tables"
-    else:
-        print clear_tables + " is not a valid response.  y or n"
-
-    tm.close_con();
+    print "no unit test"
+  
 
 if __name__ == "__main__":
 

@@ -79,10 +79,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         # ensures tables exist
         self.tbl_mgr.establish_tables(event_types)
-        self.db_event_tables = event_types
+        self.db_event_tables = ["ops_" + ev_str for ev_str in event_types]
 
-        # removes "ops_" (first 4 chars) from each string
-        self.event_types = ["ops_monitoring:" + ev_str[4:] for ev_str in event_types]
+        self.event_types = ["ops_monitoring:" + ev_str for ev_str in event_types]
 
         # Set parameter to avoid query for all history since epoch = 0
         self.time_of_last_update = self.get_latest_ts()
@@ -335,6 +334,28 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     else:
         tbl_mgr.insert_stmt(table_str, vals_str)
 
+
+def load_opsconfig(config_store_url):
+        # hard code until we get the schema online
+        opsconfig_file = config_store_url
+        opsconfig = json.load(open(opsconfig_file))
+        
+        data_schema = {}
+        event_types = {}
+        event_types["node"] = []
+        event_types["interface"] = []
+
+        # node event types
+        for ev_i in opsconfig["events"]["node"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["node"].append(ev_i["name"])
+
+        # interface event types
+        for ev_i in opsconfig["events"]["interface"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["interface"].append(ev_i["name"])
+
+        return data_schema, event_types
       
 def main(argv): 
 
@@ -344,10 +365,11 @@ def main(argv):
 
     db_type = "collector"
     config_path = "../config/"
-    data_schema = json.load(open("../config/data_schema"))
-    event_types = json.load(open("../config/event_types"))
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    config_store_url = "../schema/examples/opsconfig/geni-prod.json"
+    [data_schema, event_types] = load_opsconfig(config_store_url)
+
+    tbl_mgr = table_manager.TableManager(db_type, config_path, config_store_url, debug)
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(data_schema.keys())

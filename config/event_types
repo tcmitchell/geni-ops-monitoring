@@ -1,5 +1,0 @@
-{
-"node": [ "ops_cpu_util", "ops_mem_used_kb", "ops_swap_free", "ops_is_available", "ops_disk_part_max_used" ],
-"interface": [ "ops_rx_bps", "ops_tx_bps", "ops_rx_pps", "ops_tx_pps", "ops_rx_eps", "ops_tx_eps", "ops_tx_dps", "ops_rx_dps"],
-"link": [ "ops_rx_bps", "ops_tx_bps", "ops_rx_pps", "ops_tx_pps", "ops_rx_eps", "ops_tx_eps", "ops_tx_dps", "ops_rx_dps"]
-}

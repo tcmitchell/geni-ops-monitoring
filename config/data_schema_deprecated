@@ -10,7 +10,7 @@
 	       ["id", "varchar"],
                ["ts", "int8"],
 	       ["v","int8"],
-	       ["units","bytes"]
+	       ["units","kilobytes"]
              ]
 ,
 "ops_swap_free":  [

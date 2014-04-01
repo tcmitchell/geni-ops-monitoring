@@ -67,18 +67,42 @@ def parse_args(argv):
 
     return [base_url, node_id, interface_id, num_ins, per_sec]
 
+def load_opsconfig(config_store_url):
+        # hard code until we get the schema online
+        opsconfig_file = config_store_url
+        opsconfig = json.load(open(opsconfig_file))
+        
+        data_schema = {}
+        event_types = {}
+        event_types["node"] = []
+        event_types["interface"] = []
+
+        # node event types
+        for ev_i in opsconfig["events"]["node"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["node"].append(ev_i["name"])
+
+        # interface event types
+        for ev_i in opsconfig["events"]["interface"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["interface"].append(ev_i["name"])
+
+        return data_schema, event_types
+
 
 def main(argv):
 
     [base_url, node_id, interface_id, num_ins, per_sec] = parse_args(argv)
 
-    db_name = "local"
-    # database type is set by the config
-    tbl_mgr = table_manager.TableManager(db_name, config_path)
+    db_type = "local"
+    config_path = "../../config"
+    config_store_url = "../../schema/examples/opsconfig/geni-prod.json"
+    debug = False
+
+    tbl_mgr = table_manager.TableManager(db_type, config_path, config_store_url, debug)
 
     info_schema = json.load(open(config_path + "info_schema"))
-    data_schema = json.load(open(config_path + "data_schema"))
-    event_types = json.load(open(config_path + "event_types"))
+    data_schema, event_types = load_opsconfig(config_store_url)
 
     table_str_arr = info_schema.keys() + data_schema.keys()
 
@@ -94,9 +118,8 @@ def main(argv):
     print "Aggregate has entries", cur.fetchone()[0], "entries"
     
     # data population 
-    # list comprehension (4:) removes ops_ before event types
-    node_event_str_arr = [ev[4:] for ev in event_types["node"]]
-    interface_event_str_arr = [ev[4:] for ev in event_types["interface"]]
+    node_event_str_arr = event_types["node"]
+    interface_event_str_arr = event_types["interface"]
 
     print node_event_str_arr + interface_event_str_arr
     tsdata_lifespan_sec = 60 

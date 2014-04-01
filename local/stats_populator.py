@@ -239,7 +239,28 @@ def arg_parser(argv):
 
     return num_ins, per_sec
 
+def load_opsconfig(config_store_url):
+        # hard code until we get the schema online
+        opsconfig_file = config_store_url
+        opsconfig = json.load(open(opsconfig_file))
+        
+        data_schema = {}
+        event_types = {}
+        event_types["node"] = []
+        event_types["interface"] = []
 
+        # node event types
+        for ev_i in opsconfig["events"]["node"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["node"].append(ev_i["name"])
+
+        # interface event types
+        for ev_i in opsconfig["events"]["interface"]:
+            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            event_types["interface"].append(ev_i["name"])
+
+        return data_schema, event_types
+      
 
 def main():
 
@@ -248,8 +269,11 @@ def main():
 
     db_name = "local"
     config_path = "../config/"
-    tbl_mgr = table_manager.TableManager(db_name, config_path)
-    data_schema = json.load(open(config_path + "data_schema"))
+    config_store_url = "../../schema/examples/opsconfig/geni-prod.json"
+    debug = False
+    tbl_mgr = table_manager.TableManager(db_name, config_path, config_store_url, debug)
+    data_schema, event_types = load_opsconfig(config_store_url)
+
     table_str_arr = data_schema.keys()
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
@@ -257,11 +281,11 @@ def main():
 
 
     node_id="instageni.gpolab.bbn.com_node_pc1"
-    event_types_arr = ["mem_used_kb","cpu_util","disk_part_max_used"]
+    event_types_arr = event_types["node"]
     nsp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
  
     iface_id="instageni.gpolab.bbn.com_interface_pc1:eth0"
-    event_types_arr = ["rx_bps","tx_bps","rx_pps","tx_pps","rx_eps","tx_eps","rx_dps","tx_dps"]
+    event_types_arr = event_types["interface"]
     isp = StatsPopulator(tbl_mgr, iface_id, num_ins, per_sec, event_types_arr)
 
     nsp.start()

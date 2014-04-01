@@ -29,6 +29,8 @@ class LocalDatastoreServer:
         self.local_path = parent_path + "/local/"
         self.common_path = parent_path + "/common/"
         self.config_path = parent_path + "/config/"
+        self.config_store_path = parent_path + "/schema/examples/opsconfig/geni-prod.json"
+        self.debug = False
         sys.path.append(self.local_path)
         sys.path.append(self.common_path)
         sys.path.append(self.config_path)
@@ -39,7 +41,7 @@ class LocalDatastoreServer:
         self.db_name = "local"
 
         # uses postgres by default
-        self.tm = table_manager.TableManager(self.db_name, self.config_path)
+        self.tm = table_manager.TableManager(self.db_name, self.config_path, self.config_store_path, self.debug)
         
         self.app = Flask(__name__)
        

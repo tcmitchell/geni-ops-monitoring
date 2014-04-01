@@ -399,8 +399,9 @@ def main(argv):
     db_type = "collector"
     config_path = "../config/"
     info_schema = json.load(open("../config/info_schema"))
+    config_store_url = "../schema/examples/opsconfig/geni-prod.json"
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
+    tbl_mgr = table_manager.TableManager(db_type, config_path, config_store_url)
     crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, debug)
 
     # ensures tables exist in database

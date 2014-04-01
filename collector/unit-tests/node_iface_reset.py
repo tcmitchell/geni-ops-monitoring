@@ -27,6 +27,9 @@ import os
 
 def main():
 
+    # assumes web_server.py (flask) is running, and the local
+    # datastore unit test has consistent data
+
     # Info url
     datastore_info_url = "http://127.0.0.1:5000/info/"
     #datastore_info_url = "http://starkville.bbn.com/info/"
