@@ -165,6 +165,14 @@
 		 ["selfRef","varchar"]
 	 ]
     },
+    {   "name":"node_interface",
+        "db_schema": [
+	         ["id","varchar"],
+		 ["node_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
+    },
     {   "name":"slice_user",
     	"db_schema": [
 	         ["id","varchar"],

@@ -31,6 +31,7 @@ common_path = "../../common/"
 sys.path.append(local_path)
 sys.path.append(common_path)
 import table_manager
+import opsconfig_loader
 import info_populator
 import stats_populator
 
@@ -66,46 +67,23 @@ def parse_args(argv):
 
     return [base_url, node_id, interface_id, num_ins, per_sec]
 
-def load_opsconfig(config_store_url):
-        # hard code until we get the schema online
-        opsconfig_file = config_store_url
-        opsconfig = json.load(open(opsconfig_file))
-        
-        data_schema = {}
-        event_types = {}
-        event_types["node"] = []
-        event_types["interface"] = []
-
-        # node event types
-        for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-            event_types["node"].append(ev_i["name"])
-
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-            event_types["interface"].append(ev_i["name"])
-
-        return data_schema, event_types
             
 def main(argv):
 
     [base_url, node_id, interface_id, num_ins, per_sec] = parse_args(argv)
 
-    db_name = "local"
+    db_type = "local"
     config_path = "../../config/"
-    config_store_url = "../../schema/examples/opsconfig/geni-prod.json"
+    debug = False
+    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
 
-    tbl_mgr = table_manager.TableManager(db_name, config_path, config_store_url, False)
+    ocl = opsconfig_loader.OpsconfigLoader()
+    info_schema = ocl.get_info_schema()
+    data_schema = ocl.get_data_schema()
+    event_types = ocl.get_event_types()
 
-    # Get info_schema from file locally
-    info_schema = json.load(open(config_path + "info_schema"))
-   
-    # Get data schema and event types from config data
-    [data_schema, event_types] = load_opsconfig(config_store_url)
-   
+    # perhaps table manager should do this wihtout passing keys
     table_str_arr = info_schema.keys() + data_schema.keys()
-
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
 

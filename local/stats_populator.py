@@ -34,7 +34,7 @@ common_path = "../common/"
 
 sys.path.append(common_path)
 import table_manager
-
+import opsconfig_loader
 
 
 class StatsPopulator(threading.Thread):
@@ -239,28 +239,6 @@ def arg_parser(argv):
 
     return num_ins, per_sec
 
-def load_opsconfig(config_store_url):
-        # hard code until we get the schema online
-        opsconfig_file = config_store_url
-        opsconfig = json.load(open(opsconfig_file))
-        
-        data_schema = {}
-        event_types = {}
-        event_types["node"] = []
-        event_types["interface"] = []
-
-        # node event types
-        for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-            event_types["node"].append(ev_i["name"])
-
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-            event_types["interface"].append(ev_i["name"])
-
-        return data_schema, event_types
-      
 
 def main():
 
@@ -269,16 +247,15 @@ def main():
 
     db_name = "local"
     config_path = "../config/"
-    config_store_url = "../../schema/examples/opsconfig/geni-prod.json"
     debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, config_store_url, debug)
-    data_schema, event_types = load_opsconfig(config_store_url)
+    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
+    ocl = opsconfig_loader.OpsconfigLoader()
+    data_schema = ocl.get_info_schema()
+    event_types = ocl.get_event_types()
 
     table_str_arr = data_schema.keys()
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
-
-
 
     node_id="instageni.gpolab.bbn.com_node_pc1"
     event_types_arr = event_types["node"]

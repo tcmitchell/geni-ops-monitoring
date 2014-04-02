@@ -30,7 +30,7 @@ from pprint import pprint
 common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
-
+import opsconfig_loader
 
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
 # the am urn
@@ -398,11 +398,13 @@ def main(argv):
 
     db_type = "collector"
     config_path = "../config/"
-    info_schema = json.load(open("../config/info_schema"))
-    config_store_url = "../schema/examples/opsconfig/geni-prod.json"
+    debug = False
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path, config_store_url)
+    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
     crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, debug)
+
+    ocl = opsconfig_loader.OpsconfigLoader()
+    info_schema = ocl.get_info_schema()
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(info_schema.keys())

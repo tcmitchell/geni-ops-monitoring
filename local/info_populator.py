@@ -29,11 +29,11 @@ import json
 import threading
 from pprint import pprint as pprint
 
-
 common_path = "../common/"
 
 sys.path.append(common_path)
 import table_manager
+import opsconfig_loader
 
 class InfoPopulator(threading.Thread):
     def __init__(self, tbl_mgr, url_base):
@@ -417,7 +417,76 @@ class InfoPopulator(threading.Thread):
 	 
          opsconfigevent = ["interface","rx_dps","varchar","int8","float8","pps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
-	
+    
+    # This populates the info schema for the config local datastore to
+    # publish.  Since different tables have a different number of
+    # columns, we'll just store the schema as a "document" like a
+    # key,value store or document database would store this.  Postgres
+    # 9.3 has json format to store objects like this, but for now
+    # we'll just store json text in a varchar.
+    def insert_opsconfig_info_schema(self):
+        opsconfiginfoschema = []
+        opsconfiginfoschema.append("aggregate")  # table name
+        opsconfiginfoschema.append('[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"], ["ts","int8"], ["measRef","varchar"]]') # array of schema
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["node", '[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"], ["ts","int8"], ["properties$mem_total_kb","int8"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["link", '[["$schema", "varchar"],["id", "varchar"],["selfRef","varchar"], ["urn","varchar"], ["ts","int8"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["sliver", '[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"],	 ["uuid","varchar"], ["ts","int8"], ["aggregate_urn","varchar"], ["aggregate_href","varchar"], ["slice_urn","varchar"], ["slice_uuid","varchar"], ["creator","varchar"], ["created","int8"], ["expires","int8"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["interface", '[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"], ["ts","int8"], ["address_type","varchar"], ["address_address","varchar"], ["properties$role","varchar"], ["properties$max_bps","int8"], ["properties$max_pps","int8"] ]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["interfacevlan", '[["$schema", "varchar"],["id", "varchar"],["selfRef","varchar"], ["urn","varchar"], ["ts","int8"], ["tag","int8"], ["interface_urn","varchar"], ["interface_href","varchar"]]' ]
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["slice", '[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"], ["uuid","varchar"], ["ts","int8"], ["authority_urn","varchar"], ["authority_href","varchar"], ["created","int8"], ["expires","int8"]]' ]
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["user", '[["$schema", "varchar"],["id", "varchar"],["selfRef","varchar"],["urn","varchar"],["ts","int8"],["authority_urn","varchar"], ["authority_href","varchar"], ["fullname","varchar"], ["email","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["authority", '[["$schema", "varchar"], ["id", "varchar"], ["selfRef","varchar"], ["urn","varchar"], ["ts","int8"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        # Is this table still necessary?
+        opsconfiginfoschema = ["opsconfig", '[["$schema", "varchar"], ["id","varchar"], ["selfRef","varchar"], ["ts","int8"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["aggregate_resource", '[["id","varchar"], ["aggregate_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["link_interfacevlan", '[["id","varchar"],["link_id","varchar"],["urn","varchar"],["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["aggregate_sliver", '[["id","varchar"], ["aggregate_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["sliver_resource", '[["id","varchar"], ["sliver_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["slice_user", '[["id","varchar"], ["slice_id","varchar"], ["urn","varchar"], ["role","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["authority_user", '[["id","varchar"], ["authority_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["opsconfig_aggregate", '[["id","varchar"], ["opsconfig_id","varchar"], ["amtype","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["opsconfig_authority", '[["id","varchar"], ["opsconfig_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+        opsconfiginfoschema = ["opsconfig_event", '[["object_type","varchar"], ["name","varchar"], ["id","varchar"], ["ts","varchar"], ["v","varchar"], ["units","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
+
+
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "('"
 
@@ -434,13 +503,12 @@ def main():
    
     db_name = "local"
     config_path = "../config"
-    config_store_url = "/schema/examples/opsconfig/geni-prod.json"
     debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, config_store_url, debug)
-    
-    info_schema = json.load(open("../config/info_schema"))
+    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
    
-
+    ocl = opsconfig_loader.OpsconfigLoader()
+    info_schema = ocl.get_info_schema()
+   
     tbl_mgr.drop_tables(info_schema.keys())
     tbl_mgr.establish_tables(info_schema.keys())
     ip = InfoPopulator(tbl_mgr)

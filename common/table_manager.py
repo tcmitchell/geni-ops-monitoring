@@ -26,17 +26,18 @@ import json
 import sys
 import threading
 from pprint import pprint as pprint
+import opsconfig_loader
 
 class TableManager:
 
-    def __init__(self, db_type, config_path, config_store_url, debug=False):
+    def __init__(self, db_type, config_path, debug=False):
 
         # load a 2-function package for reading database config
         sys.path.append(config_path)
         import database_conf_loader
 
-        self.conf_loader = database_conf_loader
-
+        self.conf_loader = database_conf_loader # fix naming conventions
+        self.ocl = opsconfig_loader.OpsconfigLoader()
         self.debug = debug
 
         if db_type == "local":
@@ -59,8 +60,8 @@ class TableManager:
         self.database_program = db_prog # postgres or mysql
         self.db_lock = threading.Lock()
 
-        self.info_schema = json.load(open(config_path + "/info_schema"))
-        self.data_schema = self.load_data_schema(config_store_url)
+        self.info_schema = self.ocl.get_info_schema()
+        self.data_schema = self.ocl.get_data_schema()
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
 
         if self.debug:
@@ -68,24 +69,6 @@ class TableManager:
             print self.schema_dict.keys() 
             print ""
 
-    # process the data schema from the 
-    def load_data_schema(self,config_store_url):
-
-        # hard code until we get the schema online
-        opsconfig_file = config_store_url
-        opsconfig = json.load(open(opsconfig_file))
-        
-        data_schema = {}
-
-        # node event types
-        for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-        
-        return data_schema
 
     def init_psql_conn(self, db_type, config_path):
 
