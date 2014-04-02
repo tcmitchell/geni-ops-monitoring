@@ -27,8 +27,7 @@
 		 ["measRef","varchar"]
           ]
     },
-    {
-        "name":"node",
+    {   "name":"node",
 	"db_schema": [
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
@@ -37,6 +36,186 @@
 		 ["ts","int8"],
 		 ["properties$mem_total_kb","int8"]
           ]
+    },
+    {  "name": "link",
+       "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"]
+          ]
+    },
+    {  "name": "sliver",
+       "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["uuid","varchar"],
+		 ["ts","int8"],
+		 ["aggregate_urn","varchar"],
+		 ["aggregate_href","varchar"],
+		 ["slice_urn","varchar"],
+		 ["slice_uuid","varchar"],
+		 ["creator","varchar"],
+		 ["created","int8"],
+		 ["expires","int8"]
+          ]
+    },
+    {  "name":"interface",
+       "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["address_type","varchar"],
+		 ["address_address","varchar"],
+		 ["properties$role","varchar"],
+		 ["properties$max_bps","int8"],
+		 ["properties$max_pps","int8"]
+          ]
+    },
+    {   "name": "interfacevlan",
+        "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["tag","int8"],
+		 ["interface_urn","varchar"],
+		 ["interface_href","varchar"]
+          ]
+   },
+   {   "name": "slice",
+       "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["uuid","varchar"],
+		 ["ts","int8"],
+		 ["authority_urn","varchar"],
+		 ["authority_href","varchar"],
+		 ["created","int8"],
+		 ["expires","int8"]
+          ]
+    },
+    {   "name":"user",
+    	"db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["authority_urn","varchar"],
+		 ["authority_href","varchar"],
+		 ["fullname","varchar"],
+		 ["email","varchar"]
+          ]
+    },
+    {   "name":"authority",
+    	"db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"]
+          ]
+    },
+    {   "name":"opsconfig",
+    	"db_schema": [
+		 ["$schema", "varchar"],
+	         ["id","varchar"],
+		 ["selfRef","varchar"],
+		 ["ts","int8"]
+	]
+    },
+    {   "name":"aggregate_resource",
+    	"db_schema" : [
+	         ["id","varchar"],
+		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
+    },
+    {   "name":"link_interfacevlan",
+    	"db_schema" : [
+	         ["id","varchar"],
+		 ["link_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
+    },
+    {   "name":"aggregate_sliver",
+    	"db_schema" : [
+	         ["id","varchar"],
+		 ["aggregate_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	 ]
+    },
+    {   "name":"sliver_resource",
+     	"db_schema" : [
+	         ["id","varchar"],
+		 ["sliver_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	 ]
+    },
+    {   "name":"slice_user",
+    	"db_schema": [
+	         ["id","varchar"],
+		 ["slice_id","varchar"],
+		 ["urn","varchar"],
+		 ["role","varchar"],
+		 ["selfRef","varchar"]
+	]
+    },
+    {   "name":"authority_user",
+    	"db_schema": [
+	         ["id","varchar"],
+		 ["authority_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+    },
+    {   "name":"authority_slice",
+    	"db_schema": [
+	         ["id","varchar"],
+		 ["authority_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+    },
+    {   "name":"opsconfig_aggregate",
+    	"db_schema": [
+	         ["id","varchar"],
+		 ["opsconfig_id","varchar"],
+		 ["amtype","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+    },
+    {   "name":"opsconfig_authority",
+    	"db_schema": [
+	         ["id","varchar"],
+		 ["opsconfig_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	]
+    },
+    {	"name":"opsconfig_event",
+    	"db_schema": [
+		 ["object_type","varchar"],
+	         ["name","varchar"],
+	         ["id","varchar"],
+	         ["ts","varchar"],
+	         ["v","varchar"],
+	         ["units","varchar"]
+	]
     }
   ],
   "events": 
