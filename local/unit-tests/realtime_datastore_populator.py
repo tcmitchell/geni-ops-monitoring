@@ -111,7 +111,7 @@ def main(argv):
 
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)
-    ip.ins_fake_info()
+    ip.insert_fake_info()
        
     cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from ops_aggregate");

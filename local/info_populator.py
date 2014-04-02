@@ -41,7 +41,7 @@ class InfoPopulator(threading.Thread):
         self.tbl_mgr = tbl_mgr 
         self.url_base = url_base
 
-    def ins_fake_info(self): 
+    def insert_fake_info(self): 
          info_dict = {}
          url_local_info = self.url_base + "/info/"
          url_local_data = self.url_base + "/data/"
@@ -380,7 +380,44 @@ class InfoPopulator(threading.Thread):
          opsconfigauth1.append(url_opsconfig_local_info + "authority/" + opsconfigauth1[0])
          info_insert(self.tbl_mgr, "ops_opsconfig_authority", opsconfigauth1)
 
+    # This populates the config datastore of events.
+    # The first entry is written in expanded form
+    # below are condensed forms without comments
+    def insert_opsconfig_events(self):
 
+         opsconfigevent = []
+         opsconfigevent.append("node")       # object type
+         opsconfigevent.append("cpu_util")   # name
+         opsconfigevent.append("varchar")    # id schema type
+         opsconfigevent.append("int8")       # ts schema type
+         opsconfigevent.append("float4")     # v schema type
+         opsconfigevent.append("percent")    # units
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+       
+         opsconfigevent = ["node","mem_used_kb","varchar","int8", "int8","kilobytes"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["node","swap_free","varchar","int8","float4","percent"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["node","is_available","varchar","int8","int2","boolean"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interface","rx_bps","varchar","int8","float8","bps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interface","tx_bps","varchar","int8","float8","bps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interface","tx_pps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interface","tx_dps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	 
+         opsconfigevent = ["interface","rx_dps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	
 def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "('"
 
@@ -408,7 +445,7 @@ def main():
     tbl_mgr.establish_tables(info_schema.keys())
     ip = InfoPopulator(tbl_mgr)
 
-    ip.ins_fake_info()
+    ip.insert_fake_info()
    
     
     cur = tbl_mgr.con.cursor();

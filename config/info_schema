@@ -175,5 +175,13 @@
 		 ["opsconfig_id","varchar"],
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
+	],
+"ops_opsconfig_event": [
+		 ["object_type","varchar"],
+	         ["name","varchar"],
+	         ["id","varchar"],
+	         ["ts","varchar"],
+	         ["v","varchar"],
+	         ["units","varchar"]
 	]
 }
