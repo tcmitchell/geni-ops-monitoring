@@ -38,26 +38,53 @@
         ]
       }
     },
+   "info": {
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+	"properties": {
+	   "name": {"type": "string"},
+	   "db_schema":  {"type": "array"}
+	   },
+	   "required": ["name","db_schema"]
+       }
+    },
     "events": {
       "type": "object",
       "properties": {
         "node": {
-	  "description": "node events",
 	  "type": "array",
 	  "required": true,
 	  "items": {
-	    "type": [
-	      {
-	        "name": "string",
-	        "id": "string",
-	        "ts": "string",
-	        "v" : "string",
-	        "units": "string"
-	      }
-	    ]
-	  }
-	}
+	    "type": "object",
+	    "properties": {
+	        "name": {"type": "string"},
+	        "id": {"type":"string"},
+	        "ts": {"type":"string"},
+	        "v" : {"type":"string"},
+	        "units": {"type":"string"}
+	      },
+	      "required": ["name","id","ts","v","units"]
+	    }
+	 },
+        "interface": {
+	  "type": "array",
+	  "required": true,
+	  "items": {
+	    "type": "object",
+	    "properties": {
+	        "name": {"type": "string"},
+	        "id": {"type":"string"},
+	        "ts": {"type":"string"},
+	        "v" : {"type":"string"},
+	        "units": {"type":"string"}
+	      },
+	      "required": ["name","id","ts","v","units"]
+	    }
+        }
       }
     }
   }
 }
+

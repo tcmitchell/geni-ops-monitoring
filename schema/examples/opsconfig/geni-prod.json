@@ -16,6 +16,29 @@
       "href": "https://datastore.ch.geni.net/authorities/ch.geni.net"
     }
   ],
+  "info": [
+    {  "name": "aggregate",
+       "db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["measRef","varchar"]
+          ]
+    },
+    {
+        "name":"node",
+	"db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["properties$mem_total_kb","int8"]
+          ]
+    }
+  ],
   "events": 
     {
       "node": [
