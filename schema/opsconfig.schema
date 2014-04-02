@@ -12,30 +12,28 @@
     "aggregates": {
       "description": "GENI aggregates known to support operational monitoring",
       "type": "array",
-      "required": false,
+      "required": true,
       "items": {
-        "type": [
-          {
-            "urn": "string",
-            "$ref":
-              "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
-            "amtype": "string"
-          }
-        ]
+        "type": "object",
+	"properties": {
+	   "urn": {"type": "string"},
+	   "amtype": {"type": "string"},
+	   "href": {"type": "string"}
+        },
+	"required": ["urn","href"]
       }
     },
     "authorities": {
       "description": "GENI authorities known to support operational monitoring",
       "type": "array",
-      "required": false,
+      "required": true,
       "items": {
-        "type": [
-          {
-            "urn": "string",
-            "$ref":
-              "http://www.gpolab.bbn.com/monitoring/schema/20140131/authority#"
-          }
-        ]
+        "type": "object",
+	"properties": {
+	   "urn": {"type": "string"},
+	   "href": {"type": "string"}
+        },
+	"required": ["urn","href"]
       }
     },
    "info": {
