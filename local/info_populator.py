@@ -493,6 +493,9 @@ class InfoPopulator():
         opsconfiginfoschema = ["sliver_resource", '[["id","varchar"], ["sliver_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
         info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
 
+        opsconfiginfoschema = ["node_interface", '[["id","varchar"], ["node_id","varchar"], ["urn","varchar"], ["selfRef","varchar"]]']
+        info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
+
         opsconfiginfoschema = ["slice_user", '[["id","varchar"], ["slice_id","varchar"], ["urn","varchar"], ["role","varchar"], ["selfRef","varchar"]]']
         info_insert(self.tbl_mgr, "ops_opsconfig_info", opsconfiginfoschema)
 
