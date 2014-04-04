@@ -26,6 +26,7 @@ import time
 import psutil
 import sys
 import json
+import ConfigParser
 
 from pprint import pprint as pprint
 
@@ -40,40 +41,52 @@ class InfoPopulator():
 
         self.tbl_mgr = tbl_mgr 
         self.url_base = url_base
+        # steal config path from table_manager
+        self.config_path = tbl_mgr.config_path
 
     def init_config_datastore_info(self):
+       
+        config = ConfigParser.ConfigParser()
+        config.read(self.config_path + "/config_datastore_operator.conf")
 
+        self.config_store_url = config.get("main", "configstoreurl")
+
+        self.aggregate_dict = {}
+        #for k in config._sections["datastores"]:
+        #    if k != "__name__": # ignore this key
+        #        self.aggregate_dict[k] = config._sections["datastores"][k]
+
+        for k in config._sections["datastores"]:
+            if k != "__name__": # ignore this key
+                self.aggregate_dict[k] = eval(config._sections["datastores"][k])
+                
         self.tbl_mgr.reset_opsconfig_tables()
         self.insert_opsconfig_base()
         self.insert_opsconfig_info_schema()
         self.insert_opsconfig_events()
 
     def insert_opsconfig_base(self):
-        url_local_info = self.url_base + "/info/"
-        url_opsconfig_local_info = self.url_base + "/info/"
+
+        # loop through config dictionary of aggregates
+        agg_dict = self.aggregate_dict # short var name
+        for agg in agg_dict: 
+            # aggregate name, status of aggregate, aggregate type, aggregate urn, datastore href 
+            opsconfigagg = [agg, "geni-prod", agg_dict[agg]["amtype"], agg_dict[agg]["urn"], agg_dict[agg]["href"]]
+            info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg)
 
         opsconfig1 = []
         opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#")
         opsconfig1.append("geni-prod")
-        opsconfig1.append(url_local_info + "opsconfig/" + opsconfig1[1])
+        opsconfig1.append(self.config_store_url) # selfRef
         opsconfig1.append(str(int(time.time()*1000000))) 
         
         info_insert(self.tbl_mgr, "ops_opsconfig", opsconfig1)
-
-        opsconfigagg1 = []
-        opsconfigagg1.append("gpo-ig")
-        opsconfigagg1.append("geni-prod")
-        opsconfigagg1.append("protogeni")
-        opsconfigagg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
-        opsconfigagg1.append(url_local_info + "aggregate/" + opsconfigagg1[0])
-        
-        info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg1)
         
         opsconfigauth1 = []
-        opsconfigauth1.append("ch.geni.net")
+        opsconfigauth1.append("ch.geni.net") # authority name
         opsconfigauth1.append("geni-prod")
         opsconfigauth1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
-        opsconfigauth1.append(url_opsconfig_local_info + "authority/" + opsconfigauth1[0])
+        opsconfigauth1.append(self.config_store_url) # authority datastore href (FIXME: now points to config store)
         info_insert(self.tbl_mgr, "ops_opsconfig_authority", opsconfigauth1)
 
 
