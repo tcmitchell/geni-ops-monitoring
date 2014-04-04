@@ -4,6 +4,7 @@ dbtype: mysql
 <% else -%>
 dbtype: postgres
 <% end -%>
+configstoreurl: <%= config_store_url %>
 
 [postgres]
 database: <%= database_name %>

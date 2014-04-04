@@ -33,6 +33,7 @@ node default {
   $database_type = "mysql"
   $populate_data = true
   $database_name = "local"
+  $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
 
   # since these passwords are being committed to a repo, never use
   # them anywhere outside a vagrant instance running on localhost
