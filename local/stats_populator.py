@@ -249,7 +249,8 @@ def main():
     config_path = "../config/"
     debug = False
     tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
-    ocl = opsconfig_loader.OpsconfigLoader()
+    tbl_mgr.poll_config_store()
+    ocl = opsconfig_loader.OpsconfigLoader(config_path)
     data_schema = ocl.get_info_schema()
     event_types = ocl.get_event_types()
 

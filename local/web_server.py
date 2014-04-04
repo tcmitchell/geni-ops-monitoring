@@ -42,7 +42,8 @@ class LocalDatastoreServer:
 
         # uses postgres by default
         self.tm = table_manager.TableManager(self.db_name, self.config_path, self.debug)
-        
+        self.tm.poll_config_store()
+
         self.app = Flask(__name__)
        
         @self.app.route('/info/aggregate/<path:agg_id>', methods = ['GET'])

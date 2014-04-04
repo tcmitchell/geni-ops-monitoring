@@ -401,9 +401,10 @@ def main(argv):
     debug = False
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr.poll_config_store()
     crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, debug)
 
-    ocl = opsconfig_loader.OpsconfigLoader()
+    ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
 
     # ensures tables exist in database

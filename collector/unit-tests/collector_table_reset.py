@@ -36,8 +36,9 @@ def main():
     config_path = "../../config/"
     debug = True
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr.poll_config_store()
 
-    ocl = opsconfig_loader.OpsconfigLoader()
+    ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
     data_schema = ocl.get_data_schema()
 

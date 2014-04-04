@@ -292,8 +292,10 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
             auth_refs.append(get_refs(tm, "ops_opsconfig_authority", auth_i))
 
         events_list = get_events_list(tm)
+
+        info_list = get_info_list(tm)
             
-        return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs, events_list))
+        return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs, events_list, info_list))
     else:
         return "opsconfig not found"
 
@@ -405,7 +407,7 @@ def get_node_info_dict(schema, info_row, port_refs):
 
 
 # Forms opsconfig info dictionary (to be made to JSON)
-def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list):
+def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, info_list):
 
     json_dict = {}
 
@@ -434,6 +436,14 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list):
                 json_dict["events"]["node"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
             elif ev_i[0] == "interface":
                 json_dict["events"]["interface"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
+
+    if info_list:
+        json_dict["info"] = []
+        for if_i in info_list:
+            table_dict = {}
+            table_dict["name"] = if_i[0]
+            table_dict["db_schema"] = eval(if_i[1])
+            json_dict["info"].append(table_dict)
 
     return json_dict
 
@@ -594,6 +604,26 @@ def get_events_list(tm):
     tm.db_lock.release()
 
     return res
+
+
+# Gets info for an object
+def get_info_list(tm):
+    cur = tm.con.cursor()
+    res = [];
+    tm.db_lock.acquire()
+    try:
+        # explicit selecting preserves order of results set
+        cur.execute("select tablename, schemaarray from ops_opsconfig_info") 
+        res = cur.fetchall()
+    except Exception, e:
+        print e
+        tm.con.commit()
+
+    cur.close()
+    tm.db_lock.release()
+
+    return res
+
 
 # Gets related objects
 def get_related_objects(tm, table_str, colname_str, id_str):

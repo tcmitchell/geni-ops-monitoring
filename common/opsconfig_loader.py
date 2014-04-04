@@ -21,21 +21,27 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 import json
-class OpsconfigLoader:
-    def __init__(self):
+import urllib2
+import ConfigParser
 
-        # TODO read this from a config file instead
-        self.config_store_url = "config_store_url"
+class OpsconfigLoader:
+    def __init__(self, config_path):
+
+        config = ConfigParser.ConfigParser()
+        config.read(config_path + "/local_datastore_operator.conf")
+        self.config_store_url = config.get("main", "configstoreurl")
       
-        # replace below with the urllib get of config_store_url
-        # remove the hack
         try:
-            self.config_json = json.load(open("../schema/examples/opsconfig/geni-prod.json"))
+            config_json = json.load(urllib2.urlopen(self.config_store_url))
         except:
+            print "Cannot reach the config local datastore at ", self.config_store_url
+            # Read from local copy of response
+            # cannot open the configuration from the web, read default copy
             try:
-                self.config_json = json.load(open("../../schema/examples/opsconfig/geni-prod.json"))
+                self.config_json = json.load(open(config_path + "../schema/examples/opsconfig/geni-prod.json"))
+                print "reading local copy at " + config_path + "../schema/examples/opsconfig/geni-prod.json"
             except:
-                print "cannot load json file"
+                print "cannot load json file from schema examples"
 
     def get_event_types(self):
         

@@ -26,7 +26,7 @@ import time
 import psutil
 import sys
 import json
-import threading
+
 from pprint import pprint as pprint
 
 common_path = "../common/"
@@ -35,11 +35,47 @@ sys.path.append(common_path)
 import table_manager
 import opsconfig_loader
 
-class InfoPopulator(threading.Thread):
+class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
 
         self.tbl_mgr = tbl_mgr 
         self.url_base = url_base
+
+    def init_config_datastore_info(self):
+
+        self.tbl_mgr.reset_opsconfig_tables()
+        self.insert_opsconfig_base()
+        self.insert_opsconfig_info_schema()
+        self.insert_opsconfig_events()
+
+    def insert_opsconfig_base(self):
+        url_local_info = self.url_base + "/info/"
+        url_opsconfig_local_info = self.url_base + "/info/"
+
+        opsconfig1 = []
+        opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#")
+        opsconfig1.append("geni-prod")
+        opsconfig1.append(url_local_info + "opsconfig/" + opsconfig1[1])
+        opsconfig1.append(str(int(time.time()*1000000))) 
+        
+        info_insert(self.tbl_mgr, "ops_opsconfig", opsconfig1)
+
+        opsconfigagg1 = []
+        opsconfigagg1.append("gpo-ig")
+        opsconfigagg1.append("geni-prod")
+        opsconfigagg1.append("protogeni")
+        opsconfigagg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
+        opsconfigagg1.append(url_local_info + "aggregate/" + opsconfigagg1[0])
+        
+        info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg1)
+        
+        opsconfigauth1 = []
+        opsconfigauth1.append("ch.geni.net")
+        opsconfigauth1.append("geni-prod")
+        opsconfigauth1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
+        opsconfigauth1.append(url_opsconfig_local_info + "authority/" + opsconfigauth1[0])
+        info_insert(self.tbl_mgr, "ops_opsconfig_authority", opsconfigauth1)
+
 
     def insert_fake_info(self): 
          info_dict = {}
@@ -221,15 +257,6 @@ class InfoPopulator(threading.Thread):
          info_insert(self.tbl_mgr, "ops_authority", authority1)
 
 
-         opsconfig1 = []
-         opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#")
-         opsconfig1.append("geni-prod")
-         opsconfig1.append(url_local_info + "opsconfig/" + opsconfig1[1])
-         opsconfig1.append(str(int(time.time()*1000000))) 
-
-         info_insert(self.tbl_mgr, "ops_opsconfig", opsconfig1)
-
-
          aggres1 = []
          aggres1.append("instageni.gpolab.bbn.com_node_pc1")
          aggres1.append("gpo-ig")
@@ -363,23 +390,6 @@ class InfoPopulator(threading.Thread):
 
          info_insert(self.tbl_mgr, "ops_authority_slice", authslice1)
 
-
-         opsconfigagg1 = []
-         opsconfigagg1.append("gpo-ig")
-         opsconfigagg1.append("geni-prod")
-         opsconfigagg1.append("protogeni")
-         opsconfigagg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
-         opsconfigagg1.append(url_local_info + "aggregate/" + opsconfigagg1[0])
-         
-         info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg1)
-
-         opsconfigauth1 = []
-         opsconfigauth1.append("ch.geni.net")
-         opsconfigauth1.append("geni-prod")
-         opsconfigauth1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
-         opsconfigauth1.append(url_opsconfig_local_info + "authority/" + opsconfigauth1[0])
-         info_insert(self.tbl_mgr, "ops_opsconfig_authority", opsconfigauth1)
-
     # This populates the config datastore of events.
     # The first entry is written in expanded form
     # below are condensed forms without comments
@@ -505,8 +515,8 @@ def main():
     config_path = "../config"
     debug = False
     tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
-   
-    ocl = opsconfig_loader.OpsconfigLoader()
+    tbl_mgr.poll_config_store()
+    ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
    
     tbl_mgr.drop_tables(info_schema.keys())

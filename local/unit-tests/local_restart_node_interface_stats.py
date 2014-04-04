@@ -30,6 +30,7 @@ common_path = "../../common/"
 
 sys.path.append(local_path)
 sys.path.append(common_path)
+import os
 import table_manager
 import opsconfig_loader
 import info_populator
@@ -72,12 +73,16 @@ def main(argv):
 
     [base_url, node_id, interface_id, num_ins, per_sec] = parse_args(argv)
 
+    os.system("python local_table_reset.py")
+    
+
     db_type = "local"
     config_path = "../../config/"
     debug = False
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr.poll_config_store()
 
-    ocl = opsconfig_loader.OpsconfigLoader()
+    ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
     data_schema = ocl.get_data_schema()
     event_types = ocl.get_event_types()
@@ -89,9 +94,8 @@ def main(argv):
 
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)
-    ip.insert_fake_info()
-    ip.insert_opsconfig_events()
-       
+    ip.insert_fake_info()    
+
     cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from ops_aggregate");
     print "Aggregate has entries", cur.fetchone()[0], "entries"
@@ -101,10 +105,8 @@ def main(argv):
     interface_event_str_arr = event_types["interface"]
 
     print node_event_str_arr + interface_event_str_arr
-    
 
     node_sp = stats_populator.StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, node_event_str_arr)
-
 
     interface_sp = stats_populator.StatsPopulator(tbl_mgr, interface_id, num_ins, per_sec, interface_event_str_arr)
 

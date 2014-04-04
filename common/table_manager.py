@@ -32,12 +32,13 @@ class TableManager:
 
     def __init__(self, db_type, config_path, debug=False):
 
-        # load a 2-function package for reading database config
+        self.config_path = config_path
+
+        # load a 2-function package for reading database connection config
         sys.path.append(config_path)
         import database_conf_loader
-
-        self.conf_loader = database_conf_loader # fix naming conventions
-        self.ocl = opsconfig_loader.OpsconfigLoader()
+        
+        self.conf_loader = database_conf_loader # clarify naming conventions
         self.debug = debug
 
         if db_type == "local":
@@ -58,16 +59,112 @@ class TableManager:
 
         self.database_type = db_type # local or collector
         self.database_program = db_prog # postgres or mysql
+
         self.db_lock = threading.Lock()
 
+
+    # fetches DB schemas from config local datastore
+    def poll_config_store(self):
+
+        self.ocl = opsconfig_loader.OpsconfigLoader(self.config_path) 
+
+        # parses the DB schemas
         self.info_schema = self.ocl.get_info_schema()
         self.data_schema = self.ocl.get_data_schema()
+
+        # hold the DB schemas in the schema dictionary
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
 
         if self.debug:
             print "Schema loaded with keys:" 
             print self.schema_dict.keys() 
             print ""
+
+
+    # This is a special table for bootstrapping the configuration
+    # It stores the other schemas. This function drops and creates
+    # these tables
+    def reset_opsconfig_tables(self):
+
+        table_str = "ops_opsconfig_info"
+        schema_arr = [['tablename', 'varchar'],['schemaarray','varchar']]
+        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
+
+        self.db_lock.acquire()
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            cur.execute("create table if not exists " + table_str + schema_str)
+            self.con.commit()
+            
+            cur.close()
+        except Exception, e:
+            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("Exception while reseting opsconfig info table %s %s" % (table_str, schema_str))
+
+
+        table_str = "ops_opsconfig_event"
+        schema_arr = [["object_type", "varchar"], ["name", "varchar"], ["id", "varchar"], ["ts", "varchar"], ["v", "varchar"], ["units", "varchar"]]
+        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            cur.execute("create table if not exists " + table_str + schema_str)
+            self.con.commit()
+            
+            cur.close()
+        except Exception, e:
+            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("Exception while reseting opsconfig event table %s %s" % (table_str, schema_str))
+        
+
+        table_str = "ops_opsconfig"
+        schema_arr = [["$schema", "varchar"], ["id", "varchar"], ["selfRef", "varchar"], ["ts", "int8"]]
+        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
+        
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            cur.execute("create table if not exists " + table_str + schema_str)
+            self.con.commit()
+            
+            cur.close()
+        except Exception, e:
+            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("Exception while reseting opsconfig table %s %s" % (table_str, schema_str))
+
+        table_str = "ops_opsconfig_aggregate"
+        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["amtype", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
+        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            cur.execute("create table if not exists " + table_str + schema_str)
+            self.con.commit()
+            
+            cur.close()
+        except Exception, e:
+            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
+            
+
+        table_str = "ops_opsconfig_authority"
+        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
+        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
+        try:
+            cur = self.con.cursor()
+            cur.execute("drop table if exists " + table_str)
+            cur.execute("create table if not exists " + table_str + schema_str)
+            self.con.commit()
+            
+            cur.close()
+        except Exception, e:
+            sys.stderr.write("%s\n" % e)
+            sys.stderr.write("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
+
+
+        self.db_lock.release()
+
 
 
     def init_psql_conn(self, db_type, config_path):
