@@ -32,7 +32,7 @@ class OpsconfigLoader:
         self.config_store_url = config.get("main", "configstoreurl")
       
         try:
-            config_json = json.load(urllib2.urlopen(self.config_store_url))
+            config_json = json.load(urllib2.urlopen(self.config_store_url, timeout=0.5))
         except:
             print "Cannot reach the config local datastore at ", self.config_store_url
             # Read from local copy of response
