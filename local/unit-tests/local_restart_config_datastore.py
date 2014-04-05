@@ -34,7 +34,6 @@ import os
 import table_manager
 import opsconfig_loader
 import info_populator
-import stats_populator
 
 def usage():
     print('local_restart_config_datastore.py')

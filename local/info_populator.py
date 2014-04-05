@@ -23,7 +23,6 @@
 #----------------------------------------------------------------------
 
 import time
-import psutil
 import sys
 import json
 import ConfigParser
@@ -52,9 +51,6 @@ class InfoPopulator():
         self.config_store_url = config.get("main", "configstoreurl")
 
         self.aggregate_dict = {}
-        #for k in config._sections["datastores"]:
-        #    if k != "__name__": # ignore this key
-        #        self.aggregate_dict[k] = config._sections["datastores"][k]
 
         for k in config._sections["datastores"]:
             if k != "__name__": # ignore this key
