@@ -492,7 +492,7 @@ class TableManager:
         else:
             for col_i in range(len(table_schema_dict)):
                 if table_schema_dict[col_i][1] == "varchar":
-                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(128)," 
+                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(1024)," 
                 else:
                     schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "," 
 
