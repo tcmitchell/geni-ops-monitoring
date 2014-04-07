@@ -32,6 +32,7 @@ node default {
 
   $database_type = "mysql"
   $populate_data = true
+  $populate_config_store = false
   $database_name = "local"
   $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
 
