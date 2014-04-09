@@ -4,7 +4,7 @@
   "description": "GENI slice",
   "name": "Slice",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },
@@ -16,13 +16,13 @@
     },
     "authority": {
       "description": "GENI slice authority which created this slice",
-      "type": [
-        {
-          "urn": "string",
-          "$ref": "http://json-schema.org/draft-03/links#"
-        }
-      ],
-      "required": true
+      "type": "object",
+      "properties" : {
+          "urn": {"type":"string"},
+          "href": {"type":"string"}
+      },
+      "required": ["urn","href"],
+      "additionalProperties": false
     },
     "created": {
       "description": "Creation time: 64-bit integer timestamp",
@@ -39,14 +39,14 @@
       "type": "array",
       "required": true,
       "items": {
-        "type": [
-          {
-            "urn": "string",
-            "role": "string",
-            "$ref":
-              "http://www.gpolab.bbn.com/monitoring/schema/20140131/user#"
-          }
-        ]
+        "type": "object",
+	"properties": {
+	   "urn": {"type":"string"},
+	   "role": {"type":"string"},
+	   "href": {"type":"string"}
+        },
+	"required": ["urn","href","role"],
+	"additionalProperties": false
       }
     }
   }
