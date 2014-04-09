@@ -6,13 +6,26 @@
   "type": "object",
   "additionalProperties": false,
   "extends": {
-    "$ref": "http://unis.incntre.iu.edu/schema/20120709/node#"
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },
   "properties": {
     "ops_monitoring:mem_total_kb": { 
        "description":"Total memory in kilobytes",
        "type":"number",
        "required":false
+    },
+    "ports": {
+      "description": "active slivers at this aggregate",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "object",
+	"properties": {
+	   "urn": {"type":"string"},
+	   "href": {"type":"string"}
+        },
+	"required": ["urn","href"]
+      }
     }    
   } 
 }

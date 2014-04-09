@@ -6,7 +6,7 @@
   "type": "object",
   "additionalProperties": true,
   "extends": {
-    "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },
   "properties": {
     "measRef": {
