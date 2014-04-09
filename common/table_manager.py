@@ -71,6 +71,7 @@ class TableManager:
         # parses the DB schemas
         self.info_schema = self.ocl.get_info_schema()
         self.data_schema = self.ocl.get_data_schema()
+        self.event_types = self.ocl.get_event_types()
 
         # hold the DB schemas in the schema dictionary
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
