@@ -422,6 +422,9 @@ class InfoPopulator():
          opsconfigevent = ["node","is_available","varchar","int8","int2","boolean"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
+         opsconfigevent = ["node","disk_part_max_used","varchar","int8","float4","percent"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
          opsconfigevent = ["interface","rx_bps","varchar","int8","float8","bps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
