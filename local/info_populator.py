@@ -425,20 +425,56 @@ class InfoPopulator():
          opsconfigevent = ["node","disk_part_max_used","varchar","int8","float4","percent"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
+
          opsconfigevent = ["interface","rx_bps","varchar","int8","float8","bps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
          opsconfigevent = ["interface","tx_bps","varchar","int8","float8","bps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
+         opsconfigevent = ["interface","rx_pps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
          opsconfigevent = ["interface","tx_pps","varchar","int8","float8","pps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
 
-         opsconfigevent = ["interface","tx_dps","varchar","int8","float8","pps"]
-         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
-	 
          opsconfigevent = ["interface","rx_dps","varchar","int8","float8","pps"]
          info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	 
+         opsconfigevent = ["interface","tx_dps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interface","rx_eps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	 
+         opsconfigevent = ["interface","tx_eps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+
+         opsconfigevent = ["interfacevlan","rx_bps","varchar","int8","float8","bps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interfacevlan","tx_bps","varchar","int8","float8","bps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interfacevlan","rx_pps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+         
+         opsconfigevent = ["interfacevlan","tx_pps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interfacevlan","rx_dps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	 
+         opsconfigevent = ["interfacevlan","tx_dps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
+         opsconfigevent = ["interfacevlan","rx_eps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+	 
+         opsconfigevent = ["interfacevlan","tx_eps","varchar","int8","float8","pps"]
+         info_insert(self.tbl_mgr, "ops_opsconfig_event", opsconfigevent)
+
     
     # This populates the info schema for the config local datastore to
     # publish.  Since different tables have a different number of

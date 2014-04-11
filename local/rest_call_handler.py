@@ -431,11 +431,14 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
         json_dict["events"] = {}
         json_dict["events"]["node"] = []
         json_dict["events"]["interface"] = []
+        json_dict["events"]["interfacevlan"] = []
         for ev_i in events_list:
             if ev_i[0] == "node":
                 json_dict["events"]["node"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
             elif ev_i[0] == "interface":
                 json_dict["events"]["interface"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
+            elif ev_i[0] == "interfacevlan":
+                json_dict["events"]["interfacevlan"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
 
     if info_list:
         json_dict["info"] = []
