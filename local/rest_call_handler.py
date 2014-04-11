@@ -847,7 +847,6 @@ def get_object_schema(tm, obj_type, obj_id):
 
         if len(q_res) > 0:
             res = q_res[0][0]
-            print res[0][0]
         
     except Exception, e:
         print "query failed: select $schema from ops_" + obj_type + " where id = '" + obj_id + "'"
