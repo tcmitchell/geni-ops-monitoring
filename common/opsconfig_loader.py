@@ -25,23 +25,27 @@ import urllib2
 import ConfigParser
 
 class OpsconfigLoader:
-    def __init__(self, config_path):
 
+    def __init__(self, config_path):
+        self.config_path = config_path
+        self.load_from_local_config()
+
+
+    def load_from_network_config(self):
         config = ConfigParser.ConfigParser()
-        config.read(config_path + "/local_datastore_operator.conf")
+        config.read(self.config_path + "/collector_operator.conf")
         self.config_store_url = config.get("main", "configstoreurl")
-      
+        
         try:
-            self.config_json = json.load(urllib2.urlopen(self.config_store_url, timeout=0.5))
+            self.config_json = json.load(urllib2.urlopen(self.config_store_url, timeout=1))
         except:
             print "Cannot reach the config local datastore at ", self.config_store_url
-            # Read from local copy of response
-            # cannot open the configuration from the web, read default copy
-            try:
-                self.config_json = json.load(open(config_path + "../schema/examples/opsconfig/geni-prod.json"))
-                print "reading local copy at " + config_path + "../schema/examples/opsconfig/geni-prod.json"
-            except:
-                print "cannot load json file from schema examples"
+            self.load_from_local_config()
+
+
+    def load_from_local_config(self):       
+        self.config_json = json.load(open(self.config_path + "opsconfig.json"))
+
 
     def get_event_types(self):
         
