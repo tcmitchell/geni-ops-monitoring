@@ -89,6 +89,7 @@ def main(argv):
 
     # perhaps table manager should do this wihtout passing keys
     table_str_arr = info_schema.keys() + data_schema.keys()
+
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
 
@@ -105,10 +106,10 @@ def main(argv):
     interface_event_str_arr = event_types["interface"]
 
     print node_event_str_arr + interface_event_str_arr
-
-    node_sp = stats_populator.StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, node_event_str_arr)
-
-    interface_sp = stats_populator.StatsPopulator(tbl_mgr, interface_id, num_ins, per_sec, interface_event_str_arr)
+    obj_type = "node"
+    node_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, node_id, num_ins, per_sec, node_event_str_arr)
+    obj_type = "interface"
+    interface_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interface_id, num_ins, per_sec, interface_event_str_arr)
 
     # start threads
     node_sp.start()

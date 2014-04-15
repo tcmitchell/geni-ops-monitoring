@@ -66,7 +66,7 @@
 	      "required": ["name","id","ts","v","units"]
 	    }
 	 },
-        "interface": {
+         "interface": {
 	  "type": "array",
 	  "required": true,
 	  "items": {
@@ -79,7 +79,22 @@
 	        "units": {"type":"string"}
 	      },
 	      "required": ["name","id","ts","v","units"]
-	    }
+           }
+        },
+        "interfacevlan": {
+	  "type": "array",
+	  "required": true,
+	  "items": {
+	    "type": "object",
+	    "properties": {
+	        "name": {"type": "string"},
+	        "id": {"type":"string"},
+	        "ts": {"type":"string"},
+	        "v" : {"type":"string"},
+	        "units": {"type":"string"}
+	      },
+	      "required": ["name","id","ts","v","units"]
+           }
         }
       }
     }

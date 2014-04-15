@@ -54,6 +54,7 @@ class OpsconfigLoader:
         event_types = {}
         event_types["node"] = []
         event_types["interface"] = []
+        event_types["interfacevlan"] = []
 
         # node event types
         for ev_i in opsconfig["events"]["node"]:
@@ -75,11 +76,15 @@ class OpsconfigLoader:
         # add ops_ to avoid namespace collision with database (i.e.,
         # user not allowed)
         for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            data_schema["ops_node_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
 
         # interface event types
         for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            data_schema["ops_interface_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+
+        # interface event types
+        for ev_i in opsconfig["events"]["interface"]:
+            data_schema["ops_interfacevlan_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
         
         return data_schema
 

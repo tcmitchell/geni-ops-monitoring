@@ -38,9 +38,10 @@ import opsconfig_loader
 
 
 class StatsPopulator(threading.Thread):
-    def __init__(self, tbl_mgr, obj_id, num_inserts, sleep_period_sec, event_types_arr, data_life_time_sec = 12*60*60):
+    def __init__(self, tbl_mgr, obj_type, obj_id, num_inserts, sleep_period_sec, event_types_arr, data_life_time_sec = 12*60*60):
         threading.Thread.__init__(self)
         self.tbl_mgr = tbl_mgr # ldp = local datastore populator
+        self.obj_type = obj_type
         self.obj_id = obj_id
         self.num_inserts = num_inserts
         self.sleep_period_sec = sleep_period_sec
@@ -90,10 +91,11 @@ class StatsPopulator(threading.Thread):
         data = self.get_data(ev_t)
         if data != None:
             val_str = "('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ")" 
-            table_str = "ops_" + ev_t
+            table_str = "ops_" + self.obj_type + "_" +  ev_t
             old_ts = (time.time()-self.data_life_time_sec)*1000000
 
             self.tbl_mgr.insert_stmt(table_str, val_str)
+
             self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
         else:
             print "No data received for event_type:", ev_t

@@ -28,6 +28,7 @@ import json
 
 # Main handle for data queries
 def handle_ts_data_query(tm, filters):
+
     schema_dict = tm.schema_dict
     try:
         q_dict = eval(filters) # try to make a dictionary
@@ -69,7 +70,7 @@ def handle_ts_data_query(tm, filters):
                     resp_i["subject"] = {"href":obj_schema}
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
-                    resp_i["units"] = schema_dict["units"]["ops_"+event_type]
+                    resp_i["units"] = schema_dict["units"]["ops_" + obj_type + "_" + event_type]
                     resp_i["tsdata"] = ts_arr
                     resp_arr.append(resp_i)
         else:
@@ -812,7 +813,7 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
     try:
     
         # assumes an id for obj_id in table event_type with ops_ prepended
-        cur.execute("select ts,v from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
+        cur.execute("select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
         tm.con.commit()
 
@@ -822,7 +823,7 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
                 res.append({"ts":q_res[q_res_i][0],"v":q_res[q_res_i][1]})
         
     except Exception, e:
-        print "query failed: select ts,v from ops_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
+        print "query failed: select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
         print e
         tm.con.commit()
 

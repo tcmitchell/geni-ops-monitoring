@@ -309,6 +309,56 @@
 	       "v":"float8",
 	       "units":"pps"
           }
+       ],
+       "interfacevlan": [
+          {    "name": "rx_bps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"bps"
+          },
+	  {    "name": "tx_bps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"bps"
+          },
+	  {    "name":"rx_pps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_pps",  
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"rx_eps",  
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_eps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"tx_dps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          },
+	  {    "name":"rx_dps",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float8",
+	       "units":"pps"
+          }
        ]
     }
 }
