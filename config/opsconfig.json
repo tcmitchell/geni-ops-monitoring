@@ -3,11 +3,16 @@
   "id": "geni-prod",
   "selfRef": "https://datastore.geni.net/opsconfigs/geni-prod",
   "ts": 1391192685740849,
-  "aggregates": [
+  "aggregatestores": [
     {
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
       "amtype": "protogeni",
-      "href": "https://datastore.instageni.gpolab.bbn.com/aggregates/gpo-ig"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/aggregate/gpo-ig"
+    }
+  ],
+  "externalcheckstores": [
+    {
+      "href": "https://externalcheckstore.gpolab.bbn.com/info/externalcheck/gpo"
     }
   ],
   "authorities": [
@@ -125,6 +130,31 @@
 		 ["ts","int8"]
           ]
     },
+    {   "name":"externalcheck",
+    	"db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],
+		 ["measRef","varchar"]
+          ]
+    },
+    {   "name":"experiment",
+    	"db_schema": [
+		 ["$schema", "varchar"],
+		 ["id", "varchar"],
+		 ["selfRef","varchar"],
+		 ["urn","varchar"],
+		 ["ts","int8"],		 
+	         ["slice_urn","varchar"],
+		 ["slice_uuid","varchar"],
+		 ["source_aggregate_urn","varchar"],
+		 ["source_aggregate_href","varchar"],
+		 ["destination_aggregate_urn","varchar"],
+		 ["destination_aggregate_href","varchar"]
+          ]
+    },
     {   "name":"opsconfig",
     	"db_schema": [
 		 ["$schema", "varchar"],
@@ -141,14 +171,6 @@
 		 ["selfRef","varchar"]
 	  ]
     },
-    {   "name":"link_interfacevlan",
-    	"db_schema" : [
-	         ["id","varchar"],
-		 ["link_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	  ]
-    },
     {   "name":"aggregate_sliver",
     	"db_schema" : [
 	         ["id","varchar"],
@@ -156,6 +178,14 @@
 		 ["urn","varchar"],
 		 ["selfRef","varchar"]
 	 ]
+    },
+    {   "name":"link_interfacevlan",
+    	"db_schema" : [
+	         ["id","varchar"],
+		 ["link_id","varchar"],
+		 ["urn","varchar"],
+		 ["selfRef","varchar"]
+	  ]
     },
     {   "name":"sliver_resource",
      	"db_schema" : [
@@ -224,6 +254,13 @@
 	         ["v","varchar"],
 	         ["units","varchar"]
 	]
+    },
+    {	"name":"externalcheck_experiment",
+    	"db_schema": [
+		 ["id","varchar"],
+	         ["externalcheck_id","varchar"],
+	         ["selfRef","varchar"]
+	]
     }
   ],
   "events": 
@@ -260,53 +297,67 @@
 	       "units":"percent"
           }
        ],
+       "aggregate": [
+          {    "name": "num_vms_allocated",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "int4",
+	       "units": "count"
+          },
+          {    "name": "is_available",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v": "int2",
+	       "units": "boolean"
+          }
+       ],
        "interface": [
           {    "name": "rx_bps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"bps"
           },
 	  {    "name": "tx_bps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"bps"
           },
 	  {    "name":"rx_pps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_pps",  
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"rx_eps",  
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_eps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"rx_dps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_dps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           }
        ],
@@ -314,50 +365,58 @@
           {    "name": "rx_bps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"bps"
           },
 	  {    "name": "tx_bps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"bps"
           },
 	  {    "name":"rx_pps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_pps",  
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"rx_eps",  
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_eps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"rx_dps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
           },
 	  {    "name":"tx_dps",
 	       "id": "varchar",
                "ts": "int8",
-	       "v":"float8",
+	       "v":"float4",
 	       "units":"pps"
+          }
+       ],
+       "experiment": [
+          {    "name": "ping_rtt_ms",
+	       "id": "varchar",
+               "ts": "int8",
+	       "v":"float4",
+	       "units":"milliseconds"
           }
        ]
     }
