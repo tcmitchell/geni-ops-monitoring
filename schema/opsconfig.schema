@@ -9,7 +9,7 @@
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
   },
   "properties": {
-    "aggregates": {
+    "aggregatestores": {
       "description": "GENI aggregates known to support operational monitoring",
       "type": "array",
       "required": true,
@@ -20,7 +20,19 @@
 	   "amtype": {"type": "string"},
 	   "href": {"type": "string"}
         },
-	"required": ["urn","href"]
+	"required": ["urn","amtype","href"]
+      }
+    },
+    "externalcheckstores": {
+      "description": "References for GENI externela check datastores",
+      "type": "array",
+      "required": true,
+      "items": {
+        "type": "object",
+	"properties": {
+	   "href": {"type": "string"}
+        },
+	"required": ["href"]
       }
     },
     "authorities": {
@@ -66,7 +78,22 @@
 	      "required": ["name","id","ts","v","units"]
 	    }
 	 },
-         "interface": {
+         "aggregate": {
+	  "type": "array",
+	  "required": true,
+	  "items": {
+	    "type": "object",
+	    "properties": {
+	        "name": {"type": "string"},
+	        "id": {"type":"string"},
+	        "ts": {"type":"string"},
+	        "v" : {"type":"string"},
+	        "units": {"type":"string"}
+	      },
+	      "required": ["name","id","ts","v","units"]
+           }
+        },
+         "experiment": {
 	  "type": "array",
 	  "required": true,
 	  "items": {
