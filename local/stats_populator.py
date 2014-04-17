@@ -213,6 +213,8 @@ class StatsPopulator(threading.Thread):
             return 1
         elif event_type == "num_vms_allocated":
             return random.randint(0,10)
+        elif event_type == "ping_rtt_ms":
+            return random.uniform(10,100)
         else: # TODO add more
             return None
 
