@@ -27,6 +27,7 @@ import psutil
 import sys
 import json
 import threading
+import random
 from pprint import pprint as pprint
 
 
@@ -210,6 +211,8 @@ class StatsPopulator(threading.Thread):
             return max(0, tx_dps) # TODO handle rollover
         elif event_type == "is_available":
             return 1
+        elif event_type == "num_vms_allocated":
+            return random.randint(0,10)
         else: # TODO add more
             return None
 

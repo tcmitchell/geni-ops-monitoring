@@ -37,18 +37,19 @@ import info_populator
 import stats_populator
 
 def usage():
-    print('local_restart_node_interface_stats.py -b <local-store-base-url> -n <node-id> -i <interface-id> -r <num-inserts> -s <sleep-period-seconds>')
+    print('local_restart_node_interface_stats.py -b <local-store-base-url> -n <node-id> -i <interface-id> -a <aggregate-id> -r <num-inserts> -s <sleep-period-seconds>')
     sys.exit(2)
 
 def parse_args(argv):
     base_url = "http://127.0.0.1:5000"
     node_id = "instageni.gpolab.bbn.com_node_pc1"
     interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
+    aggregate_id = "gpo-ig"
     num_ins = 10;
     per_sec = 0.2;
 
     try:
-        opts, args = getopt.getopt(argv,"hb:n:i:r:s:",["baseurl=","nodeid=","interfaceid=","numinserts=","sleepperiodsec="])
+        opts, args = getopt.getopt(argv,"hb:n:i:r:s:a:",["baseurl=","nodeid=","interfaceid=","numinserts=","sleepperiodsec=","aggregateid="])
     except getopt.GetoptError:
         usage()
 
@@ -61,17 +62,19 @@ def parse_args(argv):
             node_id = arg
         elif opt in ("-i", "--interfaceid"):
             interface_id = arg
+        elif opt in ("-a", "--aggregateid"):
+            interface_id = arg
         elif opt in ("-r", "--numinserts"):
             num_ins = int(arg)
         elif opt in ("-s", "--sleepperiodsec"):
             per_sec = float(arg)
 
-    return [base_url, node_id, interface_id, num_ins, per_sec]
+    return [base_url, node_id, interface_id, aggregate_id, num_ins, per_sec]
 
             
 def main(argv):
 
-    [base_url, node_id, interface_id, num_ins, per_sec] = parse_args(argv)
+    [base_url, node_id, interface_id, aggregate_id, num_ins, per_sec] = parse_args(argv)
 
     os.system("python local_table_reset.py")
     
@@ -105,20 +108,27 @@ def main(argv):
     # data population
     node_event_str_arr = event_types["node"]
     interface_event_str_arr = event_types["interface"]
+    aggregate_event_str_arr = event_types["aggregate"]
 
     print node_event_str_arr + interface_event_str_arr
     obj_type = "node"
     node_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, node_id, num_ins, per_sec, node_event_str_arr)
+
     obj_type = "interface"
     interface_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interface_id, num_ins, per_sec, interface_event_str_arr)
+
+    obj_type = "aggregate"
+    aggregate_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, aggregate_id, num_ins, per_sec, aggregate_event_str_arr)
 
     # start threads
     node_sp.start()
     interface_sp.start()
+    aggregate_sp.start()
 
     threads = []
     threads.append(node_sp)
     threads.append(interface_sp)
+    threads.append(aggregate_sp)
 
     # join all threads
     for t in threads:
