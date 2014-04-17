@@ -399,6 +399,29 @@ class InfoPopulator():
 
          info_insert(self.tbl_mgr, "ops_authority_slice", authslice1)
 
+    # Dummy information to test the external check store
+    def insert_externalcheck_store(self):
+        self.insert_externalcheck_store_info()
+        self.insert_externalcheck_store_data()
+        
+    def insert_externalcheck_store_info(self):
+        extck_id = "gpo"
+        ts = str(int(time.time()*1000000))
+        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140131/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
+        info_insert(self.tbl_mgr, "ops_externalcheck", extck)
+
+        exp1_id = "missouri_ig_to_gpo_ig"
+        extck_exp1 = [exp1_id, extck_id, self.url_base + "/info/experiment/" + exp1_id]
+        info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1)
+
+        exp1_id = "missouri_ig_to_gpo_ig"
+        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140131/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn","source aggregate local datastore href", "urn:destination_aggregate_urn","destination aggregate local datastore href"]
+        info_insert(self.tbl_mgr, "ops_experiment", exp1)
+
+
+    def insert_externalcheck_store_data(self):
+        pass
+        
     # This populates the config datastore of events.
     # The first entry is written in expanded form
     # below are condensed forms without comments
@@ -477,7 +500,12 @@ class InfoPopulator():
 
     
     # This populates the info schema for the config local datastore to
-    # publish.  Since different tables have a different number of
+    # publish.  
+    #
+    # This should reflect what is in /config/opsconfig.json 
+    # Currently this is deprecated (16-apr-2014)
+    #
+    # Since different tables have a different number of
     # columns, we'll just store the schema as a "document" like a
     # key,value store or document database would store this.  Postgres
     # 9.3 has json format to store objects like this, but for now

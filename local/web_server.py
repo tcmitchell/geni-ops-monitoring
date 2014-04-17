@@ -51,6 +51,16 @@ class LocalDatastoreServer:
             return rest_call_handler.handle_aggregate_info_query(
                 self.tm, agg_id)
 
+        @self.app.route('/info/externalcheck/<path:extck_id>', methods = ['GET'])
+        def info_externalcheck_args(extck_id): 
+            return rest_call_handler.handle_externalcheck_info_query(
+                self.tm, extck_id)
+
+        @self.app.route('/info/experiment/<path:exp_id>', methods = ['GET'])
+        def info_experiment_args(exp_id): 
+            return rest_call_handler.handle_experiment_info_query(
+                self.tm, exp_id)
+
         @self.app.route('/info/node/<path:node_id>', methods = ['GET'])
         def info_node_args(node_id): 
             return rest_call_handler.handle_node_info_query(self.tm, node_id)

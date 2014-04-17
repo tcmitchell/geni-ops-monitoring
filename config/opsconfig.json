@@ -135,7 +135,6 @@
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
-		 ["urn","varchar"],
 		 ["ts","int8"],
 		 ["measRef","varchar"]
           ]
@@ -145,7 +144,6 @@
 		 ["$schema", "varchar"],
 		 ["id", "varchar"],
 		 ["selfRef","varchar"],
-		 ["urn","varchar"],
 		 ["ts","int8"],		 
 	         ["slice_urn","varchar"],
 		 ["slice_uuid","varchar"],

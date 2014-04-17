@@ -55,6 +55,8 @@ class OpsconfigLoader:
         event_types["node"] = []
         event_types["interface"] = []
         event_types["interfacevlan"] = []
+        event_types["experiment"] = []
+        event_types["aggregate"] = []
 
         # node event types
         for ev_i in opsconfig["events"]["node"]:
@@ -63,6 +65,18 @@ class OpsconfigLoader:
         # interface event types
         for ev_i in opsconfig["events"]["interface"]:
             event_types["interface"].append(ev_i["name"])
+
+        # interfacevlan event types
+        for ev_i in opsconfig["events"]["interfacevlan"]:
+            event_types["interfacevlan"].append(ev_i["name"])
+
+        # experiment event types
+        for ev_i in opsconfig["events"]["experiment"]:
+            event_types["experiment"].append(ev_i["name"])
+
+        # aggregate event types
+        for ev_i in opsconfig["events"]["aggregate"]:
+            event_types["aggregate"].append(ev_i["name"])
 
         return event_types
 
@@ -82,9 +96,17 @@ class OpsconfigLoader:
         for ev_i in opsconfig["events"]["interface"]:
             data_schema["ops_interface_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
 
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
+        # interfacevlan event types
+        for ev_i in opsconfig["events"]["interfacevlan"]:
             data_schema["ops_interfacevlan_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+        
+        # experiment event types
+        for ev_i in opsconfig["events"]["experiment"]:
+            data_schema["ops_experiment_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+        
+        # aggregate event types
+        for ev_i in opsconfig["events"]["aggregate"]:
+            data_schema["ops_aggregate_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
         
         return data_schema
 

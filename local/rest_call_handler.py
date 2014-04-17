@@ -189,6 +189,29 @@ def handle_aggregate_info_query(tm, agg_id):
         return "aggregate not found"
 
 
+def handle_externalcheck_info_query(tm, extck_id):
+    table_str = "ops_externalcheck"
+    extck_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    exp_refs = []    
+
+    extck_info = get_object_info(tm, table_str, extck_id)
+    if extck_info is not None:
+
+        experiments = get_related_objects(tm, "ops_externalcheck_experiment", "externalcheck_id", extck_id)
+
+        for exp_i in experiments: 
+            exp_ref = get_self_ref(tm, "ops_experiment", exp_i)
+            if exp_ref:
+                exp_refs.append(exp_ref)
+
+        return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs))
+
+    else:
+        return "external check store not found"
+
+
 # Main handle aggregate for info queries
 def handle_authority_info_query(tm, auth_id):
     table_str = "ops_authority"
@@ -271,8 +294,30 @@ def handle_link_info_query(tm, link_id):
         return "link not found"
 
 
+# Main handle for experiment queries
+def handle_experiment_info_query(tm, exp_id):
+    table_str = "ops_experiment"
+    exp_schema = tm.schema_dict[table_str]
+    con = tm.con
+
+    iface_refs = []
+
+    exp_info = get_object_info(tm, table_str, exp_id)
+
+    if exp_info is not None:
+        return json.dumps(get_experiment_info_dict(exp_schema, exp_info))
+    else:
+        return "experiment not found"
+
+
+
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id):
+
+    # simply spit out the config file until its contents converges
+    return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
+
+    '''
     table_str = "ops_opsconfig"
     opsconfig_schema = tm.schema_dict[table_str]
     con = tm.con
@@ -299,7 +344,7 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
         return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs, events_list, info_list))
     else:
         return "opsconfig not found"
-
+    '''
 
 ### Argument checker for tsdata queries
 
@@ -343,6 +388,29 @@ def get_interface_info_dict(schema, info_row):
             json_dict[schema[col_i][0]] = info_row[col_i]
             
     json_dict["address"] = {"address":addr,"type":addr_type}
+
+    return json_dict
+
+
+# Forms experiment info dictionary (to be made to JSON)
+def get_experiment_info_dict(schema, info_row):
+
+    json_dict = {}
+    # NOT all of info_row goes into top level dictionary
+    for col_i in range(len(schema)):
+        if schema[col_i][0] == "source_aggregate_urn":
+            src_agg_urn = info_row[col_i]
+        elif schema[col_i][0] == "source_aggregate_href":
+            src_agg_href = info_row[col_i]
+        elif schema[col_i][0] == "destination_aggregate_urn":
+            dest_agg_urn = info_row[col_i]
+        elif schema[col_i][0] == "destination_aggregate_href":
+            dest_agg_href = info_row[col_i]
+        else: # top level keys are equal to what is in DB
+            json_dict[schema[col_i][0]] = info_row[col_i]
+            
+    json_dict["source_aggregate"] = {"urn":src_agg_urn,"href":src_agg_href}
+    json_dict["destination_aggregate"] = {"urn":dest_agg_urn,"href":dest_agg_href}
 
     return json_dict
 
@@ -499,6 +567,23 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
                 json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
     return json_dict
 
+# Forms external check store info dictionary (to be made to JSON)
+def get_externalcheck_info_dict(schema, info_row, exp_refs):
+
+    json_dict = {}
+    
+    # All of info_row goes into top level dictionary
+    for col_i in range(len(schema)):
+        json_dict[schema[col_i][0]] = info_row[col_i]
+
+    if exp_refs:
+        json_dict["experiments"] = []
+        for exp_ref in exp_refs:
+            if len(exp_ref) > 0:
+                json_dict["experiments"].append({"href":exp_ref[0]})
+
+    return json_dict
+
 
 # Forms link info dictionary (to be made to JSON)
 def get_link_info_dict(schema, info_row, endpt_refs):
@@ -651,7 +736,7 @@ def get_related_objects(tm, table_str, colname_str, id_str):
     return res
 
 
-# Get references of objects
+# Get references of objects TODO refactor similar functions
 def get_refs(tm, table_str, object_id):
 
     tm.db_lock.acquire()
@@ -688,7 +773,36 @@ def get_refs(tm, table_str, object_id):
     return refs
 
 
-# special get of refs for slice users which includes role
+# Get self reference only TODO refactor similar functions
+def get_self_ref(tm, table_str, object_id):
+
+    tm.db_lock.acquire()
+    cur = tm.con.cursor()
+    self_ref = None
+    
+    try:
+
+        # two queries avoids regex split with ,
+        if tm.database_program == "postgres":
+            cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
+        elif tm.database_program == "mysql":
+            cur.execute("select selfRef from " + table_str + " where id = '" + object_id + "' limit 1")
+        q_res = cur.fetchone()
+        tm.con.commit()
+        self_ref = None
+        if q_res is not None:
+            self_ref = q_res # gets first of single tuple
+
+    except Exception, e:
+        print e
+        tm.con.commit()
+
+    cur.close()
+    tm.db_lock.release()
+    
+    return self_ref
+
+# special get of refs for slice users which includes role TODO refactor similar functions
 def get_slice_user_refs(tm, table_str, slice_id):
 
     tm.db_lock.acquire()
@@ -728,7 +842,8 @@ def get_slice_user_refs(tm, table_str, slice_id):
     return refs
 
 
-# special get of refs for opsconfig aggregates which includes amtype
+# special get of refs for opsconfig aggregates which includes amtype  
+# TODO refactor similar functions
 def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
     tm.db_lock.acquire()
