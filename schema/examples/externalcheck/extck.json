@@ -11,5 +11,15 @@
     {
       "href": "https://datastore.instageni.gpolab.bbn.com/info/experiment/rci-eg_to_gpo-eg"
     }
-  ]
+  ],
+  "monitored_aggregates": [
+      {
+         "id": "gpo-ig",
+         "href": "https://datastore.instageni.gpolab.bbn.com/info/aggregate/gpo-ig"
+      },
+      {
+         "id": "rci-eg",
+         "href": "https://rci-hn.exogeni.net/ops-monitoring/info/aggregate/rci-eg"
+      }
+   ]
 }
