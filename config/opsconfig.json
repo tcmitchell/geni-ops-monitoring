@@ -5,9 +5,29 @@
   "ts": 1391192685740849,
   "aggregatestores": [
     {
-      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
-      "amtype": "protogeni",
-      "href": "https://datastore.instageni.gpolab.bbn.com/info/aggregate/gpo-ig"
+      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
+      "amtype": "ion",
+      "href": "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
+    },
+    {
+      "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
+      "amtype": "al2s",
+      "href": "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
+    },
+    {
+       "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
+       "amtype": "ion",
+       "href": "http://maxam.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
+    },
+    {
+       "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
+       "amtype": "protogeni",
+       "href": "http://datastore.utah.geniracks.net:5001/info/aggregate/utah-ig"
+    },
+    {
+       "urn": "urn:rci",
+       "amtype": "exogeni",
+       "urn": "https://rci-hn.exogeni.net/ops-monitoring/info/aggregate/rci-eg"
     }
   ],
   "externalcheckstores": [
