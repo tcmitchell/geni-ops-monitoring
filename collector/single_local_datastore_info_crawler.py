@@ -51,7 +51,7 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:o:d",["baseurl=","aggregateid=","object-types=","help","debug"])
+        opts, args = getopt.getopt(argv,"hb:a:o:d",["help","baseurl=","aggregateid=","object-types=","debug"])
     except getopt.GetoptError:
         usage()
 
@@ -86,7 +86,7 @@ class SingleLocalDatastoreInfoCrawler:
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
-        
+        print self.info_url + '/aggregate/' + self.aggregate_id
         am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)            
         if am_dict:
             self.tbl_mgr.establish_table("ops_aggregate")
@@ -398,7 +398,7 @@ def main(argv):
 
     db_type = "collector"
     config_path = "../config/"
-    debug = False
+
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
     tbl_mgr.poll_config_store()

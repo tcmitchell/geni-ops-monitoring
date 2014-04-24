@@ -35,7 +35,7 @@ import table_manager
 import opsconfig_loader
 
 def usage():
-    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans)>')
+    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -81,7 +81,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         # ensures tables exist
         self.tbl_mgr.establish_tables(event_types)
-        self.db_event_tables = ["ops_" + ev_str for ev_str in event_types]
+        self.db_event_tables = ["ops_" + obj_type + "_" + ev_str for ev_str in event_types]
 
         self.event_types = ["ops_monitoring:" + ev_str for ev_str in event_types]
 
@@ -91,8 +91,10 @@ class SingleLocalDatastoreObjectTypeFetcher:
         self.debug = debug
 
         self.meas_ref = self.get_meas_ref()
-        self.obj_ids = self.get_object_ids(obj_type)
-
+        if obj_type != "aggregate":
+            self.obj_ids = self.get_object_ids(obj_type)
+        else:
+            self.obj_ids = [aggregate_id]
 
     def fetch(self): 
     
@@ -111,10 +113,11 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
             event_type = result["eventType"]
             if event_type.startswith("ops_monitoring:"):
-                table_str = "ops_" + event_type[15:]
+                table_str = "ops_" + self.obj_type + "_" + event_type[15:]
 
                 # if id is event:obj_id_that_was_queried,
                 # TODO straighten out protocol with monitoring group
+                # for now go with this
                 id_str = result["id"]
 
                 # remove event: and prepend aggregate_id:
@@ -141,16 +144,11 @@ class SingleLocalDatastoreObjectTypeFetcher:
         if obj_type == "node":
             obj_ids = self.get_all_nodes_of_aggregate()
 
-        elif obj_type == "sliver":
-            pass  # TODO implement and test
-            #obj_ids = self.info_crawler.get_all_slivers_of_aggregate()
-
         elif obj_type == "interface":
             obj_ids = self.get_all_interfaces_of_aggregate()
-           
+
         elif obj_type == "interfacevlan":
-            pass   # TODO implement and test
-            #obj_ids = self.get_all_interfacevlans_of_aggregate()
+            obj_ids = self.get_all_interfacevlans_of_aggregate()
 
         else:
             sys.stderr.write("Invalid object type %s" % obj_type)
@@ -164,14 +162,6 @@ class SingleLocalDatastoreObjectTypeFetcher:
         # current time for lt filter and record keeping
         req_time = int(time.time()*1000000)
 
-        #q = {"filters":{"eventType":self.event_types, 
-        #                "obj":{"type": self.obj_type,
-        #                       "id": self.obj_ids},
-        #                "ts": {"gt": self.time_of_last_update
-        #                       }
-        #                }
-        #     }
-        
         q = {"filters":{"eventType":self.event_types, 
                         "obj":{"type": self.obj_type,
                                "id": self.obj_ids},
@@ -181,7 +171,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
              }
 
         url = self.meas_ref + "?q=" + str(q)
-        url = url.replace(' ', '%20')
+        url = url.replace(' ', '')
         if self.debug:
             print url
 
@@ -265,7 +255,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         return res
 
 
-    def get_all_links_of_aggregate(self):
+    def get_all_interfacevlans_of_aggregate(self):
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
@@ -273,9 +263,10 @@ class SingleLocalDatastoreObjectTypeFetcher:
         res = [];
         tbl_mgr.db_lock.acquire()
         try:
-            cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+
+            cur.execute("select id from ops_link_interfacevlan where link_id in (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))");
+
             q_res = cur.fetchall()
-            
             tbl_mgr.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
@@ -358,13 +349,23 @@ def main(argv):
     
     node_event_types = all_event_types["node"]
     interface_event_types = all_event_types["interface"]
-
+    interface_vlan_event_types = all_event_types["interfacevlan"]
+    aggregate_event_types = all_event_types["aggregate"]
+    
+    #pprint(all_event_types)
+    
     if object_type_param == 'n':
         event_types = node_event_types
         object_type = "node"
     elif object_type_param == 'i':
         event_types = interface_event_types
         object_type = "interface"
+    elif object_type_param == 'v':
+        event_types = interface_vlan_event_types
+        object_type = "interfacevlan"
+    elif object_type_param == 'a':
+        event_types = interface_event_types
+        object_type = "aggregate"
     else:
         sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
