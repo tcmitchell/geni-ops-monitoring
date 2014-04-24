@@ -96,15 +96,20 @@ class SingleLocalDatastoreObjectTypeFetcher:
         else:
             self.obj_ids = [aggregate_id]
 
-    def fetch(self): 
+    def fetch_and_insert(self): 
     
         # poll datastore
         json_text = self.poll_datastore()
+        
+        data = None
 
         try:
             data = json.loads(json_text)
         except Exception, e:
             sys.stderr.write("Unable to load response in json %s" % e)
+        
+        if data is None:
+            return 1
 
         for result in data:
             if self.debug:
@@ -126,7 +131,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
                 tsdata = result["tsdata"]
                 tsdata_insert(self.tbl_mgr, agg_id, obj_id, table_str, tsdata, self.debug)
-
+        return 0
 
     def get_latest_ts(self):
         max_ts = 0
@@ -372,7 +377,10 @@ def main(argv):
 
     fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, debug)
 
-    fetcher.fetch()
+    ret_val = fetcher.fetch_and_insert()
+    if ret_val != 0:
+        print "fetch_and_insert() failed"
+
     fetcher.tbl_mgr.close_con()
 
 if __name__ == "__main__":
