@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/slice#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/slice#",
   "description": "GENI slice",
   "name": "Slice",
   "type": "object",

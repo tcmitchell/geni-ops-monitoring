@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/opsconfig#",
   "description": "Operational monitoring data configuration",
   "name": "opsconfig",
   "type": "object",

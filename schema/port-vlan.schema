@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#",
   "description": "subinterface representing a tagged VLAN on an interface",
   "name": "port-vlan",
   "type": "object",

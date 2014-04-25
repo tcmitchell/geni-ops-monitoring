@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#",
   "description": "Operational monitoring data",
   "name": "Data",
   "type": "object",

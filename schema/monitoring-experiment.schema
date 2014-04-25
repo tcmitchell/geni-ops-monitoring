@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/monitoring-experiment#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/monitoring-experiment#",
   "description": "experiment for monitoring purposes",
   "name": "Monitoring-experiment",
   "type": "object",
@@ -24,7 +24,7 @@
       "type": [
         {
           "urn": "string",
-          "$ref": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#"
+          "$ref": "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
         }
       ],
       "required": true
@@ -34,7 +34,7 @@
       "type": [
         {
           "urn": "string",
-          "$ref": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#"
+          "$ref": "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
         }
       ],
       "required": true

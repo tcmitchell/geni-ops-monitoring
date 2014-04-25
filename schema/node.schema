@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/hyper-schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/node#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/node#",
   "description": "node with some extensions for GENI monitoring use",
   "name": "node",
   "type": "object",
