@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/authority#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/authority#",
   "id": "ch.geni.net",
   "selfRef": "https://datastore.ch.geni.net/authorities/ch.geni.net",
   "urn": "urn:publicid:IDN+ch.geni.net+authority+ch",

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/link#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/link#",
   "id": "datastore.grnoc.iu.edu_link_001",
   "ts": 1391192705275101,
   "selfRef": "https://datastore.grnoc.iu.edu/info/link/salt_port_1750",

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#",
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/port-vlans/instageni.gpolab.bbn.com_interface_pc1:eth1:1750",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750",
   "ts": 1391194147100678,

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140131/externalcheck#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#",
   "id": "gpo",
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/info/externalcheck/gpo",
   "ts": 1391192685740849,
