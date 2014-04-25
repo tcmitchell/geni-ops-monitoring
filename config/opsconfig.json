@@ -279,6 +279,13 @@
 	         ["externalcheck_id","varchar"],
 	         ["selfRef","varchar"]
 	]
+    },
+    {	"name":"externalcheck_monitoredaggregate",
+    	"db_schema": [
+		 ["id","varchar"],
+	         ["externalcheck_id","varchar"],
+	         ["selfRef","varchar"]
+	]
     }
   ],
   "events": 

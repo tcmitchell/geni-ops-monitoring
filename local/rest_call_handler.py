@@ -199,6 +199,8 @@ def handle_externalcheck_info_query(tm, extck_id):
     extck_info = get_object_info(tm, table_str, extck_id)
     if extck_info is not None:
 
+        monitored_aggregates = get_monitored_aggregates(tm, extck_id)
+
         experiments = get_related_objects(tm, "ops_externalcheck_experiment", "externalcheck_id", extck_id)
 
         for exp_i in experiments: 
@@ -206,7 +208,7 @@ def handle_externalcheck_info_query(tm, extck_id):
             if exp_ref:
                 exp_refs.append(exp_ref)
 
-        return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs))
+        return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs, monitored_aggregates))
 
     else:
         return "external check store not found"
@@ -568,7 +570,7 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
     return json_dict
 
 # Forms external check store info dictionary (to be made to JSON)
-def get_externalcheck_info_dict(schema, info_row, exp_refs):
+def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
 
     json_dict = {}
     
@@ -581,6 +583,12 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs):
         for exp_ref in exp_refs:
             if len(exp_ref) > 0:
                 json_dict["experiments"].append({"href":exp_ref[0]})
+
+    if mon_agg_refs:
+        json_dict["monitored_aggregates"] = []
+        for mon_agg_ref in mon_agg_refs:
+            if len(exp_ref) > 0:
+                json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0],"href":mon_agg_ref[1]})
 
     return json_dict
 
@@ -801,6 +809,39 @@ def get_self_ref(tm, table_str, object_id):
     tm.db_lock.release()
     
     return self_ref
+
+
+# Get self reference only TODO refactor similar functions
+def get_monitored_aggregates(tm, extck_id):
+
+    tm.db_lock.acquire()
+    cur = tm.con.cursor()
+    res = None
+        
+    try:
+
+        if tm.database_program == "postgres":
+            cur.execute("select id, \"selfRef\" from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
+        elif tm.database_program == "mysql":
+            cur.execute("select id, selfRef from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
+ 
+        q_res = cur.fetchall()
+        tm.con.commit()
+
+        if q_res is not None:
+            res = []
+            for q_res_idx in range(len(q_res)):
+                res.append([q_res[q_res_idx][0], q_res[q_res_idx][1]])
+
+    except Exception, e:
+        print e
+        tm.con.commit()
+
+    cur.close()
+    tm.db_lock.release()
+    
+    return res
+
 
 # special get of refs for slice users which includes role TODO refactor similar functions
 def get_slice_user_refs(tm, table_str, slice_id):

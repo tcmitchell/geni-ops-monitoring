@@ -418,6 +418,9 @@ class InfoPopulator():
         exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn","source aggregate local datastore href", "urn:destination_aggregate_urn","destination aggregate local datastore href"]
         info_insert(self.tbl_mgr, "ops_experiment", exp1)
 
+        mon_agg = ["gpo_ig","gpo",self.url_base + "/info/aggregate/gpo-ig"] 
+        info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg)
+
 
     def insert_externalcheck_store_data(self):
         pass
