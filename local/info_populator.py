@@ -71,7 +71,7 @@ class InfoPopulator():
             info_insert(self.tbl_mgr, "ops_opsconfig_aggregate", opsconfigagg)
 
         opsconfig1 = []
-        opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/opsconfig#")
+        opsconfig1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/opsconfig#")
         opsconfig1.append("geni-prod")
         opsconfig1.append(self.config_store_url) # selfRef
         opsconfig1.append(str(int(time.time()*1000000))) 
@@ -93,7 +93,7 @@ class InfoPopulator():
          url_opsconfig_local_info = self.url_base + "/info/"
          
          agg1 = []
-         agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#")
+         agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#")
          agg1.append("gpo-ig")
          agg1.append(url_local_info + "aggregate/" + agg1[1])
          agg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
@@ -126,7 +126,7 @@ class InfoPopulator():
 
 
          sliver1 = []
-         sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
+         sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#")
          sliver1.append("instageni.gpolab.bbn.com_sliver_26947")
          sliver1.append(url_local_info + "sliver/" + sliver1[1])
          sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947")
@@ -144,7 +144,7 @@ class InfoPopulator():
 
                    
          sliver2 = []
-         sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#")
+         sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#")
          sliver2.append("instageni.gpolab.bbn.com_sliver_26950")
          sliver2.append(url_local_info + "sliver/" + sliver2[1])
          sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950")
@@ -162,7 +162,7 @@ class InfoPopulator():
 
 
          link1 = []
-         link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/link#")
+         link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/link#")
          link1.append("arbitrary_link_id_001")
          link1.append(url_local_info + "link/" + link1[1])
          link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
@@ -202,7 +202,7 @@ class InfoPopulator():
 
 
          interfacevlan1 = []
-         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#")
+         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
          interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
          interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
          interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
@@ -215,7 +215,7 @@ class InfoPopulator():
 
 
          interfacevlan2 = []
-         interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/port-vlan#")
+         interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
          interfacevlan2.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
          interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
          interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
@@ -228,7 +228,7 @@ class InfoPopulator():
 
 
          slice1 = []
-         slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/slice#")
+         slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/slice#")
          slice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
          slice1.append(url_local_info + "slice/" + slice1[1])
          slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
@@ -243,7 +243,7 @@ class InfoPopulator():
 
 
          user1 = []
-         user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/user#")
+         user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/user#")
          user1.append("tupty")
          user1.append(url_local_info + "user/" + user1[1])
          user1.append("tupty_user_urn") 
@@ -257,7 +257,7 @@ class InfoPopulator():
 
 
          authority1 = []
-         authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140131/authority#")
+         authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/authority#")
          authority1.append("ch.geni.net")
          authority1.append(url_local_info + "authority/" + authority1[1])
          authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
@@ -407,7 +407,7 @@ class InfoPopulator():
     def insert_externalcheck_store_info(self):
         extck_id = "gpo"
         ts = str(int(time.time()*1000000))
-        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140131/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
+        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
         info_insert(self.tbl_mgr, "ops_externalcheck", extck)
 
         exp1_id = "missouri_ig_to_gpo_ig"
@@ -415,7 +415,7 @@ class InfoPopulator():
         info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1)
 
         exp1_id = "missouri_ig_to_gpo_ig"
-        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140131/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn","source aggregate local datastore href", "urn:destination_aggregate_urn","destination aggregate local datastore href"]
+        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn","source aggregate local datastore href", "urn:destination_aggregate_urn","destination aggregate local datastore href"]
         info_insert(self.tbl_mgr, "ops_experiment", exp1)
 
 
