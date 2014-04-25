@@ -4,7 +4,7 @@
   "description": "link (circuit) with extensions for GENI monitoring use",
   "name": "link",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/link"
   },
@@ -14,6 +14,19 @@
       "type": "array",
       "minItems": 2,
       "maxItems": 2,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref": "http://json-schema.org/draft-03/links#"
+          }
+        ]
+      }
+    },
+    "l2path": {
+      "required": false,
+      "type": "array",
+      "minItems": 2,
       "items": {
         "type": [
           {
