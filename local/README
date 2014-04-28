@@ -59,15 +59,41 @@ Reference Local Datastore README
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
         * IF you are using mysql, set dbtype: mysql in the [main] section
 
-5. Apache WSGI and Flask Configuration
+5. Apache, WSGI, and Flask Configuration
 
    The reference configuration customizes apache to make the reference
-   datastore available via flask
+   datastore available via flask and to enable SSL encryption.  These
+   instructions assume a stock Ubuntu Apache2 install; modify as necessary
+   to suit your local installation.
+   
+    (1) Enable the SSL module and the default SSL site:
+        (a) sudo a2enmod ssl
+	(b) sudo a2ensite default-ssl
+        (c) sudo a2dissite default
 
-    (1) Add text to an appropriate VirtualHost directive in your apache
-        configuration (e.g. for a stock Ubuntu apache install, you can
-        put this inside the <VirtualHost *:80> block of
-          /etc/apache2/sites-available/default
+    (2) Fetch the GENI clearinghouse CA root certificate here:
+        http://groups.geni.net/geni/raw-attachment/wiki/GeniTrustAnchors/ch.geni.net-ca.pem
+        and copy it to /etc/ssl/certs.
+
+    (3) Apply for a tool certificate here:
+        http://groups.geni.net/geni/wiki/GENIDeveloper/ToolCertificates
+        Use "collector" for the too name, and a short site-specific identifier
+        for the instance.  Clients (collectors) will need the tool cert to be able
+         to connect via SSL to the web server.
+
+    (4) In /etc/apache2/sites-available/default-ssl, make sure the following SSL
+        settings are in place:
+
+        SSLEngine on
+        SSLCACertificateFile /etc/ssl/certs/ch.geni.net-ca.pem
+        SSLVerifyClient require
+        SSLVerifyDepth  3
+        SSLOptions +ExportCertData
+
+    (5) Add text to an appropriate VirtualHost directive in your apache
+        configuration (e.g. if you followed the SSL instructions above,
+        put this inside the <VirtualHost _default_:443> block of
+          /etc/apache2/sites-available/default-ssl)
         If you want the pages served at a root other than /, modify the
         WSGIScriptAlias directive:
 
@@ -81,9 +107,18 @@ Reference Local Datastore README
     Allow from all
   </Directory>
 
-    (2) In order to see WSGI errors if any occur, modify that same
+    (6) In order to see WSGI errors if any occur, modify that same
         VirtualHost block and set:
   LogLevel info
+
+    (7) Start or restart Apache:
+        sudo service apache2 [start|restart]
+
+    (8) Once you have your tool certification from step (3), verify that
+        you can connect to Apache:
+
+    curl -k --cert ~/your-tool-cert.pem  https://apachehost:443/info/aggregate/gpo-ig
+    XXX is there a more generic URL to give here, or will gpo-ig work everywhere?
 
 6. Datastore database cleanup and initialization 
 
