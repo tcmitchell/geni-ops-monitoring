@@ -99,28 +99,33 @@ Reference Local Datastore README
         If you want the pages served at a root other than /, modify the
         WSGIScriptAlias directive.
 
-  WSGIDaemonProcess localstore threads=5
-  WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
+        WSGIDaemonProcess localstore threads=5
+        WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
 
-  <Directory /usr/local/ops-monitoring/local/wsgi>
-    WSGIProcessGroup localstore
-    WSGIApplicationGroup %{GLOBAL}
-    Order deny,allow
-    Allow from all
-  </Directory>
+        <Directory /usr/local/ops-monitoring/local/wsgi>
+            WSGIProcessGroup localstore
+            WSGIApplicationGroup %{GLOBAL}
+            Order deny,allow
+            Allow from all
+        </Directory>
 
     (6) In order to see WSGI errors if any occur, modify that same
         VirtualHost block and set:
   LogLevel info
 
-    (7) Start or restart Apache:
+    (7) Make sure you haven't introduced any syntax errors in default-ssl:
+        sudo apache2ctl configtest
+
+    (8) Start or restart Apache:
         sudo service apache2 [start|restart]
 
-    (8) Once you have your tool certification from step (3), verify that
+    (9) Once you have your tool certification from step (3), verify that
         you can connect to Apache:
 
     curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/aggregate/gpo-ig
-    XXX is there a more generic URL to give here, or will gpo-ig work everywhere?
+
+    Note that the curl that ship with MacOS X does not seem to work.  The curl
+    from MacPorts is known to work.
 
 6. Datastore database cleanup and initialization 
 
