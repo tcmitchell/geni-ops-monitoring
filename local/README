@@ -77,12 +77,13 @@ Reference Local Datastore README
 
     (3) Apply for a tool certificate here:
         http://groups.geni.net/geni/wiki/GENIDeveloper/ToolCertificates
-        Use "collector" for the too name, and a short site-specific identifier
+        Use "collector" for the tool name, and a short site-specific identifier
         for the instance.  Clients (collectors) will need the tool cert to be able
-         to connect via SSL to the web server.
+        to connect via SSL to the web server.
 
     (4) In /etc/apache2/sites-available/default-ssl, make sure the following SSL
-        settings are in place:
+        settings are in place.  Some of these are commented out by default,
+        so be sure to remove the initial "#".
 
         SSLEngine on
         SSLCACertificateFile /etc/ssl/certs/ch.geni.net-ca.pem
@@ -91,11 +92,12 @@ Reference Local Datastore README
         SSLOptions +ExportCertData
 
     (5) Add text to an appropriate VirtualHost directive in your apache
-        configuration (e.g. if you followed the SSL instructions above,
+        configuration.  If you followed the SSL instructions above,
         put this inside the <VirtualHost _default_:443> block of
-          /etc/apache2/sites-available/default-ssl)
+        /etc/apache2/sites-available/default-ssl, right below the SSL
+        settings and above the ending </VirtualHost>.
         If you want the pages served at a root other than /, modify the
-        WSGIScriptAlias directive:
+        WSGIScriptAlias directive.
 
   WSGIDaemonProcess localstore threads=5
   WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
@@ -117,7 +119,7 @@ Reference Local Datastore README
     (8) Once you have your tool certification from step (3), verify that
         you can connect to Apache:
 
-    curl -k --cert ~/your-tool-cert.pem  https://apachehost:443/info/aggregate/gpo-ig
+    curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/aggregate/gpo-ig
     XXX is there a more generic URL to give here, or will gpo-ig work everywhere?
 
 6. Datastore database cleanup and initialization 
