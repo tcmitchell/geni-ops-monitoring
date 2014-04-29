@@ -6,6 +6,7 @@ import OpenSSL
 try:
   sys.path.insert(0, '/usr/local/ops-monitoring/local')
   from web_server import LocalDatastoreServer
+
   server = LocalDatastoreServer('/usr/local/ops-monitoring')
   _application = server.app
 except Exception, e:
@@ -39,10 +40,15 @@ def authorized_certificate(cert_string):
     names = [s.strip() for s in str(alt_name).split(',')]
 
     # find the URN by matching the prefix
+    sys.path.insert(0, '/usr/local/ops-monitoring/common')
+    import whitelist_loader
+    wl = whitelist_loader.WhitelistLoader('/usr/local/ops-monitoring/config')
+  
     for name in names:
         if name.startswith('URI:urn:publicid:IDN'):
-            # XXX check whitelist here
-	    if 'tool+collector-' in name:
+
+	    #if 'tool+collector-' in name: # maybe also include this
+	    if wl.is_in_whitelist(name):
                 return True
             else:
                 print "%s not authorized" % name
