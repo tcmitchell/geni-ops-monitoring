@@ -25,6 +25,7 @@ import json
 import os
 import time
 import urllib2
+import requests
 from pprint import pprint as pprint
 
 # TODO if response has an extra key, exception is thrown and currently
@@ -111,7 +112,7 @@ def validate_list_of_responses(schema, resp):
 json_schema_path = "./"
 json_schema = json.load(open(json_schema_path + "json_schema"))
 #pprint(json_schema)
-base_url = "http://127.0.0.1:5000/"
+base_url = "https://127.0.0.1:5000/"
 
 aggregate = base_url + "info/aggregate/gpo-ig"
 node = base_url + "info/node/instageni.gpolab.bbn.com_node_pc1"
@@ -120,9 +121,9 @@ slice_  = base_url + "info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive"
 sliver  = base_url + "info/sliver/instageni.gpolab.bbn.com_sliver_26947"
 authority = base_url + "info/authority/ch.geni.net"
 user  = base_url + "info/user/tupty"
-opsconfig = base_url + "info/opsconfig/geni-prod"
+#opsconfig = base_url + "info/opsconfig/geni-prod"
 link = base_url + "info/link/arbitrary_link_id_001"
-interfacevlan = base_url + "info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750"
+#interfacevlan = base_url + "info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750"
 
 urls = {}
 urls["opsconfig"] = opsconfig
@@ -139,7 +140,7 @@ urls["interfacevlan"] = interfacevlan
 
 for key in urls:
     print "testing", key, "at", urls[key]
-    resp = json.load(urllib2.urlopen(urls[key]))
+    resp = json.loads(requests.get(urls[key],verify=False, cert='/vagrant/collector-gpo-withnpkey.pem').content)
     schema = json_schema[key]
     print key,"response is valid?",validate_response(schema, resp)
 

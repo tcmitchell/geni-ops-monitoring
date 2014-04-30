@@ -35,7 +35,7 @@ import table_manager
 import opsconfig_loader
 
 def usage():
-    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregate-id> -o <object-type (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>')
+    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -44,10 +44,11 @@ def parse_args(argv):
 
     aggregate_id = ""
     object_type = ""
+    certificate_path = ""
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"ha:o:d",["baseurl=","aggregateid=","object-type=","help","debug"])
+        opts, args = getopt.getopt(argv,"ha:c:o:d",["baseurl=","aggregateid=","certificatepath=","objecttype=","help","debug"])
     except getopt.GetoptError:
         usage()
 
@@ -56,19 +57,21 @@ def parse_args(argv):
             usage()
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
-        elif opt in ("-o", "--object-type"):
+        elif opt in ("-c", "--certificate"):
+            certificate_path = arg
+        elif opt in ("-o", "--objecttype"):
             object_type = arg
         elif opt in ("-d" or "--debug"):
             debug = True
         else:
             usage()
 
-    return [aggregate_id, object_type, debug]
+    return [aggregate_id, object_type, certificate_path, debug]
 
 
 class SingleLocalDatastoreObjectTypeFetcher:
 
-    def __init__(self, tbl_mgr, aggregate_id, obj_type, event_types, debug):
+    def __init__(self, tbl_mgr, aggregate_id, obj_type, event_types, cert_path, debug):
 
         self.tbl_mgr = tbl_mgr
 
@@ -78,6 +81,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         # Query filter parameters
         self.obj_type = obj_type
+
+        # collector certificate path
+        self.cert_path = cert_path
 
         # ensures tables exist
         self.tbl_mgr.establish_tables(event_types)
@@ -180,7 +186,13 @@ class SingleLocalDatastoreObjectTypeFetcher:
         if self.debug:
             print url
 
-        resp = requests.get(url)
+        # test before adding exception handling
+        #try:
+        resp = requests.get(url,verify=False, cert=self.cert_path)
+        #except Exception, e:
+        #    print "No response from local datastore at: " + url
+        #    print e
+        #    return None
              
         if resp:
             self.time_of_last_update = req_time
@@ -335,8 +347,8 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
      
 def main(argv): 
 
-    [aggregate_id, object_type_param, debug] = parse_args(argv)
-    if aggregate_id == "" or object_type_param == "":
+    [aggregate_id, object_type_param, cert_path, debug] = parse_args(argv)
+    if aggregate_id == "" or object_type_param == "" or cert_path == "":
         usage()
 
     db_type = "collector"

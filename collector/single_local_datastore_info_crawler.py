@@ -38,7 +38,7 @@ import opsconfig_loader
 # This program populates the collector database on every fetch
 
 def usage():
-    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -o <objecttypess-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
+    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -c </cert/path/cert.pem> -o <objecttypes-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -47,11 +47,12 @@ def parse_args(argv):
 
     base_url = ""
     aggregate_id = ""
-    objecttypes = ""
+    object_types = ""
+    cert_path = ""
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:o:d",["help","baseurl=","aggregateid=","object-types=","debug"])
+        opts, args = getopt.getopt(argv,"hb:a:c:o:d",["help","baseurl=","aggregateid=","certpath=","objecttypes=","debug"])
     except getopt.GetoptError:
         usage()
 
@@ -62,18 +63,20 @@ def parse_args(argv):
             base_url = arg
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
-        elif opt in ("-o", "--object-types"):
-            objecttypes = arg
+        elif opt in ("-c", "--certpath"):
+            certpath = arg
+        elif opt in ("-o", "--objecttypes"):
+            object_types = arg
         elif opt in ("-d", "--debug"):
             debug = True
         else:
             usage()
 
-    return [base_url, aggregate_id, objecttypes, debug]
+    return [base_url, aggregate_id, object_types, cert_path, debug]
 
 class SingleLocalDatastoreInfoCrawler:
     
-    def __init__(self, tbl_mgr, info_url, aggregate_id, debug):
+    def __init__(self, tbl_mgr, info_url, aggregate_id, cert_path, debug):
         self.tbl_mgr = tbl_mgr
         self.tbl_mgr.establish_all_tables()
 
@@ -82,6 +85,9 @@ class SingleLocalDatastoreInfoCrawler:
         self.info_url = info_url
         self.aggregate_id = aggregate_id
         self.debug = debug
+
+        # collector certificate path
+        self.cert_path = cert_path
 
 
     # Updates head aggregate information
@@ -353,7 +359,7 @@ def handle_request(url):
     resp = None
 
     try:
-        resp = requests.get(url)
+        resp = requests.get(url,verify=False, cert=self.cert_path)
     except Exception, e:
         print "No response from local datastore at: " + url
         print e
@@ -391,9 +397,9 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
 
 def main(argv): 
 
-    [info_url, aggregate_id, objecttypes, debug] = parse_args(argv)
+    [info_url, aggregate_id, objecttypes, cert_path, debug] = parse_args(argv)
 
-    if info_url == "" or aggregate_id == "":
+    if info_url == "" or aggregate_id == "" or cert_path == "":
         usage()
 
     db_type = "collector"
@@ -402,7 +408,7 @@ def main(argv):
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
     tbl_mgr.poll_config_store()
-    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, debug)
+    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, cert_path, debug)
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
