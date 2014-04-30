@@ -44,11 +44,11 @@ def parse_args(argv):
 
     aggregate_id = ""
     object_type = ""
-    certificate_path = ""
+    cert_path = ""
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"ha:c:o:d",["baseurl=","aggregateid=","certificatepath=","objecttype=","help","debug"])
+        opts, args = getopt.getopt(argv,"ha:c:o:d",["baseurl=","aggregateid=","certpath=","objecttype=","help","debug"])
     except getopt.GetoptError:
         usage()
 
@@ -58,7 +58,7 @@ def parse_args(argv):
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
         elif opt in ("-c", "--certificate"):
-            certificate_path = arg
+            cert_path = arg
         elif opt in ("-o", "--objecttype"):
             object_type = arg
         elif opt in ("-d" or "--debug"):
@@ -66,7 +66,7 @@ def parse_args(argv):
         else:
             usage()
 
-    return [aggregate_id, object_type, certificate_path, debug]
+    return [aggregate_id, object_type, cert_path, debug]
 
 
 class SingleLocalDatastoreObjectTypeFetcher:
@@ -387,7 +387,7 @@ def main(argv):
         sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
 
-    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, debug)
+    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, object_type, event_types, cert_path, debug)
 
     ret_val = fetcher.fetch_and_insert()
     if ret_val != 0:

@@ -64,7 +64,7 @@ def parse_args(argv):
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
         elif opt in ("-c", "--certpath"):
-            certpath = arg
+            cert_path = arg
         elif opt in ("-o", "--objecttypes"):
             object_types = arg
         elif opt in ("-d", "--debug"):
@@ -93,7 +93,7 @@ class SingleLocalDatastoreInfoCrawler:
     # Updates head aggregate information
     def refresh_aggregate_info(self):
         print self.info_url + '/aggregate/' + self.aggregate_id
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)            
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
         if am_dict:
             self.tbl_mgr.establish_table("ops_aggregate")
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
@@ -106,12 +106,12 @@ class SingleLocalDatastoreInfoCrawler:
     # Updates all nodes information
     def refresh_all_links_info(self):
 
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_link"]
 
             for res_i in am_dict["resources"]:
-                res_dict = handle_request(res_i["href"])
+                res_dict = handle_request(res_i["href"], self.cert_path)
                 if res_dict["$schema"].endswith("link#"): # if a link
                     
                     # get each attribute out of response into list
@@ -123,12 +123,12 @@ class SingleLocalDatastoreInfoCrawler:
 
     def refresh_all_slivers_info(self):
 
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_sliver"]
 
             for slv_i in am_dict["slivers"]:
-                slv_dict = handle_request(slv_i["href"])
+                slv_dict = handle_request(slv_i["href"], self.cert_path)
                 
                 # get each attribute out of response into list
                 slv_info_list = self.get_sliver_attributes(slv_dict, schema)
@@ -138,12 +138,12 @@ class SingleLocalDatastoreInfoCrawler:
 
 
     def refresh_all_nodes_info(self):
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id)
+        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
         if am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
 
             for res_i in am_dict["resources"]:
-                res_dict = handle_request(res_i["href"])
+                res_dict = handle_request(res_i["href"], self.cert_path)
                 if res_dict["$schema"].endswith("node#"): # if a node
                     
                     # get each attribute out of response into list
@@ -158,10 +158,10 @@ class SingleLocalDatastoreInfoCrawler:
         link_ids = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         for link_id in link_ids:
-            link_dict = handle_request(self.info_url + '/link/' + link_id)
+            link_dict = handle_request(self.info_url + '/link/' + link_id, self.cert_path)
             if "endpoints" in link_dict:
                 for endpt in link_dict["endpoints"]:
-                    ifacevlan_dict = handle_request(endpt["href"])
+                    ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
                     ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
                     info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug) 
                     link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
@@ -177,10 +177,10 @@ class SingleLocalDatastoreInfoCrawler:
          node_ids = self.get_all_nodes_of_aggregate()
          schema = self.tbl_mgr.schema_dict["ops_interface"]
          for node_id in node_ids:
-             node_dict = handle_request(self.info_url + '/node/' + node_id)
+             node_dict = handle_request(self.info_url + '/node/' + node_id, self.cert_path)
              if "ports" in node_dict:
                  for port in node_dict["ports"]:
-                     interface_dict = handle_request(port["href"])
+                     interface_dict = handle_request(port["href"], self.cert_path)
                      interface_info_list = self.get_interface_attributes(interface_dict, schema)
                      info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
                      node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
@@ -354,12 +354,12 @@ class SingleLocalDatastoreInfoCrawler:
         return meas_ref
 
 
-def handle_request(url):
+def handle_request(url, cert_path):
 
     resp = None
 
     try:
-        resp = requests.get(url,verify=False, cert=self.cert_path)
+        resp = requests.get(url, verify=False, cert=cert_path)
     except Exception, e:
         print "No response from local datastore at: " + url
         print e
