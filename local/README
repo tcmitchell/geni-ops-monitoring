@@ -75,11 +75,9 @@ Reference Local Datastore README
         http://groups.geni.net/geni/raw-attachment/wiki/GeniTrustAnchors/ch.geni.net-ca.pem
         and copy it to /etc/ssl/certs.
 
-    (3) Apply for a tool certificate here:
-        http://groups.geni.net/geni/wiki/GENIDeveloper/ToolCertificates
-        Use "collector" for the tool name, and a short site-specific identifier
-        for the instance.  Clients (collectors) will need the tool cert to be able
-        to connect via SSL to the web server.
+    (3) Apply for a tool certificate as described here:
+    http://groups.geni.net/geni/wiki/OperationalMonitoring/DatastorePolling#Security
+    You only need to do this once.
 
     (4) In /etc/apache2/sites-available/default-ssl, make sure the following SSL
         settings are in place.  Some of these are commented out by default,
@@ -122,7 +120,7 @@ Reference Local Datastore README
     (9) Once you have your tool certification from step (3), verify that
         you can connect to Apache:
 
-    curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/aggregate/gpo-ig
+    curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/opsconfig/geni-prod
 
     Note that the curl that ship with MacOS X does not seem to work.  The curl
     from MacPorts is known to work.

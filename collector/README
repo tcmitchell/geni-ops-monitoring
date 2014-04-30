@@ -1,14 +1,18 @@
 Reference Collector README
 
-1. Aptitude packages
+1. Packages to install
 
    * IF using postgres
       (1) sudo apt-get install postgresql python-psycopg2
    * IF using mysql
       (1) sudo apt-get install mysql-server mysql-client python-mysqldb
 
-    (2) sudo apt-get install python-requests 	
-   
+    (2) Install the python requests package.
+        (a) sudo apt-get install python-dev python-pip 
+        (b) sudo pip install requests
+        (c) If requests was installed through apt-get install python-requests,
+            upgrade it through pip:
+            sudo pip install requests --upgrade
 
 2a. PostgreSQL Configuration
 
@@ -50,10 +54,15 @@ Reference Collector README
    the collection of local datastores to be queried.  Use these to
    form arguments in the execution of the collector programs.
 
-   (1) single_local_datastore_info_crawler.py performs information
-   fetching. It puts data in the collector database.  It needs to be
-   called with three arguments:
+   (1) Apply for a tool certificate as described here:
+   http://groups.geni.net/geni/wiki/OperationalMonitoring/DatastorePolling#Security
+   You only need to do this once.
 
+   (2) single_local_datastore_info_crawler.py performs information
+   fetching. It puts data in the collector database.  It needs to be
+   called with four arguments:
+
+     -c or --certpath <pathname> provides the path to your tool certificate
      -b or --baseurl with <url_of_info_url> 
         This starts with "http://" and the convention is to end with "/info"
      -a or --aggregateid with aggregate_id at -b's datastore (i.e., gpo-ig)
@@ -69,21 +78,23 @@ Reference Collector README
      -h or --help prints the usage() function, repeat of this info
    
    
-   (2) single_local_datastore_object_type_fetcher.py does a single fetch
-   of timeseries data. It needs to be called with two arguments:
+   (3) single_local_datastore_object_type_fetcher.py does a single fetch
+   of timeseries data. It needs to be called with three arguments:
 
+     -c or --certpath <pathname> provides the path to your tool certificate
      -a or --aggregateid of the aggregate in the ops_aggregate table
      -o or --object-type of object to get (note singularity). Valid object 
         types are (only one is passed, unlike the info_crawler above):
 	n: for node
 	i: for interface
+	v: for vlan
 	So argument -o n will get ts data for all node events and all nodes
 	at the datastore
      -d or --debug will print what would be added to the collector database
         to the screen and does not add anything to the database
      -h or --help prints the usage() function, repeat of this info
 
-   (3) Running these programs as cron jobs.
+   (4) Running these programs as cron jobs.
 
     Go into crontab:
 
@@ -100,11 +111,11 @@ Reference Collector README
     aggregate_id the same as for the info crawler. Save and exit
     crontab.
 
-    30 23 * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_info_crawler.py -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
+    30 23 * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_info_crawler.py -c /path/to/cert/collector-xyz.pem -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
 
-    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o n)
+    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -c /path/to/cert/collector-xyz.pem -a gpo-ig -o n)
 
-    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -a gpo-ig -o i)
+    */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -c /path/to/cert/collector-xyz.pem -a gpo-ig -o i)
 
 5. Query Library
 
