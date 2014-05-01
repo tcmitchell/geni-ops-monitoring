@@ -28,12 +28,6 @@ class sslapache::server {
   }
 
   file {
-    "/etc/apache2/sites-available/default":
-      content => template("sslapache/site_available_default.erb"),
-      notify => Service["apache2"];
-  }
-
-  file {
     "/etc/apache2/sites-enabled/default-ssl":
       content => template("sslapache/site_enabled_default.erb"),
       notify => Service["apache2"],
@@ -61,9 +55,5 @@ class sslapache::server {
     "a2ensite":
       command => "/usr/sbin/a2ensite default-ssl",
       require => Package["apache2"];
-
-    "a2dissite":
-      command => "/usr/sbin/a2dissite default",
-      require => Package["apache2"];
-  }
+    }
 }
