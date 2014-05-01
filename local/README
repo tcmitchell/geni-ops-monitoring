@@ -85,6 +85,8 @@ Table of Contents:
         (a) sudo a2enmod ssl
 	(b) sudo a2ensite default-ssl
         (c) sudo a2dissite default
+            If you need the default site (port 80) for other content that you
+            need this web server to provide, you can skip (c).
 
     (2) Fetch the GENI clearinghouse CA root certificate here:
         http://groups.geni.net/geni/raw-attachment/wiki/GeniTrustAnchors/ch.geni.net-ca.pem
