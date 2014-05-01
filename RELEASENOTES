@@ -7,11 +7,17 @@ May 1, 2014
   be allowed access.  See local/README for the required Apache2
   configuration and collector/README for using tool certificates.
 
-* schema changes (Ryan fill in)
+* The database schemas are all read from config/opsconfig.json,
+  which is a dictionary containing this configuration.  See the
+  README at local/README point 6 for details of the schema.  The
+  only change to tables that existed prior to this release are the
+  measurement event tables.  The table names now are named 
+  "ops_<object_type>_<event_type>".  Before <object_type did not
+  exists.
 
 
 Changes for Release snapshot-20140221 
 February 21, 2014
 -------------------------------------
 
-* Initial release
+* Initial release of monitoring prototype.
