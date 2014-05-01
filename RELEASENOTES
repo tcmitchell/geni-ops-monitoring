@@ -1,0 +1,17 @@
+Changes for Release 1.0  
+May 1, 2014
+-----------------------
+
+* SSL is used to enable local datastores to verify the identity of
+  collectors.  Collectors must present a valid tool certificate to
+  be allowed access.  See local/README for the required Apache2
+  configuration and collector/README for using tool certificates.
+
+* schema changes (Ryan fill in)
+
+
+Changes for Release snapshot-20140221 
+February 21, 2014
+-------------------------------------
+
+* Initial release

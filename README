@@ -1,6 +1,9 @@
 This is GPO code for the GENI operational monitoring project.
-There should be one subdirectory for each component.  For links to all
-documentation of the operational monitoring project, see:
+
+For a description of what has changed in this release, see RELEASENOTES
+in this directory.
+
+For links to all documentation of the operational monitoring project, see:
 
   http://groups.geni.net/geni/wiki/OperationalMonitoring
 
@@ -9,7 +12,16 @@ implement parts of the monitoring component model listed at:
 
   http://www.gpolab.bbn.com/monitoring/components/
 
-Contents of this directory:
+You can get more recent versions of this source by following the
+directions here:
+
+  http://trac.gpolab.bbn.com/ops-monitoring/wiki/GettingSourceCode
+
+Current and past releases of this software are available here:
+
+  http://software.geni.net/local-sw/
+
+This directory contains one subdirectory for each component:
  * Directories which implement components of the ops monitoring model:
    * alerting/: reference alerting utilities (component (a)) - working 
                 prototype
