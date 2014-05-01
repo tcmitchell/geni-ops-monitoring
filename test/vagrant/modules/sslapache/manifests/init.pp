@@ -21,44 +21,36 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-node default {
-
-  ## Defaults
-
-  # Always run apt-get update before trying to install packages
-  Package {
-    require => Exec["apt_client_update"],
+class sslapache::server {
+  package {
+    "apache2": ensure => installed;
+    "libapache2-mod-wsgi": ensure => installed;
   }
 
-  $database_type = "mysql"
-
-  # exactly one of these should be true
-  $populate_data = true
-  $populate_config_store = false
-  $init_collector = false
-
-  $database_name = "local"
-  $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
-
-  # since these passwords are being committed to a repo, never use
-  # them anywhere outside a vagrant instance running on localhost
-  $postgres_superuser_password = "d86LJY278htqSkrP2oNx"
-  $postgres_localstore_password = "yz9nQxB9TbF74jmMQbXs"
-  $mysql_localstore_password = "JU63p3MBGjnUmzbv3apQ"
-
-  include "local"
-}
-
-class local {
-
-  include "apt::client"
-  include "sslapache::server"
-  include "flask::server"
-  include "local::server"
-  include "${database_type}::server"
-
-  # if you want to populate the fake data, you need psutil
-  if $populate_data {
-    include "psutil::base"
+  file {
+    "/etc/apache2/sites-available/default":
+      content => template("sslapache/site_available_default.erb"),
+      notify => Service["apache2"];
   }
+
+  file {
+    "/etc/apache2/sites-enabled/default-ssl":
+      content => template("sslapache/site_enabled_default.erb"),
+      notify => Service["apache2"];
+  }
+
+  file {
+    "/etc/ssl/certs/ch.geni.net-ca.pem":
+      content => template("sslapache/ch.geni.net-ca.pem"),
+      notify => Service["apache2"];
+  }
+
+  service {
+    "apache2":
+      ensure => running,
+      enable => true,
+      require => Package["libapache2-mod-wsgi"];
+  }
+
+  # commands here
 }

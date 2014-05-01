@@ -1,0 +1,10 @@
+To test this with a collector vagrant vm, go to:
+/usr/local/ops-monitoring/local/unit-tests
+
+python local_restart_node_interface_stats.py -b https://192.168.1.10:8043/info
+where 192.168.1.10 is the ipaddress of the host machine (see ifconfig)
+
+note that 127.0.0.1:8043 does not work
+
+This enables the collector to webcrawl the localstore with the right addresses
+in the local datastore's database.
