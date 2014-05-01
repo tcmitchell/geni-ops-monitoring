@@ -1,4 +1,16 @@
-Reference Local Datastore README
+Reference Datastore README
+
+Table of Contents: 
+
+1. Aptitude packages
+2. Database Configuration
+3. PSutil Install and Configuration (optional)
+4. Install and configure ops-monitoring software
+5. Apache, WSGI, and Flask Configuration
+6. Datastore database cleanup and initialization 
+7. Start the webserver
+8. Invoke some example queries
+
 
 1. Aptitude packages
 
@@ -33,6 +45,7 @@ Reference Local Datastore README
     (1) echo "CREATE DATABASE local" | mysql -u root -p
     (2) echo "GRANT ALL ON local.* TO <LOCAL_OPERATOR_NAME>@localhost IDENTIFIED BY '<LOCAL_PASSWORD>'" | mysql -u root -p
 
+
 3. PSutil Install and Configuration (optional)
 
    This is only necessary if you want to use psutil to insert some
@@ -46,6 +59,7 @@ Reference Local Datastore README
         python-psutil, upgrade it through pip
         sudo pip install psutil --upgrade
 
+
 4. Install and configure ops-monitoring software
 
    This puts the software in /usr/local/ops-monitoring.  You can put it
@@ -58,6 +72,7 @@ Reference Local Datastore README
         * set username: <LOCAL_OPERATOR_NAME>
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
         * IF you are using mysql, set dbtype: mysql in the [main] section
+
 
 5. Apache, WSGI, and Flask Configuration
 
@@ -89,6 +104,7 @@ Reference Local Datastore README
         SSLVerifyDepth  3
         SSLOptions +ExportCertData
 
+
     (5) Add text to an appropriate VirtualHost directive in your apache
         configuration.  If you followed the SSL instructions above,
         put this inside the <VirtualHost _default_:443> block of
@@ -106,6 +122,7 @@ Reference Local Datastore README
             Order deny,allow
             Allow from all
         </Directory>
+
 
     (6) In order to see WSGI errors if any occur, modify that same
         VirtualHost block and set:
@@ -125,6 +142,7 @@ Reference Local Datastore README
     Note that the curl that ship with MacOS X does not seem to work.  The curl
     from MacPorts is known to work.
 
+
 6. Datastore database cleanup and initialization 
 
    Populate your database either with the schema tables only, or with
@@ -143,6 +161,82 @@ Reference Local Datastore README
         (a) psql -U <LOCAL_OPERATOR_NAME> -h localhost --dbname=local
   	(c) \dt
 	(d) select * from ops_aggregate;
+    
+    For operators of a local datastore (populating with real data),
+    below is a discription for which tables to populate for what
+    purpose.
+
+    Table names are prefixed with "ops_", so the table about an
+    aggregate is called "ops_aggregate".  All tables share the same
+    "ops_" namespace. 
+
+    The database schema for each table can be found in
+    "/ops-monitoring/config/opsconfig.json".  Tables supporing
+    information queries about objects (i.e., ops_node about nodes)
+    have a schema that can be found in the opsconfig.json dictionary
+    in the info array.  The info array contains a list of all tables
+    supporting information queries.  Each element of the array
+    contains a sub-dictionary with keys of name and db_schema.  The
+    db_schema value contains an array listing the column names and
+    column schema.  These are written in PostreSQL format, but upon
+    reading the schema the TableManager class can translate to MySQL
+    syntax.  All info tables have the following components in common:
+
+    - $schema : The json-schema file used for checking if the response
+       is valid.  An example value is: 
+       http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#
+
+    - id : The ID of the object that is unique to this particular 
+       datastore.  It is preferred that this is a globally unique
+       id to the system. For example, aggregate ID rci-eg (for RENCI
+       ExoGENI) will not be used for other aggregate IDs.
+
+    - selfRef : The reference to the page to get information about
+       this object.
+
+    - urn : The urn of this object
+
+    - ts : The last time this row in the database was managed.  This
+       is the number of microseconds since the last epoch.  In Python,
+       this is time.time*1000000
+
+    Other important notable values are the following:
+     
+    - measRef : This is the base url for reference to the datastore
+       measurement queries (i.e.,
+       http://tamassos.gpolab.bbn.com/data/)
+
+    - properties$<property> : This is for information about a
+       particular property of the object.
+
+
+    Tables relating objects to one another are named with
+    objecttype with relatedobjecttype becoming: 
+    ops_objectype_relatedobjecttype
+    For example, information about a nodes interfaces are in table
+    "ops_node_interface".
+
+    The schema in the related object tables are all of form:
+    column1 is 'id' which is the relatedobjecttype object's id
+    column2 is '<objecttype>_id' where objecttype will vary.
+    column3 is 'urn' which is the relatedobjecttype object's urn
+    column4 is 'selfRef' which is the relatedobjecttype object's 
+    reference in this datastore.
+
+    Continuing the "ops_node_interface" example, a row would be:
+    ('interface_id', 'node_id', 'inteface_urn', 'interface_href').
+
+    Another example is "ops_silver_resource":
+    ('resource_id', 'sliver_id', 'resource_urn', 'resource_href')
+    where resource is either a node or link. Node and Link ids, 
+    urns, and hrefs co-exist in this table.
+    
+    Tables containing measurement event data are prefixed with the
+    object type, so the table for the event type "cpu_util" on node
+    objects is in table "ops_node_cpu_util". These tables all have 
+    a similar schema: ('id', 'ts', 'v')
+
+
 
 7. Start the webserver
 
@@ -152,6 +246,7 @@ Reference Local Datastore README
    OR start flask:
     (2) cd /usr/local/ops-monitoring/local
     (3) python ./web_server.py
+
 
 8. Invoke some example queries:
    If you use the sample data from the unit test script, these queries
