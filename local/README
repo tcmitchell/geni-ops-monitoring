@@ -72,7 +72,9 @@ Table of Contents:
         * set username: <LOCAL_OPERATOR_NAME>
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
         * IF you are using mysql, set dbtype: mysql in the [main] section
-
+    (4) Ensure that ownership of the ops-monitoring/ directory is root:root
+        chown -R root /usr/local/ops-monitoring
+        chgrp -R root /usr/local/ops-monitoring
 
 5. Apache, WSGI, and Flask Configuration
 
@@ -258,38 +260,20 @@ Table of Contents:
     (3) python ./web_server.py
 
 
-8. Invoke some example queries using curl as noted in step 6.
+8. Invoke some example queries using curl as noted in step 6.  This
+ assumes that your certificate has a private key appended to it.  If
+ not pass the --key /path/to/key with this command.  These specific
+ queries (about gpo-ig as an aggregate and
+ instageni.gpolab.bbn.com_node_pc1 as a node) are enabled by running
+ the default test rig in step 6.3. replace "your-apache-host" with the
+ FQDN of your webserver in each example.
 
  curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/aggregate/gpo-ig
- 
+
+ curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/node/instageni.gpolab.bbn.com_interface_pc1
+
+ curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/interface/instageni.gpolab.bbn.com_interface_pc1:eth1
 
  curl -k --cert ~/your-tool-cert.pem  'https://your-apache-host/data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth1"]}}}'
 
-
-
-
--- Deprecated --
-
-   If you use the sample data from the unit test script, these queries
-   should work.  All of these URLs assume you're using flask with access
-   from localhost.  If you're using apache, replace "127.0.0.1:5000"
-   with the FQDN of your webserver in each example.
-
- Info queries:
- http://127.0.0.1:5000/info/aggregate/gpo-ig
- http://127.0.0.1:5000/info/node/instageni.gpolab.bbn.com_node_pc1
- http://127.0.0.1:5000/info/interface/instageni.gpolab.bbn.com_interface_pc1:eth1
- http://127.0.0.1:5000/info/sliver/instageni.gpolab.bbn.com_sliver_26947
- http://127.0.0.1:5000/info/slice/ch.geni.net_gpo-infra_slice_tuptyexclusive
- http://127.0.0.1:5000/info/link/arbitrary_link_id_001
- http://127.0.0.1:5000/info/interfacevlan/instageni.gpolab.bbn.com_interface_pc2:eth1:1750
- http://127.0.0.1:5000/info/authority/ch.geni.net
- http://127.0.0.1:5000/info/user/tupty
- http://127.0.0.1:5000/info/opsconfig/geni-prod
-
-Data queries (note that you need to change the ts dictionary to match
- current timestamps):
- http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth1"]}}}
-
- http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}
-
+ curl -k --cert ~/your-tool-cert.pem 'https://your-apache-host/data/?={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}'
