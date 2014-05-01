@@ -21,42 +21,15 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-node default {
-
-  ## Defaults
-
-  # Always run apt-get update before trying to install packages
-  Package {
-    require => Exec["apt_client_update"],
+class requests::base {
+  package {
+    "python-dev": ensure => installed;
+    "python-pip": ensure => installed;
   }
 
-  # mysql or postgresql
-  $database_type = "mysql"
-
-  # exactly one of these should be true
-  $populate_data = false
-  $populate_config_store = false
-  $init_collector = true
-
-  $database_name = "collector"
-  $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
-
-  # since these passwords are being committed to a repo, never use
-  # them anywhere outside a vagrant instance running on localhost
-  $postgres_superuser_password = "d86LJY278htqSkrP2oNx"
-  $postgres_localstore_password = "yz9nQxB9TbF74jmMQbXs"
-  $mysql_localstore_password = "JU63p3MBGjnUmzbv3apQ"
-
-  include "collector"
-}
-
-class collector {
-
-  include "apt::client"
-  include "emacs::base"
-  include "curl::base"
-  include "requests::base"
-  include "collector::server"
-  include "${database_type}::server"
-
+  exec {
+    "requests_install":
+      command => "/usr/bin/pip install requests",
+      require => Package["python-pip"];
+  }
 }
