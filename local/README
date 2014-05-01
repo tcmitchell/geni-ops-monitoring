@@ -140,9 +140,17 @@ Table of Contents:
         you can connect to Apache:
 
     curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/opsconfig/geni-prod
+    
+    In this curl call, the private key is concatenated to the
+    certificate. It can also by passing the --key /path/to/key.
 
-    Note that the curl that ship with MacOS X does not seem to work.  The curl
-    from MacPorts is known to work.
+    After step 8. (below) the database tables will be populated and
+    will answer other curl calls.
+
+    *IMPORTANT NOTE* 
+    The curl that ships with MacOS X does not seem to work.  The curl
+    from MacPorts is known to work. Alternatively, the version of curl 
+    that can be acquired with aptitude works fine too.
 
 
 6. Datastore database cleanup and initialization 
@@ -250,7 +258,18 @@ Table of Contents:
     (3) python ./web_server.py
 
 
-8. Invoke some example queries:
+8. Invoke some example queries using curl as noted in step 6.
+
+ curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/aggregate/gpo-ig
+ 
+
+ curl -k --cert ~/your-tool-cert.pem  'https://your-apache-host/data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth1"]}}}'
+
+
+
+
+-- Deprecated --
+
    If you use the sample data from the unit test script, these queries
    should work.  All of these URLs assume you're using flask with access
    from localhost.  If you're using apache, replace "127.0.0.1:5000"
@@ -273,3 +292,4 @@ Data queries (note that you need to change the ts dictionary to match
  http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:rx_bps","ops_monitoring:tx_bps"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"interface","id":["instageni.gpolab.bbn.com_interface_pc1:eth1"]}}}
 
  http://127.0.0.1:5000/data/?q={"filters":{"eventType":["ops_monitoring:mem_used_kb","ops_monitoring:cpu_util","ops_monitoring:disk_part_max_used"],"ts":{"gte":1,"lt":1000000000000000000000000},"obj":{"type":"node","id":["instageni.gpolab.bbn.com_node_pc1"]}}}
+
