@@ -28,6 +28,8 @@
 # If any command fails (returns non-0 status), exit immediately.
 set -e
 
+# Get RELEASE_TAG string.
+
 if [ $# -lt 1 ] ; then
     echo "Usage: $0 release-tag-name"
     exit 1    
@@ -39,7 +41,12 @@ echo "Tagging release ${RELEASE_TAG}"
 git tag ${RELEASE_TAG}
 git push origin ${RELEASE_TAG}
 
-TARBALL=ops-monitoring.${RELEASE_TAG}.tar.bz2
+TARBALL="$(pwd)/ops-monitoring.${RELEASE_TAG}.tar.bz2"
 echo "Creating tarball ${TARBALL}"
-git archive HEAD | bzip2 > ${TARBALL}
+
+# Make sure we're at the top of the working dir because
+# "git archive" only looks at the current dir and below.
+cd "$(git rev-parse --show-toplevel)"
+
+git archive --prefix ops-monitoring/ HEAD | bzip2 > ${TARBALL}
 ls -l ${TARBALL}
