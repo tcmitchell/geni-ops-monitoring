@@ -31,6 +31,7 @@ This directory contains one subdirectory for each component:
    * common/: python libraries used by multiple components
    * config/: python configuration files used by multiple components
    * test/: generic utilities for testing code
+   * cm/: configuration management utilities
 
 All files are:
 
