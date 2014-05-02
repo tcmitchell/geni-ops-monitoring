@@ -23,12 +23,10 @@ Current and past releases of this software are available here:
 
 This directory contains one subdirectory for each component:
  * Directories which implement components of the ops monitoring model:
-   * alerting/: reference alerting utilities (component (a)) - working 
-                prototype
-   * collector/: reference aggregator (component (b)) - working prototype
-   * schema/: schema/examples for datastore polling API (component (c))
-              - working prototype
-   * local/: reference local datastore (component (d)) - working prototype
+   * alerting/: reference alerting utilities 
+   * collector/: reference collector 
+   * schema/: schema/examples for datastore polling API
+   * local/: reference local datastore 
  * Directories containing helper code:
    * common/: python libraries used by multiple components
    * config/: python configuration files used by multiple components

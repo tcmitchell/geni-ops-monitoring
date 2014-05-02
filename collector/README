@@ -48,7 +48,24 @@ Reference Collector README
    The href, "http://tamassos.gpolab.bbn.com/info/gpo-ig", translates to
    {"gpo-ig":"http://tamassos.gpolab.bbn.com/info/"}
 
-4. Collector programs:
+
+4. Install and configure ops-monitoring software
+
+   This puts the software in /usr/local/ops-monitoring.  You can put it
+   elsewhere, but may need to change other configuration down the line
+   to point to the correct paths.
+
+    (1) cd /usr/local
+    (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
+    (3) sudo $EDITOR ops-monitoring/config/collector_datastore_operator.conf
+        * set username: <COLLECTOR_OPERATOR_NAME>
+        * set password: <psql password for <COLLECTOR_OPERATOR_NAME> you set above>
+        * IF you are using mysql, set dbtype: mysql in the [main] section
+    (4) Ensure that ownership of the ops-monitoring/ directory is root:root
+        chown -R root /usr/local/ops-monitoring
+        chgrp -R root /usr/local/ops-monitoring
+
+5. Collector programs:
 
    The datastores_dict item in '/config/collector_operator.conf' is
    the collection of local datastores to be queried.  Use these to
@@ -117,7 +134,7 @@ Reference Collector README
 
     */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -c /path/to/cert/collector-xyz.pem -a gpo-ig -o i)
 
-5. Query Library
+6. Query Library
 
    The query library is used by services that sit on top of the collector.
    The query library is currently contained in the collector module under
