@@ -104,7 +104,7 @@ class InfoPopulator():
 
          
          node1 = []
-         node1.append("http://unis.incntre.iu.edu/schema/20120709/node#")
+         node1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/node#")
          node1.append("instageni.gpolab.bbn.com_node_pc1")
          node1.append(url_local_info + "node/" + node1[1])
          node1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
@@ -115,7 +115,7 @@ class InfoPopulator():
 
 
          node2 = []
-         node2.append("http://unis.incntre.iu.edu/schema/20120709/node#")
+         node2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/node#")
          node2.append("instageni.gpolab.bbn.com_node_pc2")
          node2.append(url_local_info + "node/" + node2[1])
          node2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
@@ -172,7 +172,7 @@ class InfoPopulator():
 
 
          interface1 = []
-         interface1.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
          interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
          interface1.append(url_local_info + "interface/" + interface1[1])
          interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
@@ -187,7 +187,7 @@ class InfoPopulator():
 
          
          interface2 = []
-         interface2.append("http://unis.incntre.iu.edu/schema/20120709/port#")
+         interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
          interface2.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
          interface2.append(url_local_info + "interface/" + interface2[1])
          interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
