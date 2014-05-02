@@ -31,25 +31,7 @@ Reference Collector README
     (1) echo "CREATE DATABASE collector" | mysql -u root -p
     (2) echo "GRANT ALL ON collector.* TO <COLLECTOR_OPERATOR_NAME>@localhost IDENTIFIED BY '<COLLECTOR_PASSWORD>'" | mysql -u root -p
 
-3. Configuring the collector to point to local datastore(s)
-
-   (1) Query the current config store in a web-browser:
-   http://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod
-
-   Inspect the output and find the href(s) of the local datastore(s)
-   you are interested in querying.
-
-   (2) Open the file 'config/collector_operator.conf'.
-   Under the [main] section add the json-style dictionaries to the
-   datastores_dict item in the format:
-   "<aggregate_id>":"<local_datastore_url_for_info_queries>"
-
-   As an example,
-   The href, "http://tamassos.gpolab.bbn.com/info/gpo-ig", translates to
-   {"gpo-ig":"http://tamassos.gpolab.bbn.com/info/"}
-
-
-4. Install and configure ops-monitoring software
+3. Install and configure ops-monitoring software
 
    This puts the software in /usr/local/ops-monitoring.  You can put it
    elsewhere, but may need to change other configuration down the line
@@ -64,6 +46,21 @@ Reference Collector README
     (4) Ensure that ownership of the ops-monitoring/ directory is root:root
         chown -R root /usr/local/ops-monitoring
         chgrp -R root /usr/local/ops-monitoring
+
+
+4. Configuring the collector to point to local datastore(s)
+
+   (1) Query the current config store in a web-browser:
+   http://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod
+
+   Inspect the output and find the href(s) of the local datastore(s)
+   you are interested in querying.
+
+   (2) Open the file 'config/collector_operator.conf'.
+   Under the [main] section add the json-style dictionaries to the
+   datastores_dict item in the format:
+   "<aggregate_id>":"<local_datastore_url_for_info_queries>"
+
 
 5. Collector programs:
 
@@ -81,7 +78,7 @@ Reference Collector README
 
      -c or --certpath <pathname> provides the path to your tool certificate
      -b or --baseurl with <url_of_info_url> 
-        This starts with "http://" and the convention is to end with "/info"
+        This starts with "https://" and the convention is to end with "/info"
      -a or --aggregateid with aggregate_id at -b's datastore (i.e., gpo-ig)
      -o or --object-types with letters of object types to get info on
      	n: for node

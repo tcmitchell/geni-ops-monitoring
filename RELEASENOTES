@@ -17,6 +17,15 @@ May 1, 2014
   "ops_<object_type>_<event_type>".  Before <object_type> did not
   exist.
 
+* All selfRef and href entries into the database tables should be 
+  changed from http to https.
+
+* All $schema entries in the database for which json-schema to use
+  should point to:
+  http://www.gpolab.bbn.com/monitoring/schema/20140501/<obj_type>#
+  Notice the data change to 20140501 and that the base url starts
+  with gpolab instead of unis for all schemas.
+  
 
 Changes for Release snapshot-20140221 
 February 21, 2014
