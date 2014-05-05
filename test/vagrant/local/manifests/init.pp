@@ -37,6 +37,8 @@ node default {
   $populate_config_store = false
   $init_collector = false
 
+  $datastore_ip_addr = '192.1.19.97'
+  
   $database_name = "local"
   $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
 
@@ -52,6 +54,7 @@ node default {
 class local {
 
   include "apt::client"
+  include "curl::base"
   include "sslapache::server"
   include "flask::server"
   include "local::server"

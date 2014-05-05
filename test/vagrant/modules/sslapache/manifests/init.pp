@@ -22,6 +22,7 @@
 #----------------------------------------------------------------------
 
 class sslapache::server {
+
   package {
     "apache2": ensure => installed;
     "libapache2-mod-wsgi": ensure => installed;
@@ -31,7 +32,7 @@ class sslapache::server {
     "/etc/apache2/sites-enabled/default-ssl":
       content => template("sslapache/site_enabled_default.erb"),
       notify => Service["apache2"],
-      require => Exec["a2ensite"] 
+      require => Exec["a2ensite"]; 
   }
 
   file {
@@ -49,11 +50,13 @@ class sslapache::server {
 
   exec {
     "a2enmod":
-      command => "/usr/sbin/a2enmod ssl",
+      command => "/bin/rm /etc/apache2/sites-enabled/*; /usr/sbin/a2enmod ssl",
       require => Package["apache2"];
+    }
 
+  exec {
     "a2ensite":
       command => "/usr/sbin/a2ensite default-ssl",
       require => Package["apache2"];
-    }
+  }
 }

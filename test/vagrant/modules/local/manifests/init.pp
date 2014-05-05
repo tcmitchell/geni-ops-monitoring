@@ -24,7 +24,7 @@
 class local::server {
 
   if $populate_data {
-    $local_setup_script = "local_restart_node_interface_stats.py -b https://localhost:8043"
+    $local_setup_script = "local_restart_node_interface_stats.py -b https://${datastore_ip_addr}:8043"
   } elsif $populate_config_store {
     $local_setup_script = "local_restart_config_datastore.py"
   } else {
