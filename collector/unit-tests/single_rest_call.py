@@ -33,6 +33,10 @@ import json
 import sys
 import requests
 import getopt
+
+sys.path.append("../")
+import response_validator
+
 from pprint import pprint as pprint
 
 def usage():
@@ -72,6 +76,7 @@ def main(argv):
 
     # Hard coding to make calling without args faster 
     cert_path = "/Users/rirwin/.ssh/collector-gpo-withnpkey.pem"
+    validictory_path = "/Users/rirwin/ops-monitoring/extern/validictory"
 
     if len(sys.argv) != 2:
         usage()
@@ -80,15 +85,27 @@ def main(argv):
     
     json_dict = make_request_print_response(url, cert_path)
 
+
     # custom prints of parts of the dictionary
     if json_dict:
 
-        print " ----- "
-        part_of_dict = "resources"
+        # get json-schema from $schema
+        schema = response_validator.parse_schema(json_dict["$schema"])
+        valid = response_validator.validate(json_dict, schema, validictory_path)
+        print "Response from", url, "is",
+        if valid:
+            print "valid"
+        else:
+            print "NOT valid"
 
+        '''
+        # Uncomment to checks part of response dictionary
+        part_of_dict = "resources"
         # avoids error if not in dict
         if part_of_dict in json_dict:
+            print " ----- "
             pprint(json_dict[part_of_dict])
+        '''
 
 if __name__ == "__main__":
     main(sys.argv[1:])
