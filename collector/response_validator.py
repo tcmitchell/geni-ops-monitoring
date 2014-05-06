@@ -33,9 +33,14 @@ import traceback
 
 def parse_schema(schemaurl):
 
-  schema = json.load(urllib2.urlopen(schemaurl))
+  try:
+    schema = json.load(urllib2.urlopen(schemaurl))
+  except Exception, e:
+      print e, schemaurl
+      return None
 
   if 'extends' in schema and '$ref' in schema['extends']:
+
     parent_schema = json.load(urllib2.urlopen(schema['extends']['$ref']))
     while (True): # exits loop when no additional extensions (break below)
       for key in sorted(parent_schema.keys()):
@@ -67,5 +72,4 @@ def validate(json_resp, schema, validictory_path):
     except Exception, e:
         print "Received exception %s while trying to validate: %s\n  %s" % (
             str(e), json_resp, traceback.format_exc())
-        sys.exit(0)
         return False
