@@ -27,6 +27,14 @@ output.  If the datastore's database tables are populated properly, then
 everything will work fine.  This program enables debugging of this, since
 debugging in the web-browser is no longer possible with the client 
 certificate credential system.
+
+This requires sudo pip install requests --upgrade
+
+and
+
+git clone https://github.com/sunlightlabs/validictory.git
+to ops-monitoring/extern/validictory
+
 '''
 
 import json
