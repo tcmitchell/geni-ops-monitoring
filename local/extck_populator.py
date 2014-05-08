@@ -26,6 +26,7 @@ import time
 import json
 import ConfigParser
 import subprocess
+#import stats_populator
 
 from pprint import pprint as pprint
 
@@ -55,17 +56,9 @@ class InfoPopulator():
         datapoint = [agg_id, ts, v]
         db_insert(self.tbl_mgr, "ops_aggregate_is_available", datapoint)  
             
-#def purgeTable(self,table_str):
-#    ev_t="is_available"  
-#    print "obj_id", self.obj_id
-#    time_sec_epoch = int(time.time()*1000000)
-#    data = self.get_data(ev_t)
-#    print data
-#    if data != None:
-#        val_str = "('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ")"  
-#        old_ts = int((time.time()-.25*60*60)*1000000) # Purge data older than 12 hours
-#        self.tbl_mgr.insert_stmt(table_str, val_str)
-#        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)    
+    def purgeTable(self, shortName, table_str):
+        old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
+        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)    
 
 
 def db_insert(tbl_mgr, table_str, row_arr):
@@ -147,7 +140,8 @@ def main():
         shortName[fqdn].append(str(int(time.time()*1000000)))
         print shortName[fqdn]
         ip.insert_agg_is_avail_datapoint(shortName[fqdn])
-    #    ip.purgeTable("ops_aggregate_is_available")
+        ip.purgeTable(shortName[fqdn][0],"ops_aggregate_is_available")
+        break
     tbl_mgr.close_con();
     
 if __name__ == "__main__":
