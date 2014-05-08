@@ -110,6 +110,7 @@ class InfoPopulator():
          node1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
          node1.append(str(int(time.time()*1000000)))
          node1.append(str(2*1000000)) # mem_total_kb
+         node1.append("xen") # vm_server_type
          
          info_insert(self.tbl_mgr, "ops_node", node1)
 
@@ -121,6 +122,7 @@ class InfoPopulator():
          node2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
          node2.append(str(int(time.time()*1000000)))
          node2.append(str(2*1000000)) # mem_total_kb
+         node2.append("xen") # vm_server_type
          
          info_insert(self.tbl_mgr, "ops_node", node2)
 
