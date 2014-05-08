@@ -83,8 +83,8 @@ def make_request_print_response(url, cert_path):
 def main(argv): 
 
     # Hard coding to make calling without args faster 
-    cert_path = "/Users/rirwin/.ssh/collector-gpo-withnpkey.pem"
-    validictory_path = "/Users/rirwin/ops-monitoring/extern/validictory"
+    cert_path = "/Users/dwiggins/geni/collector-gpo-withnpkey.pem"
+    validictory_path = "/Users/dwiggins/geni/ops-monitoring/extern/validictory"
 
     if len(sys.argv) != 2:
         usage()

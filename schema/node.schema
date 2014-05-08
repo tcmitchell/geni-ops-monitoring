@@ -14,6 +14,11 @@
        "type":"number",
        "required":false
     },
+    "ops_monitoring:vm_server_type": { 
+       "description":"VM server type",
+       "type":"string",
+       "required":false
+    },
     "ports": {
       "description": "ports attached to the node",
       "type": "array",
