@@ -26,7 +26,6 @@ import time
 import json
 import ConfigParser
 import subprocess
-#import stats_populator
 
 from pprint import pprint as pprint
 
@@ -55,10 +54,11 @@ class InfoPopulator():
         v = aggRow[2] 
         datapoint = [agg_id, ts, v]
         db_insert(self.tbl_mgr, "ops_aggregate_is_available", datapoint)  
+        db_purge(self.tbl_mgr,"ops_aggregate_is_available")
             
-    def purgeTable(self, shortName, table_str):
-        old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
-        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)    
+def db_purge(tbl_mgr, table_str):
+    old_ts = int((time.time()-.25*60*60)*1000000) # Purge data older than 12 hours
+    tbl_mgr.purge_old_tsdata(table_str, old_ts)    
 
 
 def db_insert(tbl_mgr, table_str, row_arr):
@@ -68,12 +68,7 @@ def db_insert(tbl_mgr, table_str, row_arr):
         val_str += val + "','" # join won't do this
     val_str = val_str[:-2] + ")" # remove last 2 of 3 chars: ',' and add )
     tbl_mgr.insert_stmt(table_str, val_str)
-
-#def purgeTable(self,table_str):
-#    old_ts = int((time.time()-.25*60*60)*1000000) # Purge data older than 12 hours
-#    self.tbl_mgr.insert_stmt(table_str, val_str)
-#    self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
-
+    
 def getShortName():
     i=1
     for line in inputFile: # Read in line
@@ -131,17 +126,13 @@ def main():
     # read list of urls (or short-names)
     shortName=getShortName()
     for fqdn in shortName:
-        print fqdn, shortName[fqdn]
         amtype = shortName[fqdn][1]
         p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
         output, err = p.communicate()
         state=getAMState(output)
         shortName[fqdn].append(state)
         shortName[fqdn].append(str(int(time.time()*1000000)))
-        print shortName[fqdn]
         ip.insert_agg_is_avail_datapoint(shortName[fqdn])
-        ip.purgeTable(shortName[fqdn][0],"ops_aggregate_is_available")
-        break
     tbl_mgr.close_con();
     
 if __name__ == "__main__":
