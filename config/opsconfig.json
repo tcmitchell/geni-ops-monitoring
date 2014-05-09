@@ -59,7 +59,8 @@
 		 ["selfRef","varchar"],
 		 ["urn","varchar"],
 		 ["ts","int8"],
-		 ["properties$mem_total_kb","int8"]
+		 ["properties$mem_total_kb","int8"],
+		 ["properties$vm_server_type","varchar"]
           ]
     },
     {  "name": "link",

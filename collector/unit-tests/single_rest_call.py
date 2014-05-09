@@ -116,7 +116,6 @@ def make_request_print_response(url, cert_path):
 
 def main(argv): 
 
-
     [url, cert_path, validictory_path] = parse_args(argv)
 
     if url == "" or cert_path == "":
