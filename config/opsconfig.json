@@ -321,15 +321,15 @@
                "ts": "int8",
 	       "v": "float4",
 	       "units":"percent"
-          }
-       ],
-       "aggregate": [
+          },
           {    "name": "num_vms_allocated",
 	       "id": "varchar",
                "ts": "int8",
 	       "v": "int4",
 	       "units": "count"
-          },
+          }
+       ],
+       "aggregate": [
           {    "name": "is_available",
 	       "id": "varchar",
                "ts": "int8",
