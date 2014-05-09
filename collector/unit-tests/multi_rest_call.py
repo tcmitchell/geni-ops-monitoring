@@ -48,11 +48,46 @@ import response_validator
 
 urls_in_resp = []
 
+
 def usage():
     print "Correct usage is:"
-    print "python single_rest_call.py https://<datastore url>/info/<object_type>/<object_id>"
-    print "hard code the location of your cert in main() for easier execution"
-    sys.exit(-1)
+    print "python multi_rest_call.py -u https://<datastore url>/info/<object_type>/<object_id> -c <certificate_path> -v <validictory_path>"
+    print "-v is equivalent to --validictory-path"
+    print "-c is equivalent to --cert-path"
+    print "-u is equivalent to --url"
+    print "-h is equivalent to --help"
+    sys.exit(0)
+
+
+def parse_args(argv):
+    if argv == []:
+        usage()
+
+    url = ""
+    cert_path = ""
+    validictory_path = ""
+
+    try:
+        opts, args = getopt.getopt(argv,"hu:c:v:",["help","url=","cert-path=","validictory-path="])
+    except getopt.GetoptError:
+        usage()
+
+    for opt, arg in opts:
+        if opt in("-h","--help"):
+            usage()
+        elif opt in ("-u", "--url"):
+            url = arg
+        elif opt in ("-c", "--cert-path"):
+            cert_path = arg
+        elif opt in ("-v", "--validictory-path"):
+            validictory_path = arg
+        else:
+            print "Error:",opt, "not a valid argument"
+            usage()
+
+    return [url, cert_path, validictory_path]
+
+
 
 def make_request_print_response(url, cert_path):
 
@@ -120,21 +155,17 @@ def which_url_next(json_dict):
 
 def main(argv): 
 
-    # Hard coding to make calling without args faster 
-    cert_path = "/Users/rirwin/.ssh/collector-gpo-withnpkey.pem"
-    validictory_path = "/Users/rirwin/ops-monitoring/extern/validictory"
+    [url, cert_path, validictory_path] = parse_args(argv)
 
-    if len(sys.argv) != 2:
+    if url == "" or cert_path == "":
         usage()
 
-    url = sys.argv[1]
     
     user_input = 'y'
-
     while (user_input == 'y'):
         json_dict = make_request_print_response(url, cert_path)
         
-        if json_dict:
+        if json_dict and validictory_path != "":
             schema = response_validator.parse_schema(json_dict["$schema"])
             valid = response_validator.validate(json_dict, schema, validictory_path)
             print "Response from", url, "is",
