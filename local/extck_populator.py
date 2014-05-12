@@ -57,7 +57,7 @@ class InfoPopulator():
         db_purge(self.tbl_mgr,"ops_aggregate_is_available")
             
 def db_purge(tbl_mgr, table_str):
-    old_ts = int((time.time()-.25*60*60)*1000000) # Purge data older than 12 hours
+    old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
     tbl_mgr.purge_old_tsdata(table_str, old_ts)    
 
 
