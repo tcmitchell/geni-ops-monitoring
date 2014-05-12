@@ -666,20 +666,18 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 # interface, sliver
 def get_object_info(tm, table_str, obj_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     res = None;
 
     try:
         cur.execute("select * from " + table_str + " where id = '" + obj_id + "' order by ts desc limit 1")
         res = cur.fetchone()
-        tm.con.commit()
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
@@ -687,18 +685,17 @@ def get_object_info(tm, table_str, obj_id):
 def get_events_list(tm):
     cur = tm.con.cursor()
     res = [];
-    tm.db_lock.acquire()
+
     try:
         # explicit selecting preserves order of results set
         cur.execute("select object_type, name, id, ts, v, units from ops_opsconfig_event") 
         res = cur.fetchall()
-       
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
@@ -707,17 +704,16 @@ def get_events_list(tm):
 def get_info_list(tm):
     cur = tm.con.cursor()
     res = [];
-    tm.db_lock.acquire()
     try:
         # explicit selecting preserves order of results set
         cur.execute("select tablename, schemaarray from ops_opsconfig_info") 
         res = cur.fetchall()
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
@@ -726,20 +722,17 @@ def get_info_list(tm):
 def get_related_objects(tm, table_str, colname_str, id_str):
     cur = tm.con.cursor()
     res = [];
-    tm.db_lock.acquire()
     try:
         cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
         q_res = cur.fetchall()
-        tm.con.commit()
         for res_i in range(len(q_res)):
             res.append(q_res[res_i][0]) # gets first of single tuple
-
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
@@ -747,7 +740,6 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 # Get references of objects TODO refactor similar functions
 def get_refs(tm, table_str, object_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     refs = [];
     
@@ -773,10 +765,10 @@ def get_refs(tm, table_str, object_id):
 
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
     
     return refs
 
@@ -784,29 +776,26 @@ def get_refs(tm, table_str, object_id):
 # Get self reference only TODO refactor similar functions
 def get_self_ref(tm, table_str, object_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     self_ref = None
     
     try:
 
-        # two queries avoids regex split with ,
         if tm.database_program == "postgres":
             cur.execute("select \"selfRef\" from " + table_str + " where id = '" + object_id + "' limit 1")
         elif tm.database_program == "mysql":
             cur.execute("select selfRef from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
-        tm.con.commit()
         self_ref = None
         if q_res is not None:
             self_ref = q_res # gets first of single tuple
 
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
     
     return self_ref
 
@@ -814,7 +803,6 @@ def get_self_ref(tm, table_str, object_id):
 # Get self reference only TODO refactor similar functions
 def get_monitored_aggregates(tm, extck_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     res = None
         
@@ -826,7 +814,6 @@ def get_monitored_aggregates(tm, extck_id):
             cur.execute("select id, selfRef from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
  
         q_res = cur.fetchall()
-        tm.con.commit()
 
         if q_res is not None:
             res = []
@@ -835,10 +822,10 @@ def get_monitored_aggregates(tm, extck_id):
 
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
     
     return res
 
@@ -846,7 +833,6 @@ def get_monitored_aggregates(tm, extck_id):
 # special get of refs for slice users which includes role TODO refactor similar functions
 def get_slice_user_refs(tm, table_str, slice_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     refs = [];
 
@@ -875,10 +861,10 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
     
     cur.close()
-    tm.db_lock.release()
 
     return refs
 
@@ -887,7 +873,6 @@ def get_slice_user_refs(tm, table_str, slice_id):
 # TODO refactor similar functions
 def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     refs = [];
 
@@ -917,10 +902,10 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
     except Exception, e:
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return refs
 
@@ -963,7 +948,6 @@ def build_ts_where_str(ts_dict):
 
 def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
      
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     res = None
     try:
@@ -971,7 +955,6 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
         # assumes an id for obj_id in table event_type with ops_ prepended
         cur.execute("select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
         q_res = cur.fetchall()
-        tm.con.commit()
 
         if len(q_res) > 0:
             res = []
@@ -981,17 +964,16 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
     except Exception, e:
         print "query failed: select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
 
 def get_object_schema(tm, obj_type, obj_id):
      
-    tm.db_lock.acquire()
     cur = tm.con.cursor()
     res = None
     try:
@@ -1003,7 +985,6 @@ def get_object_schema(tm, obj_type, obj_id):
             cur.execute("select $schema from ops_" + obj_type + " where id = '" + obj_id + "'")
 
         q_res = cur.fetchall()
-        tm.con.commit()
 
         if len(q_res) > 0:
             res = q_res[0][0]
@@ -1011,10 +992,10 @@ def get_object_schema(tm, obj_type, obj_id):
     except Exception, e:
         print "query failed: select $schema from ops_" + obj_type + " where id = '" + obj_id + "'"
         print e
+    finally:
         tm.con.commit()
 
     cur.close()
-    tm.db_lock.release()
 
     return res
 
