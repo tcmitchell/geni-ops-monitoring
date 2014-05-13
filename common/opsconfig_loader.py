@@ -21,8 +21,8 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 import json
-import urllib2
 import ConfigParser
+import requests
 
 class OpsconfigLoader:
 
@@ -35,11 +35,15 @@ class OpsconfigLoader:
         config = ConfigParser.ConfigParser()
         config.read(self.config_path + "/collector_operator.conf")
         self.config_store_url = config.get("main", "configstoreurl")
-        
+        self.cert_path = config.get("main", "certificatepath")
+
         try:
-            self.config_json = json.load(urllib2.urlopen(self.config_store_url, timeout=1))
-        except:
+            resp = requests.get(self.config_store_url, verify=False, cert=self.cert_path)
+            self.config_json= json.loads(resp.content)
+
+        except Exception, e:
             print "Cannot reach the config local datastore at ", self.config_store_url
+            print e
             self.load_from_local_config()
 
 
