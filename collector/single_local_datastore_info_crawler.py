@@ -38,7 +38,7 @@ import opsconfig_loader
 # This program populates the collector database on every fetch
 
 def usage():
-    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -c </cert/path/cert.pem> -o <objecttypes-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans)>')
+    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -e <extck-id> -c </cert/path/cert.pem> -o <objecttypes-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans or -o xe for eXperiments, Externalchecks)>')
     sys.exit(1)
 
 def parse_args(argv):
@@ -47,12 +47,13 @@ def parse_args(argv):
 
     base_url = ""
     aggregate_id = ""
+    extck_id = ""
     object_types = ""
     cert_path = ""
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:c:o:d",["help","baseurl=","aggregateid=","certpath=","objecttypes=","debug"])
+        opts, args = getopt.getopt(argv,"hb:a:e:c:o:d",["help","baseurl=","aggregateid=","extckid=","certpath=","objecttypes=","debug"])
     except getopt.GetoptError:
         usage()
 
@@ -63,6 +64,8 @@ def parse_args(argv):
             base_url = arg
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
+        elif opt in ("-e", "--extckid"):
+            extck_id = arg
         elif opt in ("-c", "--certpath"):
             cert_path = arg
         elif opt in ("-o", "--objecttypes"):
@@ -72,11 +75,11 @@ def parse_args(argv):
         else:
             usage()
 
-    return [base_url, aggregate_id, object_types, cert_path, debug]
+    return [base_url, aggregate_id, extck_id, object_types, cert_path, debug]
 
 class SingleLocalDatastoreInfoCrawler:
     
-    def __init__(self, tbl_mgr, info_url, aggregate_id, cert_path, debug):
+    def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug):
         self.tbl_mgr = tbl_mgr
         self.tbl_mgr.establish_all_tables()
 
@@ -84,72 +87,95 @@ class SingleLocalDatastoreInfoCrawler:
             info_url = info_url[:-1]
         self.info_url = info_url
         self.aggregate_id = aggregate_id
+        self.extck_id = extck_id
         self.debug = debug
 
         # collector certificate path
         self.cert_path = cert_path
 
+        self.am_dict = None
+        self.extck_dict = None
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
-        print self.info_url + '/aggregate/' + self.aggregate_id
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
-        if am_dict:
+
+        self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
+        if self.am_dict:
             self.tbl_mgr.establish_table("ops_aggregate")
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
-                am_info_list.append(am_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_aggregate", am_dict["id"], am_info_list, self.debug)
+                am_info_list.append(self.am_dict[key[0]])
+            info_update(self.tbl_mgr, "ops_aggregate", self.am_dict["id"], am_info_list, self.debug)
 
+    # Updates externalcheck information
+    def refresh_externalcheck_info(self):
+
+        self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path)
+        if self.extck_dict:
+            self.tbl_mgr.establish_table("ops_externalcheck")
+            schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
+            extck_info_list = []
+            for key in schema:
+                extck_info_list.append(self.extck_dict[key[0]])
+            info_update(self.tbl_mgr, "ops_externalcheck", self.extck_dict["id"], extck_info_list, self.debug)
+
+    # Updates all the monitored aggregates
+    def refresh_all_monitoredaggregates_info(self):
+        
+        if self.extck_dict:
+            self.tbl_mgr.establish_table("ops_externalcheck_monitoredaggregate")
+            schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
+            mon_aggs = []
+            for mon_agg in self.extck_dict["monitored_aggregates"]:
+                mon_agg_info = [mon_agg["id"], self.extck_dict["id"], mon_agg["href"]]
+                info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg["id"], mon_agg_info, self.debug)
 
     # Updates all nodes information
     def refresh_all_links_info(self):
 
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
-        if am_dict:
+        if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_link"]
 
-            for res_i in am_dict["resources"]:
+            for res_i in self.am_dict["resources"]:
                 res_dict = handle_request(res_i["href"], self.cert_path)
                 if res_dict["$schema"].endswith("link#"): # if a link
                     
                     # get each attribute out of response into list
                     link_info_list = self.get_link_attributes(res_dict, schema)
                     info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug) 
-                agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                 info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
         
 
     def refresh_all_slivers_info(self):
 
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
-        if am_dict:
+        if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_sliver"]
 
-            for slv_i in am_dict["slivers"]:
+            for slv_i in self.am_dict["slivers"]:
                 slv_dict = handle_request(slv_i["href"], self.cert_path)
                 
                 # get each attribute out of response into list
                 slv_info_list = self.get_sliver_attributes(slv_dict, schema)
                 info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug) 
-                agg_slv_info_list = [slv_dict["id"], am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
+                agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
                 info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
 
 
     def refresh_all_nodes_info(self):
-        am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
-        if am_dict:
+
+        if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
 
-            for res_i in am_dict["resources"]:
+            for res_i in self.am_dict["resources"]:
                 res_dict = handle_request(res_i["href"], self.cert_path)
                 if res_dict["$schema"].endswith("node#"): # if a node
                     
                     # get each attribute out of response into list
                     node_info_list = self.get_node_attributes(res_dict, schema)
                     info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug) 
-                agg_res_info_list = [res_dict["id"], am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                 info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
 
 
@@ -257,21 +283,18 @@ class SingleLocalDatastoreInfoCrawler:
 
         cur = tbl_mgr.con.cursor()
         res = [];
-        tbl_mgr.db_lock.acquire()
         try:
             cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
-
-            tbl_mgr.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
             print e
+        finally:
             tbl_mgr.con.commit()
         
         cur.close()
-        tbl_mgr.db_lock.release()
         
         return res
 
@@ -282,21 +305,19 @@ class SingleLocalDatastoreInfoCrawler:
 
         cur = tbl_mgr.con.cursor()
         res = [];
-        tbl_mgr.db_lock.acquire()
         try:
             cur.execute("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'));")
 
             q_res = cur.fetchall()
-            tbl_mgr.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
             print e
+        finally:
             tbl_mgr.con.commit()
         
         cur.close()
-        tbl_mgr.db_lock.release()
         
         return res
 
@@ -307,21 +328,18 @@ class SingleLocalDatastoreInfoCrawler:
 
         cur = tbl_mgr.con.cursor()
         res = [];
-        tbl_mgr.db_lock.acquire()
         try:
             cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
-            
-            tbl_mgr.con.commit()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
             
         except Exception, e:
             print e
+        finally:
             tbl_mgr.con.commit()
         
         cur.close()
-        tbl_mgr.db_lock.release()
         
         return res
 
@@ -331,7 +349,6 @@ class SingleLocalDatastoreInfoCrawler:
         cur = tbl_mgr.con.cursor()
         res = []
         meas_ref = None
-        tbl_mgr.db_lock.acquire()
         try:
 
             # two queries avoids regex split with ,
@@ -340,16 +357,15 @@ class SingleLocalDatastoreInfoCrawler:
             elif tbl_mgr.database_program == "mysql":
                 cur.execute("select measRef from ops_aggregate where id = '" + object_id + "' limit 1")
             q_res = cur.fetchone()
-            tbl_mgr.con.commit()
             if q_res is not None:
                 meas_ref = q_res[0] # gets first of single tuple
             
         except Exception, e:
             print e
+        finally:
             tbl_mgr.con.commit()
         
         cur.close()
-        tbl_mgr.db_lock.release()
         
         return meas_ref
 
@@ -397,9 +413,9 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
 
 def main(argv): 
 
-    [info_url, aggregate_id, objecttypes, cert_path, debug] = parse_args(argv)
+    [info_url, aggregate_id, extck_id, objecttypes, cert_path, debug] = parse_args(argv)
 
-    if info_url == "" or aggregate_id == "" or cert_path == "":
+    if info_url == "" or cert_path == "" or (extck_id == "" and aggregate_id == ""):
         usage()
 
     db_type = "collector"
@@ -408,7 +424,7 @@ def main(argv):
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
     tbl_mgr.poll_config_store()
-    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, cert_path, debug)
+    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug)
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
@@ -416,8 +432,12 @@ def main(argv):
     # ensures tables exist in database
     tbl_mgr.establish_tables(info_schema.keys())
 
-    # Always do the head aggregate info query
-    crawler.refresh_aggregate_info()
+    # Only do head aggregate info query if nodes, sliver, interface, vlan objects are in objecttypes
+    if 'n' in objecttypes or 'l' in objecttypes or 's' in objecttypes or 'v' in objecttypes or 'i' in objecttypes:
+        crawler.refresh_aggregate_info()
+    
+    if 'x' in objecttypes or 'e' in objecttypes:
+        crawler.refresh_externalcheck_info()
 
     # depending on what is in the objecttypes string, get other object
     # info.  Order of these should stay as is (v after l, i after n).
@@ -431,7 +451,10 @@ def main(argv):
         crawler.refresh_all_interfaces_info()
     if 'v' in objecttypes:
         crawler.refresh_all_interfacevlans_info()
-
+    if 'e' in objecttypes:
+        crawler.refresh_all_monitoredaggregates_info()
+    if 'x' in objecttypes:
+        crawler.refresh_all_experiments_info()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
