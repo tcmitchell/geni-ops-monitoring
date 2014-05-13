@@ -18,9 +18,12 @@
  certificate, you'll need to specify a key with the --key </key/path>
  argument.
 
- For testing all the API calls, go to /vagrant and run the script:
- 
- This script makes the calls and 
+ For testing all the API calls, go to the
+ /usr/local/ops-monitoring/collector/unit-tests directory the script:
+
+ single_rest_call.py https://localhost/info/aggregate/gpo-ig
+
+ multi_rest_call.py https://localhost/info/aggregate/gpo-ig
 
 
 2. To test the local datastore with a collector on a different host:
