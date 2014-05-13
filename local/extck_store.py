@@ -55,8 +55,9 @@ class InfoPopulator():
         ts = str(int(time.time()*1000000))
         dataStore_url_base="https://externalcheckstore.aquarion.gpolab.bbn.com"
         mon_agg = [extck_id, dataStoreSite, dataStore_url_base + "/info/aggregate/" + extck_id]
-        regFile=open("ops_externalcheck_monitoredaggregate_Registry", "r+") # Only add new info to this table
-        if os.stat("ops_externalcheck_monitoredaggregate_Registry").st_size > 0: # If file is not empty
+        fileLoc="/home/amcanary/ops_externalcheck_monitoredaggregate_Registry"
+        regFile=open(fileLoc,"r+")
+        if os.stat(fileLoc).st_size > 0: # If file is not empty
             mon_aggFlag=0 # Check if an entry is registered
             for line in regFile:
                 line=line.strip().split(" ") # Remove white spaces
@@ -78,8 +79,9 @@ class InfoPopulator():
         dataStore_url_base="https://externalcheckstore.aquarion.gpolab.bbn.com"
         ts = str(int(time.time()*1000000))
         extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", dataStoreSite, dataStore_url_base + "/info/externalcheck/" + dataStoreSite, ts, dataStore_url_base + "/data/"]
-        regFile=open("ops_externalcheck_Registry","r+") # Only add new info to this table
-        if os.stat("ops_externalcheck_Registry").st_size > 0: # If file is not empty
+        fileLoc="/home/amcanary/ops_externalcheck_Registry"
+        regFile=open(fileLoc, "r+")
+        if os.stat(fileLoc).st_size > 0: # If file is not empty
             extckFlag=0 # Check if an entry is registered 
             for line in regFile:  
                 line=line.strip().split(" ") # Remove white spaces
@@ -89,7 +91,7 @@ class InfoPopulator():
             if extckFlag==0: # Register new item                         
                 regFile.write(extck[0])
                 regFile.write('\n')         
-                db_insert(self.tbl_mgr, "ops_externalcheck", extck)   
+                db_insert(self.tbl_mgr, "ops_externalcheck", extck) 
         else:
             regFile.write(extck[0])
             regFile.write('\n') 
