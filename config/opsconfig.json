@@ -32,7 +32,7 @@
   ],
   "externalcheckstores": [
     {
-      "href": "https://externalcheckstore.gpolab.bbn.com/info/externalcheck/gpo"
+      "href": "https://extckdatastore.gpolab.bbn.com/info/externalcheck/gpo"
     }
   ],
   "authorities": [
