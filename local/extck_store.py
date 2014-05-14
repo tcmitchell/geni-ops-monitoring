@@ -53,7 +53,7 @@ class InfoPopulator():
         extck_id = aggRow[0] # agg_id
         dataStoreSite="gpo"
         ts = str(int(time.time()*1000000))
-        dataStore_url_base="https://externalcheckstore.aquarion.gpolab.bbn.com"
+        dataStore_url_base="https://externalcheckstore.ashur.gpolab.bbn.com"
         mon_agg = [extck_id, dataStoreSite, dataStore_url_base + "/info/aggregate/" + extck_id]
         fileLoc="/home/amcanary/ops_externalcheck_monitoredaggregate_Registry"
         regFile=open(fileLoc,"r+")
@@ -76,7 +76,7 @@ class InfoPopulator():
 
     def insert_externalcheck(self):          
         dataStoreSite="gpo"
-        dataStore_url_base="https://externalcheckstore.aquarion.gpolab.bbn.com"
+        dataStore_url_base="https://extckdatastore.gpolab.bbn.com"
         ts = str(int(time.time()*1000000))
         extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", dataStoreSite, dataStore_url_base + "/info/externalcheck/" + dataStoreSite, ts, dataStore_url_base + "/data/"]
         fileLoc="/home/amcanary/ops_externalcheck_Registry"
