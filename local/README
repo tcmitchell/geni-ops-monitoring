@@ -83,12 +83,11 @@ Table of Contents:
    instructions assume a stock Ubuntu Apache2 install; modify as necessary
    to suit your local installation.
    
-    (1) Enable the SSL module and the default SSL site:
+    (1) Enable the SSL module 
         (a) sudo a2enmod ssl
-	(b) sudo a2ensite default-ssl
-        (c) sudo a2dissite default
+        (b) sudo a2dissite default
             If you need the default site (port 80) for other content that you
-            need this web server to provide, you can skip (c).
+            need this web server to provide, you can skip (b).
 
     (2) Fetch the GENI clearinghouse CA root certificate here:
         http://groups.geni.net/geni/raw-attachment/wiki/GeniTrustAnchors/ch.geni.net-ca.pem
@@ -98,7 +97,7 @@ Table of Contents:
     http://groups.geni.net/geni/wiki/OperationalMonitoring/DatastorePolling#Security
     You only need to do this once.
 
-    (4) In /etc/apache2/sites-enabled/default-ssl, make sure the following SSL
+    (4) In /etc/apache2/sites-available/default-ssl, make sure the following SSL
         settings are in place.  Some of these are commented out by default,
         so be sure to remove the initial "#".
 
@@ -112,7 +111,7 @@ Table of Contents:
     (5) Add text to an appropriate VirtualHost directive in your apache
         configuration.  If you followed the SSL instructions above,
         put this inside the <VirtualHost _default_:443> block of
-        /etc/apache2/sites-enabled/default-ssl, right below the SSL
+        /etc/apache2/sites-available/default-ssl, right below the SSL
         settings and above the ending </VirtualHost>.
         If you want the pages served at a root other than /, modify the
         WSGIScriptAlias directive.
@@ -126,19 +125,26 @@ Table of Contents:
             Order deny,allow
             Allow from all
         </Directory>
+ 
+    (6) Enable the default SSL site:
+	  sudo a2ensite default-ssl
+
+	 This creates a link default-ssl file:
+	   /etc/apache2/sites-enabled/default-ssl     to link to
+           /etc/apache2/sites-available/default-ssl 
 
 
-    (6) In order to see WSGI errors if any occur, modify that same
+    (7) In order to see WSGI errors if any occur, modify that same
         VirtualHost block and set:
   LogLevel info
 
-    (7) Make sure you haven't introduced any syntax errors in default-ssl:
+    (8) Make sure you haven't introduced any syntax errors in default-ssl:
         sudo apache2ctl configtest
 
-    (8) Start or restart Apache:
+    (9) Start or restart Apache:
         sudo service apache2 [start|restart]
 
-    (9) Once you have your tool certification from step (3), verify that
+    (10) Once you have your tool certification from step (3), verify that
         you can connect to Apache:
 
     curl -k --cert ~/your-tool-cert.pem  https://your-apache-host/info/opsconfig/geni-prod
