@@ -361,7 +361,6 @@ class InfoPopulator():
     # Dummy information to test the external check store
     def insert_externalcheck_store(self):
         self.insert_externalcheck_store_info()
-        self.insert_externalcheck_store_data()
         
     def insert_externalcheck_store_info(self):
         extck_id = "gpo"
