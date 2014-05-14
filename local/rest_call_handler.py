@@ -316,37 +316,11 @@ def handle_experiment_info_query(tm, exp_id):
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id):
 
-    # simply spit out the config file until its contents converges
-    return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
-
-    '''
-    table_str = "ops_opsconfig"
-    opsconfig_schema = tm.schema_dict[table_str]
-    con = tm.con
-
-    agg_refs = []
-    auth_refs = []
-
-    opsconfig_info = get_object_info(tm, table_str, opsconfig_id)
-    if opsconfig_info is not None:
-        
-        aggs = get_related_objects(tm, "ops_opsconfig_aggregate", "opsconfig_id", opsconfig_id)
-
-        for agg_i in aggs:
-            agg_refs.append(get_opsconfig_aggregate_refs(tm, "ops_opsconfig_aggregate", agg_i))
-
-        auths = get_related_objects(tm, "ops_opsconfig_authority", "opsconfig_id", opsconfig_id)
-        for auth_i in auths:
-            auth_refs.append(get_refs(tm, "ops_opsconfig_authority", auth_i))
-
-        events_list = get_events_list(tm)
-
-        info_list = get_info_list(tm)
-            
-        return json.dumps(get_opsconfig_info_dict(opsconfig_schema, opsconfig_info, agg_refs, auth_refs, events_list, info_list))
+    if opsconfig_id == "geni-prod":
+        return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
     else:
         return "opsconfig not found"
-    '''
+
 
 ### Argument checker for tsdata queries
 
