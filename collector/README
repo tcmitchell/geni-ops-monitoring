@@ -1,5 +1,8 @@
 Reference Collector README
 
+
+
+
 1. Packages to install
 
    * IF using postgres
@@ -50,16 +53,16 @@ Reference Collector README
 
 4. Configuring the collector to point to local datastore(s)
 
-   (1) Query the current config store in a web-browser:
-   http://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod
+    (1) Attempt to reach the tamassos config datastore. Use the unit-tests
+    program single_rest_call.py and point to
 
-   Inspect the output and find the href(s) of the local datastore(s)
-   you are interested in querying.
+    cd unit-tests
+    python single_rest_call.py -u https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod -c /path/to/collector/certificate
 
-   (2) Open the file 'config/collector_operator.conf'.
-   Under the [main] section add the json-style dictionaries to the
-   datastores_dict item in the format:
-   "<aggregate_id>":"<local_datastore_url_for_info_queries>"
+    See unit-tests/README for more detail
+
+    (2) The output of this config store will list the URLs of the aggregate
+    and external check datastores
 
 
 5. Collector programs:
