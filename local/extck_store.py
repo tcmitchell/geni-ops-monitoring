@@ -108,32 +108,6 @@ def db_insert(tbl_mgr, table_str, row_arr):
 
     tbl_mgr.insert_stmt(table_str, val_str)
 
-#def getShortName():
-#    i=1
-#    for line in inputFile: # Read in line
-#        if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
-#            cols = line.strip().split('=')
-#            aggShortName=cols[0] # Grab shortname
-#            if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
-#               continue
-#            cols1=cols[1].strip().split(',')
-#            cols2=cols1[1].strip().split('/')
-#            cols3=cols2[2].strip().split(':')
-#            fqdn=cols3[0] # Grab fqdn
-#
-#            if aggShortName == "plc" or aggShortName=="ion":
-#                amtype="myplc"
-#            else: 
-#                amtype=cols2[3] # Grab amtype
-#
-#            if is_empty(shortName) == "True": # If dic is empty
-#                shortName[fqdn]= [aggShortName,amtype]
-#            else:
-#                if shortName.has_key(fqdn): # If we have the shortName move to next line
-#                   continue 
-#                else:
-#                    shortName[fqdn]=[aggShortName,amtype]
-#    return shortName
 def getShortName():
     i=1
     for line in inputFile: # Read in line
