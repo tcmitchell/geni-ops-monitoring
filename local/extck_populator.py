@@ -26,6 +26,7 @@ import time
 import json
 import ConfigParser
 import subprocess
+from string import digits
 
 from pprint import pprint as pprint
 
@@ -74,9 +75,10 @@ def getShortName():
     for line in inputFile: # Read in line
         if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
             cols = line.strip().split('=')
-            aggShortName=cols[0] # Grab shortname
+            aggShortName=cols[0] 
             if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
                continue
+            aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
             cols2=cols1[1].strip().split('/')
             cols3=cols2[2].strip().split(':')
@@ -95,6 +97,32 @@ def getShortName():
                 else:
                     shortName[fqdn]=[aggShortName,amtype]
     return shortName
+
+def formatShortName(shortName):
+    if len(shortName)>5:# Aggregate with 2 chars: ignore
+        shortName = shortName.translate(None, digits) # Remove all #s froms shortName
+    oldFormat = shortName.strip().split('-')
+    suffix=['ig','eg', 'of', 'pg']  
+    if len(oldFormat)==1: # For cases like "ion"
+       return shortName
+    for id in suffix:
+        if oldFormat[0]==id and len(oldFormat) == 2: # For cases like gpo-ig
+            newFormat= oldFormat[1]+"-"+id
+            break 
+        elif oldFormat[1]==id and len(oldFormat) == 2: # For cases like ig-gpo
+            newFormat=shortName
+            break
+        elif oldFormat[0]==id and len(oldFormat) == 3: # For cases like ig-of-gpo
+            newFormat= oldFormat[2] + '-' + id + '-' + oldFormat[1]
+            break 
+        elif oldFormat[1]==id and len(oldFormat) == 3: # For cases like gpo-ig-of
+            newFormat= shortName
+            break
+
+    if newFormat == "i-of": # For i2-of case
+        return "i2-of"
+    else:
+        return newFormat
 
 def is_empty(any_structure): # Determine if "any_structure" is empty
     if any_structure:
