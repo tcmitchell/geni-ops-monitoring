@@ -28,6 +28,7 @@ import json
 import ConfigParser
 import subprocess
 import os
+from string import digits
 from pprint import pprint as pprint
 
 common_path = "../common/"
@@ -107,14 +108,41 @@ def db_insert(tbl_mgr, table_str, row_arr):
 
     tbl_mgr.insert_stmt(table_str, val_str)
 
+#def getShortName():
+#    i=1
+#    for line in inputFile: # Read in line
+#        if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
+#            cols = line.strip().split('=')
+#            aggShortName=cols[0] # Grab shortname
+#            if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
+#               continue
+#            cols1=cols[1].strip().split(',')
+#            cols2=cols1[1].strip().split('/')
+#            cols3=cols2[2].strip().split(':')
+#            fqdn=cols3[0] # Grab fqdn
+#
+#            if aggShortName == "plc" or aggShortName=="ion":
+#                amtype="myplc"
+#            else: 
+#                amtype=cols2[3] # Grab amtype
+#
+#            if is_empty(shortName) == "True": # If dic is empty
+#                shortName[fqdn]= [aggShortName,amtype]
+#            else:
+#                if shortName.has_key(fqdn): # If we have the shortName move to next line
+#                   continue 
+#                else:
+#                    shortName[fqdn]=[aggShortName,amtype]
+#    return shortName
 def getShortName():
     i=1
     for line in inputFile: # Read in line
         if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
             cols = line.strip().split('=')
-            aggShortName=cols[0] # Grab shortname
+            aggShortName=cols[0]
             if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
                continue
+            aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
             cols2=cols1[1].strip().split('/')
             cols3=cols2[2].strip().split(':')
@@ -122,18 +150,43 @@ def getShortName():
 
             if aggShortName == "plc" or aggShortName=="ion":
                 amtype="myplc"
-            else: 
+            else:
                 amtype=cols2[3] # Grab amtype
 
             if is_empty(shortName) == "True": # If dic is empty
                 shortName[fqdn]= [aggShortName,amtype]
             else:
                 if shortName.has_key(fqdn): # If we have the shortName move to next line
-                   continue 
+                   continue
                 else:
                     shortName[fqdn]=[aggShortName,amtype]
     return shortName
 
+def formatShortName(shortName):
+    if len(shortName)>5:# Aggregate with 2 chars: ignore
+        shortName = shortName.translate(None, digits) # Remove all #s froms shortName
+    oldFormat = shortName.strip().split('-')
+    suffix=['ig','eg', 'of', 'pg']
+    if len(oldFormat)==1: # For cases like "ion"
+       return shortName
+    for id in suffix:
+        if oldFormat[0]==id and len(oldFormat) == 2: # For cases like gpo-ig
+            newFormat= oldFormat[1]+"-"+id
+            break
+        elif oldFormat[1]==id and len(oldFormat) == 2: # For cases like ig-gpo
+            newFormat=shortName
+            break
+        elif oldFormat[0]==id and len(oldFormat) == 3: # For cases like ig-of-gpo
+            newFormat= oldFormat[2] + '-' + id + '-' + oldFormat[1]
+            break
+        elif oldFormat[1]==id and len(oldFormat) == 3: # For cases like gpo-ig-of
+            newFormat= shortName
+            break
+
+    if newFormat == "i-of": # For i2-of case
+        return "i2-of"
+    else:
+        return newFormat
 def is_empty(any_structure): # Determine if "any_structure" is empty
     if any_structure:
        # print('Structure is not empty.')
