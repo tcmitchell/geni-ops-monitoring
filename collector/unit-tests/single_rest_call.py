@@ -54,6 +54,7 @@ def usage():
     print "-c is equivalent to --cert-path"
     print "-u is equivalent to --url"
     print "-h is equivalent to --help"
+    print "-s schema base"
     sys.exit(0)
 
 
@@ -64,9 +65,11 @@ def parse_args(argv):
     url = ""
     cert_path = ""
     validictory_path = ""
+    schema_base = "http://www.gpolab.bbn.com/monitoring/schema/20140501/"
+
 
     try:
-        opts, args = getopt.getopt(argv,"hu:c:v:",["help","url=","cert-path=","validictory-path="])
+        opts, args = getopt.getopt(argv,"hu:c:v:s:",["help","url=","cert-path=","validictory-path=","schema-base="])
     except getopt.GetoptError:
         usage()
 
@@ -79,11 +82,13 @@ def parse_args(argv):
             cert_path = arg
         elif opt in ("-v", "--validictory-path"):
             validictory_path = arg
+        elif opt in ("-s", "--schema-base"):
+            schema_base = arg
         else:
             print "Error:",opt, "not a valid argument"
             usage()
 
-    return [url, cert_path, validictory_path]
+    return [url, cert_path, validictory_path, schema_base]
 
 
 
@@ -116,7 +121,7 @@ def make_request_print_response(url, cert_path):
 
 def main(argv): 
 
-    [url, cert_path, validictory_path] = parse_args(argv)
+    [url, cert_path, validictory_path, schema_base] = parse_args(argv)
 
     if url == "" or cert_path == "":
         usage()
@@ -129,7 +134,7 @@ def main(argv):
         if validictory_path != "":
             # get json-schema from $schema
             schema = response_validator.parse_schema(json_dict["$schema"])
-            valid = response_validator.validate(json_dict, schema, validictory_path)
+            valid = response_validator.validate(json_dict, schema, validictory_path, schema_base)
             print "Response from", url, "is",
             if valid:
                 print "valid"
