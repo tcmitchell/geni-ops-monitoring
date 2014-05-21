@@ -24,42 +24,11 @@
 import sys
 import os
 import getopt
+import time
 
 sys.path.append("../common/")
 import table_manager
 import opsconfig_loader
-
-def usage():
-    print "use -i, -p, -h, -u, args only"
-    sys.exit(0)
-
-def parse_args(argv):
-    if argv == []:
-        usage()
-
-    identity_file_full_path = ""
-    port = ""
-    host = ""
-    user = ""
-    try:
-        opts, args = getopt.getopt(argv,"i:p:h:u:",["full-key-file-path=","port=","host=","user="])
-    except getopt.GetoptError:
-        usage()
-
-    for opt, arg in opts:
-        if opt in ("-i", "--full-key-file-path"):
-            identity_file_full_path = arg
-        elif opt in ("-p", "--port"):
-            port = arg
-        elif opt in ("-h", "--host"):
-            host = arg
-        elif opt in ("-u", "--user"):
-            user = arg
-        else:
-            usage()
-
-    return [identity_file_full_path, port, host, user]
-
 
 db_type = "local"
 config_path = "../config/"
@@ -72,19 +41,31 @@ ocl = opsconfig_loader.OpsconfigLoader(config_path)
 
 experiment_event_types = ocl.get_event_types()["experiment"]
 
+ipConfigPath="/users/amcanary/ips.conf"
+outputFile = "raw_rows"
+outputFilePath="/users/amcanary/"+outputFile
+keyPath = "/home/amcanary/.ssh/id_rsa"
 
-filename = "raw_rows"
 
-[key_path, port, host, user] = parse_args(sys.argv[1:])
 
-os.system("ssh -i " + key_path + " " + user + "@" + host + " -p " + port + " \"rm -f " + filename + " && python pinger.py -o " + filename  + " -c . -s gpo-ig\"")
-os.system("scp -i " + key_path + " -P " + port + " " + user + "@" + host + ":" + filename + " ./")
+srcPing={"gpo-ig":["amcanary@pc1.instageni.gpolab.bbn.com", "30266"],\
+         "utah-ig": ["amcanary@pc1.utah.geniracks.net", "30266"],\
+         "gpo-ig-3715_core":["amcanary@pc1.instageni.gpolab.bbn.com","31290"],\
+         "gpo-ig-3716_core":["amcanary@pc1.instageni.gpolab.bbn.com", "30522"] }
 
-file_handle = open(filename, 'r')
-val_str = ""
-for line in file_handle:
-    val_str += line + ","
+for site in srcPing:
+    port = srcPing[site][1]
+    sshStr = "ssh -i " + keyPath + " " + srcPing[site][0] + " -p " + port +\
+               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\"" 
+    os.system(sshStr)
+    scpStr="scp -i " + keyPath + " -P " + port + " " + srcPing[site][0]+ ":" + outputFilePath + " ./"
+    os.system(scpStr)
+    file_handle = open(outputFile, 'r')
+    val_str = ""
+    for line in file_handle:
+        val_str += line + ","
 
-table_str = "ops_experiment_" + experiment_event_types[0]
-
-tbl_mgr.insert_stmt(table_str, val_str[:-1])
+    table_str = "ops_experiment_" + experiment_event_types[0]
+    tbl_mgr.insert_stmt(table_str, val_str[:-1])
+    old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
+    tbl_mgr.purge_old_tsdata(table_str, old_ts)
