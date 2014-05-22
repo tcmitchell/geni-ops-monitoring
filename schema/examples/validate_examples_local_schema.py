@@ -79,7 +79,7 @@ def validate_file(datafile):
     # Manually set to false here
     # not needed if top level schema sets to false
     # with current implementation in parse_schema()
-    schema['additionalProperties'] = False 
+    #schema['additionalProperties'] = False 
 
     validictory.validate(data, schema)
     print "JSON file %s is valid" % datafile

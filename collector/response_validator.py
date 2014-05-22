@@ -58,18 +58,22 @@ def parse_schema(schemaurl):
   return schema
 
 
-def validate(json_resp, schema, validictory_path):
+def validate(json_resp, schema, validictory_path, schema_base):
 
-    # assumes /extern/valedictory exists (see /cm for instructions)
-    import sys
-    sys.path.append(validictory_path)
-    import validictory
-
-    try:
-        validictory.validate(json_resp, schema)
-        print "JSON is valid" 
-        return True
-    except Exception, e:
-        print "Received exception %s while trying to validate: %s\n  %s" % (
-            str(e), json_resp, traceback.format_exc())
-        return False
+  # assumes /extern/valedictory exists (see /cm for instructions)
+  import sys
+  sys.path.append(validictory_path)
+  import validictory
+  
+  try:
+    if json_resp["$schema"].startswith(schema_base) == False:
+      print "JSON schema is of ", json_resp["$schema"], "instead of", schema_base
+      return False
+    validictory.validate(json_resp, schema)
+    print "JSON is valid" 
+    return True
+  except Exception, e:
+    print "Received exception %s while trying to validate: %s\n  %s" % (
+      str(e), json_resp, traceback.format_exc())
+    return False
+  

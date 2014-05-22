@@ -140,3 +140,9 @@ Reference Collector README
    The query library is currently contained in the collector module under
    the file psql_queries.py.  This file should be installed under 
    /usr/local/lib/ at this time.
+
+7. Validictory
+
+   mkdir ops-monitoring/extern
+   cd ops-monitoring/extern
+   git clone https://github.com/sunlightlabs/validictory 
