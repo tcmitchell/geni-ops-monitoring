@@ -43,7 +43,8 @@ experiment_event_types = ocl.get_event_types()["experiment"]
 
 ipConfigPath="/users/amcanary/ips.conf"
 outputFile = "raw_rows"
-outputFilePath="/users/amcanary/"+outputFile
+outputFileLocal = "/home/amcanary/raw_rows"
+outputFileRemote="/users/amcanary/raw_rows"
 keyPath = "/home/amcanary/.ssh/id_rsa"
 
 
@@ -56,11 +57,11 @@ srcPing={"gpo-ig":["amcanary@pc1.instageni.gpolab.bbn.com", "30266"],\
 for site in srcPing:
     port = srcPing[site][1]
     sshStr = "ssh -i " + keyPath + " " + srcPing[site][0] + " -p " + port +\
-               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\"" 
+               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\""
     os.system(sshStr)
-    scpStr="scp -i " + keyPath + " -P " + port + " " + srcPing[site][0]+ ":" + outputFilePath + " ./"
+    scpStr="scp -i " + keyPath + " -P " + port + " " + srcPing[site][0]+ ":" + outputFileRemote + " /home/amcanary"
     os.system(scpStr)
-    file_handle = open(outputFile, 'r')
+    file_handle = open(outputFileLocal, 'r')
     val_str = ""
     for line in file_handle:
         val_str += line + ","
@@ -69,3 +70,4 @@ for site in srcPing:
     tbl_mgr.insert_stmt(table_str, val_str[:-1])
     old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
     tbl_mgr.purge_old_tsdata(table_str, old_ts)
+
