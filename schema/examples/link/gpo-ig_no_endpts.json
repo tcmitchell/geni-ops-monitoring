@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/link",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/link#",
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/links/arbitrary_id_001",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+link+arbitrary_id_001",
   "ts": 1391194147100678,
