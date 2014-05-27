@@ -65,9 +65,7 @@ class InfoPopulator():
         dataStoreBaseUrl="https://extckdatastore.gpolab.bbn.com"
         dataStoreSite="gpo"
         for srcSite in srcPing: 
-            print "srcSite", srcSite
             for dstSite in ipList:
-                print "dstSite", dstSite
                 passFlag = 0 
                 if srcSite != dstSite: # A site must not ping itself
                     dstSiteFlag=dstSite.strip().split('-') 
@@ -91,10 +89,8 @@ class InfoPopulator():
                                 sliceUuid=slices["gpoI16"][1] 
                      
                     if passFlag ==1:
-                       print "second pass"
                        pass 
                     else:
-                        print "here"
                         # Routine for "ops_externalcheck_experiment" Table  
                         extck_exp = [exp_id, dataStoreSite, dataStoreBaseUrl + "/info/experiment/" + exp_id]
                         dataInsert(self.tbl_mgr, fileLoc1, exp_id, extck_exp, "ops_externalcheck_experiment")
