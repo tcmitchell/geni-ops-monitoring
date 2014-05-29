@@ -353,17 +353,24 @@ def get_interface_info_dict(schema, info_row):
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "address_address":
-            addr = info_row[col_i]
-        elif schema[col_i][0] == "address_type":
-            addr_type = info_row[col_i]
-        elif schema[col_i][0].startswith("properties$"):
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "address_address":
+                addr = info_row[col_i]
+            elif schema[col_i][0] == "address_type":
+                addr_type = info_row[col_i]
+            elif schema[col_i][0].startswith("properties$"):
             # parse off properties$
-            json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    json_dict["address"] = {"address":addr,"type":addr_type}
+                json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
+
+#    json_dict["address"] = {"address":addr,"type":addr_type}
+    if (addr is not None) or (addr_type is not None):
+        json_dict["address"] = {}
+        if (addr is not None):
+            json_dict["address"]["address"] = addr
+        if (addr_type is not None):
+            json_dict["address"]["type"] = addr_type
 
     return json_dict
 
@@ -374,19 +381,33 @@ def get_experiment_info_dict(schema, info_row):
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "source_aggregate_urn":
-            src_agg_urn = info_row[col_i]
-        elif schema[col_i][0] == "source_aggregate_href":
-            src_agg_href = info_row[col_i]
-        elif schema[col_i][0] == "destination_aggregate_urn":
-            dest_agg_urn = info_row[col_i]
-        elif schema[col_i][0] == "destination_aggregate_href":
-            dest_agg_href = info_row[col_i]
-        else: # top level keys are equal to what is in DB
-            json_dict[schema[col_i][0]] = info_row[col_i]
-            
-    json_dict["source_aggregate"] = {"urn":src_agg_urn,"href":src_agg_href}
-    json_dict["destination_aggregate"] = {"urn":dest_agg_urn,"href":dest_agg_href}
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "source_aggregate_urn":
+                src_agg_urn = info_row[col_i]
+            elif schema[col_i][0] == "source_aggregate_href":
+                src_agg_href = info_row[col_i]
+            elif schema[col_i][0] == "destination_aggregate_urn":
+                dest_agg_urn = info_row[col_i]
+            elif schema[col_i][0] == "destination_aggregate_href":
+                dest_agg_href = info_row[col_i]
+            else: # top level keys are equal to what is in DB
+                json_dict[schema[col_i][0]] = info_row[col_i]
+                
+#    json_dict["source_aggregate"] = {"urn":src_agg_urn,"href":src_agg_href}
+    if (src_agg_urn is not None) or (src_agg_href is not None):
+        json_dict["source_aggregate"] = {}
+        if (src_agg_urn is not None): 
+            json_dict["source_aggregate"]["urn"] = src_agg_urn
+        if (src_agg_href is not None):
+            json_dict["source_aggregate"]["href"] = src_agg_href
+        
+#    json_dict["destination_aggregate"] = {"urn":dest_agg_urn,"href":dest_agg_href}
+    if (dest_agg_urn is not None) or (dest_agg_href is not None):
+        json_dict["destination_aggregate"] = {}
+        if (dest_agg_urn is not None):
+            json_dict["destination_aggregate"]["urn"] = dest_agg_urn
+        if (dest_agg_href is not None):
+            json_dict["destination_aggregate"]["href"] = dest_agg_href
 
     return json_dict
 
@@ -398,14 +419,21 @@ def get_interfacevlan_info_dict(schema, info_row):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "interface_urn":
-            iface_urn = info_row[col_i]
-        elif schema[col_i][0] == "interface_href":
-            iface_href = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "interface_urn":
+                iface_urn = info_row[col_i]
+            elif schema[col_i][0] == "interface_href":
+                iface_href = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
             
-    json_dict["port"] = {"urn":iface_urn,"href":iface_href}
+    if (iface_urn is not None) or (iface_href is not None):
+        json_dict["port"] = {}
+        if (iface_urn is not None):
+            json_dict["port"]["urn"] = iface_urn;
+        if (iface_href is not None):
+            json_dict["port"]["href"] = iface_href;
+    #json_dict["port"] = {"urn":iface_urn,"href":iface_href}
 
     return json_dict
 
@@ -417,14 +445,21 @@ def get_user_info_dict(schema, info_row):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "authority_urn":
-            auth_urn = info_row[col_i]
-        elif schema[col_i][0] == "authority_href":
-            auth_href = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "authority_urn":
+                auth_urn = info_row[col_i]
+            elif schema[col_i][0] == "authority_href":
+                auth_href = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
             
-    json_dict["authority"] = {"urn":auth_urn,"href":auth_href}
+#    json_dict["authority"] = {"urn":auth_urn,"href":auth_href}
+    if (auth_urn is not None) or (auth_href is not None):
+        json_dict["authority"] = {}
+        if (auth_urn is not None):
+            json_dict["authority"]["urn"] = auth_urn
+        if (auth_href is not None):
+            json_dict["authority"]["href"] = auth_href
 
     return json_dict
 
@@ -436,11 +471,12 @@ def get_node_info_dict(schema, info_row, port_refs):
 
     # Not all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0].startswith("properties$"):
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0].startswith("properties$"):
             # parse off properties$ 
-            json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]        
+                json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
 
     if port_refs:
         json_dict["ports"] = []
@@ -458,7 +494,8 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     if agg_refs:
         json_dict["aggregates"] = []
@@ -503,14 +540,21 @@ def get_sliver_info_dict(schema, info_row, res_refs):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "aggregate_urn":
-            agg_urn = info_row[col_i]
-        elif schema[col_i][0] == "aggregate_href":
-            agg_href = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "aggregate_urn":
+                agg_urn = info_row[col_i]
+            elif schema[col_i][0] == "aggregate_href":
+                agg_href = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
             
-    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
+#    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
+    if (agg_urn is not None) or (agg_href is not None):
+        json_dict["aggregate"] = {}
+        if (agg_urn is not None):
+            json_dict["aggregate"]["urn"] = agg_urn
+        if (agg_href is not None):
+            json_dict["aggregate"]["href"] = agg_href
 
     if res_refs:
         json_dict["resources"] = []
@@ -528,7 +572,8 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
     
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     if res_refs:
         json_dict["resources"] = []
@@ -550,7 +595,8 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
     
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     if exp_refs:
         json_dict["experiments"] = []
@@ -574,7 +620,8 @@ def get_link_info_dict(schema, info_row, endpt_refs):
     
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     if endpt_refs:
         json_dict["endpoints"] = []
@@ -592,14 +639,21 @@ def get_slice_info_dict(schema, info_row, user_refs):
                 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if schema[col_i][0] == "authority_href":
-            auth_href = info_row[col_i]
-        elif schema[col_i][0] == "authority_urn":
-            auth_urn = info_row[col_i]
-        else:
-            json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            if schema[col_i][0] == "authority_href":
+                auth_href = info_row[col_i]
+            elif schema[col_i][0] == "authority_urn":
+                auth_urn = info_row[col_i]
+            else:
+                json_dict[schema[col_i][0]] = info_row[col_i]
 
-    json_dict["authority"] = {"href":auth_href,"urn":auth_urn}
+#    json_dict["authority"] = {"href":auth_href,"urn":auth_urn}
+    if (auth_urn is not None) or (auth_href is not None):
+        json_dict["authority"] = {}
+        if (auth_urn is not None):
+            json_dict["authority"]["urn"] = auth_urn
+        if (auth_href is not None):
+            json_dict["authority"]["href"] = auth_href
 
     if user_refs:
         json_dict["members"] = []
@@ -617,7 +671,8 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
     
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        json_dict[schema[col_i][0]] = info_row[col_i]
+        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     if user_refs:
         json_dict["users"] = []
