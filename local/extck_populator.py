@@ -134,7 +134,7 @@ def is_empty(any_structure): # Determine if "any_structure" is empty
 def getAMState(output):
     cols=output.strip().split(':')
     if cols[2] == " Timed out after 60 seconds": # Occurs if subprocess hangs 
-        result =0
+        result = "0"
     elif cols[3]==" 0": # check for "returned: 0" output
         result="1" # Good result
     else:
