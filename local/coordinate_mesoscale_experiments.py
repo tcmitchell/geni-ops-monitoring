@@ -25,7 +25,6 @@ import sys
 import os
 import getopt
 import time
-
 sys.path.append("../common/")
 import table_manager
 import opsconfig_loader
@@ -35,6 +34,7 @@ config_path = "../config/"
 debug = False
 
 tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+
 tbl_mgr.poll_config_store()
 
 ocl = opsconfig_loader.OpsconfigLoader(config_path)
@@ -50,14 +50,14 @@ keyPath = "/home/amcanary/.ssh/id_rsa"
 
 
 srcPing={"gpo-ig":["amcanary@pc1.instageni.gpolab.bbn.com", "30266"],\
-         "utah-ig": ["amcanary@pc1.utah.geniracks.net", "30266"],\
+         "utah-ig": ["amcanary@pc1.utah.geniracks.net", "30010"],\
          "gpo-ig-3715_core":["amcanary@pc1.instageni.gpolab.bbn.com","31290"],\
          "gpo-ig-3716_core":["amcanary@pc1.instageni.gpolab.bbn.com", "30522"] }
 
 for site in srcPing:
     port = srcPing[site][1]
     sshStr = "ssh -i " + keyPath + " " + srcPing[site][0] + " -p " + port +\
-               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\""
+               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\"" 
     os.system(sshStr)
     scpStr="scp -i " + keyPath + " -P " + port + " " + srcPing[site][0]+ ":" + outputFileRemote + " /home/amcanary"
     os.system(scpStr)
@@ -65,9 +65,8 @@ for site in srcPing:
     val_str = ""
     for line in file_handle:
         val_str += line + ","
-
+    now = datetime.datetime.now()
     table_str = "ops_experiment_" + experiment_event_types[0]
     tbl_mgr.insert_stmt(table_str, val_str[:-1])
-    old_ts = int((time.time()-12*60*60)*1000000) # Purge data older than 12 hours
+    old_ts = int((time.time()-504*60*60)*1000000) # Purge data older than 12 hours (504, every 3 wks)
     tbl_mgr.purge_old_tsdata(table_str, old_ts)
-
