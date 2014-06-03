@@ -65,7 +65,6 @@ for site in srcPing:
     val_str = ""
     for line in file_handle:
         val_str += line + ","
-    now = datetime.datetime.now()
     table_str = "ops_experiment_" + experiment_event_types[0]
     tbl_mgr.insert_stmt(table_str, val_str[:-1])
     old_ts = int((time.time()-504*60*60)*1000000) # Purge data older than 12 hours (504, every 3 wks)
