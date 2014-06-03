@@ -15,6 +15,11 @@
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
     },
     {
+      "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
+      "amtype": "network-aggregate",
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.net.internet2.edu"
+    },
+    {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
        "amtype": "instageni",
        "href": "https://www.utah.geniracks.net:5001/info/aggregate/utah-ig"
