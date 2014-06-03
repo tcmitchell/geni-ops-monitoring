@@ -7,27 +7,177 @@
     {
       "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
       "amtype": "ion",
-      "href": "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
       "amtype": "al2s",
-      "href": "http://aj-dev6.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
-    },
-    {
-       "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
-       "amtype": "ion",
-       "href": "http://maxam.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
     },
     {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
-       "amtype": "protogeni",
-       "href": "http://datastore.utah.geniracks.net:5001/info/aggregate/utah-ig"
+       "amtype": "instageni",
+       "href": "https://www.utah.geniracks.net:5001/info/aggregate/utah-ig"
     },
     {
-       "urn": "urn:rci",
+       "urn": "urn:publicid:IDN+emulab.net+authority+cm",
+       "amtype": "protogeni",
+       "href": "https://www.emulab.net:5001/info/aggregate/utah-pg"
+    },
+    {
+       "urn": "urn:publicid:IDN+utahddc.geniracks.net+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.utahddc.geniracks.net:5001/info/aggregate/utahddc-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.gpolab.bbn.com:5001/info/aggregate/gpo-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.northwestern.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.northwestern.edu:5001/info/aggregate/northwestern-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+lan.sdn.uky.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.lan.sdn.uky.edu:5001/info/aggregate/uky-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+geni.kettering.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.geni.kettering.edu:5001/info/aggregate/kettering-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.northwestern.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.clemson.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.clemson.edu:5001/info/aggregate/clemson-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.ku.gpeni.net+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.ku.gpeni.net:5001/info/aggregate/kansas-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+genirack.nyu.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.maxgigapop.net+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.maxgigapop.net:5001/info/aggregate/max-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.nysernet.org+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.nysernet.org:5001/info/aggregate/nysernet-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.sox.net+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.sox.net:5001/info/aggregate/sox-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.illinois.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.illinois.edu:5001/info/aggregate/illinois-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.rnet.missouri.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.rnet.missouri.edu:5001/info/aggregate/missouri-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.wisc.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.wisc.edu:5001/info/aggregate/wisconsin-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.rutgers.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.stanford.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.stanford.edu:5001/info/aggregate/stanford-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+geni.it.cornell.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.lsu.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+geni.case.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.geni.case.edu:5001/info/aggregate/cwru-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.uidaho.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.uidaho.edu:5001/info/aggregate/idaho-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.osu.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.osu.edu:5001/info/aggregate/osu-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+rci-hn.exogeni.net+authority+rci-hn",
        "amtype": "exogeni",
-       "urn": "https://rci-hn.exogeni.net/ops-monitoring/info/aggregate/rci-eg"
+       "urn": "https://rci-hn.exogeni.net:5001/info/aggregate/rci-eg"
+    },
+    {
+       "urn": "urn:publicid+IDN+ch.geni.net+authority+ch",
+       "amtype": "clearinghouse",
+       "urn": " https://ch.geni.net/info/authority/ch.geni.net"
     }
   ],
   "externalcheckstores": [
@@ -44,405 +194,405 @@
   "info": [
     {  "name": "aggregate",
        "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["measRef","varchar"]
-          ]
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true],
+             ["measRef","varchar", false]
+        ]
     },
     {   "name":"node",
-	"db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["properties$mem_total_kb","int8"],
-		 ["properties$vm_server_type","varchar"]
-          ]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true],
+             ["properties$mem_total_kb", "int8", false],
+             ["properties$vm_server_type", "varchar", false]
+        ]
     },
-    {  "name": "link",
-       "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"]
-          ]
+    {   "name": "link",
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true]
+        ]
     },
-    {  "name": "sliver",
-       "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["uuid","varchar"],
-		 ["ts","int8"],
-		 ["aggregate_urn","varchar"],
-		 ["aggregate_href","varchar"],
-		 ["slice_urn","varchar"],
-		 ["slice_uuid","varchar"],
-		 ["creator","varchar"],
-		 ["created","int8"],
-		 ["expires","int8"]
-          ]
+    {   "name": "sliver",
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["uuid", "varchar", true],
+             ["ts", "int8", true],
+             ["aggregate_urn", "varchar", true],
+             ["aggregate_href", "varchar", true],
+             ["slice_urn", "varchar", false],
+             ["slice_uuid", "varchar", true],
+             ["creator", "varchar", false],
+             ["created", "int8", true],
+             ["expires", "int8", true]
+        ]
     },
-    {  "name":"interface",
-       "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["address_type","varchar"],
-		 ["address_address","varchar"],
-		 ["properties$role","varchar"],
-		 ["properties$max_bps","int8"],
-		 ["properties$max_pps","int8"]
-          ]
+    {   "name":"interface",
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true],
+             ["address_type", "varchar", true],
+             ["address_address", "varchar", true],
+             ["properties$role", "varchar"],
+             ["properties$max_bps", "int8"],
+             ["properties$max_pps", "int8"]
+        ]
     },
     {   "name": "interfacevlan",
         "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["tag","int8"],
-		 ["interface_urn","varchar"],
-		 ["interface_href","varchar"]
-          ]
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true],
+             ["tag", "int8", true],
+             ["interface_urn", "varchar", true],
+             ["interface_href", "varchar", true]
+        ]
    },
    {   "name": "slice",
        "db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["uuid","varchar"],
-		 ["ts","int8"],
-		 ["authority_urn","varchar"],
-		 ["authority_href","varchar"],
-		 ["created","int8"],
-		 ["expires","int8"]
-          ]
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["uuid", "varchar", true],
+             ["ts", "int8", true],
+             ["authority_urn", "varchar", true],
+             ["authority_href", "varchar", true],
+             ["created", "int8", true],
+             ["expires", "int8", true]
+       ]
     },
     {   "name":"user",
-    	"db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"],
-		 ["authority_urn","varchar"],
-		 ["authority_href","varchar"],
-		 ["fullname","varchar"],
-		 ["email","varchar"]
-          ]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true],
+             ["authority_urn", "varchar", true],
+             ["authority_href", "varchar", true],
+             ["fullname", "varchar", true],
+             ["email", "varchar", true]
+        ]
     },
     {   "name":"authority",
-    	"db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["urn","varchar"],
-		 ["ts","int8"]
-          ]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true]
+        ]
     },
     {   "name":"externalcheck",
-    	"db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["ts","int8"],
-		 ["measRef","varchar"]
-          ]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["ts", "int8", true],
+             ["measRef", "varchar", true]
+        ]
     },
     {   "name":"experiment",
-    	"db_schema": [
-		 ["$schema", "varchar"],
-		 ["id", "varchar"],
-		 ["selfRef","varchar"],
-		 ["ts","int8"],		 
-	         ["slice_urn","varchar"],
-		 ["slice_uuid","varchar"],
-		 ["source_aggregate_urn","varchar"],
-		 ["source_aggregate_href","varchar"],
-		 ["destination_aggregate_urn","varchar"],
-		 ["destination_aggregate_href","varchar"]
-          ]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["ts", "int8", true],         
+             ["slice_urn", "varchar", true],
+             ["slice_uuid", "varchar", true],
+             ["source_aggregate_urn", "varchar", true],
+             ["source_aggregate_href", "varchar", true],
+             ["destination_aggregate_urn", "varchar", true],
+             ["destination_aggregate_href", "varchar", true]
+         ]
     },
     {   "name":"opsconfig",
-    	"db_schema": [
-		 ["$schema", "varchar"],
-	         ["id","varchar"],
-		 ["selfRef","varchar"],
-		 ["ts","int8"]
-	]
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["ts", "int8", true]
+        ]
     },
     {   "name":"aggregate_resource",
-    	"db_schema" : [
-	         ["id","varchar"],
-		 ["aggregate_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	  ]
+        "db_schema" : [
+             ["id", "varchar", true],
+             ["aggregate_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"aggregate_sliver",
-    	"db_schema" : [
-	         ["id","varchar"],
-		 ["aggregate_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	 ]
+        "db_schema" : [
+             ["id", "varchar", true],
+             ["aggregate_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"link_interfacevlan",
-    	"db_schema" : [
-	         ["id","varchar"],
-		 ["link_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	  ]
+        "db_schema" : [
+             ["id", "varchar", true],
+             ["link_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+         ]
     },
     {   "name":"sliver_resource",
-     	"db_schema" : [
-	         ["id","varchar"],
-		 ["sliver_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	 ]
+         "db_schema" : [
+             ["id", "varchar", true],
+             ["sliver_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"node_interface",
         "db_schema": [
-	         ["id","varchar"],
-		 ["node_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	  ]
+             ["id", "varchar", true],
+             ["node_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"slice_user",
-    	"db_schema": [
-	         ["id","varchar"],
-		 ["slice_id","varchar"],
-		 ["urn","varchar"],
-		 ["role","varchar"],
-		 ["selfRef","varchar"]
-	]
+        "db_schema": [
+             ["id","varchar", true],
+             ["slice_id","varchar", true],
+             ["urn","varchar", true],
+             ["role","varchar", true],
+             ["selfRef","varchar", true]
+        ]
     },
     {   "name":"authority_user",
-    	"db_schema": [
-	         ["id","varchar"],
-		 ["authority_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	]
+        "db_schema": [
+             ["id", "varchar", true],
+             ["authority_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"authority_slice",
-    	"db_schema": [
-	         ["id","varchar"],
-		 ["authority_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	]
+        "db_schema": [
+             ["id","varchar", true],
+             ["authority_id","varchar", true],
+             ["urn","varchar", true],
+             ["selfRef","varchar", true]
+        ]
     },
     {   "name":"opsconfig_aggregate",
-    	"db_schema": [
-	         ["id","varchar"],
-		 ["opsconfig_id","varchar"],
-		 ["amtype","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	]
+        "db_schema": [
+             ["id", "varchar", true],
+             ["opsconfig_id", "varchar", true],
+             ["amtype", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
     {   "name":"opsconfig_authority",
-    	"db_schema": [
-	         ["id","varchar"],
-		 ["opsconfig_id","varchar"],
-		 ["urn","varchar"],
-		 ["selfRef","varchar"]
-	]
+        "db_schema": [
+             ["id","varchar", true],
+             ["opsconfig_id", "varchar", true],
+             ["urn", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
-    {	"name":"opsconfig_event",
-    	"db_schema": [
-		 ["object_type","varchar"],
-	         ["name","varchar"],
-	         ["id","varchar"],
-	         ["ts","varchar"],
-	         ["v","varchar"],
-	         ["units","varchar"]
-	]
+    {   "name":"opsconfig_event",
+        "db_schema": [
+             ["object_type", "varchar", true],
+             ["name"," varchar", true],
+             ["id", "varchar", true],
+             ["ts", "varchar", true],
+             ["v", "varchar", true],
+             ["units", "varchar", true]
+        ]
     },
-    {	"name":"externalcheck_experiment",
-    	"db_schema": [
-		 ["id","varchar"],
-	         ["externalcheck_id","varchar"],
-	         ["selfRef","varchar"]
-	]
+    {   "name":"externalcheck_experiment",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["externalcheck_id", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     },
-    {	"name":"externalcheck_monitoredaggregate",
-    	"db_schema": [
-		 ["id","varchar"],
-	         ["externalcheck_id","varchar"],
-	         ["selfRef","varchar"]
-	]
+    {   "name":"externalcheck_monitoredaggregate",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["externalcheck_id", "varchar", true],
+             ["selfRef", "varchar", true]
+        ]
     }
   ],
   "events": 
     {
       "node": [
           {    "name": "cpu_util",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "float4",
-	       "units": "percent"
+           "v": "float4",
+           "units": "percent"
           },
           {    "name": "mem_used_kb",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "int8",
-	       "units": "kilobytes"
-          },  	
-	  {    "name": "swap_free",
-	       "id": "varchar",
+           "v": "int8",
+           "units": "kilobytes"
+          },      
+      {    "name": "swap_free",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "float4",
-	       "units": "percent"
+           "v": "float4",
+           "units": "percent"
           },
-	  {    "name": "is_available",
-	       "id": "varchar",
+      {    "name": "is_available",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "int2",
-	       "units": "boolean"
+           "v": "int2",
+           "units": "boolean"
           },
-	  {    "name": "disk_part_max_used",
-	       "id": "varchar",
+      {    "name": "disk_part_max_used",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "float4",
-	       "units":"percent"
+           "v": "float4",
+           "units":"percent"
           },
           {    "name": "num_vms_allocated",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "int4",
-	       "units": "count"
+           "v": "int4",
+           "units": "count"
           }
        ],
        "aggregate": [
           {    "name": "is_available",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v": "int2",
-	       "units": "boolean"
+           "v": "int2",
+           "units": "boolean"
           }
        ],
        "interface": [
           {    "name": "rx_bps",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"bps"
+           "v":"float4",
+           "units":"bps"
           },
-	  {    "name": "tx_bps",
-	       "id": "varchar",
+      {    "name": "tx_bps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"bps"
+           "v":"float4",
+           "units":"bps"
           },
-	  {    "name":"rx_pps",
-	       "id": "varchar",
+      {    "name":"rx_pps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_pps",  
-	       "id": "varchar",
+      {    "name":"tx_pps",  
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"rx_eps",  
-	       "id": "varchar",
+      {    "name":"rx_eps",  
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_eps",
-	       "id": "varchar",
+      {    "name":"tx_eps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"rx_dps",
-	       "id": "varchar",
+      {    "name":"rx_dps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_dps",
-	       "id": "varchar",
+      {    "name":"tx_dps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           }
        ],
        "interfacevlan": [
           {    "name": "rx_bps",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"bps"
+           "v":"float4",
+           "units":"bps"
           },
-	  {    "name": "tx_bps",
-	       "id": "varchar",
+      {    "name": "tx_bps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"bps"
+           "v":"float4",
+           "units":"bps"
           },
-	  {    "name":"rx_pps",
-	       "id": "varchar",
+      {    "name":"rx_pps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_pps",  
-	       "id": "varchar",
+      {    "name":"tx_pps",  
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"rx_eps",  
-	       "id": "varchar",
+      {    "name":"rx_eps",  
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_eps",
-	       "id": "varchar",
+      {    "name":"tx_eps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"rx_dps",
-	       "id": "varchar",
+      {    "name":"rx_dps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           },
-	  {    "name":"tx_dps",
-	       "id": "varchar",
+      {    "name":"tx_dps",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"pps"
+           "v":"float4",
+           "units":"pps"
           }
        ],
        "experiment": [
           {    "name": "ping_rtt_ms",
-	       "id": "varchar",
+           "id": "varchar",
                "ts": "int8",
-	       "v":"float4",
-	       "units":"milliseconds"
+           "v":"float4",
+           "units":"milliseconds"
           }
        ]
     }
