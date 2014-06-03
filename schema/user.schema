@@ -10,14 +10,14 @@
   },
   "properties": {
     "authority": {
-      "description": "GENI authority at which this user is registered",
-      "type": [
-        {
-          "urn": "string",
-          "$ref": "http://json-schema.org/draft-03/links#"
-        }
-      ],
-      "required": true
+        "description": "GENI authority at which this user is registered",
+        "type": "object",
+	    "properties" : {
+            "urn": {"type":"string"},
+            "href": {"type":"string"}
+        },
+        "required": ["urn","href"],
+        "additionalProperties": false
     },
     "fullname": {
       "description": "Name of this user",
