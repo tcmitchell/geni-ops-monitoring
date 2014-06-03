@@ -248,9 +248,9 @@
              ["ts", "int8", true],
              ["address_type", "varchar", true],
              ["address_address", "varchar", true],
-             ["properties$role", "varchar"],
-             ["properties$max_bps", "int8"],
-             ["properties$max_pps", "int8"]
+             ["properties$role", "varchar", false],
+             ["properties$max_bps", "int8", false],
+             ["properties$max_pps", "int8", false]
         ]
     },
     {   "name": "interfacevlan",
