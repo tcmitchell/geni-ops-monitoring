@@ -6,12 +6,12 @@
   "aggregatestores": [
     {
       "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
-      "amtype": "ion",
+      "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
-      "amtype": "al2s",
+      "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
     },
     {
@@ -441,159 +441,159 @@
   ],
   "events": 
     {
-      "node": [
-          {    "name": "cpu_util",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "float4",
-           "units": "percent"
-          },
-          {    "name": "mem_used_kb",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "int8",
-           "units": "kilobytes"
-          },      
-      {    "name": "swap_free",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "float4",
-           "units": "percent"
-          },
-      {    "name": "is_available",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "int2",
-           "units": "boolean"
-          },
-      {    "name": "disk_part_max_used",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "float4",
-           "units":"percent"
-          },
-          {    "name": "num_vms_allocated",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "int4",
-           "units": "count"
-          }
-       ],
-       "aggregate": [
-          {    "name": "is_available",
-           "id": "varchar",
-               "ts": "int8",
-           "v": "int2",
-           "units": "boolean"
-          }
-       ],
-       "interface": [
-          {    "name": "rx_bps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"bps"
-          },
-      {    "name": "tx_bps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"bps"
-          },
-      {    "name":"rx_pps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_pps",  
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"rx_eps",  
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_eps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"rx_dps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_dps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          }
-       ],
-       "interfacevlan": [
-          {    "name": "rx_bps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"bps"
-          },
-      {    "name": "tx_bps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"bps"
-          },
-      {    "name":"rx_pps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_pps",  
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"rx_eps",  
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_eps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"rx_dps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          },
-      {    "name":"tx_dps",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"pps"
-          }
-       ],
-       "experiment": [
-          {    "name": "ping_rtt_ms",
-           "id": "varchar",
-               "ts": "int8",
-           "v":"float4",
-           "units":"milliseconds"
-          }
-       ]
+        "node": [
+            {   "name": "cpu_util",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "float4",
+                "units": "percent"
+            },
+            {   "name": "mem_used_kb",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int8",
+                "units": "kilobytes"
+            },      
+            {   "name": "swap_free",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "float4",
+                "units": "percent"
+            },
+            {   "name": "is_available",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int2",
+                "units": "boolean"
+            },
+            {   "name": "disk_part_max_used",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "float4",
+                "units":"percent"
+            },
+            {   "name": "num_vms_allocated",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int4",
+                "units": "count"
+            }
+        ],
+        "aggregate": [
+            {   "name": "is_available",
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int2",
+                "units": "boolean"
+            }
+        ],
+        "interface": [
+            {   "name": "rx_bps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"bps"
+            },
+            {   "name": "tx_bps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"bps"
+            },
+            {   "name":"rx_pps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_pps",  
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"rx_eps",  
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_eps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"rx_dps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_dps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            }
+        ],
+        "interfacevlan": [
+            {   "name": "rx_bps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"bps"
+            },
+            {   "name": "tx_bps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"bps"
+            },
+            {   "name":"rx_pps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_pps",  
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"rx_eps",  
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_eps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"rx_dps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            },
+            {   "name":"tx_dps",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"pps"
+            }
+        ],
+        "experiment": [
+            {   "name": "ping_rtt_ms",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"milliseconds"
+            }
+        ]
     }
 }
