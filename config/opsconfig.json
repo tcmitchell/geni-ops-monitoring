@@ -177,7 +177,7 @@
     {
        "urn": "urn:publicid+IDN+ch.geni.net+authority+ch",
        "amtype": "clearinghouse",
-       "urn": " https://ch.geni.net/info/authority/ch.geni.net"
+       "urn": "https://ch.geni.net/info/authority/ch.geni.net"
     }
   ],
   "externalcheckstores": [
@@ -417,7 +417,7 @@
     {   "name":"opsconfig_event",
         "db_schema": [
              ["object_type", "varchar", true],
-             ["name"," varchar", true],
+             ["name", "varchar", true],
              ["id", "varchar", true],
              ["ts", "varchar", true],
              ["v", "varchar", true],
