@@ -178,7 +178,7 @@
        "urn": "urn:publicid:IDN+rci-hn.exogeni.net+authority+rci-hn",
        "amtype": "exogeni",
        "href": "https://rci-hn.exogeni.net:5001/info/aggregate/rci-eg"
-    },
+    }
   ],
   "externalcheckstores": [
     {
