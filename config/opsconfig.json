@@ -177,23 +177,18 @@
     {
        "urn": "urn:publicid:IDN+rci-hn.exogeni.net+authority+rci-hn",
        "amtype": "exogeni",
-       "urn": "https://rci-hn.exogeni.net:5001/info/aggregate/rci-eg"
+       "href": "https://rci-hn.exogeni.net:5001/info/aggregate/rci-eg"
     },
-    {
-       "urn": "urn:publicid+IDN+ch.geni.net+authority+ch",
-       "amtype": "clearinghouse",
-       "urn": "https://ch.geni.net/info/authority/ch.geni.net"
-    }
   ],
   "externalcheckstores": [
     {
-      "href": "https://extckdatastore.gpolab.bbn.com/info/externalcheck/gpo"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/externalcheck/gpo"
     }
   ],
   "authorities": [
     {
-      "urn": "urn:publicid:IDN+ch.geni.net+authority+ch",
-      "href": "https://datastore.ch.geni.net/authorities/ch.geni.net"
+       "urn": "urn:publicid+IDN+ch.geni.net+authority+ch",
+       "href": "https://ch.geni.net/info/authority/ch.geni.net"
     }
   ],
   "info": [
