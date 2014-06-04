@@ -37,7 +37,9 @@ node default {
   $populate_config_store = false
   $init_collector = false
 
-  $datastore_ip_addr = '192.1.19.97'
+  # This address is configured via local/Vagrantfile:config.vm.network.
+  # If it changes there, it must be manually updated here.
+  $datastore_ip_addr = '192.168.33.10'
   
   $database_name = "local"
   $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
