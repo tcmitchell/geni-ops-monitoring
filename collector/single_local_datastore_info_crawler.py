@@ -212,17 +212,29 @@ class SingleLocalDatastoreInfoCrawler:
                      node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
                      info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
 
+    def get_default_attribute_for_type(self, type):
+        val = "";
+        if type.startswith("int"):
+            val = 0
+        return val
 
     def get_node_attributes(self, res_dict, schema):
         node_info_list = []
         for key in schema: 
-
             if key[0].startswith("properties$"): 
-                key_property = "ops_monitoring:" + key[0].split('$')[1]
-                if key_property in res_dict:
-                    node_info_list.append(res_dict[key_property])
+                jsonkey = "ops_monitoring:" + key[0].split('$')[1]
             else:
-                node_info_list.append(res_dict[key[0]])
+                jsonkey = key[0];
+
+            if jsonkey in res_dict:
+                node_info_list.append(res_dict[jsonkey])
+            else:
+                if key[2]:
+                    print("WARNING: value for required json node field " + jsonkey + " is missing. Replacing with default value...")
+                    node_info_list.append(get_default_attribute_for_type(key[1]))
+                else:
+                    # This is OK. This was an optional field.
+                    node_info_list.append(None)
 
         return node_info_list
 
@@ -230,31 +242,108 @@ class SingleLocalDatastoreInfoCrawler:
     def get_link_attributes(self, res_dict, schema):
         link_info_list = []
         for key in schema: 
-            link_info_list.append(res_dict[key[0]])
+            if key[0] in res_dict:
+                link_info_list.append(res_dict[key[0]])
+            else:
+                if key[2]:
+                    print("WARNING: value for required json link field " + jsonkey + " is missing. Replacing with default value...")
+                    link_info_list.append(get_default_attribute_for_type(key[1]))
+                else:
+                    # This is OK. This was an optional field.
+                    link_info_list.append(None)
+
         return link_info_list
 
 
     def get_sliver_attributes(self, slv_dict, schema):
         slv_info_list = []
         for key in schema: 
+            noval = False
             if key[0] == "aggregate_href":
-                slv_info_list.append(slv_dict["aggregate"]["href"])
+                if "aggregate" in slv_dict:
+                    if "href" in slv_dict["aggregate"]:
+                        slv_info_list.append(slv_dict["aggregate"]["href"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
+                        slv_info_list.append("")
+                    else:
+                        slv_info_list.append(None)
             elif key[0] == "aggregate_urn":
-                slv_info_list.append(slv_dict["aggregate"]["urn"])
+                if "aggregate" in slv_dict:
+                    if "urn" in slv_dict["aggregate"]:
+                        slv_info_list.append(slv_dict["aggregate"]["urn"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
+                        slv_info_list.append("")
+                    else:
+                        slv_info_list.append(None)
             else:
-                slv_info_list.append(slv_dict[key[0]])
+                if key[0] in slv_dict:
+                    slv_info_list.append(slv_dict[key[0]])
+                else:
+                    if key[2]:
+                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        slv_info_list.append(get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        slv_info_list.append(None)
+
         return slv_info_list
 
 
     def get_interfacevlan_attributes(self, ifv_dict, schema):
         ifv_info_list = []
-        for key in schema: 
+        for key in schema:
+            noval = False
             if key[0] == "interface_href":
-                ifv_info_list.append(ifv_dict["port"]["href"])
+                if "port" in ifv_dict:
+                    if "href" in ifv_dict["port"]:
+                        ifv_info_list.append(ifv_dict["port"]["href"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json interface-vlan field [\"port\"][\"href\"] is missing. Replacing with empty string...")
+                        ifv_info_list.append("")
+                    else:
+                        ifv_info_list.append(None)
             elif key[0] == "interface_urn":
-                ifv_info_list.append(ifv_dict["port"]["urn"])
+                if "port" in ifv_dict:
+                    if "urn" in ifv_dict["port"]:
+                        ifv_info_list.append(ifv_dict["port"]["urn"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json interface-vlan field [\"port\"][\"urn\"] is missing. Replacing with empty string...")
+                        ifv_info_list.append("")
+                    else:
+                        ifv_info_list.append(None)
             else:
-                ifv_info_list.append(ifv_dict[key[0]])
+                if key[0] in ifv_dict:
+                    ifv_info_list.append(ifv_dict[key[0]])
+                else:
+                    if key[2]:
+                        print("WARNING: value for required json interface-vlan field " + key[0] + " is missing. Replacing with default value...")
+                        ifv_info_list.append(get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        ifv_info_list.append(None)
+
         return ifv_info_list
 
 
@@ -262,17 +351,50 @@ class SingleLocalDatastoreInfoCrawler:
         # get each attribute out of response into list
         interface_info_list = []
         for key in schema: 
+            noval = False
+            if key[0] == "address_type":
+                if "address" in interface_dict:
+                    if "type" in interface_dict["address"]:
+                        interface_info_list.append(interface_dict["address"]["type"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json interface field [\"address\"][\"type\"] is missing. Replacing with empty string...")
+                        interface_info_list.append("")
+                    else:
+                        interface_info_list.append(None)
 
-            if key[0].startswith("properties$"): 
-                key_property = "ops_monitoring:" + key[0].split('$')[1]
-                if key_property in interface_dict:
-                    interface_info_list.append(interface_dict[key_property])
-            elif key[0] == "address_type":
-                interface_info_list.append(interface_dict["address"]["type"])
             elif key[0] == "address_address":
-                interface_info_list.append(interface_dict["address"]["address"])
+                if "address" in interface_dict:
+                    if "address" in interface_dict["address"]:
+                        interface_info_list.append(interface_dict["address"]["address"])
+                    else:
+                        noval = True
+                else:
+                    noval = True
+                if noval:
+                    if key[2]:
+                        print("WARNING: value for required json interface field [\"address\"][\"address\"] is missing. Replacing with empty string...")
+                        interface_info_list.append("")
+                    else:
+                        interface_info_list.append(None)
             else:
-                interface_info_list.append(interface_dict[key[0]])
+                if key[0].startswith("properties$"):
+                    jsonkey = "ops_monitoring:" + key[0].split('$')[1]
+                else:
+                    jsonkey = key[0]
+                if jsonkey in interface_dict:
+                    interface_info_list.append(interface_dict[jsonkey])
+                else:
+                    if key[2]:
+                        print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                        interface_info_list.append(get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        interface_info_list.append(None)
 
         return interface_info_list
 
@@ -400,10 +522,13 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
     else:
         tbl_mgr.delete_stmt(table_str, obj_id)
 
-    val_str = "('"
+    val_str = "("
     for val in row_arr:
-        val_str += str(val) + "','" # join won't do this
-    val_str = val_str[:-2] + ")" # remove last 2 of 3: ',' add )
+        if val is None:
+            val_str +=  "NULL, "
+        else:
+            val_str += "'" + str(val) + "', " # join won't do this
+    val_str = val_str[:-2] + ")" # remove last 2 of 3: ', ' add ')'
 
     if debug:
         print "<print only> insert " + table_str + " values: " + val_str
