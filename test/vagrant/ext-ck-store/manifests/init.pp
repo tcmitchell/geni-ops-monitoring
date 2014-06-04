@@ -38,7 +38,7 @@ node default {
   $init_collector = false
 
   $database_name = "local"
-  $config_store_url = "http://starkville.bbn.com/info/opsconfig/geni-prod"
+  $config_store_url = "file:///usr/local/ops-monitoring/config/opsconfig.json"
 
   # since these passwords are being committed to a repo, never use
   # them anywhere outside a vagrant instance running on localhost
