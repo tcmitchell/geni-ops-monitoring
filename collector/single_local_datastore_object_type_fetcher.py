@@ -193,7 +193,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                         }
              }
 
-        url = self.meas_ref + "?q=" + str(q)
+        url = self.meas_ref + "?q=" + json.dumps(q)
         url = url.replace(' ', '')
         if self.debug:
             print url
