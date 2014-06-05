@@ -1,3 +1,37 @@
+Changes for Release 1.1_patch1
+June 4, 2014
+------------------------------
+
+* The main purpose of this patch is to fix ops-monitoring ticket 56.
+  This defect caused local datastores to return invalid JSON
+  responses.  In cases where an optional field did not have a value,
+  the defect caused a value of None to be returned, which fails JSON
+  validation. The fix is to omit the field entirely from the response
+  in this case.  The main files affected are config/opsconfig.json
+  and local/rest_call_handler.py, with related fixes to the collector
+  in collector/single_local_datastore_info_crawler.py .
+
+Other notable changes that are in this patch:
+
+* opsconfig.json has been updated in these ways:
+  1. contains a far more complete list of aggregates.
+  2. num_vms_allocated moved from the aggregate to the node.
+  3. vm_server_type was added to the node.
+
+  #2 and #3 change the database tables, so you'll need to
+  regenerate them.
+
+* Some locking was removed from local/rest_call_handler.py to
+  attempt to address problems with hanging queries.
+
+* The endpoints of a link were made optional in schema/link.schema.
+
+* The authority part of schema/user.schema was fixed to be like
+  that of slices.
+
+* Some work in progress on the external check datastore is included.
+
+
 Changes for Release 1.0  
 May 1, 2014
 -----------------------
