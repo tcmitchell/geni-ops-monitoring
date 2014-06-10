@@ -182,7 +182,7 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:bbnvmsite+authority+am",
        "amtype": "exogeni",
-       "https://bbn-hn.exogeni.net:5001/info/aggregate/bbnvmsite"
+       "href": "https://bbn-hn.exogeni.net:5001/info/aggregate/bbnvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
@@ -190,7 +190,7 @@
        "href": "https://nicta-hn.exogeni.net:5001/info/aggregate/nictavmsite"
     },
     {
-       "urn": ""urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
+       "urn": "urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://fiu-hn.exogeni.net:5001/info/aggregate/fiuvmsite"
     },
