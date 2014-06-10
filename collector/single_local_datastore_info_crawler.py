@@ -200,10 +200,10 @@ class SingleLocalDatastoreInfoCrawler:
     # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
 
-         node_ids = self.get_all_nodes_of_aggregate()
+         node_hrefs = self.get_all_nodes_of_aggregate()
          schema = self.tbl_mgr.schema_dict["ops_interface"]
-         for node_id in node_ids:
-             node_dict = handle_request(self.info_url + '/node/' + node_id, self.cert_path)
+         for node_url in node_hrefs:
+             node_dict = handle_request(node_url, self.cert_path)
              if "ports" in node_dict:
                  for port in node_dict["ports"]:
                      interface_dict = handle_request(port["href"], self.cert_path)
@@ -406,7 +406,7 @@ class SingleLocalDatastoreInfoCrawler:
         cur = tbl_mgr.con.cursor()
         res = [];
         try:
-            cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            cur.execute("select\"selfRef\" from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0]) # gets first of single tuple
