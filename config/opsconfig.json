@@ -175,9 +175,64 @@
        "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig"
     },
     {
-       "urn": "urn:publicid:IDN+rci-hn.exogeni.net+authority+rci-hn",
+       "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://rci-hn.exogeni.net:5001/info/aggregate/rci-eg"
+       "href": "https://rci-hn.exogeni.net:5001/info/aggregate/rcivmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:bbnvmsite+authority+am",
+       "amtype": "exogeni",
+       "https://bbn-hn.exogeni.net:5001/info/aggregate/bbnvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://nicta-hn.exogeni.net:5001/info/aggregate/nictavmsite"
+    },
+    {
+       "urn": ""urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://fiu-hn.exogeni.net:5001/info/aggregate/fiuvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:uhvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://uh-hn.exogeni.net:5001/info/aggregate/uhvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:ncsuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://ncsu-hn.exogeni.net:5001/info/aggregate/ncsuvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://wvn-hn.exogeni.net:5001/info/aggregate/wvnvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://ufl-hn.exogeni.net:5001/info/aggregate/uflvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://ucd-hn.exogeni.net:5001/info/aggregate/ucdvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://sl-hn.exogeni.net:5001/info/aggregate/slvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
     }
   ],
   "externalcheckstores": [
