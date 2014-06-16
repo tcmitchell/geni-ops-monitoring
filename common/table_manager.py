@@ -22,10 +22,8 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import json
 import sys
 import threading
-from pprint import pprint as pprint
 import opsconfig_loader
 
 class TableManager:
@@ -38,7 +36,7 @@ class TableManager:
         sys.path.append(config_path)
         import database_conf_loader
         
-        self.conf_loader = database_conf_loader # clarify naming conventions
+        self.conf_loader = database_conf_loader  # clarify naming conventions
         self.debug = debug
 
         if db_type == "local":
@@ -57,8 +55,8 @@ class TableManager:
             sys.stderr.write("%s is not a valid database program\n" % db_prog)
             sys.exit(1)
 
-        self.database_type = db_type # local or collector
-        self.database_program = db_prog # postgres or mysql
+        self.database_type = db_type  # local or collector
+        self.database_program = db_prog  # postgres or mysql
 
         self.db_lock = threading.Lock()
 
@@ -88,7 +86,7 @@ class TableManager:
     def reset_opsconfig_tables(self):
 
         table_str = "ops_opsconfig_info"
-        schema_arr = [['tablename', 'varchar'],['schemaarray','varchar']]
+        schema_arr = [['tablename', 'varchar'], ['schemaarray', 'varchar']]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
 
         self.db_lock.acquire()
@@ -183,7 +181,7 @@ class TableManager:
             sys.exit(1)
 
         try:
-            con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+            con = psycopg2.connect(database=database_, user=username_, password=password_, host=host_, port=port_)
         except Exception, e:
             sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
             sys.exit(1)
@@ -192,7 +190,7 @@ class TableManager:
 
     def init_mysql_conn(self, db_type, config_path):
 
-	import MySQLdb as mysqldb
+        import MySQLdb as mysqldb
        
         if db_type == "local":
             [database_, username_, password_, host_, port_] = \
@@ -206,7 +204,7 @@ class TableManager:
 
         try:
 
-            con = mysqldb.connect(db = database_, user = username_, passwd = password_, host = host_, port = int(port_))
+            con = mysqldb.connect(db=database_, user=username_, passwd=password_, host=host_, port=int(port_))
         except Exception, e:
             sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
             sys.exit(1)
@@ -227,7 +225,7 @@ class TableManager:
                 schema_dict[ds_k] = data_schema[ds_k][:-1] 
             elif self.database_type == "collector":
                 l = data_schema[ds_k][:-1]
-                l.insert(0,["aggregate_id","varchar"])
+                l.insert(0, ["aggregate_id", "varchar"])
                 schema_dict[ds_k] = l
             schema_dict["units"][ds_k] = data_schema[ds_k][-1][1] 
 
@@ -406,7 +404,7 @@ class TableManager:
         self.establish_tables(self.schema_dict.keys())
 
     def purge_outdated_resources_from_info_tables(self):
-        pass # TODO fill in
+        pass  # TODO fill in
 
 
     def establish_table(self, table_str):
@@ -431,7 +429,7 @@ class TableManager:
                 cur.close()
             except Exception, e:
                 sys.stderr.write("%s\n" % e)
-                sys.stderr.write("Exception while creating table %s %s" % (table, schema_str))
+                sys.stderr.write("Exception while creating table %s %s" % (table_str, schema_str))
             
             self.db_lock.release()
 
@@ -471,7 +469,7 @@ class TableManager:
                 print q_res
             self.con.commit()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
 
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -485,11 +483,10 @@ class TableManager:
 
 
     def translate_table_schema_to_schema_str(self, table_schema_dict, table_str):
-    
         schema_str = "("
         if self.database_program == "postgres":
             for col_i in range(len(table_schema_dict)):
-                schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
+                schema_str += "\"" + table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         else:
             for col_i in range(len(table_schema_dict)):
                 if table_schema_dict[col_i][1] == "varchar":
@@ -530,7 +527,7 @@ def test_mysql(con):
     cur = con.cursor()
     cur.execute("select version()")
     ver = cur.fetchone()
-    print ver,"is the db version"
+    print ver, "is the db version"
 
 
     cur.execute("drop table if exists ops_swap_free")

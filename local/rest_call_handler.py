@@ -24,14 +24,14 @@
 
 import json
 
-### Main query handler functions
+# ## Main query handler functions
 
 # Main handle for data queries
 def handle_ts_data_query(tm, filters):
 
     schema_dict = tm.schema_dict
     try:
-        q_dict = eval(filters) # try to make a dictionary
+        q_dict = eval(filters)  # try to make a dictionary
 
     except Exception, e:
         return "query: " + filters + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"
@@ -43,7 +43,7 @@ def handle_ts_data_query(tm, filters):
         event_types = q_dict["filters"]["eventType"]
         objects = q_dict["filters"]["obj"]
     else:
-        return fail_str # returns why filters failed
+        return fail_str  # returns why filters failed
 
     ts_where_str = build_ts_where_str(ts_filters)
 
@@ -82,7 +82,6 @@ def handle_ts_data_query(tm, filters):
 def handle_node_info_query(tm, node_id):
     table_str = "ops_node"
     node_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     iface_refs = []
 
@@ -103,7 +102,6 @@ def handle_node_info_query(tm, node_id):
 def handle_interface_info_query(tm, iface_id):
     table_str = "ops_interface"
     iface_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     iface_info = get_object_info(tm, table_str, iface_id)
 
@@ -117,7 +115,6 @@ def handle_interface_info_query(tm, iface_id):
 def handle_interfacevlan_info_query(tm, ifacevlan_id):
     table_str = "ops_interfacevlan"
     iface_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     ifacevlan_info = get_object_info(tm, table_str, ifacevlan_id)
 
@@ -131,7 +128,6 @@ def handle_interfacevlan_info_query(tm, ifacevlan_id):
 def handle_sliver_info_query(tm, sliver_id):
     table_str = "ops_sliver"
     sliver_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     res_refs = []
 
@@ -160,7 +156,6 @@ def handle_sliver_info_query(tm, sliver_id):
 def handle_aggregate_info_query(tm, agg_id):
     table_str = "ops_aggregate"
     agg_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     res_refs = []    
     slv_refs = []
@@ -192,7 +187,6 @@ def handle_aggregate_info_query(tm, agg_id):
 def handle_externalcheck_info_query(tm, extck_id):
     table_str = "ops_externalcheck"
     extck_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     exp_refs = []    
 
@@ -218,7 +212,6 @@ def handle_externalcheck_info_query(tm, extck_id):
 def handle_authority_info_query(tm, auth_id):
     table_str = "ops_authority"
     auth_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     user_refs = []    
     slice_refs = []
@@ -244,7 +237,6 @@ def handle_authority_info_query(tm, auth_id):
 def handle_slice_info_query(tm, slice_id):
     table_str = "ops_slice"
     slice_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     user_refs = []    
 
@@ -266,7 +258,6 @@ def handle_slice_info_query(tm, slice_id):
 def handle_user_info_query(tm, user_id):
     table_str = "ops_user"
     user_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     user_info = get_object_info(tm, table_str, user_id)
     if user_info is not None:
@@ -279,7 +270,6 @@ def handle_user_info_query(tm, user_id):
 def handle_link_info_query(tm, link_id):
     table_str = "ops_link"
     link_schema = tm.schema_dict[table_str]
-    con = tm.con
 
     endpt_refs = []    
 
@@ -300,9 +290,6 @@ def handle_link_info_query(tm, link_id):
 def handle_experiment_info_query(tm, exp_id):
     table_str = "ops_experiment"
     exp_schema = tm.schema_dict[table_str]
-    con = tm.con
-
-    iface_refs = []
 
     exp_info = get_object_info(tm, table_str, exp_id)
 
@@ -322,7 +309,7 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
         return "opsconfig not found"
 
 
-### Argument checker for tsdata queries
+# ## Argument checker for tsdata queries
 
 # Checks the filters for data queies. It needs a filters dictionary
 # with ts, eventType, and obj keys
@@ -345,7 +332,7 @@ def check_data_query_keys(q_dict):
     return (True, None)
 
 
-### Form response dictionary functions
+# ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
 def get_interface_info_dict(schema, info_row):
@@ -390,7 +377,7 @@ def get_experiment_info_dict(schema, info_row):
                 dest_agg_urn = info_row[col_i]
             elif schema[col_i][0] == "destination_aggregate_href":
                 dest_agg_href = info_row[col_i]
-            else: # top level keys are equal to what is in DB
+            else:  # top level keys are equal to what is in DB
                 json_dict[schema[col_i][0]] = info_row[col_i]
                 
 #    json_dict["source_aggregate"] = {"urn":src_agg_urn,"href":src_agg_href}
@@ -433,7 +420,7 @@ def get_interfacevlan_info_dict(schema, info_row):
             json_dict["port"]["urn"] = iface_urn;
         if (iface_href is not None):
             json_dict["port"]["href"] = iface_href;
-    #json_dict["port"] = {"urn":iface_urn,"href":iface_href}
+    # json_dict["port"] = {"urn":iface_urn,"href":iface_href}
 
     return json_dict
 
@@ -482,7 +469,7 @@ def get_node_info_dict(schema, info_row, port_refs):
         json_dict["ports"] = []
         for port_ref in port_refs:
             if len(port_ref) > 0:
-                json_dict["ports"].append({"href":port_ref[0],"urn":port_ref[1]})
+                json_dict["ports"].append({"href":port_ref[0], "urn":port_ref[1]})
             
     return json_dict
 
@@ -501,13 +488,13 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
         json_dict["aggregates"] = []
         for agg_ref in agg_refs:
             if len(agg_ref) > 0:
-                json_dict["aggregates"].append({"href":agg_ref[0],"urn":agg_ref[1],"amtype":agg_ref[2]})
+                json_dict["aggregates"].append({"href":agg_ref[0], "urn":agg_ref[1], "amtype":agg_ref[2]})
 
     if auth_refs:
         json_dict["authorities"] = []
         for auth_ref in auth_refs:
             if len(auth_ref) > 0:
-                json_dict["authorities"].append({"href":auth_ref[0],"urn":auth_ref[1]})
+                json_dict["authorities"].append({"href":auth_ref[0], "urn":auth_ref[1]})
             
     if events_list:
         json_dict["events"] = {}
@@ -560,7 +547,7 @@ def get_sliver_info_dict(schema, info_row, res_refs):
         json_dict["resources"] = []
         for res_ref in res_refs:
             if len(res_ref) > 0:
-                json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+                json_dict["resources"].append({"href":res_ref[0], "urn":res_ref[1]})
             
     return json_dict
 
@@ -579,13 +566,13 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
         json_dict["resources"] = []
         for res_ref in res_refs:
             if len(res_ref) > 0:
-                json_dict["resources"].append({"href":res_ref[0],"urn":res_ref[1]})
+                json_dict["resources"].append({"href":res_ref[0], "urn":res_ref[1]})
 
     if slv_refs:
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
             if len(slv_ref) > 0:
-                json_dict["slivers"].append({"href":slv_ref[0],"urn":slv_ref[1]})  
+                json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})  
     return json_dict
 
 # Forms external check store info dictionary (to be made to JSON)
@@ -608,7 +595,7 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
         json_dict["monitored_aggregates"] = []
         for mon_agg_ref in mon_agg_refs:
             if len(exp_ref) > 0:
-                json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0],"href":mon_agg_ref[1]})
+                json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0], "href":mon_agg_ref[1]})
 
     return json_dict
 
@@ -627,7 +614,7 @@ def get_link_info_dict(schema, info_row, endpt_refs):
         json_dict["endpoints"] = []
         for endpt_ref in endpt_refs:
             if len(endpt_ref) > 0:
-                json_dict["endpoints"].append({"href":endpt_ref[0],"urn":endpt_ref[1]})
+                json_dict["endpoints"].append({"href":endpt_ref[0], "urn":endpt_ref[1]})
 
     return json_dict
 
@@ -659,7 +646,7 @@ def get_slice_info_dict(schema, info_row, user_refs):
         json_dict["members"] = []
         for member_ref in user_refs:
             if len(member_ref) > 0:
-                json_dict["members"].append({"href":member_ref[0],"urn":member_ref[1],"role":member_ref[2]})
+                json_dict["members"].append({"href":member_ref[0], "urn":member_ref[1], "role":member_ref[2]})
             
     return json_dict
 
@@ -678,18 +665,18 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
         json_dict["users"] = []
         for user_ref in user_refs:
             if len(user_ref) > 0:
-                json_dict["users"].append({"href":user_ref[0],"urn":user_ref[1]})
+                json_dict["users"].append({"href":user_ref[0], "urn":user_ref[1]})
 
     if slice_refs:
         json_dict["slices"] = []
         for slice_ref in slice_refs:
             if len(slice_ref) > 0:
-                json_dict["slices"].append({"href":slice_ref[0],"urn":slice_ref[1]})
+                json_dict["slices"].append({"href":slice_ref[0], "urn":slice_ref[1]})
             
     return json_dict
 
 
-### SQL query functions
+# ## SQL query functions
 
 # Gets object info where an object can be anything (node, aggregate,
 # interface, sliver
@@ -749,13 +736,14 @@ def get_info_list(tm):
 
 # Gets related objects
 def get_related_objects(tm, table_str, colname_str, id_str):
+    
     cur = tm.con.cursor()
     res = [];
     try:
         cur.execute("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'") 
         q_res = cur.fetchall()
         for res_i in range(len(q_res)):
-            res.append(q_res[res_i][0]) # gets first of single tuple
+            res.append(q_res[res_i][0])  # gets first of single tuple
     except Exception, e:
         print e
     finally:
@@ -783,13 +771,13 @@ def get_refs(tm, table_str, object_id):
         tm.con.commit()
         self_ref = None
         if q_res is not None:
-            self_ref = q_res[0] # gets first of single tuple
+            self_ref = q_res[0]  # gets first of single tuple
 
         cur.execute("select urn from " + table_str + " where id = '" + object_id + "' limit 1")
         q_res = cur.fetchone()
         tm.con.commit()
         if q_res is not None and self_ref is not None:
-            urn = q_res[0] # gets first of single tuple
+            urn = q_res[0]  # gets first of single tuple
             refs = [self_ref, urn] 
 
     except Exception, e:
@@ -817,7 +805,7 @@ def get_self_ref(tm, table_str, object_id):
         q_res = cur.fetchone()
         self_ref = None
         if q_res is not None:
-            self_ref = q_res # gets first of single tuple
+            self_ref = q_res  # gets first of single tuple
 
     except Exception, e:
         print e
@@ -874,17 +862,17 @@ def get_slice_user_refs(tm, table_str, slice_id):
 
         q_res = cur.fetchone()
         tm.con.commit()
-        href = q_res[0] # gets first of single tuple
+        href = q_res[0]  # gets first of single tuple
 
         cur.execute("select distinct urn from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # gets first of single tuple
+        urn = q_res[0]  # gets first of single tuple
 
         cur.execute("select distinct role from " + table_str + " where id = '" + slice_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        role = q_res[0] # gets first of single tuple
+        role = q_res[0]  # gets first of single tuple
 
         refs = [href, urn, role] 
 
@@ -915,17 +903,17 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
         q_res = cur.fetchone()
         tm.con.commit()
-        href = q_res[0] # gets first of single tuple
+        href = q_res[0]  # gets first of single tuple
 
         cur.execute("select distinct urn from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        urn = q_res[0] # gets first of single tuple
+        urn = q_res[0]  # gets first of single tuple
 
         cur.execute("select distinct amtype from " + table_str + " where id = '" + opsconfig_id + "'")
         q_res = cur.fetchone()
         tm.con.commit()
-        role = q_res[0] # gets first of single tuple
+        role = q_res[0]  # gets first of single tuple
 
         refs = [href, urn, role] 
 
@@ -969,7 +957,7 @@ def build_ts_where_str(ts_dict):
         print str(e), "ts filters has invalid key or value:"
     
     try:
-        ts_where_str = ts_filters[0] + " and " +  ts_filters[1]
+        ts_where_str = ts_filters[0] + " and " + ts_filters[1]
     except Exception, e:
         print str(e), "must past a ts filter for (lt or lte) and (gt or gte)"
 
@@ -987,8 +975,8 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
 
         if len(q_res) > 0:
             res = []
-            for q_res_i in xrange(len(q_res)): # parsing result "<ts>,<v>"
-                res.append({"ts":q_res[q_res_i][0],"v":q_res[q_res_i][1]})
+            for q_res_i in xrange(len(q_res)):  # parsing result "<ts>,<v>"
+                res.append({"ts":q_res[q_res_i][0], "v":q_res[q_res_i][1]})
         
     except Exception, e:
         print "query failed: select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str

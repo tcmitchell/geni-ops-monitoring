@@ -25,7 +25,7 @@ import json
 import sys
 import requests
 import getopt
-from pprint import pprint
+# from pprint import pprint
 
 common_path = "../common/"
 sys.path.append(common_path)
@@ -53,12 +53,12 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"hb:a:e:c:o:d",["help","baseurl=","aggregateid=","extckid=","certpath=","objecttypes=","debug"])
+        opts, args = getopt.getopt(argv, "hb:a:e:c:o:d", ["help", "baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttypes=", "debug"])
     except getopt.GetoptError:
         usage()
 
     for opt, arg in opts:
-        if opt in("-h","--help"):
+        if opt in("-h", "--help"):
             usage()
         elif opt in ("-b", "--baseurl"):
             base_url = arg
@@ -125,8 +125,8 @@ class SingleLocalDatastoreInfoCrawler:
         
         if self.extck_dict:
             self.tbl_mgr.establish_table("ops_externalcheck_monitoredaggregate")
-            schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
-            mon_aggs = []
+#             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
+#             mon_aggs = []
             for mon_agg in self.extck_dict["monitored_aggregates"]:
                 mon_agg_info = [mon_agg["id"], self.extck_dict["id"], mon_agg["href"]]
                 info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg["id"], mon_agg_info, self.debug)
@@ -139,7 +139,7 @@ class SingleLocalDatastoreInfoCrawler:
 
             for res_i in self.am_dict["resources"]:
                 res_dict = handle_request(res_i["href"], self.cert_path)
-                if res_dict["$schema"].endswith("link#"): # if a link
+                if res_dict["$schema"].endswith("link#"):  # if a link
                     
                     # get each attribute out of response into list
                     link_info_list = self.get_link_attributes(res_dict, schema)
@@ -170,7 +170,7 @@ class SingleLocalDatastoreInfoCrawler:
 
             for res_i in self.am_dict["resources"]:
                 res_dict = handle_request(res_i["href"], self.cert_path)
-                if res_dict["$schema"].endswith("node#"): # if a node
+                if res_dict["$schema"].endswith("node#"):  # if a node
                     
                     # get each attribute out of response into list
                     node_info_list = self.get_node_attributes(res_dict, schema)
@@ -200,21 +200,21 @@ class SingleLocalDatastoreInfoCrawler:
     # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
 
-         node_hrefs = self.get_all_nodes_of_aggregate()
-         schema = self.tbl_mgr.schema_dict["ops_interface"]
-         for node_url in node_hrefs:
-             node_dict = handle_request(node_url, self.cert_path)
-             if "ports" in node_dict:
-                 for port in node_dict["ports"]:
-                     interface_dict = handle_request(port["href"], self.cert_path)
-                     interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                     info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
-                     node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                     info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
+        node_hrefs = self.get_all_nodes_of_aggregate()
+        schema = self.tbl_mgr.schema_dict["ops_interface"]
+        for node_url in node_hrefs:
+            node_dict = handle_request(node_url, self.cert_path)
+            if "ports" in node_dict:
+                for port in node_dict["ports"]:
+                    interface_dict = handle_request(port["href"], self.cert_path)
+                    interface_info_list = self.get_interface_attributes(interface_dict, schema)
+                    info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
+                    node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
+                    info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
 
-    def get_default_attribute_for_type(self, type):
+    def get_default_attribute_for_type(self, vartype):
         val = "";
-        if type.startswith("int"):
+        if vartype.startswith("int"):
             val = 0
         return val
 
@@ -231,7 +231,7 @@ class SingleLocalDatastoreInfoCrawler:
             else:
                 if key[2]:
                     print("WARNING: value for required json node field " + jsonkey + " is missing. Replacing with default value...")
-                    node_info_list.append(get_default_attribute_for_type(key[1]))
+                    node_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
                     node_info_list.append(None)
@@ -246,8 +246,8 @@ class SingleLocalDatastoreInfoCrawler:
                 link_info_list.append(res_dict[key[0]])
             else:
                 if key[2]:
-                    print("WARNING: value for required json link field " + jsonkey + " is missing. Replacing with default value...")
-                    link_info_list.append(get_default_attribute_for_type(key[1]))
+                    print("WARNING: value for required json link field " + key[0] + " is missing. Replacing with default value...")
+                    link_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
                     link_info_list.append(None)
@@ -293,7 +293,7 @@ class SingleLocalDatastoreInfoCrawler:
                 else:
                     if key[2]:
                         print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
-                        slv_info_list.append(get_default_attribute_for_type(key[1]))
+                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
                         slv_info_list.append(None)
@@ -339,7 +339,7 @@ class SingleLocalDatastoreInfoCrawler:
                 else:
                     if key[2]:
                         print("WARNING: value for required json interface-vlan field " + key[0] + " is missing. Replacing with default value...")
-                        ifv_info_list.append(get_default_attribute_for_type(key[1]))
+                        ifv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
                         ifv_info_list.append(None)
@@ -391,7 +391,7 @@ class SingleLocalDatastoreInfoCrawler:
                 else:
                     if key[2]:
                         print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
-                        interface_info_list.append(get_default_attribute_for_type(key[1]))
+                        interface_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
                         interface_info_list.append(None)
@@ -409,7 +409,7 @@ class SingleLocalDatastoreInfoCrawler:
             cur.execute("select\"selfRef\" from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             print e
@@ -432,7 +432,7 @@ class SingleLocalDatastoreInfoCrawler:
 
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             print e
@@ -454,7 +454,7 @@ class SingleLocalDatastoreInfoCrawler:
             cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             print e
@@ -469,7 +469,7 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         object_id = self.aggregate_id
         cur = tbl_mgr.con.cursor()
-        res = []
+#         res = []
         meas_ref = None
         try:
 
@@ -480,7 +480,7 @@ class SingleLocalDatastoreInfoCrawler:
                 cur.execute("select measRef from ops_aggregate where id = '" + object_id + "' limit 1")
             q_res = cur.fetchone()
             if q_res is not None:
-                meas_ref = q_res[0] # gets first of single tuple
+                meas_ref = q_res[0]  # gets first of single tuple
             
         except Exception, e:
             print e
@@ -525,10 +525,10 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
     val_str = "("
     for val in row_arr:
         if val is None:
-            val_str +=  "NULL, "
+            val_str += "NULL, "
         else:
-            val_str += "'" + str(val) + "', " # join won't do this
-    val_str = val_str[:-2] + ")" # remove last 2 of 3: ', ' add ')'
+            val_str += "'" + str(val) + "', "  # join won't do this
+    val_str = val_str[:-2] + ")"  # remove last 2 of 3: ', ' add ')'
 
     if debug:
         print "<print only> insert " + table_str + " values: " + val_str
