@@ -181,10 +181,10 @@ class SingleLocalDatastoreInfoCrawler:
 
     def refresh_all_interfacevlans_info(self):
 
-        link_ids = self.get_all_links_of_aggregate()
+        link_urls = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
-        for link_id in link_ids:
-            link_dict = handle_request(self.info_url + '/link/' + link_id, self.cert_path)
+        for link_url in link_urls:
+            link_dict = handle_request(link_url, self.cert_path)
             if "endpoints" in link_dict:
                 for endpt in link_dict["endpoints"]:
                     ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
@@ -406,7 +406,10 @@ class SingleLocalDatastoreInfoCrawler:
         cur = tbl_mgr.con.cursor()
         res = [];
         try:
-            cur.execute("select\"selfRef\" from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            if tbl_mgr.database_program == "postgres":
+                cur.execute("select \"selfRef\" from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            elif tbl_mgr.database_program == "mysql":
+                cur.execute("select selfRef from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -451,7 +454,10 @@ class SingleLocalDatastoreInfoCrawler:
         cur = tbl_mgr.con.cursor()
         res = [];
         try:
-            cur.execute("select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            if tbl_mgr.database_program == "postgres":
+                cur.execute("select \"selfRef\" from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
+            elif tbl_mgr.database_program == "mysql":
+                cur.execute("select selfRef from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
