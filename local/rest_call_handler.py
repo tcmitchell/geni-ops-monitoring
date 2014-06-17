@@ -701,8 +701,9 @@ def get_related_objects(tm, table_str, colname_str, id_str):
     
     q_res = tm.query("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'")
     res = []
-    for res_i in range(len(q_res)):
-        res.append(q_res[res_i][0])  # gets first of single tuple
+    if q_res is not None:
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i][0])  # gets first of single tuple
 
     return res
 
@@ -821,7 +822,7 @@ def build_ts_where_str(ts_dict):
 def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
     res = None
     q_res = tm.query("select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
-    if len(q_res) > 0:
+    if q_res is not None:
         res = []
         for q_res_i in xrange(len(q_res)):  # parsing result "<ts>,<v>"
             res.append({"ts":q_res[q_res_i][0], "v":q_res[q_res_i][1]})
