@@ -25,6 +25,7 @@
 import sys
 import threading
 import opsconfig_loader
+import MySQLdb
 
 class TableManager:
 
@@ -47,16 +48,10 @@ class TableManager:
             sys.stderr.write("%s is not a valid database type (local or collector)\n" % db_type)
             sys.exit(1)
 
-        if db_prog == "postgres":
-            self.con = self.init_psql_conn(db_type, config_path)
-        elif db_prog == "mysql":
-            self.con = self.init_mysql_conn(db_type, config_path)
-        else:
-            sys.stderr.write("%s is not a valid database program\n" % db_prog)
-            sys.exit(1)
-
         self.database_type = db_type  # local or collector
         self.database_program = db_prog  # postgres or mysql
+
+        self.con = self.init_con()
 
         self.db_lock = threading.Lock()
 
@@ -164,49 +159,58 @@ class TableManager:
 
         self.db_lock.release()
 
-
-
-    def init_psql_conn(self, db_type, config_path):
-
-        import psycopg2
-
-        if db_type == "local":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.psql_local(config_path)
-        elif db_type == "collector":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.psql_collector(config_path)
+    def init_con(self):
+        if self.database_type == "local":
+            if self.database_program == "postgres":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.psql_local(self.config_path)
+            elif self.database_program == "mysql":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.mysql_local(self.config_path)
+            else:
+                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+                sys.exit(1)
+        elif self.database_type == "collector":
+            if self.database_program == "postgres":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.psql_collector(self.config_path)
+            elif self.database_program == "mysql":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.mysql_collector(self.config_path)
+            else:
+                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+                sys.exit(1)
         else:
             sys.stderr.write("No collector or local database selected.  Exiting\n")
             sys.exit(1)
+            
+        if self.database_program == "postgres":
+            return self.init_psql_conn(database_, username_, password_, host_, port_)
+        elif self.database_program == "mysql":
+            return self.init_mysql_conn(database_, username_, password_, host_, port_)
+        else:
+            sys.stderr.write("%s is not a valid database program\n" % self.database_program)
+            sys.exit(1)
 
+    def init_psql_conn(self, dbnm, usernm, pw, hostnm, prt):
+
+        import psycopg2
         try:
-            con = psycopg2.connect(database=database_, user=username_, password=password_, host=host_, port=port_)
+            con = psycopg2.connect(database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
         except Exception, e:
-            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
+            sys.stderr.write("%s \nCannot open a postgresql connection to database %s. \n Exiting.\n" % (e, dbnm))
             sys.exit(1)
 
         return con
 
-    def init_mysql_conn(self, db_type, config_path):
+    def init_mysql_conn(self, dbnm, usernm, pw, hostnm, prt):
 
         import MySQLdb as mysqldb
-       
-        if db_type == "local":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.mysql_local(config_path)
-        elif db_type == "collector":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.mysql_collector(config_path)
-        else:
-            sys.stderr.write("No collector or local database selected.  Exiting\n\n")
-            sys.exit(1)
-
         try:
 
-            con = mysqldb.connect(db=database_, user=username_, passwd=password_, host=host_, port=int(port_))
+            con = mysqldb.connect(db=dbnm, user=usernm, passwd=pw, host=hostnm, port=int(prt))
         except Exception, e:
-            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
+            sys.stderr.write("%s \nCannot open a mysql connection to database %s. \n Exiting.\n" % (e, dbnm))
             sys.exit(1)
 
         return con
@@ -504,6 +508,18 @@ class TableManager:
             cur.execute(querystr)
             if cur.rowcount > 0:
                 q_res = cur.fetchall()
+        except (AttributeError, MySQLdb.OperationalError):
+            print "Trying to reconnect"
+            self.con = self.init_con()
+            cur = self.con.cursor()
+            try:
+                cur.execute(querystr)
+                if cur.rowcount > 0:
+                    q_res = cur.fetchall()
+            except Exception, e:
+                # TODO replace with logging statement
+                print "Error while executing the following query: " + querystr
+                print e
         except Exception, e:
             # TODO replace with logging statement
             print "Error while executing the following query: " + querystr
