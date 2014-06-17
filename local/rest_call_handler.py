@@ -65,7 +65,7 @@ def handle_ts_data_query(tm, filters):
                 obj_schema = get_object_schema(tm, obj_type, obj_id)
             
                 if (ts_arr != None):
-                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140131/data#"
+                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#"
                     resp_i["id"] = event_type + ":" + obj_id
                     resp_i["subject"] = {"href":obj_schema}
                     resp_i["eventType"] = "ops_monitoring:" + event_type
