@@ -497,6 +497,25 @@ class TableManager:
         # remove , and add )
         return schema_str[:-1] + ")"
 
+    def query(self, querystr):
+        cur = self.con.cursor()
+        q_res = None
+        try:
+            cur.execute(querystr)
+            if cur.rowcount > 0:
+                q_res = cur.fetchall()
+        except Exception, e:
+            # TODO replace with logging statement
+            print "Error while executing the following query: " + querystr
+            print e
+        finally:
+            self.con.commit()
+
+        cur.close()
+
+        return q_res
+
+
 
 # used only if arguments passed to program
 # gets each argument as a table name
