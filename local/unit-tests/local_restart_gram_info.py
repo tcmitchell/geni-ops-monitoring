@@ -43,7 +43,7 @@ def get_gram_defaults():
     base_url = "128.1.1.1"  
 
     # json-schema
-    agg_schema = "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#"
+    agg_schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
     node_schema = "http://unis.incntre.iu.edu/schema/20120709/node#"
 
 
@@ -52,7 +52,7 @@ def get_gram_defaults():
 
     # Node info used for info and data query
     # memory per node in kB
-    mem_total_kb = 4000000 # 4 GB
+    mem_total_kb = 4000000  # 4 GB
     
     # aggregate dictionary
     aggregate = {}
@@ -93,13 +93,13 @@ def get_gram_defaults():
     # setting the rest of the nodes dictionary using dense code
     # format is the same as above
     node_id = 'compute_node_1'
-    nodes[node_id] = {'id':node_id, 'urn':'urn'+node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
+    nodes[node_id] = {'id':node_id, 'urn':'urn' + node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
 
     node_id = 'compute_node_2'
-    nodes[node_id] = {'id':node_id, 'urn':'urn'+node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
+    nodes[node_id] = {'id':node_id, 'urn':'urn' + node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
 
     node_id = 'compute_node_3'
-    nodes[node_id] = {'id':node_id, 'urn':'urn'+node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
+    nodes[node_id] = {'id':node_id, 'urn':'urn' + node_id, 'href': base_url + '/info/node/' + node_id, 'mem_total_kb': mem_total_kb, 'schema': node_schema}
 
     return [aggregate, nodes, debug]
 
@@ -107,17 +107,17 @@ def get_gram_defaults():
 # sets ops_aggregate table
 # sets ops_aggregate_resource table
 def set_aggregate_info(tbl_mgr, aggregate, nodes):
-    ts = str(int(time.time()*1000000))
-    agg = [aggregate['schema'], 
-            aggregate['id'], 
-            aggregate['href'], 
+    ts = str(int(time.time() * 1000000))
+    agg = [aggregate['schema'],
+            aggregate['id'],
+            aggregate['href'],
             aggregate['urn'],
             ts,
             aggregate['meas_ref']]
     info_insert(tbl_mgr, "ops_aggregate", agg)
 
     for node_i in nodes:
-        nd = nodes[node_i] # shorter var name to node dict
+        nd = nodes[node_i]  # shorter var name to node dict
         agg_node = [nd['id'], aggregate['id'], nd['urn'], nd['href']]
         info_insert(tbl_mgr, "ops_aggregate_resource", agg_node)
 
@@ -125,9 +125,9 @@ def set_aggregate_info(tbl_mgr, aggregate, nodes):
 # sets ops_node
 def set_node_info(tbl_mgr, nodes):
 
-    ts = str(int(time.time()*1000000))
+    ts = str(int(time.time() * 1000000))
     for node_i in nodes:
-        nd = nodes[node_i] # shorter var name to node dict
+        nd = nodes[node_i]  # shorter var name to node dict
         node = [nd['schema'], nd['id'], nd['href'], nd['urn'], ts, nd['mem_total_kb']]
         info_insert(tbl_mgr, "ops_node", node)
 
@@ -137,8 +137,8 @@ def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "('"
 
     for val in row_arr:
-        val_str += str(val) + "','" # join won't do this
-    val_str = val_str[:-2] + ")" # remove last 2 of 3 chars: ',' and add )
+        val_str += str(val) + "','"  # join won't do this
+    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
     tbl_mgr.insert_stmt(table_str, val_str)
 
 
