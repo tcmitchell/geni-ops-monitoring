@@ -22,11 +22,10 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import json
 import sys
 import threading
-from pprint import pprint as pprint
 import opsconfig_loader
+import MySQLdb
 
 class TableManager:
 
@@ -38,7 +37,7 @@ class TableManager:
         sys.path.append(config_path)
         import database_conf_loader
         
-        self.conf_loader = database_conf_loader # clarify naming conventions
+        self.conf_loader = database_conf_loader  # clarify naming conventions
         self.debug = debug
 
         if db_type == "local":
@@ -49,16 +48,10 @@ class TableManager:
             sys.stderr.write("%s is not a valid database type (local or collector)\n" % db_type)
             sys.exit(1)
 
-        if db_prog == "postgres":
-            self.con = self.init_psql_conn(db_type, config_path)
-        elif db_prog == "mysql":
-            self.con = self.init_mysql_conn(db_type, config_path)
-        else:
-            sys.stderr.write("%s is not a valid database program\n" % db_prog)
-            sys.exit(1)
+        self.database_type = db_type  # local or collector
+        self.database_program = db_prog  # postgres or mysql
 
-        self.database_type = db_type # local or collector
-        self.database_program = db_prog # postgres or mysql
+        self.con = self.init_con()
 
         self.db_lock = threading.Lock()
 
@@ -88,7 +81,7 @@ class TableManager:
     def reset_opsconfig_tables(self):
 
         table_str = "ops_opsconfig_info"
-        schema_arr = [['tablename', 'varchar'],['schemaarray','varchar']]
+        schema_arr = [['tablename', 'varchar'], ['schemaarray', 'varchar']]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
 
         self.db_lock.acquire()
@@ -166,49 +159,58 @@ class TableManager:
 
         self.db_lock.release()
 
-
-
-    def init_psql_conn(self, db_type, config_path):
-
-        import psycopg2
-
-        if db_type == "local":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.psql_local(config_path)
-        elif db_type == "collector":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.psql_collector(config_path)
+    def init_con(self):
+        if self.database_type == "local":
+            if self.database_program == "postgres":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.psql_local(self.config_path)
+            elif self.database_program == "mysql":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.mysql_local(self.config_path)
+            else:
+                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+                sys.exit(1)
+        elif self.database_type == "collector":
+            if self.database_program == "postgres":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.psql_collector(self.config_path)
+            elif self.database_program == "mysql":
+                [database_, username_, password_, host_, port_] = \
+                    self.conf_loader.mysql_collector(self.config_path)
+            else:
+                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+                sys.exit(1)
         else:
             sys.stderr.write("No collector or local database selected.  Exiting\n")
             sys.exit(1)
+            
+        if self.database_program == "postgres":
+            return self.init_psql_conn(database_, username_, password_, host_, port_)
+        elif self.database_program == "mysql":
+            return self.init_mysql_conn(database_, username_, password_, host_, port_)
+        else:
+            sys.stderr.write("%s is not a valid database program\n" % self.database_program)
+            sys.exit(1)
 
+    def init_psql_conn(self, dbnm, usernm, pw, hostnm, prt):
+
+        import psycopg2
         try:
-            con = psycopg2.connect(database = database_, user = username_, password = password_, host = host_, port = port_)
+            con = psycopg2.connect(database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
         except Exception, e:
-            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
+            sys.stderr.write("%s \nCannot open a postgresql connection to database %s. \n Exiting.\n" % (e, dbnm))
             sys.exit(1)
 
         return con
 
-    def init_mysql_conn(self, db_type, config_path):
+    def init_mysql_conn(self, dbnm, usernm, pw, hostnm, prt):
 
-	import MySQLdb as mysqldb
-       
-        if db_type == "local":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.mysql_local(config_path)
-        elif db_type == "collector":
-            [database_, username_, password_, host_, port_] = \
-                self.conf_loader.mysql_collector(config_path)
-        else:
-            sys.stderr.write("No collector or local database selected.  Exiting\n\n")
-            sys.exit(1)
-
+        import MySQLdb as mysqldb
         try:
 
-            con = mysqldb.connect(db = database_, user = username_, passwd = password_, host = host_, port = int(port_))
+            con = mysqldb.connect(db=dbnm, user=usernm, passwd=pw, host=hostnm, port=int(prt))
         except Exception, e:
-            sys.stderr.write("%s \nCannot open a connection to database %s. \n Exiting.\n" % (e, database_))
+            sys.stderr.write("%s \nCannot open a mysql connection to database %s. \n Exiting.\n" % (e, dbnm))
             sys.exit(1)
 
         return con
@@ -227,7 +229,7 @@ class TableManager:
                 schema_dict[ds_k] = data_schema[ds_k][:-1] 
             elif self.database_type == "collector":
                 l = data_schema[ds_k][:-1]
-                l.insert(0,["aggregate_id","varchar"])
+                l.insert(0, ["aggregate_id", "varchar"])
                 schema_dict[ds_k] = l
             schema_dict["units"][ds_k] = data_schema[ds_k][-1][1] 
 
@@ -406,7 +408,7 @@ class TableManager:
         self.establish_tables(self.schema_dict.keys())
 
     def purge_outdated_resources_from_info_tables(self):
-        pass # TODO fill in
+        pass  # TODO fill in
 
 
     def establish_table(self, table_str):
@@ -431,7 +433,7 @@ class TableManager:
                 cur.close()
             except Exception, e:
                 sys.stderr.write("%s\n" % e)
-                sys.stderr.write("Exception while creating table %s %s" % (table, schema_str))
+                sys.stderr.write("Exception while creating table %s %s" % (table_str, schema_str))
             
             self.db_lock.release()
 
@@ -471,7 +473,7 @@ class TableManager:
                 print q_res
             self.con.commit()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
 
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -485,11 +487,10 @@ class TableManager:
 
 
     def translate_table_schema_to_schema_str(self, table_schema_dict, table_str):
-    
         schema_str = "("
         if self.database_program == "postgres":
             for col_i in range(len(table_schema_dict)):
-                schema_str += "\"" +table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
+                schema_str += "\"" + table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
         else:
             for col_i in range(len(table_schema_dict)):
                 if table_schema_dict[col_i][1] == "varchar":
@@ -499,6 +500,43 @@ class TableManager:
 
         # remove , and add )
         return schema_str[:-1] + ")"
+
+    def query(self, querystr):
+        """
+        Execute a query and returns the results.
+        :param querystr:  the query to be executed
+        :return: a tuple containing the tuples of all the records selected, themselves in the form of tuples.
+                 None if there was an issue executing the query.
+        """
+        cur = self.con.cursor()
+        q_res = None
+        try:
+            cur.execute(querystr)
+            if cur.rowcount > 0:
+                q_res = cur.fetchall()
+        except (AttributeError, MySQLdb.OperationalError):
+            print "Trying to reconnect"
+            self.con = self.init_con()
+            cur = self.con.cursor()
+            try:
+                cur.execute(querystr)
+                if cur.rowcount > 0:
+                    q_res = cur.fetchall()
+            except Exception, e:
+                # TODO replace with logging statement
+                print "Error while executing the following query: " + querystr
+                print e
+        except Exception, e:
+            # TODO replace with logging statement
+            print "Error while executing the following query: " + querystr
+            print e
+        finally:
+            self.con.commit()
+
+        cur.close()
+
+        return q_res
+
 
 
 # used only if arguments passed to program
@@ -530,7 +568,7 @@ def test_mysql(con):
     cur = con.cursor()
     cur.execute("select version()")
     ver = cur.fetchone()
-    print ver,"is the db version"
+    print ver, "is the db version"
 
 
     cur.execute("drop table if exists ops_swap_free")
