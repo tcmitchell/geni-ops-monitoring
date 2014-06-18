@@ -502,6 +502,12 @@ class TableManager:
         return schema_str[:-1] + ")"
 
     def query(self, querystr):
+        """
+        Execute a query and returns the results.
+        :param querystr:  the query to be executed
+        :return: a tuple containing the tuples of all the records selected, themselves in the form of tuples.
+                 None if there was an issue executing the query.
+        """
         cur = self.con.cursor()
         q_res = None
         try:
