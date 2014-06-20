@@ -525,7 +525,7 @@ def handle_request(url, cert_path):
                 print "response = \n" + resp.content
                 print e
         else:
-            print "Response from " + url + " is invalid, code = " + resp.status_code
+            print "Response from " + url + " is invalid, code = " + str(resp.status_code)
 
     return None
 
