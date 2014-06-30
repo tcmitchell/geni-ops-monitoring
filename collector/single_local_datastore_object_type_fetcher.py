@@ -49,7 +49,7 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv,"ha:e:c:o:d",["baseurl=","aggregateid=","extckid=","certpath=","objecttype=","help","debug"])
+        opts, args = getopt.getopt(argv, "ha:e:c:o:d", ["baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttype=", "help", "debug"])
     except getopt.GetoptError:
         usage()
 
@@ -111,42 +111,49 @@ class SingleLocalDatastoreObjectTypeFetcher:
     def fetch_and_insert(self): 
     
         # poll datastore
-        json_text = self.poll_datastore()
+        json_texts = self.poll_datastore()
+#        if self.debug:
+#            print json_texts
         
-        data = None
-
-        try:
-            data = json.loads(json_text)
-        except Exception, e:
-            sys.stderr.write("Unable to load response in json %s" % e)
+        onlyErr = True
         
-        if data is None:
+        for json_text in json_texts:
+            data = None
+            try:
+                data = json.loads(json_text)
+            except Exception, e:
+                sys.stderr.write("Unable to load response in json %s\n" % e)
+            
+            if data is not None:
+                onlyErr = False
+                for result in data:
+                    if self.debug:
+                        print "Result received from %s about:" % self.aggregate_id
+                        pprint(result["id"])
+        
+                    event_type = result["eventType"]
+                    if event_type.startswith("ops_monitoring:"):
+                        table_str = "ops_" + self.obj_type + "_" + event_type[15:]
+        
+                        # if id is event:obj_id_that_was_queried,
+                        # TODO straighten out protocol with monitoring group
+                        # for now go with this
+                        id_str = result["id"]
+        
+                        # remove event: and prepend aggregate_id:
+                        if self.aggregate_id != "":
+                            datastore_id = self.aggregate_id
+                        elif self.extck_id != "":
+                            datastore_id = self.extck_id
+                        obj_id = id_str[id_str.find(':') + 1:]
+        
+                        tsdata = result["tsdata"]
+                        tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
+            
+        if onlyErr:
             return 1
-
-        for result in data:
-            if self.debug:
-                print "Result received from %s about:" % self.aggregate_id
-                pprint(result["id"])
-
-            event_type = result["eventType"]
-            if event_type.startswith("ops_monitoring:"):
-                table_str = "ops_" + self.obj_type + "_" + event_type[15:]
-
-                # if id is event:obj_id_that_was_queried,
-                # TODO straighten out protocol with monitoring group
-                # for now go with this
-                id_str = result["id"]
-
-                # remove event: and prepend aggregate_id:
-                if self.aggregate_id != "":
-                    datastore_id = self.aggregate_id
-                elif self.extck_id != "":
-                    datastore_id = self.extck_id
-                obj_id = id_str[id_str.find(':')+1:]
-
-                tsdata = result["tsdata"]
-                tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
-        return 0
+        else:
+            return 0
 
     def get_latest_ts(self):
         max_ts = 0
@@ -178,39 +185,91 @@ class SingleLocalDatastoreObjectTypeFetcher:
             sys.exit(1)
 
         return obj_ids
-
-
-    def poll_datastore(self):
-        
-        # current time for lt filter and record keeping
-        req_time = int(time.time()*1000000)
-
-        q = {"filters":{"eventType":self.event_types, 
+    
+    
+    def create_datastore_query(self, obj_ids, req_time):
+        """
+        Creates a data query URL for specific objects and a specific time range.
+        :param obj_ids: the arrays of object IDs to request
+        :param req_time: the upper bound of the time range.
+        :return: the expected data query URL. 
+        """
+        q = {"filters":{"eventType":self.event_types,
                         "obj":{"type": self.obj_type,
-                               "id": self.obj_ids},
+                               "id": obj_ids},
                         "ts": {"gt": self.time_of_last_update,
                                "lt": req_time}
                         }
              }
 
-        url = self.meas_ref + "?q=" + str(q)
+        url = self.meas_ref + "?q=" + json.dumps(q)
         url = url.replace(' ', '')
-        if self.debug:
-            print url
+        return url;
 
-        # test before adding exception handling
-        #try:
-        resp = requests.get(url,verify=False, cert=self.cert_path)
-        #except Exception, e:
-        #    print "No response from local datastore at: " + url
-        #    print e
-        #    return None
-             
-        if resp:
-            self.time_of_last_update = req_time
+    def poll_datastore(self):
+        _MAX_URL_LEN = 2000
+        # current time for lt filter and record keeping
+        req_time = int(time.time() * 1000000)
+
+        url = self.create_datastore_query(self.obj_ids, req_time)
+        urls = []
         
-        # need to handle response codes
-        return resp.content
+        if (len(url) > _MAX_URL_LEN):
+            if self.debug:
+                print "Data query URL too big. Breaking it"
+            ids_len = 0
+            for id in self.obj_ids:
+                ids_len += len(id) + 3  # 2 quotes and a comma
+            ids_len -= 1  # removing one comma too many
+            baselen = len(url) - ids_len;  # that's how big the url is without any object ids in in.
+            maxids_len = _MAX_URL_LEN - baselen;  # that's the max len we can have to list obj IDs
+            obj_ids = []
+            running_len = 0 
+            for id in self.obj_ids:
+                obj_len = len(id)
+                if running_len == 0:
+                    nextlen = obj_len + 2
+                else:
+                    nextlen = running_len + obj_len + 3
+                if (nextlen) <= maxids_len:
+                    # we keep going
+                    obj_ids.append(id)
+                    running_len = nextlen
+                else:
+                    # it's a wrap for that portion
+                    urls.append(self.create_datastore_query(obj_ids, req_time))
+                    running_len = obj_len + 2
+                    obj_ids = [ id ]
+            # out of the loop
+            if (running_len > 0):
+                urls.append(self.create_datastore_query(obj_ids, req_time))
+            if self.debug:
+                print "Will request " + str(len(urls)) + " data urls" 
+        else:
+            urls = [url]
+        
+        contents = []
+        for url in urls:
+            if self.debug:
+                print ""
+                print url
+                print "URL length = " + str(len(url))
+    
+            # test before adding exception handling
+            # try:
+            resp = requests.get(url, verify=False, cert=self.cert_path)
+            # except Exception, e:
+            #    print "No response from local datastore at: " + url
+            #    print e
+            #    return None
+                 
+            if resp:
+                self.time_of_last_update = req_time
+            
+            # need to handle response codes
+            contents.append(resp.content)
+        
+        return contents
 
 
     def get_latest_ts_at_table(self, table_str):
@@ -225,7 +284,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         try:
             cur.execute("select max(ts) from " + table_str + " where aggregate_id = '" + datastore_id + "'")
             q_res = cur.fetchall()
-            res = q_res[0][0] # gets first of single tuple
+            res = q_res[0][0]  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -247,7 +306,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             q_res = cur.fetchall()
 
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -270,7 +329,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             q_res = cur.fetchall()
 
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -294,7 +353,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -318,7 +377,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
             q_res = cur.fetchall()
             for res_i in range(len(q_res)):
-                res.append(q_res[res_i][0]) # gets first of single tuple
+                res.append(q_res[res_i][0])  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -345,7 +404,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             q_res = cur.fetchone()
 
             if q_res is not None:
-                meas_ref = q_res[0] # gets first of single tuple
+                meas_ref = q_res[0]  # gets first of single tuple
             
         except Exception, e:
             sys.stderr.write("%s\n" % e)
@@ -367,7 +426,7 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     for tsdata_i in tsdata:
         vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
 
-    vals_str = vals_str[:-1] # remove last ','
+    vals_str = vals_str[:-1]  # remove last ','
 
     if debug:
         print "<print only> insert " + table_str + " values: " + vals_str
@@ -399,7 +458,7 @@ def main(argv):
     interface_vlan_event_types = all_event_types["interfacevlan"]
     aggregate_event_types = all_event_types["aggregate"]
     
-    #pprint(all_event_types)
+    # pprint(all_event_types)
     
     if object_type_param == 'n':
         event_types = node_event_types

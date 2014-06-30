@@ -232,8 +232,8 @@
              ["ts", "int8", true],
              ["aggregate_urn", "varchar", true],
              ["aggregate_href", "varchar", true],
-             ["slice_urn", "varchar", false],
-             ["slice_uuid", "varchar", true],
+             ["slice_urn", "varchar", true],
+             ["slice_uuid", "varchar", false],
              ["creator", "varchar", false],
              ["created", "int8", true],
              ["expires", "int8", true]
