@@ -200,9 +200,9 @@ class SingleLocalDatastoreInfoCrawler:
     # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
 
-        node_hrefs = self.get_all_nodes_of_aggregate()
+        node_urls = self.get_all_nodes_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interface"]
-        for node_url in node_hrefs:
+        for node_url in node_urls:
             node_dict = handle_request(node_url, self.cert_path)
             if "ports" in node_dict:
                 for port in node_dict["ports"]:
