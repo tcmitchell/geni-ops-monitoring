@@ -53,7 +53,7 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv, "hb:a:e:c:o:d", ["help", "baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttypes=", "debug"])
+        opts, _ = getopt.getopt(argv, "hb:a:e:c:o:d", ["help", "baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttypes=", "debug"])
     except getopt.GetoptError:
         usage()
 
@@ -136,47 +136,50 @@ class SingleLocalDatastoreInfoCrawler:
 
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_link"]
-
-            for res_i in self.am_dict["resources"]:
-                res_dict = handle_request(res_i["href"], self.cert_path)
-                if res_dict["$schema"].endswith("link#"):  # if a link
-                    
-                    # get each attribute out of response into list
-                    link_info_list = self.get_link_attributes(res_dict, schema)
-                    info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug) 
-                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
+            # Need to check because "resources" is optional
+            if "resources" in self.am_dict:
+                for res_i in self.am_dict["resources"]:
+                    res_dict = handle_request(res_i["href"], self.cert_path)
+                    if res_dict:
+                        if res_dict["$schema"].endswith("link#"):  # if a link
+                            # get each attribute out of response into list
+                            link_info_list = self.get_link_attributes(res_dict, schema)
+                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug) 
+                        agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
         
 
     def refresh_all_slivers_info(self):
 
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_sliver"]
-
-            for slv_i in self.am_dict["slivers"]:
-                slv_dict = handle_request(slv_i["href"], self.cert_path)
-                
-                # get each attribute out of response into list
-                slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug) 
-                agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
+            # Need to check because "slivers" is optional
+            if "slivers" in self.am_dict:
+                for slv_i in self.am_dict["slivers"]:
+                    slv_dict = handle_request(slv_i["href"], self.cert_path)
+                    if slv_dict:
+                        # get each attribute out of response into list
+                        slv_info_list = self.get_sliver_attributes(slv_dict, schema)
+                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug) 
+                        agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
+                        info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
 
 
     def refresh_all_nodes_info(self):
 
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
-
-            for res_i in self.am_dict["resources"]:
-                res_dict = handle_request(res_i["href"], self.cert_path)
-                if res_dict["$schema"].endswith("node#"):  # if a node
-                    
-                    # get each attribute out of response into list
-                    node_info_list = self.get_node_attributes(res_dict, schema)
-                    info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug) 
-                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
+            # Need to check because "resources" is optional
+            if "resources" in self.am_dict:
+                for res_i in self.am_dict["resources"]:
+                    res_dict = handle_request(res_i["href"], self.cert_path)
+                    if res_dict:
+                        if res_dict["$schema"].endswith("node#"):  # if a node
+                            # get each attribute out of response into list
+                            node_info_list = self.get_node_attributes(res_dict, schema)
+                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug) 
+                        agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
 
 
     def refresh_all_interfacevlans_info(self):
@@ -185,13 +188,15 @@ class SingleLocalDatastoreInfoCrawler:
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         for link_url in link_urls:
             link_dict = handle_request(link_url, self.cert_path)
-            if "endpoints" in link_dict:
-                for endpt in link_dict["endpoints"]:
-                    ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
-                    ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                    info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug) 
-                    link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
-                    info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug)
+            if link_dict:
+                if "endpoints" in link_dict:
+                    for endpt in link_dict["endpoints"]:
+                        ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
+                        if ifacevlan_dict:
+                            ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
+                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug) 
+                            link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
+                            info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug)
         
 
 
@@ -204,13 +209,15 @@ class SingleLocalDatastoreInfoCrawler:
         schema = self.tbl_mgr.schema_dict["ops_interface"]
         for node_url in node_urls:
             node_dict = handle_request(node_url, self.cert_path)
-            if "ports" in node_dict:
-                for port in node_dict["ports"]:
-                    interface_dict = handle_request(port["href"], self.cert_path)
-                    interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                    info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
-                    node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                    info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
+            if node_dict:
+                if "ports" in node_dict:
+                    for port in node_dict["ports"]:
+                        interface_dict = handle_request(port["href"], self.cert_path)
+                        if interface_dict:
+                            interface_info_list = self.get_interface_attributes(interface_dict, schema)
+                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
+                            node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
+                            info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
 
     def get_default_attribute_for_type(self, vartype):
         val = "";
@@ -504,22 +511,23 @@ def handle_request(url, cert_path):
 
     try:
         resp = requests.get(url, verify=False, cert=cert_path)
-    except Exception, e:
+    except requests.exceptions.RequestException, e:
         print "No response from local datastore at: " + url
         print e
-        return None
 
     if resp:
-        try:
-            json_dict = json.loads(resp.content)
-        except Exception, e:
-            print "Could not load into JSON"
-            print e
-            return None
+        if (resp.status_code == requests.codes.ok):
+            try:
+                json_dict = json.loads(resp.content)
+                return json_dict
+            except ValueError, e:
+                print "Could not load into JSON with response from " + url
+                print "response = \n" + resp.content
+                print e
+        else:
+            print "Response from " + url + " is invalid, code = " + str(resp.status_code)
 
-        return json_dict
-    else:
-        return None
+    return None
 
 
 def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):

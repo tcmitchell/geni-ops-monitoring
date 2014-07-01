@@ -27,7 +27,6 @@ import json
 import sys
 import getopt
 import requests
-import ConfigParser
 from pprint import pprint as pprint
 
 sys.path.append("../common/")
@@ -49,7 +48,7 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, args = getopt.getopt(argv, "ha:e:c:o:d", ["baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttype=", "help", "debug"])
+        opts, _ = getopt.getopt(argv, "ha:e:c:o:d", ["baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttype=", "help", "debug"])
     except getopt.GetoptError:
         usage()
 
@@ -117,12 +116,14 @@ class SingleLocalDatastoreObjectTypeFetcher:
         
         onlyErr = True
         
+        # there should be at least one answer unless we had issues retrieving it
         for json_text in json_texts:
             data = None
             try:
                 data = json.loads(json_text)
-            except Exception, e:
+            except ValueError, e:
                 sys.stderr.write("Unable to load response in json %s\n" % e)
+                print "response = \n" + json_text
             
             if data is not None:
                 onlyErr = False
@@ -148,7 +149,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
                         obj_id = id_str[id_str.find(':') + 1:]
         
                         tsdata = result["tsdata"]
-                        tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
+                        if len(tsdata) > 0:
+                            tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
             
         if onlyErr:
             return 1
@@ -218,28 +220,28 @@ class SingleLocalDatastoreObjectTypeFetcher:
             if self.debug:
                 print "Data query URL too big. Breaking it"
             ids_len = 0
-            for id in self.obj_ids:
-                ids_len += len(id) + 3  # 2 quotes and a comma
+            for obj_id in self.obj_ids:
+                ids_len += len(obj_id) + 3  # 2 quotes and a comma
             ids_len -= 1  # removing one comma too many
             baselen = len(url) - ids_len;  # that's how big the url is without any object ids in in.
             maxids_len = _MAX_URL_LEN - baselen;  # that's the max len we can have to list obj IDs
             obj_ids = []
             running_len = 0 
-            for id in self.obj_ids:
-                obj_len = len(id)
+            for obj_id in self.obj_ids:
+                obj_len = len(obj_id)
                 if running_len == 0:
                     nextlen = obj_len + 2
                 else:
                     nextlen = running_len + obj_len + 3
                 if (nextlen) <= maxids_len:
                     # we keep going
-                    obj_ids.append(id)
+                    obj_ids.append(obj_id)
                     running_len = nextlen
                 else:
                     # it's a wrap for that portion
                     urls.append(self.create_datastore_query(obj_ids, req_time))
                     running_len = obj_len + 2
-                    obj_ids = [ id ]
+                    obj_ids = [ obj_id ]
             # out of the loop
             if (running_len > 0):
                 urls.append(self.create_datastore_query(obj_ids, req_time))
@@ -255,19 +257,19 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 print url
                 print "URL length = " + str(len(url))
     
-            # test before adding exception handling
-            # try:
-            resp = requests.get(url, verify=False, cert=self.cert_path)
-            # except Exception, e:
-            #    print "No response from local datastore at: " + url
-            #    print e
-            #    return None
+            resp = None
+            try:
+                resp = requests.get(url, verify=False, cert=self.cert_path)
+            except requests.exceptions.RequestException, e:
+                print "No response from local datastore at: " + url
+                print e
                  
-            if resp:
-                self.time_of_last_update = req_time
-            
-            # need to handle response codes
-            contents.append(resp.content)
+            if resp is not None:
+                if (resp.status_code == requests.codes.ok):
+                    self.time_of_last_update = req_time
+                    contents.append(resp.content)
+                else:
+                    print "Response from " + url + " is invalid, code = " + str(resp.status_code)
         
         return contents
 
@@ -392,7 +394,6 @@ class SingleLocalDatastoreObjectTypeFetcher:
     def get_meas_ref(self, tbl_str, object_id):
         tbl_mgr = self.tbl_mgr
         cur = tbl_mgr.con.cursor()
-        res = []
         meas_ref = None
         try:
 
