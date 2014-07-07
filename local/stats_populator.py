@@ -25,10 +25,8 @@
 import time
 import psutil
 import sys
-import json
 import threading
 import random
-from pprint import pprint as pprint
 
 
 common_path = "../common/"
@@ -80,7 +78,7 @@ class StatsPopulator(threading.Thread):
 
     def run_stats_main(self):
 
-        for i in range(self.num_inserts):
+        for _ in range(self.num_inserts):
             print "%d %s wakeup and sample" % (time.time()*1000000, self.obj_id)
             for ev_t in self.event_types_arr:
                 self.stat_insert(ev_t)
