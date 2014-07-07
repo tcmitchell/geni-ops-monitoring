@@ -712,12 +712,8 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 def get_refs(tm, table_str, object_id):
 
     refs = [];
-    q_res = []
-    
-    if tm.database_program == "postgres":
-        q_res = tm.query("select \"selfRef\", urn from " + table_str + " where id = '" + object_id + "' limit 1")
-    elif tm.database_program == "mysql":
-        q_res = tm.query("select selfRef, urn from " + table_str + " where id = '" + object_id + "' limit 1")
+    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn from " + table_str + \
+                     " where id = '" + object_id + "' limit 1")
     if q_res is not None:
         refs = q_res[0]
     return refs
@@ -726,14 +722,9 @@ def get_refs(tm, table_str, object_id):
 # Get self reference only TODO refactor similar functions
 def get_self_ref(tm, table_str, object_id):
 
-    q_res = []
     self_ref = None
-    
-    if tm.database_program == "postgres":
-        q_res = tm.query("select \"selfRef\", urn from " + table_str + " where id = '" + object_id + "' limit 1")
-    elif tm.database_program == "mysql":
-        q_res = tm.query("select selfRef, urn from " + table_str + " where id = '" + object_id + "' limit 1")
-
+    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn from " + table_str + \
+                     " where id = '" + object_id + "' limit 1")
     if q_res is not None:
         self_ref = q_res[0]  # gets first of single tuple
     
@@ -743,11 +734,8 @@ def get_self_ref(tm, table_str, object_id):
 # Get self reference only TODO refactor similar functions
 def get_monitored_aggregates(tm, extck_id):
 
-    res = None
-    if tm.database_program == "postgres":
-        res = tm.query("select id, \"selfRef\" from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
-    elif tm.database_program == "mysql":
-        res = tm.query("select id, selfRef from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
+    res = tm.query("select id, " + tm.get_column_name("selfRef") + \
+                   " from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + extck_id + "'")
     return res
 
 
@@ -755,14 +743,10 @@ def get_monitored_aggregates(tm, extck_id):
 def get_slice_user_refs(tm, table_str, user_id):
 
     refs = []
-    q_res = None
-    if tm.database_program == "postgres":
-        q_res = tm.query("select \"selfRef\", urn, role from " + table_str + " where id = '" + user_id + "' limit 1")
-    elif tm.database_program == "mysql":
-        q_res = tm.query("select selfRef, urn, role from " + table_str + " where id = '" + user_id + "' limit 1")
+    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn, role from " + table_str + \
+                     " where id = '" + user_id + "' limit 1")
     if q_res is not None:
         refs = q_res[0]
-
     return refs
 
 
@@ -772,11 +756,8 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
 # Unused method...
     refs = []
-    q_res = None
-    if tm.database_program == "postgres":
-        q_res = tm.query("select \"selfRef\", urn, amtype from " + table_str + " where id = '" + opsconfig_id + "' limit 1")
-    elif tm.database_program == "mysql":
-        q_res = tm.query("select selfRef, urn, amtype from " + table_str + " where id = '" + opsconfig_id + "' limit 1")
+    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn, amtype from " + table_str + \
+                     " where id = '" + opsconfig_id + "' limit 1")
     if q_res is not None:
         refs = q_res[0]
 
@@ -821,7 +802,8 @@ def build_ts_where_str(ts_dict):
 
 def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
     res = None
-    q_res = tm.query("select ts,v from ops_" + obj_type + "_" + event_type + " where id = '" + obj_id + "' and " + ts_where_str)
+    q_res = tm.query("select ts,v from ops_" + obj_type + "_" + event_type + \
+                     " where id = '" + obj_id + "' and " + ts_where_str)
     if q_res is not None:
         res = []
         for q_res_i in xrange(len(q_res)):  # parsing result "<ts>,<v>"
@@ -831,10 +813,8 @@ def get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str):
 
 def get_object_schema(tm, obj_type, obj_id):
     res = None
-    if tm.database_program == "postgres":
-        q_res = tm.query("select \"$schema\" from ops_" + obj_type + " where id = '" + obj_id + "' order by ts desc limit 1")
-    elif tm.database_program == "mysql":
-        q_res = tm.query("select $schema from ops_" + obj_type + " where id = '" + obj_id + "' order by ts desc limit 1")
+    q_res = tm.query("select " + tm.get_column_name("$schema") + " from ops_" + obj_type + \
+                     " where id = '" + obj_id + "' order by ts desc limit 1")
     if q_res is not None:
         res = q_res[0][0]
 
