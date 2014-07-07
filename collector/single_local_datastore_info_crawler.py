@@ -78,7 +78,7 @@ def parse_args(argv):
     return [base_url, aggregate_id, extck_id, object_types, cert_path, debug]
 
 class SingleLocalDatastoreInfoCrawler:
-    
+
     def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug):
         self.tbl_mgr = tbl_mgr
         self.tbl_mgr.establish_all_tables()
@@ -122,7 +122,7 @@ class SingleLocalDatastoreInfoCrawler:
 
     # Updates all the monitored aggregates
     def refresh_all_monitoredaggregates_info(self):
-        
+
         if self.extck_dict:
             self.tbl_mgr.establish_table("ops_externalcheck_monitoredaggregate")
 #             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
@@ -144,10 +144,10 @@ class SingleLocalDatastoreInfoCrawler:
                         if res_dict["$schema"].endswith("link#"):  # if a link
                             # get each attribute out of response into list
                             link_info_list = self.get_link_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug) 
+                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug)
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                         info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
-        
+
 
     def refresh_all_slivers_info(self):
 
@@ -160,7 +160,7 @@ class SingleLocalDatastoreInfoCrawler:
                     if slv_dict:
                         # get each attribute out of response into list
                         slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug) 
+                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug)
                         agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
                         info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
 
@@ -177,7 +177,7 @@ class SingleLocalDatastoreInfoCrawler:
                         if res_dict["$schema"].endswith("node#"):  # if a node
                             # get each attribute out of response into list
                             node_info_list = self.get_node_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug) 
+                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug)
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
                         info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
 
@@ -194,10 +194,10 @@ class SingleLocalDatastoreInfoCrawler:
                         ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
                         if ifacevlan_dict:
                             ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug) 
+                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug)
                             link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
                             info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug)
-        
+
 
 
     # Updates all interfaces information
@@ -215,7 +215,7 @@ class SingleLocalDatastoreInfoCrawler:
                         interface_dict = handle_request(port["href"], self.cert_path)
                         if interface_dict:
                             interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug) 
+                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug)
                             node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
                             info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
 
@@ -227,8 +227,8 @@ class SingleLocalDatastoreInfoCrawler:
 
     def get_node_attributes(self, res_dict, schema):
         node_info_list = []
-        for key in schema: 
-            if key[0].startswith("properties$"): 
+        for key in schema:
+            if key[0].startswith("properties$"):
                 jsonkey = "ops_monitoring:" + key[0].split('$')[1]
             else:
                 jsonkey = key[0];
@@ -248,7 +248,7 @@ class SingleLocalDatastoreInfoCrawler:
 
     def get_link_attributes(self, res_dict, schema):
         link_info_list = []
-        for key in schema: 
+        for key in schema:
             if key[0] in res_dict:
                 link_info_list.append(res_dict[key[0]])
             else:
@@ -264,7 +264,7 @@ class SingleLocalDatastoreInfoCrawler:
 
     def get_sliver_attributes(self, slv_dict, schema):
         slv_info_list = []
-        for key in schema: 
+        for key in schema:
             noval = False
             if key[0] == "aggregate_href":
                 if "aggregate" in slv_dict:
@@ -357,7 +357,7 @@ class SingleLocalDatastoreInfoCrawler:
     def get_interface_attributes(self, interface_dict, schema):
         # get each attribute out of response into list
         interface_info_list = []
-        for key in schema: 
+        for key in schema:
             noval = False
             if key[0] == "address_type":
                 if "address" in interface_dict:
@@ -410,24 +410,12 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef") + " from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
         res = [];
-        try:
-            if tbl_mgr.database_program == "postgres":
-                cur.execute("select \"selfRef\" from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-            elif tbl_mgr.database_program == "mysql":
-                cur.execute("select selfRef from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-            q_res = cur.fetchall()
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            print e
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
@@ -435,22 +423,12 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
+        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
         res = [];
-        try:
-            cur.execute("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'));")
-
-            q_res = cur.fetchall()
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            print e
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
@@ -458,50 +436,23 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef") + " from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
         res = [];
-        try:
-            if tbl_mgr.database_program == "postgres":
-                cur.execute("select \"selfRef\" from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-            elif tbl_mgr.database_program == "mysql":
-                cur.execute("select selfRef from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-            q_res = cur.fetchall()
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            print e
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
     def get_meas_ref(self):
         tbl_mgr = self.tbl_mgr
         object_id = self.aggregate_id
-        cur = tbl_mgr.con.cursor()
-#         res = []
         meas_ref = None
-        try:
 
-            # two queries avoids regex split with ,
-            if tbl_mgr.database_program == "postgres":
-                cur.execute("select \"measRef\" from ops_aggregate where id = '" + object_id + "' limit 1")
-            elif tbl_mgr.database_program == "mysql":
-                cur.execute("select measRef from ops_aggregate where id = '" + object_id + "' limit 1")
-            q_res = cur.fetchone()
-            if q_res is not None:
-                meas_ref = q_res[0]  # gets first of single tuple
-            
-        except Exception, e:
-            print e
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("measRef") + " from ops_aggregate where id = '" + object_id + "' limit 1")
+        if q_res is not None:
+            meas_ref = q_res[0][0]  # gets first of single tuple
+
         return meas_ref
 
 
@@ -550,7 +501,7 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
         tbl_mgr.insert_stmt(table_str, val_str)
 
 
-def main(argv): 
+def main(argv):
 
     [info_url, aggregate_id, extck_id, objecttypes, cert_path, debug] = parse_args(argv)
 
@@ -574,7 +525,7 @@ def main(argv):
     # Only do head aggregate info query if nodes, sliver, interface, vlan objects are in objecttypes
     if 'n' in objecttypes or 'l' in objecttypes or 's' in objecttypes or 'v' in objecttypes or 'i' in objecttypes:
         crawler.refresh_aggregate_info()
-    
+
     if 'x' in objecttypes or 'e' in objecttypes:
         crawler.refresh_externalcheck_info()
 
