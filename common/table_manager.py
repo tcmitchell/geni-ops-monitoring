@@ -32,6 +32,9 @@ class DBManager(object):
     Defines the "base" methods to be implemented by subclasses
     """
     def __init__(self, dbnm, usernm, pw, hostnm, prt, poolsize):
+        """
+        Base constructor, capturing the arguments as attributes of the class.
+        """
         self.dbname = dbnm
         self.username = usernm
         self.passwd = pw
@@ -40,12 +43,34 @@ class DBManager(object):
         self.poolsize = poolsize
 
     def get_column_name(self, column):
+        """
+        Method to return a column name with the proper quotation for a given DB engine.
+        :param column: the name of the column
+        :return: the column name with the proper quotation for the DB engine represented by the class.
+        """
         raise NotImplementedError();
 
     def get_connection(self):
+        """
+        Method to get a connection. This class functions as a connection pool. Once the caller is done 
+        using its connection, it should return it to the pool, using the return_connection() method.
+        :return: a connection to the DB specified by the arguments passed in the constructor
+        """
         raise NotImplementedError();
 
     def return_connection(self, conn):
+        """
+        Method to return a connection after it's been used.
+        :param conn: the connection that was once obtained via get_connection()
+        """
+        raise NotImplementedError();
+
+    def get_import_module_name(self):
+        """
+        Method to get the DB module name used by this class.
+        This is useful for example when trying to catch exception that are defined by the DB API, but truly
+        provided by the DB driver module. 
+        """
         raise NotImplementedError();
 
 
@@ -72,6 +97,10 @@ class MySQLDBManager (DBManager):
     def return_connection(self, conn):
         conn.close()
 
+    def get_import_module_name(self):
+        import MySQLdb
+        return MySQLdb
+
 class PostgreSQLDBManager (DBManager):
     """
     Database Manager class for postgreSQL. 
@@ -79,8 +108,7 @@ class PostgreSQLDBManager (DBManager):
     def __init__(self, dbnm, usernm, pw, hostnm, prt, poolsize):
         super(PostgreSQLDBManager, self).__init__(dbnm, usernm, pw, hostnm, prt, poolsize)
         import psycopg2.pool
-        minconn = min(3, poolsize)
-        self.pool = psycopg2.pool.ThreadedConnectionPool(minconn, poolsize, database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
+        self.pool = psycopg2.pool.ThreadedConnectionPool(1, poolsize, database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
 
     def get_column_name(self, column):
         return "\"" + column + "\""
@@ -90,6 +118,11 @@ class PostgreSQLDBManager (DBManager):
 
     def return_connection(self, conn):
         self.pool.putconn(conn)
+
+    def get_import_module_name(self):
+        import psycopg2
+        return psycopg2
+
 
 class TableManager:
 
@@ -330,7 +363,6 @@ class TableManager:
 
     def get_col_names_psql(self, table_str):
         # using cursor description not cursor.fetchall(), so have to kinda duplicate the query() code here...
-        import psycopg2
         self.db_lock.acquire()
         err = True
         con = self.dbmanager.get_connection()
@@ -339,7 +371,7 @@ class TableManager:
         try:
             cur.execute("select * from " + table_str + " LIMIT 0")
             err = False
-        except (AttributeError, psycopg2.OperationalError):
+        except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
             cur.close()
             self.dbmanager.return_connection(con)
             con = self.dbmanager.get_connection()
@@ -464,8 +496,10 @@ class TableManager:
         :return: a tuple containing the tuples of all the records selected, themselves in the form of tuples.
                  None if there was an issue executing the query.
         """
-        import MySQLdb
-        import psycopg2
+#         if self.database_program == "postgres":
+#             import psycopg2 as dbengine
+#         elif self.database_program == "mysql":
+#             import MySQLdb as dbengine
 
         con = self.dbmanager.get_connection()
         cur = con.cursor()
@@ -474,7 +508,7 @@ class TableManager:
             cur.execute(querystr)
             if cur.rowcount > 0:
                 q_res = cur.fetchall()
-        except (AttributeError, psycopg2.OperationalError, MySQLdb.OperationalError):
+        except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
             print "Trying to reconnect"
             con.rollback()
             cur.close()
@@ -508,8 +542,10 @@ class TableManager:
         :return: True if all the statement executed correctly, False if there was an issue. 
         As soon as an issue is encountered, no more statements are executed and a DB rollback is issued.
         """
-        import MySQLdb
-        import psycopg2
+#         if self.database_program == "postgres":
+#             import psycopg2 as dbengine
+#         elif self.database_program == "mysql":
+#             import MySQLdb as dbengine
 
         con = self.dbmanager.get_connection()
         cur = con.cursor()
@@ -535,7 +571,7 @@ class TableManager:
                 try:
                     cur.execute(statement)
                     err = False
-                except (AttributeError, psycopg2.OperationalError, MySQLdb.OperationalError):
+                except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
                     print "Trying to reconnect"
                     # since we're dealing with mutilple statements, in case of a disconnection, we need to reissue them all.
                     con.rollback()
