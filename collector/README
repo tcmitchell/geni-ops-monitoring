@@ -53,11 +53,11 @@ Reference Collector README
 
 4. Configuring the collector to point to local datastore(s)
 
-    (1) Attempt to reach the tamassos config datastore. Use the unit-tests
+    (1) Attempt to reach the opsconfigdatastore config datastore. Use the unit-tests
     program single_rest_call.py and point to
 
     cd unit-tests
-    python single_rest_call.py -u https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod -c /path/to/collector/certificate
+    python single_rest_call.py -u https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod -c /path/to/collector/certificate
 
     See unit-tests/README for more detail
 
@@ -128,7 +128,7 @@ Reference Collector README
     aggregate_id the same as for the info crawler. Save and exit
     crontab.
 
-    30 23 * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_info_crawler.py -c /path/to/cert/collector-xyz.pem -b http://tamassos.gpolab.bbn.com/info/ -a gpo-ig -o ni)
+    30 23 * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_info_crawler.py -c /path/to/cert/collector-xyz.pem -b http://opsconfigdatastore.gpolab.bbn.com/info/ -a gpo-ig -o ni)
 
     */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -c /path/to/cert/collector-xyz.pem -a gpo-ig -o n)
 
