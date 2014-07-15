@@ -222,7 +222,7 @@ Table of Contents:
      
     - measRef : This is the base url for reference to the datastore
        measurement queries (i.e.,
-       http://tamassos.gpolab.bbn.com/data/)
+       http://extckdatastore.gpolab.bbn.com/data/)
 
     - properties$<property> : This is for information about a
        particular property of the object.
