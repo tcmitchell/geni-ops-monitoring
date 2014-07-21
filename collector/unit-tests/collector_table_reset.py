@@ -47,7 +47,5 @@ def main():
     tbl_mgr.drop_tables(table_str_arr)
     tbl_mgr.establish_tables(table_str_arr)
    
-    tbl_mgr.con.close()
-
 if __name__ == "__main__":
     main()

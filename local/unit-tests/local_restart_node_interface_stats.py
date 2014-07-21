@@ -104,9 +104,9 @@ def main(argv):
     ip.insert_fake_info()    
     ip.insert_externalcheck_store()
 
-    cur = tbl_mgr.con.cursor();
-    cur.execute("select count(*) from ops_aggregate");
-    print "Aggregate has entries", cur.fetchone()[0], "entries"
+    q_res = tbl_mgr.query("select count(*) from ops_aggregate")
+    if q_res is not None:
+        print "Aggregate has ", q_res[0][0], "entries"
     
     # data population
     node_event_str_arr = event_types["node"]
@@ -147,8 +147,6 @@ def main(argv):
     #    cur.execute("select * from ops_" + ev + " limit 1");
     #    print ev, "has this entry:\n", cur.fetchone()
 
-    cur.close()
-    tbl_mgr.con.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

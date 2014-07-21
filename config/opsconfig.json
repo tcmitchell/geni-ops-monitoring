@@ -1,8 +1,8 @@
 {
   "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/opsconfig#",
   "id": "geni-prod",
-  "selfRef": "https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod",
-  "ts": 1391192685740849,
+  "selfRef": "https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod",
+  "ts": 1404856180792745,
   "aggregatestores": [
     {
       "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",

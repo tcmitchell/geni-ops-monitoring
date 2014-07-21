@@ -22,7 +22,7 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import time 
+import time
 import json
 import sys
 import getopt
@@ -107,15 +107,15 @@ class SingleLocalDatastoreObjectTypeFetcher:
         self.obj_ids = self.get_object_ids(obj_type)
 
 
-    def fetch_and_insert(self): 
-    
+    def fetch_and_insert(self):
+
         # poll datastore
         json_texts = self.poll_datastore()
 #        if self.debug:
 #            print json_texts
-        
+
         onlyErr = True
-        
+
         # there should be at least one answer unless we had issues retrieving it
         for json_text in json_texts:
             data = None
@@ -124,34 +124,34 @@ class SingleLocalDatastoreObjectTypeFetcher:
             except ValueError, e:
                 sys.stderr.write("Unable to load response in json %s\n" % e)
                 print "response = \n" + json_text
-            
+
             if data is not None:
                 onlyErr = False
                 for result in data:
                     if self.debug:
                         print "Result received from %s about:" % self.aggregate_id
                         pprint(result["id"])
-        
+
                     event_type = result["eventType"]
                     if event_type.startswith("ops_monitoring:"):
                         table_str = "ops_" + self.obj_type + "_" + event_type[15:]
-        
+
                         # if id is event:obj_id_that_was_queried,
                         # TODO straighten out protocol with monitoring group
                         # for now go with this
                         id_str = result["id"]
-        
+
                         # remove event: and prepend aggregate_id:
                         if self.aggregate_id != "":
                             datastore_id = self.aggregate_id
                         elif self.extck_id != "":
                             datastore_id = self.extck_id
                         obj_id = id_str[id_str.find(':') + 1:]
-        
+
                         tsdata = result["tsdata"]
                         if len(tsdata) > 0:
                             tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
-            
+
         if onlyErr:
             return 1
         else:
@@ -187,8 +187,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
             sys.exit(1)
 
         return obj_ids
-    
-    
+
+
     def create_datastore_query(self, obj_ids, req_time):
         """
         Creates a data query URL for specific objects and a specific time range.
@@ -215,7 +215,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         url = self.create_datastore_query(self.obj_ids, req_time)
         urls = []
-        
+
         if (len(url) > _MAX_URL_LEN):
             if self.debug:
                 print "Data query URL too big. Breaking it"
@@ -226,7 +226,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             baselen = len(url) - ids_len;  # that's how big the url is without any object ids in in.
             maxids_len = _MAX_URL_LEN - baselen;  # that's the max len we can have to list obj IDs
             obj_ids = []
-            running_len = 0 
+            running_len = 0
             for obj_id in self.obj_ids:
                 obj_len = len(obj_id)
                 if running_len == 0:
@@ -246,31 +246,31 @@ class SingleLocalDatastoreObjectTypeFetcher:
             if (running_len > 0):
                 urls.append(self.create_datastore_query(obj_ids, req_time))
             if self.debug:
-                print "Will request " + str(len(urls)) + " data urls" 
+                print "Will request " + str(len(urls)) + " data urls"
         else:
             urls = [url]
-        
+
         contents = []
         for url in urls:
             if self.debug:
                 print ""
                 print url
                 print "URL length = " + str(len(url))
-    
+
             resp = None
             try:
                 resp = requests.get(url, verify=False, cert=self.cert_path)
             except requests.exceptions.RequestException, e:
                 print "No response from local datastore at: " + url
                 print e
-                 
+
             if resp is not None:
                 if (resp.status_code == requests.codes.ok):
                     self.time_of_last_update = req_time
                     contents.append(resp.content)
                 else:
                     print "Response from " + url + " is invalid, code = " + str(resp.status_code)
-        
+
         return contents
 
 
@@ -282,18 +282,10 @@ class SingleLocalDatastoreObjectTypeFetcher:
             datastore_id = self.extck_id
 
         res = 0
-        cur = tbl_mgr.con.cursor()
-        try:
-            cur.execute("select max(ts) from " + table_str + " where aggregate_id = '" + datastore_id + "'")
-            q_res = cur.fetchall()
+        q_res = tbl_mgr.query("select max(ts) from " + table_str + " where aggregate_id = '" + datastore_id + "'")
+        if q_res is not None:
             res = q_res[0][0]  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
@@ -301,45 +293,24 @@ class SingleLocalDatastoreObjectTypeFetcher:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
         res = [];
-        try:
-            cur.execute("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "');")
-            q_res = cur.fetchall()
-
+        q_res = tbl_mgr.query("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
     def get_all_aggregates_of_extckstore(self):
         tbl_mgr = self.tbl_mgr
 
-        cur = tbl_mgr.con.cursor()
         res = [];
-        try:
-
-            cur.execute("select id from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + self.extck_id + "';")
-            q_res = cur.fetchall()
-
+        q_res = tbl_mgr.query("select id from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + self.extck_id + "'")
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
@@ -347,23 +318,12 @@ class SingleLocalDatastoreObjectTypeFetcher:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
         res = [];
-
-        try:
-            cur.execute("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'));")
-
-            q_res = cur.fetchall()
+        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
@@ -371,56 +331,30 @@ class SingleLocalDatastoreObjectTypeFetcher:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        cur = tbl_mgr.con.cursor()
         res = [];
-        try:
-
-            cur.execute("select id from ops_link_interfacevlan where link_id in (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))");
-
-            q_res = cur.fetchall()
+        q_res = tbl_mgr.query("select id from ops_link_interfacevlan where link_id in (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-        
+
         return res
 
 
     def get_meas_ref(self, tbl_str, object_id):
         tbl_mgr = self.tbl_mgr
-        cur = tbl_mgr.con.cursor()
+
         meas_ref = None
-        try:
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("measRef") + " from " + tbl_str + " where id = '" + object_id + "' limit 1")
+        if q_res is not None:
+            meas_ref = q_res[0][0]  # gets first of single tuple
 
-            # two queries avoids regex split with ,
-            if tbl_mgr.database_program == "postgres":
-                cur.execute("select \"measRef\" from " + tbl_str + " where id = '" + object_id + "' limit 1")
-            elif tbl_mgr.database_program == "mysql":
-                cur.execute("select measRef from " + tbl_str + " where id = '" + object_id + "' limit 1")
-            q_res = cur.fetchone()
-
-            if q_res is not None:
-                meas_ref = q_res[0]  # gets first of single tuple
-            
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-        finally:
-            tbl_mgr.con.commit()
-        
-        cur.close()
-   
         if meas_ref is None:
             sys.stderr.write("ERROR: No measurement ref found for aggregate: %s\nRun the info_crawler to find this or wrong argument passed \n" % self.aggregate_id)
             sys.exit(1)
 
         return meas_ref
 
-  
+
 # Builds the multi-row insert value string
 def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     vals_str = ""
@@ -434,8 +368,8 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     else:
         tbl_mgr.insert_stmt(table_str, vals_str)
 
-     
-def main(argv): 
+
+def main(argv):
 
     [aggregate_id, extck_id, object_type_param, cert_path, debug] = parse_args(argv)
     if (aggregate_id == "" and extck_id == "") or object_type_param == "" or cert_path == "":
@@ -453,14 +387,14 @@ def main(argv):
 
     # ensures tables exist in database
     tbl_mgr.establish_tables(data_schema.keys())
-    
+
     node_event_types = all_event_types["node"]
     interface_event_types = all_event_types["interface"]
     interface_vlan_event_types = all_event_types["interfacevlan"]
     aggregate_event_types = all_event_types["aggregate"]
-    
+
     # pprint(all_event_types)
-    
+
     if object_type_param == 'n':
         event_types = node_event_types
         object_type = "node"
@@ -483,7 +417,6 @@ def main(argv):
     if ret_val != 0:
         print "fetch_and_insert() failed"
 
-    fetcher.tbl_mgr.close_con()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

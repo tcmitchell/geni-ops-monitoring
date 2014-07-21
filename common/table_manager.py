@@ -25,7 +25,104 @@
 import sys
 import threading
 import opsconfig_loader
-import MySQLdb
+
+class DBManager(object):
+    """
+    Base Database Manager class.
+    Defines the "base" methods to be implemented by subclasses
+    """
+    def __init__(self, dbnm, usernm, pw, hostnm, prt, poolsize):
+        """
+        Base constructor, capturing the arguments as attributes of the class.
+        """
+        self.dbname = dbnm
+        self.username = usernm
+        self.passwd = pw
+        self.hostname = hostnm
+        self.port = prt
+        self.poolsize = poolsize
+
+    def get_column_name(self, column):
+        """
+        Method to return a column name with the proper quotation for a given DB engine.
+        :param column: the name of the column
+        :return: the column name with the proper quotation for the DB engine represented by the class.
+        """
+        raise NotImplementedError();
+
+    def get_connection(self):
+        """
+        Method to get a connection. This class functions as a connection pool. Once the caller is done 
+        using its connection, it should return it to the pool, using the return_connection() method.
+        :return: a connection to the DB specified by the arguments passed in the constructor
+        """
+        raise NotImplementedError();
+
+    def return_connection(self, conn):
+        """
+        Method to return a connection after it's been used.
+        :param conn: the connection that was once obtained via get_connection()
+        """
+        raise NotImplementedError();
+
+    def get_import_module_name(self):
+        """
+        Method to get the DB module name used by this class.
+        This is useful for example when trying to catch exception that are defined by the DB API, but truly
+        provided by the DB driver module. 
+        """
+        raise NotImplementedError();
+
+
+class MySQLDBManager (DBManager):
+    """
+    Database Manager class for MySQL. 
+    """
+    def __init__(self, dbnm, usernm, pw, hostnm, prt, poolsize):
+        super(MySQLDBManager, self).__init__(dbnm, usernm, pw, hostnm, prt, poolsize)
+
+    def get_column_name(self, column):
+        return column
+
+    def get_connection(self):
+        # TODO implement poolsize restrictions
+        import MySQLdb
+        try:
+            con = MySQLdb.connect(db=self.dbname, user=self.username, passwd=self.passwd, host=self.hostname, port=int(self.port))
+        except Exception, e:
+            sys.stderr.write("%s \nCannot open a mysql connection to database %s. \n Exiting.\n" % (e, self.dbname))
+            sys.exit(1)
+        return con
+
+    def return_connection(self, conn):
+        conn.close()
+
+    def get_import_module_name(self):
+        import MySQLdb
+        return MySQLdb
+
+class PostgreSQLDBManager (DBManager):
+    """
+    Database Manager class for postgreSQL. 
+    """
+    def __init__(self, dbnm, usernm, pw, hostnm, prt, poolsize):
+        super(PostgreSQLDBManager, self).__init__(dbnm, usernm, pw, hostnm, prt, poolsize)
+        import psycopg2.pool
+        self.pool = psycopg2.pool.ThreadedConnectionPool(1, poolsize, database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
+
+    def get_column_name(self, column):
+        return "\"" + column + "\""
+
+    def get_connection(self):
+        return self.pool.getconn()
+
+    def return_connection(self, conn):
+        self.pool.putconn(conn)
+
+    def get_import_module_name(self):
+        import psycopg2
+        return psycopg2
+
 
 class TableManager:
 
@@ -36,22 +133,16 @@ class TableManager:
         # load a 2-function package for reading database connection config
         sys.path.append(config_path)
         import database_conf_loader
-        
+
         self.conf_loader = database_conf_loader  # clarify naming conventions
         self.debug = debug
 
-        if db_type == "local":
-            [db_prog] = self.conf_loader.main_local(config_path)
-        elif db_type == "collector":
-            [db_prog] = self.conf_loader.main_collector(config_path)
-        else:
-            sys.stderr.write("%s is not a valid database type (local or collector)\n" % db_type)
-            sys.exit(1)
+        [db_prog] = self.conf_loader.main(config_path, db_type)
 
         self.database_type = db_type  # local or collector
         self.database_program = db_prog  # postgres or mysql
 
-        self.con = self.init_con()
+        self.dbmanager = self.init_dbmanager()
 
         self.db_lock = threading.Lock()
 
@@ -59,7 +150,7 @@ class TableManager:
     # fetches DB schemas from config local datastore
     def poll_config_store(self):
 
-        self.ocl = opsconfig_loader.OpsconfigLoader(self.config_path) 
+        self.ocl = opsconfig_loader.OpsconfigLoader(self.config_path)
 
         # parses the DB schemas
         self.info_schema = self.ocl.get_info_schema()
@@ -70,8 +161,8 @@ class TableManager:
         self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
 
         if self.debug:
-            print "Schema loaded with keys:" 
-            print self.schema_dict.keys() 
+            print "Schema loaded with keys:"
+            print self.schema_dict.keys()
             print ""
 
 
@@ -80,140 +171,67 @@ class TableManager:
     # these tables
     def reset_opsconfig_tables(self):
 
+        self.db_lock.acquire()
+
         table_str = "ops_opsconfig_info"
         schema_arr = [['tablename', 'varchar'], ['schemaarray', 'varchar']]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-
-        self.db_lock.acquire()
-        try:
-            cur = self.con.cursor()
-            cur.execute("drop table if exists " + table_str)
-            cur.execute("create table if not exists " + table_str + schema_str)
-            self.con.commit()
-            
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        if not self.execute_sql("drop table if exists " + table_str, \
+                                "create table if not exists " + table_str + schema_str):
             sys.stderr.write("Exception while reseting opsconfig info table %s %s" % (table_str, schema_str))
+
 
 
         table_str = "ops_opsconfig_event"
         schema_arr = [["object_type", "varchar"], ["name", "varchar"], ["id", "varchar"], ["ts", "varchar"], ["v", "varchar"], ["units", "varchar"]]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        try:
-            cur = self.con.cursor()
-            cur.execute("drop table if exists " + table_str)
-            cur.execute("create table if not exists " + table_str + schema_str)
-            self.con.commit()
-            
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        if not self.execute_sql("drop table if exists " + table_str, \
+                                "create table if not exists " + table_str + schema_str):
             sys.stderr.write("Exception while reseting opsconfig event table %s %s" % (table_str, schema_str))
-        
+
 
         table_str = "ops_opsconfig"
         schema_arr = [["$schema", "varchar"], ["id", "varchar"], ["selfRef", "varchar"], ["ts", "int8"]]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        
-        try:
-            cur = self.con.cursor()
-            cur.execute("drop table if exists " + table_str)
-            cur.execute("create table if not exists " + table_str + schema_str)
-            self.con.commit()
-            
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        if not self.execute_sql("drop table if exists " + table_str, \
+                         "create table if not exists " + table_str + schema_str):
             sys.stderr.write("Exception while reseting opsconfig table %s %s" % (table_str, schema_str))
+
 
         table_str = "ops_opsconfig_aggregate"
         schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["amtype", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        try:
-            cur = self.con.cursor()
-            cur.execute("drop table if exists " + table_str)
-            cur.execute("create table if not exists " + table_str + schema_str)
-            self.con.commit()
-            
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        if not self.execute_sql("drop table if exists " + table_str, \
+                         "create table if not exists " + table_str + schema_str):
             sys.stderr.write("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
-            
+
 
         table_str = "ops_opsconfig_authority"
         schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
         schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        try:
-            cur = self.con.cursor()
-            cur.execute("drop table if exists " + table_str)
-            cur.execute("create table if not exists " + table_str + schema_str)
-            self.con.commit()
-            
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-            sys.stderr.write("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
-
+        if not self.execute_sql("drop table if exists " + table_str, \
+                         "create table if not exists " + table_str + schema_str):
+            sys.stderr.write("Exception while reseting opsconfig authority table %s %s" % (table_str, schema_str))
 
         self.db_lock.release()
 
-    def init_con(self):
-        if self.database_type == "local":
-            if self.database_program == "postgres":
-                [database_, username_, password_, host_, port_] = \
-                    self.conf_loader.psql_local(self.config_path)
-            elif self.database_program == "mysql":
-                [database_, username_, password_, host_, port_] = \
-                    self.conf_loader.mysql_local(self.config_path)
-            else:
-                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
-                sys.exit(1)
-        elif self.database_type == "collector":
-            if self.database_program == "postgres":
-                [database_, username_, password_, host_, port_] = \
-                    self.conf_loader.psql_collector(self.config_path)
-            elif self.database_program == "mysql":
-                [database_, username_, password_, host_, port_] = \
-                    self.conf_loader.mysql_collector(self.config_path)
-            else:
-                sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
-                sys.exit(1)
-        else:
-            sys.stderr.write("No collector or local database selected.  Exiting\n")
-            sys.exit(1)
-            
+    def init_dbmanager(self):
+        """
+        Method to initialize the Database Manager based on the settings from the configuration file.
+        :return: The correct instance of a concrete class inheriting from DBManager
+        :note: This method will cause the program to exit if the specified DB engine is not recognized.
+        """
+        [database_, username_, password_, host_, port_, poolsize_] = self.conf_loader.get_db_parameters(self.config_path, \
+                                                                                             self.database_program, \
+                                                                                             self.database_type)
+
         if self.database_program == "postgres":
-            return self.init_psql_conn(database_, username_, password_, host_, port_)
+            return PostgreSQLDBManager(database_, username_, password_, host_, port_, poolsize_)
         elif self.database_program == "mysql":
-            return self.init_mysql_conn(database_, username_, password_, host_, port_)
+            return MySQLDBManager(database_, username_, password_, host_, port_, poolsize_)
         else:
             sys.stderr.write("%s is not a valid database program\n" % self.database_program)
             sys.exit(1)
-
-    def init_psql_conn(self, dbnm, usernm, pw, hostnm, prt):
-
-        import psycopg2
-        try:
-            con = psycopg2.connect(database=dbnm, user=usernm, password=pw, host=hostnm, port=prt)
-        except Exception, e:
-            sys.stderr.write("%s \nCannot open a postgresql connection to database %s. \n Exiting.\n" % (e, dbnm))
-            sys.exit(1)
-
-        return con
-
-    def init_mysql_conn(self, dbnm, usernm, pw, hostnm, prt):
-
-        import MySQLdb as mysqldb
-        try:
-
-            con = mysqldb.connect(db=dbnm, user=usernm, passwd=pw, host=hostnm, port=int(prt))
-        except Exception, e:
-            sys.stderr.write("%s \nCannot open a mysql connection to database %s. \n Exiting.\n" % (e, dbnm))
-            sys.exit(1)
-
-        return con
 
     def create_schema_dict(self, data_schema, info_schema):
         schema_dict = {}
@@ -226,12 +244,12 @@ class TableManager:
             # last of list is units
             # 2nd of tuple is a string of what unit type is (i.e., percent)
             if self.database_type == "local":
-                schema_dict[ds_k] = data_schema[ds_k][:-1] 
+                schema_dict[ds_k] = data_schema[ds_k][:-1]
             elif self.database_type == "collector":
                 l = data_schema[ds_k][:-1]
                 l.insert(0, ["aggregate_id", "varchar"])
                 schema_dict[ds_k] = l
-            schema_dict["units"][ds_k] = data_schema[ds_k][-1][1] 
+            schema_dict["units"][ds_k] = data_schema[ds_k][-1][1]
 
         for is_k in info_schema.keys():
             schema_dict[is_k] = info_schema[is_k]
@@ -241,65 +259,39 @@ class TableManager:
     def purge_old_tsdata(self, table_name, delete_older_than_ts):
         self.db_lock.acquire()
 
-        try: 
-            cur = self.con.cursor()            
-            del_str = "delete from " + table_name + " where ts < " + str(delete_older_than_ts) + ";";
-            if self.debug:
-                print del_str
-            cur.execute(del_str);
-            self.con.commit() 
-            cur.close()
-        except Exception, e:
+        del_str = "delete from " + table_name + " where ts < " + str(delete_older_than_ts)
+        if self.debug:
+            print del_str
+        if not self.execute_sql(del_str):
             sys.stderr.write("Trouble deleting data to %s.\n" % table_name)
             sys.stderr.write("delete_older_than_ts %s\n" % delete_older_than_ts)
-            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
-   
+
     # inserts done here to handle cursor write locking
     def insert_stmt(self, table_name, val_str):
 
         self.db_lock.acquire()
-
-        try:
-            cur = self.con.cursor()            
-            ins_str = "insert into " + table_name + " values " + val_str + ";";
-            if self.debug:
-                print ins_str
-            cur.execute(ins_str);
-            self.con.commit() 
-            cur.close()
-        except Exception, e:
+        ins_str = "insert into " + table_name + " values " + val_str
+        if self.debug:
+            print ins_str
+        if not self.execute_sql(ins_str):
             sys.stderr.write("Trouble inserting data to %s.\n" % table_name)
             sys.stderr.write("val str %s\n" % val_str)
-            sys.stderr.write("%s\n" % e)
-
         self.db_lock.release()
 
     # deletes done here to handle cursor write locking
     def delete_stmt(self, table_name, obj_id):
 
         self.db_lock.acquire()
-
-        try:
-            cur = self.con.cursor()            
-            del_str = "delete from " + table_name + " where id = '" + obj_id + "';";
-            if self.debug:
-                print del_str
-            cur.execute(del_str);
-            self.con.commit() 
-            cur.close()
-        except Exception, e:
+        del_str = "delete from " + table_name + " where id = '" + obj_id + "'"
+        if self.debug:
+            print del_str
+        if not self.execute_sql(del_str):
             sys.stderr.write("Trouble deleting %s as id from %s.\n" % (obj_id, table_name))
-            sys.stderr.write("%s\n" % e)
 
         self.db_lock.release()
 
-    def close_con(self):
-        try:
-            self.con.close()
-        except Exception, e:
-            sys.stderr.write("%s\nCannot close connection to database.\n" % e)
 
     '''
     Not allowed in a transaction block, connection implies a database 
@@ -335,14 +327,9 @@ class TableManager:
     def table_exists_mysql(self, table_str):
         exists = False
         self.db_lock.acquire()
-        try:
-            cur = self.con.cursor()
-            cur.execute("show tables like '" + table_str + "'")
-            if cur.fetchone():
-                exists = True
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        q_res = self.query("show tables like '" + table_str + "'")
+        if q_res is not None and len(q_res) > 0:
+            exists = True
         self.db_lock.release()
 
         return exists
@@ -350,17 +337,21 @@ class TableManager:
     def table_exists_psql(self, table_str):
         exists = False
         self.db_lock.acquire()
-        try:
-            cur = self.con.cursor()
-
-            cur.execute("select exists(select relname from pg_class where relname='" + table_str + "')")
-            exists = cur.fetchone()[0]
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
+        q_res = self.query("select exists(select relname from pg_class where relname='" + table_str + "')")
+        if q_res is not None and len(q_res) > 0 and len(q_res[0]) > 0:
+            exists = q_res[0][0]
         self.db_lock.release()
 
         return exists
+
+
+    def get_column_name(self, column):
+        """
+        Method to return the column name properly quoted, or not for the DB engine currently used.
+        :param column: the name of the column
+        :return: the column string to be inserted into a SQL statement 
+        """
+        return self.dbmanager.get_column_name(column)
 
 
     def get_col_names(self, table_str):
@@ -371,17 +362,33 @@ class TableManager:
 
 
     def get_col_names_psql(self, table_str):
-
+        # using cursor description not cursor.fetchall(), so have to kinda duplicate the query() code here...
         self.db_lock.acquire()
+        err = True
+        con = self.dbmanager.get_connection()
+        cur = con.cursor()
         col_names = []
         try:
-            cur = self.con.cursor()
             cur.execute("select * from " + table_str + " LIMIT 0")
-            col_names = [desc[0] for desc in cur.description]
+            err = False
+        except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
             cur.close()
+            self.dbmanager.return_connection(con)
+            con = self.dbmanager.get_connection()
+            cur = con.cursor()
+            try:
+                cur.execute("select * from " + table_str + " LIMIT 0")
+                err = False
+            except Exception, e:
+                sys.stderr.write("%s\n" % e)
         except Exception, e:
             sys.stderr.write("%s\n" % e)
 
+        if not err:
+            col_names = [desc[0] for desc in cur.description]
+        cur.close()
+
+        self.dbmanager.return_connection(con)
         self.db_lock.release()
         return col_names
 
@@ -389,10 +396,12 @@ class TableManager:
     def get_col_names_mysql(self, table_str):
 
         self.db_lock.acquire()
+        con = self.dbmanager.get_connection()
         col_names = []
-        
+
         # todo fill in
 
+        self.dbmanager.return_connection(con)
         self.db_lock.release()
         return col_names
 
@@ -414,27 +423,18 @@ class TableManager:
     def establish_table(self, table_str):
 
         schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
-        
+
         if self.table_exists(table_str):
             if self.debug:
-                print "INFO: table " + table_str + " already exists with schema:"
+                print "INFO: table " + table_str + " already exists with schema: "
                 print "Current schema_str " + schema_str
                 print "Skipping creation of " + table_str
-            
+
         else:
             self.db_lock.acquire()
-        
-            try:
-                cur = self.con.cursor()
-                print "create table " + table_str + schema_str
-                cur.execute("create table " + table_str + schema_str)
-                self.con.commit()
-
-                cur.close()
-            except Exception, e:
-                sys.stderr.write("%s\n" % e)
+            print "create table " + table_str + schema_str
+            if not self.execute_sql("create table " + table_str + schema_str):
                 sys.stderr.write("Exception while creating table %s %s" % (table_str, schema_str))
-            
             self.db_lock.release()
 
 
@@ -445,41 +445,29 @@ class TableManager:
 
     def drop_table(self, table_str):
 
-        self.db_lock.acquire()        
-
-        try:
-            cur = self.con.cursor() 
+        self.db_lock.acquire()
+        if self.debug:
+            print "drop table if exists " + table_str
+        if self.execute_sql("drop table if exists " + table_str):
             if self.debug:
-                print "drop table if exists " + table_str
-            cur.execute("drop table if exists " + table_str)
-            self.con.commit()
-            if self.debug:
-                print "Dropping table", table_str
-            cur.close()
-        except Exception, e:
-            sys.stderr.write("%s\n%s" % (e, table_str))
+                print "Dropped table", table_str
+        else:
+            sys.stderr.write("Error while dropping table %s" % (table_str))
 
         self.db_lock.release()
 
 
     def get_all_ids_from_table(self, table_str):
-        cur = self.con.cursor()
+
         res = [];
         self.db_lock.acquire()
-        try:
-            cur.execute("select distinct id from " + table_str + ";") 
-            q_res = cur.fetchall()
-            if self.debug:
-                print q_res
-            self.con.commit()
+        q_res = self.query("select distinct id from " + table_str)
+        if self.debug:
+            print q_res
+        if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
 
-        except Exception, e:
-            sys.stderr.write("%s\n" % e)
-            self.con.commit()
-
-        cur.close()
         self.db_lock.release()
 
         return res
@@ -490,13 +478,13 @@ class TableManager:
         schema_str = "("
         if self.database_program == "postgres":
             for col_i in range(len(table_schema_dict)):
-                schema_str += "\"" + table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + "," 
+                schema_str += "\"" + table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + ","
         else:
             for col_i in range(len(table_schema_dict)):
                 if table_schema_dict[col_i][1] == "varchar":
-                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(512)," 
+                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(512),"
                 else:
-                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "," 
+                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + ","
 
         # remove , and add )
         return schema_str[:-1] + ")"
@@ -508,16 +496,25 @@ class TableManager:
         :return: a tuple containing the tuples of all the records selected, themselves in the form of tuples.
                  None if there was an issue executing the query.
         """
-        cur = self.con.cursor()
+#         if self.database_program == "postgres":
+#             import psycopg2 as dbengine
+#         elif self.database_program == "mysql":
+#             import MySQLdb as dbengine
+
+        con = self.dbmanager.get_connection()
+        cur = con.cursor()
         q_res = None
         try:
             cur.execute(querystr)
             if cur.rowcount > 0:
                 q_res = cur.fetchall()
-        except (AttributeError, MySQLdb.OperationalError):
+        except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
             print "Trying to reconnect"
-            self.con = self.init_con()
-            cur = self.con.cursor()
+            con.rollback()
+            cur.close()
+            self.dbmanager.return_connection(con)
+            con = self.dbmanager.get_connection()
+            cur = con.cursor()
             try:
                 cur.execute(querystr)
                 if cur.rowcount > 0:
@@ -531,13 +528,80 @@ class TableManager:
             print "Error while executing the following query: " + querystr
             print e
         finally:
-            self.con.commit()
+            con.commit()
 
         cur.close()
+        self.dbmanager.return_connection(con)
 
         return q_res
 
+    def execute_sql(self, sqlstatement):
+        """
+        Execute one or more SQL statements and returns True if the statement(s) executed correctly.
+        :param querystr:  the statement or statements to be executed. No results are expected.
+        :return: True if all the statement executed correctly, False if there was an issue. 
+        As soon as an issue is encountered, no more statements are executed and a DB rollback is issued.
+        """
+#         if self.database_program == "postgres":
+#             import psycopg2 as dbengine
+#         elif self.database_program == "mysql":
+#             import MySQLdb as dbengine
 
+        con = self.dbmanager.get_connection()
+        cur = con.cursor()
+        res = False
+
+        if isinstance(sqlstatement, basestring):
+            statements = (sqlstatement,)
+        elif isinstance(sqlstatement, list):
+            statements = sqlstatement
+        elif isinstance(sqlstatement, tuple):
+            statements = sqlstatement
+        else:
+            sys.stderr.write("Unexpected type for sqlstatement argument %s.\n Exiting.\n" % (sqlstatement,))
+            sys.exit(1)
+
+
+        tryNumber = 1
+        fatalErr = False
+        while True:
+            err = False
+            for statement in statements:
+                err = True
+                try:
+                    cur.execute(statement)
+                    err = False
+                except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
+                    print "Trying to reconnect"
+                    # since we're dealing with mutilple statements, in case of a disconnection, we need to reissue them all.
+                    con.rollback()
+                    cur.close()
+                    self.dbmanager.return_connection(con)
+                    con = self.dbmanager.get_connection()
+                    cur = con.cursor()
+                    tryNumber += 1
+                except Exception, e:
+                    # TODO replace with logging statement
+                    print "Error while executing the following SQL statement: " + statement
+                    print e
+                    con.rollback()
+                    # we don't want to retry after this
+                    fatalErr = True
+                if err:
+                    break
+            else:  # for loop else
+                # so we had no issue.
+                con.commit()
+                res = True
+                break;
+            if fatalErr or (tryNumber > 2):
+                res = False
+                break
+
+        cur.close()
+        self.dbmanager.return_connection(con)
+
+        return res
 
 # used only if arguments passed to program
 # gets each argument as a table name
@@ -548,7 +612,7 @@ def arg_parser(argv, dict_keys):
     table_str_arr = []
 
     for arg in argv[1:]:
-        
+
         try:
             table_str = str(arg)
         except ValueError:
@@ -563,23 +627,10 @@ def arg_parser(argv, dict_keys):
 
     return table_str_arr
 
-def test_mysql(con):
-    
-    cur = con.cursor()
-    cur.execute("select version()")
-    ver = cur.fetchone()
-    print ver, "is the db version"
-
-
-    cur.execute("drop table if exists ops_swap_free")
-    con.commit()
-    cur.execute("create table ops_swap_free(id varchar(128),ts int8,v float4)")
-    con.commit()
-
 
 def main():
     print "no unit test"
-  
+
 
 if __name__ == "__main__":
 
