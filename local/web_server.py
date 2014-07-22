@@ -37,11 +37,14 @@ class LocalDatastoreServer:
 
         import rest_call_handler
         import table_manager
+        import logger
+
+        logger.get_logger(self.config_path).critical("Starting ops monitoring")
 
         self.db_name = "local"
 
         # uses postgres by default
-        self.tm = table_manager.TableManager(self.db_name, self.config_path, self.debug)
+        self.tm = table_manager.TableManager(self.db_name, self.config_path)
         self.tm.poll_config_store()
 
         self.app = Flask(__name__)
@@ -108,6 +111,10 @@ class LocalDatastoreServer:
             filters = request.args.get('q', None)
             return rest_call_handler.handle_ts_data_query(self.tm, filters)
         
+    def __del__(self):
+        import logger
+        logger.get_logger(self.config_path).critical("Stopping ops monitoring")
+
 if __name__ == '__main__':
 
     server = LocalDatastoreServer('..')
