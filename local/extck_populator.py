@@ -23,12 +23,12 @@
 #----------------------------------------------------------------------
 import sys
 import time
-import json
-import ConfigParser
+# import json
+# import ConfigParser
 import subprocess
 from string import digits
 
-from pprint import pprint as pprint
+# from pprint import pprint as pprint
 
 common_path = "../common/"
 # input file with short-names and Urls aggregates 
@@ -70,13 +70,13 @@ def db_insert(tbl_mgr, table_str, row_arr):
     tbl_mgr.insert_stmt(table_str, val_str)
     
 def getShortName():
-    i=1
+#     i=1
     for line in inputFile: # Read in line
         if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
             cols = line.strip().split('=')
             aggShortName=cols[0] 
             if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
-               continue
+                continue
             aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
             cols2=cols1[1].strip().split('/')
@@ -92,7 +92,7 @@ def getShortName():
                 shortName[fqdn]= [aggShortName,amtype]
             else:
                 if shortName.has_key(fqdn): # If we have the shortName move to next line
-                   continue 
+                    continue
                 else:
                     shortName[fqdn]=[aggShortName,amtype]
     return shortName
@@ -103,18 +103,18 @@ def formatShortName(shortName):
     oldFormat = shortName.strip().split('-')
     suffix=['ig','eg', 'of', 'pg']  
     if len(oldFormat)==1: # For cases like "ion"
-       return shortName
-    for id in suffix:
-        if oldFormat[0]==id and len(oldFormat) == 2: # For cases like gpo-ig
+        return shortName
+    for sid in suffix:
+        if oldFormat[0] == sid and len(oldFormat) == 2:  # For cases like gpo-ig
             newFormat= oldFormat[1]+"-"+id
             break 
-        elif oldFormat[1]==id and len(oldFormat) == 2: # For cases like ig-gpo
+        elif oldFormat[1] == sid and len(oldFormat) == 2:  # For cases like ig-gpo
             newFormat=shortName
             break
-        elif oldFormat[0]==id and len(oldFormat) == 3: # For cases like ig-of-gpo
+        elif oldFormat[0] == sid and len(oldFormat) == 3:  # For cases like ig-of-gpo
             newFormat= oldFormat[2] + '-' + id + '-' + oldFormat[1]
             break 
-        elif oldFormat[1]==id and len(oldFormat) == 3: # For cases like gpo-ig-of
+        elif oldFormat[1] == sid and len(oldFormat) == 3:  # For cases like gpo-ig-of
             newFormat= shortName
             break
 
@@ -125,10 +125,10 @@ def formatShortName(shortName):
 
 def is_empty(any_structure): # Determine if "any_structure" is empty
     if any_structure:
-       # print('Structure is not empty.')
+        # print('Structure is not empty.')
         return False
     else:
-       # print('Structure is empty.')
+        # print('Structure is empty.')
         return True
 def getAMState(output):
     cols=output.strip().split(':')
@@ -145,8 +145,8 @@ def main():
    
     db_name = "local"
     config_path = "../config/"
-    debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
+#     debug = False
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr,"")
 
@@ -155,7 +155,7 @@ def main():
     for fqdn in shortName:
         amtype = shortName[fqdn][1]
         p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
-        output, err = p.communicate()
+        output, _ = p.communicate()
         state=getAMState(output)
         shortName[fqdn].append(state)
         shortName[fqdn].append(str(int(time.time()*1000000)))
