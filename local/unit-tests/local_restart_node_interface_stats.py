@@ -84,8 +84,8 @@ def main(argv):
 
     db_type = "local"
     config_path = "../../config/"
-    debug = False
-    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+#     debug = False
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)

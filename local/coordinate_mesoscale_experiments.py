@@ -23,7 +23,6 @@
 #----------------------------------------------------------------------
 import sys
 import os
-import getopt
 import time
 sys.path.append("../common/")
 import table_manager
@@ -31,9 +30,9 @@ import opsconfig_loader
 
 db_type = "local"
 config_path = "../config/"
-debug = False
+# debug = False
 
-tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+tbl_mgr = table_manager.TableManager(db_type, config_path)
 
 tbl_mgr.poll_config_store()
 
