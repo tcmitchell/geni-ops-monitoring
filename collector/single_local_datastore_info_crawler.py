@@ -31,6 +31,7 @@ common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
 import opsconfig_loader
+import logger
 
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
 # the am urn
@@ -79,8 +80,9 @@ def parse_args(argv):
 
 class SingleLocalDatastoreInfoCrawler:
 
-    def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug):
+    def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path):
         self.tbl_mgr = tbl_mgr
+        self.logger = logger.get_logger(config_path)
         self.tbl_mgr.establish_all_tables()
 
         if info_url[-1] == '/':
@@ -99,26 +101,26 @@ class SingleLocalDatastoreInfoCrawler:
     # Updates head aggregate information
     def refresh_aggregate_info(self):
 
-        self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path)
+        self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path, self.logger)
         if self.am_dict:
             self.tbl_mgr.establish_table("ops_aggregate")
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
                 am_info_list.append(self.am_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_aggregate", self.am_dict["id"], am_info_list, self.debug)
+            info_update(self.tbl_mgr, "ops_aggregate", self.am_dict["id"], am_info_list, self.debug, self.logger)
 
     # Updates externalcheck information
     def refresh_externalcheck_info(self):
 
-        self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path)
+        self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path, self.logger)
         if self.extck_dict:
             self.tbl_mgr.establish_table("ops_externalcheck")
             schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
             extck_info_list = []
             for key in schema:
                 extck_info_list.append(self.extck_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_externalcheck", self.extck_dict["id"], extck_info_list, self.debug)
+            info_update(self.tbl_mgr, "ops_externalcheck", self.extck_dict["id"], extck_info_list, self.debug, self.logger)
 
     # Updates all the monitored aggregates
     def refresh_all_monitoredaggregates_info(self):
@@ -129,7 +131,7 @@ class SingleLocalDatastoreInfoCrawler:
 #             mon_aggs = []
             for mon_agg in self.extck_dict["monitored_aggregates"]:
                 mon_agg_info = [mon_agg["id"], self.extck_dict["id"], mon_agg["href"]]
-                info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg["id"], mon_agg_info, self.debug)
+                info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg["id"], mon_agg_info, self.debug, self.logger)
 
     # Updates all nodes information
     def refresh_all_links_info(self):
@@ -139,14 +141,14 @@ class SingleLocalDatastoreInfoCrawler:
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
-                    res_dict = handle_request(res_i["href"], self.cert_path)
+                    res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
                     if res_dict:
                         if res_dict["$schema"].endswith("link#"):  # if a link
                             # get each attribute out of response into list
                             link_info_list = self.get_link_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug, self.logger)
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
+                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug, self.logger)
 
 
     def refresh_all_slivers_info(self):
@@ -156,13 +158,13 @@ class SingleLocalDatastoreInfoCrawler:
             # Need to check because "slivers" is optional
             if "slivers" in self.am_dict:
                 for slv_i in self.am_dict["slivers"]:
-                    slv_dict = handle_request(slv_i["href"], self.cert_path)
+                    slv_dict = handle_request(slv_i["href"], self.cert_path, self.logger)
                     if slv_dict:
                         # get each attribute out of response into list
                         slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug)
+                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug, self.logger)
                         agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug)
+                        info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug, self.logger)
 
 
     def refresh_all_nodes_info(self):
@@ -172,14 +174,14 @@ class SingleLocalDatastoreInfoCrawler:
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
-                    res_dict = handle_request(res_i["href"], self.cert_path)
+                    res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
                     if res_dict:
                         if res_dict["$schema"].endswith("node#"):  # if a node
                             # get each attribute out of response into list
                             node_info_list = self.get_node_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug, self.logger)
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug)
+                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug, self.logger)
 
 
     def refresh_all_interfacevlans_info(self):
@@ -187,16 +189,16 @@ class SingleLocalDatastoreInfoCrawler:
         link_urls = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         for link_url in link_urls:
-            link_dict = handle_request(link_url, self.cert_path)
+            link_dict = handle_request(link_url, self.cert_path, self.logger)
             if link_dict:
                 if "endpoints" in link_dict:
                     for endpt in link_dict["endpoints"]:
-                        ifacevlan_dict = handle_request(endpt["href"], self.cert_path)
+                        ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
                         if ifacevlan_dict:
                             ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug, self.logger)
                             link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
-                            info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug, self.logger)
 
 
 
@@ -208,16 +210,16 @@ class SingleLocalDatastoreInfoCrawler:
         node_urls = self.get_all_nodes_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interface"]
         for node_url in node_urls:
-            node_dict = handle_request(node_url, self.cert_path)
+            node_dict = handle_request(node_url, self.cert_path, self.logger)
             if node_dict:
                 if "ports" in node_dict:
                     for port in node_dict["ports"]:
-                        interface_dict = handle_request(port["href"], self.cert_path)
+                        interface_dict = handle_request(port["href"], self.cert_path, self.logger)
                         if interface_dict:
                             interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug, self.logger)
                             node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                            info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug)
+                            info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug, self.logger)
 
     def get_default_attribute_for_type(self, vartype):
         val = "";
@@ -456,15 +458,15 @@ class SingleLocalDatastoreInfoCrawler:
         return meas_ref
 
 
-def handle_request(url, cert_path):
+def handle_request(url, cert_path, logger):
 
     resp = None
 
     try:
         resp = requests.get(url, verify=False, cert=cert_path)
     except requests.exceptions.RequestException, e:
-        print "No response from local datastore at: " + url
-        print e
+        logger.warning("No response from local datastore at: " + url)
+        logger.warning(e)
 
     if resp:
         if (resp.status_code == requests.codes.ok):
@@ -472,18 +474,18 @@ def handle_request(url, cert_path):
                 json_dict = json.loads(resp.content)
                 return json_dict
             except ValueError, e:
-                print "Could not load into JSON with response from " + url
-                print "response = \n" + resp.content
-                print e
+                logger.warning("Could not load into JSON with response from " + url)
+                logger.warning("response = \n" + resp.content)
+                logger.warning(e)
         else:
-            print "Response from " + url + " is invalid, code = " + str(resp.status_code)
+            logger.warning("Response from " + url + " is invalid, code = " + str(resp.status_code))
 
     return None
 
 
-def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
+def info_update(tbl_mgr, table_str, obj_id, row_arr, debug, logger):
     if debug:
-        print "<print only> delete " + obj_id + " from " + table_str
+        logger.info("<print only> delete " + obj_id + " from " + table_str)
     else:
         tbl_mgr.delete_stmt(table_str, obj_id)
 
@@ -496,7 +498,7 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug):
     val_str = val_str[:-2] + ")"  # remove last 2 of 3: ', ' add ')'
 
     if debug:
-        print "<print only> insert " + table_str + " values: " + val_str
+        logger.info("<print only> insert " + table_str + " values: " + val_str)
     else:
         tbl_mgr.insert_stmt(table_str, val_str)
 
@@ -510,11 +512,14 @@ def main(argv):
 
     db_type = "collector"
     config_path = "../config/"
+    # If in debug mode, make sure to overwrite the logging configuration to print out what we want,
+    if debug:
+        logger.configure_logger_for_debug_info(config_path)
 
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
-    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug)
+    crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path)
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()

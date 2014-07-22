@@ -27,11 +27,12 @@ import json
 import sys
 import getopt
 import requests
-from pprint import pprint as pprint
+import pprint
 
 sys.path.append("../common/")
 import table_manager
 import opsconfig_loader
+import logger
 
 def usage():
     sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -e <extckid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>')
@@ -73,8 +74,9 @@ def parse_args(argv):
 
 class SingleLocalDatastoreObjectTypeFetcher:
 
-    def __init__(self, tbl_mgr, aggregate_id, extck_id, obj_type, event_types, cert_path, debug):
+    def __init__(self, tbl_mgr, aggregate_id, extck_id, obj_type, event_types, cert_path, debug, config_path):
 
+        self.logger = logger.get_logger(config_path)
         self.tbl_mgr = tbl_mgr
 
         # The local datastore this thread queries
@@ -122,15 +124,14 @@ class SingleLocalDatastoreObjectTypeFetcher:
             try:
                 data = json.loads(json_text)
             except ValueError, e:
-                sys.stderr.write("Unable to load response in json %s\n" % e)
-                print "response = \n" + json_text
+                self.logger.warning("Unable to load response in json %s\n" % e)
+                self.logger.warning("response = \n" + json_text)
 
             if data is not None:
                 onlyErr = False
                 for result in data:
-                    if self.debug:
-                        print "Result received from %s about:" % self.aggregate_id
-                        pprint(result["id"])
+                    self.logger.debug("Result received from %s about:" % self.aggregate_id)
+                    self.logger.debug(pprint.pformat(result["id"]))
 
                     event_type = result["eventType"]
                     if event_type.startswith("ops_monitoring:"):
@@ -150,7 +151,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
                         tsdata = result["tsdata"]
                         if len(tsdata) > 0:
-                            tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug)
+                            tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug, self.logger)
 
         if onlyErr:
             return 1
@@ -252,24 +253,22 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         contents = []
         for url in urls:
-            if self.debug:
-                print ""
-                print url
-                print "URL length = " + str(len(url))
+            self.logger.debug(url)
+            self.logger.debug("URL length = " + str(len(url)))
 
             resp = None
             try:
                 resp = requests.get(url, verify=False, cert=self.cert_path)
             except requests.exceptions.RequestException, e:
-                print "No response from local datastore at: " + url
-                print e
+                self.logger.warning("No response from local datastore at: " + url)
+                self.logger.warning(e)
 
             if resp is not None:
                 if (resp.status_code == requests.codes.ok):
                     self.time_of_last_update = req_time
                     contents.append(resp.content)
                 else:
-                    print "Response from " + url + " is invalid, code = " + str(resp.status_code)
+                    self.logger.warning("Response from " + url + " is invalid, code = " + str(resp.status_code))
 
         return contents
 
@@ -281,11 +280,16 @@ class SingleLocalDatastoreObjectTypeFetcher:
         elif self.extck_id != "":
             datastore_id = self.extck_id
 
+        self.logger.debug("Getting latest timestamp in " + table_str + " for aggregate " + datastore_id)
         res = 0
         q_res = tbl_mgr.query("select max(ts) from " + table_str + " where aggregate_id = '" + datastore_id + "'")
         if q_res is not None:
             res = q_res[0][0]  # gets first of single tuple
 
+        if res is None:
+            res = 0
+        self.logger.debug("latest timestamp in " + table_str + " for aggregate " + datastore_id
+                          + " is: " + str(res) + " (" + time.asctime(time.gmtime(res / 1000000)) + ")")
         return res
 
 
@@ -356,7 +360,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
 
 # Builds the multi-row insert value string
-def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
+def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug, logger):
     vals_str = ""
     for tsdata_i in tsdata:
         vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
@@ -364,7 +368,7 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug):
     vals_str = vals_str[:-1]  # remove last ','
 
     if debug:
-        print "<print only> insert " + table_str + " values: " + vals_str
+        logger.info("<print only> insert " + table_str + " values: " + vals_str)
     else:
         tbl_mgr.insert_stmt(table_str, vals_str)
 
@@ -377,8 +381,11 @@ def main(argv):
 
     db_type = "collector"
     config_path = "../config/"
+    # If in debug mode, make sure to overwrite the logging configuration to print out what we want,
+    if debug:
+        logger.configure_logger_for_debug_info(config_path)
 
-    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
@@ -411,11 +418,11 @@ def main(argv):
         sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
 
-    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, extck_id, object_type, event_types, cert_path, debug)
+    fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, extck_id, object_type, event_types, cert_path, debug, config_path)
 
     ret_val = fetcher.fetch_and_insert()
     if ret_val != 0:
-        print "fetch_and_insert() failed"
+        logger.get_logger(config_path).warning("fetch_and_insert() failed")
 
 
 if __name__ == "__main__":
