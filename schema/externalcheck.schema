@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "$schema": "http://json-schema.org/draft-03/schema#",
   "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#",
   "description": "GENI monitoring external (to an aggregate) datastore",
   "name": "externalcheck",
