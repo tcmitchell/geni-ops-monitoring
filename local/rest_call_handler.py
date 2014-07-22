@@ -23,17 +23,19 @@
 #----------------------------------------------------------------------
 
 import json
-
+import logger
 # ## Main query handler functions
 
 # Main handle for data queries
 def handle_ts_data_query(tm, filters):
 
+    opslog = logger.get_logger()
     schema_dict = tm.schema_dict
     try:
         q_dict = eval(filters)  # try to make a dictionary
 
     except Exception, e:
+        opslog.warning(filters + "failed to evaluate as dictionary\n" + str(e))
         return "query: " + filters + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"
 
     # check for necessary keys
@@ -74,12 +76,14 @@ def handle_ts_data_query(tm, filters):
                     resp_i["tsdata"] = ts_arr
                     resp_arr.append(resp_i)
         else:
-            print "event ", event_type, "not recognized", "missing namespace 'ops_monitoring:' ?"
+            opslog.warning("event ", event_type, "not recognized", "missing namespace 'ops_monitoring:' ?")
+
     return json.dumps(resp_arr)
 
 
 # Main handle for node queries
 def handle_node_info_query(tm, node_id):
+    opslog = logger.get_logger()
     table_str = "ops_node"
     node_schema = tm.schema_dict[table_str]
 
@@ -95,11 +99,13 @@ def handle_node_info_query(tm, node_id):
         return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs))
 
     else:
-        return "resource not found"
+        opslog.debug("node not found: " + node_id)
+        return "node not found"
 
 
 # Main handle interface queries
 def handle_interface_info_query(tm, iface_id):
+    opslog = logger.get_logger()
     table_str = "ops_interface"
     iface_schema = tm.schema_dict[table_str]
 
@@ -108,11 +114,13 @@ def handle_interface_info_query(tm, iface_id):
     if iface_info is not None:
         return json.dumps(get_interface_info_dict(iface_schema, iface_info))
     else:
+        opslog.debug("interface not found: " + iface_id)
         return "interface not found"
 
 
 # Main handle interface queries
 def handle_interfacevlan_info_query(tm, ifacevlan_id):
+    opslog = logger.get_logger()
     table_str = "ops_interfacevlan"
     iface_schema = tm.schema_dict[table_str]
 
@@ -121,11 +129,13 @@ def handle_interfacevlan_info_query(tm, ifacevlan_id):
     if ifacevlan_info is not None:
         return json.dumps(get_interfacevlan_info_dict(iface_schema, ifacevlan_info))
     else:
+        opslog.debug("interfacevlan not found: " + ifacevlan_id)
         return "interfacevlan not found"
 
 
 # Main handle for sliver queries
 def handle_sliver_info_query(tm, sliver_id):
+    opslog = logger.get_logger()
     table_str = "ops_sliver"
     sliver_schema = tm.schema_dict[table_str]
 
@@ -149,11 +159,13 @@ def handle_sliver_info_query(tm, sliver_id):
         return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
 
     else:
+        opslog.debug("sliver not found: " + sliver_id)
         return "sliver not found"
 
 
 # Main handle aggregate for info queries
 def handle_aggregate_info_query(tm, agg_id):
+    opslog = logger.get_logger()
     table_str = "ops_aggregate"
     agg_schema = tm.schema_dict[table_str]
 
@@ -181,10 +193,12 @@ def handle_aggregate_info_query(tm, agg_id):
         return json.dumps(get_aggregate_info_dict(agg_schema, agg_info, res_refs, slv_refs))
 
     else:
+        opslog.debug("aggregate not found: " + agg_id)
         return "aggregate not found"
 
 
 def handle_externalcheck_info_query(tm, extck_id):
+    opslog = logger.get_logger()
     table_str = "ops_externalcheck"
     extck_schema = tm.schema_dict[table_str]
 
@@ -205,11 +219,13 @@ def handle_externalcheck_info_query(tm, extck_id):
         return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs, monitored_aggregates))
 
     else:
+        opslog.debug("external check store not found: " + extck_id)
         return "external check store not found"
 
 
 # Main handle aggregate for info queries
 def handle_authority_info_query(tm, auth_id):
+    opslog = logger.get_logger()
     table_str = "ops_authority"
     auth_schema = tm.schema_dict[table_str]
 
@@ -230,11 +246,13 @@ def handle_authority_info_query(tm, auth_id):
         return json.dumps(get_authority_info_dict(auth_schema, auth_info, user_refs, slice_refs))
 
     else:
+        opslog.debug("authority not found: " + auth_id)
         return "authority not found"
 
 
 # Main handle slice info queries
 def handle_slice_info_query(tm, slice_id):
+    opslog = logger.get_logger()
     table_str = "ops_slice"
     slice_schema = tm.schema_dict[table_str]
 
@@ -251,11 +269,13 @@ def handle_slice_info_query(tm, slice_id):
         return json.dumps(get_slice_info_dict(slice_schema, slice_info, user_refs))
 
     else:
+        opslog.debug("slice not found: " + slice_id)
         return "slice not found"
 
 
 # Main handle user info queries
 def handle_user_info_query(tm, user_id):
+    opslog = logger.get_logger()
     table_str = "ops_user"
     user_schema = tm.schema_dict[table_str]
 
@@ -263,11 +283,13 @@ def handle_user_info_query(tm, user_id):
     if user_info is not None:
         return json.dumps(get_user_info_dict(user_schema, user_info))
     else:
+        opslog.debug("user not found: " + user_id)
         return "user not found"
 
 
 # Main handle for link info queries
 def handle_link_info_query(tm, link_id):
+    opslog = logger.get_logger()
     table_str = "ops_link"
     link_schema = tm.schema_dict[table_str]
 
@@ -283,11 +305,13 @@ def handle_link_info_query(tm, link_id):
         return json.dumps(get_link_info_dict(link_schema, link_info, endpt_refs))
 
     else:
+        opslog.debug("link not found: " + link_id)
         return "link not found"
 
 
 # Main handle for experiment queries
 def handle_experiment_info_query(tm, exp_id):
+    opslog = logger.get_logger()
     table_str = "ops_experiment"
     exp_schema = tm.schema_dict[table_str]
 
@@ -296,16 +320,18 @@ def handle_experiment_info_query(tm, exp_id):
     if exp_info is not None:
         return json.dumps(get_experiment_info_dict(exp_schema, exp_info))
     else:
+        opslog.debug("experiment not found: " + exp_id)
         return "experiment not found"
 
 
 
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id):
-
+    opslog = logger.get_logger()
     if opsconfig_id == "geni-prod":
         return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
     else:
+        opslog.debug("opsconfig not found: " + opsconfig_id)
         return "opsconfig not found"
 
 
@@ -314,8 +340,9 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
 # Checks the filters for data queies. It needs a filters dictionary
 # with ts, eventType, and obj keys
 def check_data_query_keys(q_dict):
-
+    opslog = logger.get_logger()
     if "filters" not in q_dict:
+        opslog.debug(str(q_dict) + "\n has dictionary error.  It is missing filters key")
         return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing filters key")
         
     missing_keys = []
@@ -327,6 +354,7 @@ def check_data_query_keys(q_dict):
         missing_keys.append("obj")
 
     if len(missing_keys) > 0:
+        opslog.debug(str(q_dict) + "\n has dictionary error. It is missing keys: " + str(missing_keys))
         return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing keys: " + str(missing_keys))
 
     return (True, None)
@@ -766,17 +794,18 @@ def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
 # builds timestamp filter as a where clause for SQL statement
 def build_ts_where_str(ts_dict):
+    opslog = logger.get_logger()
     ts_where_str = ""
     ts_filters = []
 
     if 'gte' not in ts_dict and 'gt' not in ts_dict:
-        print "must past a ts filter for (lt or lte) and (gt or gte)"
-        print "missing gt or gte filter"
+        opslog.warning("must past a ts filter for (lt or lte) and (gt or gte)")
+        opslog.warning("missing gt or gte filter")
         return ts_where_str
 
     if 'lte' not in ts_dict and 'lt' not in ts_dict:
-        print "must past a ts filter for (lt or lte) and (gt or gte)"
-        print "missing lt or lte filter"
+        opslog.warning("must past a ts filter for (lt or lte) and (gt or gte)")
+        opslog.warning("missing lt or lte filter")
         return ts_where_str
 
     try:
@@ -791,12 +820,12 @@ def build_ts_where_str(ts_dict):
             elif ts_k == 'lt':
                 ts_filters.append("ts < " + str(ts_v))
     except Exception, e:
-        print str(e), "ts filters has invalid key or value:"
+        opslog.warning(str(e), "ts filters has invalid key or value:")
     
     try:
         ts_where_str = ts_filters[0] + " and " + ts_filters[1]
     except Exception, e:
-        print str(e), "must past a ts filter for (lt or lte) and (gt or gte)"
+        opslog.warning(str(e), "must past a ts filter for (lt or lte) and (gt or gte)")
 
     return ts_where_str
 

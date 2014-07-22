@@ -23,12 +23,14 @@
 import json
 import ConfigParser
 import requests
+import logger
 
 class OpsconfigLoader:
 
     def __init__(self, config_path):
         self.config_path = config_path
         self.load_from_local_config()
+        self.logger = logger.get_logger(config_path)
 
 
     def load_from_network_config(self):
@@ -42,8 +44,8 @@ class OpsconfigLoader:
             self.config_json= json.loads(resp.content)
 
         except Exception, e:
-            print "Cannot reach the config local datastore at ", self.config_store_url
-            print e
+            self.logger.warning("Cannot reach the config local datastore at ", self.config_store_url)
+            self.logger.warning(e)
             self.load_from_local_config()
 
 

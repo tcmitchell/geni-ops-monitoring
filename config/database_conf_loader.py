@@ -50,7 +50,7 @@ def generic_main(config):
 def main_local(config_path):
     """
     Method to get the type of database from the local datastore configuration file.
-    :param config_path: he path to the ops-monitoring configuration folder.
+    :param config_path: the path to the ops-monitoring configuration folder.
     :return: the type of database from the local datastore configuration file
     """
     config = generic_config_parser(config_path, True)
@@ -59,7 +59,7 @@ def main_local(config_path):
 def main_collector(config_path):
     """
     Method to get the type of database from the collector configuration file
-    :param config_path: he path to the ops-monitoring configuration folder.
+    :param config_path: the path to the ops-monitoring configuration folder.
     :return: the type of database from the collector configuration file
     """
     config = generic_config_parser(config_path, False)
@@ -69,16 +69,18 @@ def main_collector(config_path):
 def main(config_path, dbconfigtype):
     """
     Method to get the DB engine type from the appropriate configuration file.
+    :param config_path: the path to the ops-monitoring configuration folder.
     :param dbconfigtype: the kind of DB configuration. ("local" or "collector" so far)
     :return: the type of database from the corresponding configuration file
     """
     import sys
+    import logger
     if dbconfigtype == "local":
         return main_local(config_path)
     elif dbconfigtype == "collector":
         return main_collector(config_path)
     else:
-        sys.stderr.write("No collector or local database selected.  Exiting\n")
+        logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")
         sys.exit(1)
 
 def generic_db_param(config, dbengine):
@@ -140,13 +142,14 @@ def get_db_parameters(config_path, dbengine, dbconfigtype):
     :param dbconfigtype: the kind of DB configuration. ("local" or "collector" so far)
     """
     import sys
+    import logger
     if dbconfigtype == "local":
         if dbengine == "postgres":
             return psql_local(config_path)
         elif dbengine == "mysql":
             return mysql_local(config_path)
         else:
-            sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+            logger.get_logger(config_path).critical("No postgres or mysql database engine selected.  Exiting\n")
             sys.exit(1)
     elif dbconfigtype == "collector":
         if dbengine == "postgres":
@@ -154,8 +157,8 @@ def get_db_parameters(config_path, dbengine, dbconfigtype):
         elif dbengine == "mysql":
             return mysql_collector(config_path)
         else:
-            sys.stderr.write("No postgres or mysql database engine selected.  Exiting\n")
+            logger.get_logger(config_path).critical("No postgres or mysql database engine selected.  Exiting\n")
             sys.exit(1)
     else:
-        sys.stderr.write("No collector or local database selected.  Exiting\n")
+        logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")
         sys.exit(1)
