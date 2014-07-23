@@ -446,7 +446,7 @@ class TableManager:
         self.logger.debug("drop table if exists " + table_str)
 
         if self.execute_sql("drop table if exists " + table_str):
-            self.logger.info("Dropped table", table_str)
+            self.logger.info("Dropped table" + table_str)
         else:
             self.logger.warning("Error while dropping table %s" % (table_str))
 
