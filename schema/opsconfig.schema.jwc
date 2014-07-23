@@ -4,7 +4,7 @@
   "description": "Operational monitoring data configuration",
   "name": "opsconfig",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
   },

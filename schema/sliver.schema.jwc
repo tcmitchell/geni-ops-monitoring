@@ -4,7 +4,7 @@
   "description": "GENI sliver",
   "name": "Sliver",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },

@@ -4,7 +4,7 @@
   "description": "subinterface representing a tagged VLAN on an interface",
   "name": "port-vlan",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "extends": {
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/port#"
   },
