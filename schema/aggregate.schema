@@ -13,7 +13,7 @@
       "description":
         "Location of measurement data about this aggregate and its resources",
       "type": "string",
-      "required": false
+      "required": true
     },
     "resources": {
       "description": "resources controlled by this aggregate",
@@ -22,10 +22,15 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type":"string"},
-	   "href": {"type":"string"}
-        },
-	"required": ["urn","href"]
+          "urn": {
+	    "type":"string",
+            "required": true
+          },
+          "href": {
+            "type":"string",
+            "required": true
+          }
+	}
       }
     },
     "slivers": {
@@ -34,11 +39,16 @@
       "required": false,
       "items": {
         "type": "object",
-	"properties": {
-	   "urn": {"type":"string"},
-	   "href": {"type":"string"}
-        },
-	"required": ["urn","href"]
+        "properties": {
+          "urn": {
+            "type":"string",
+            "required": true
+          },
+          "href": {
+            "type":"string",
+            "required": true
+          }
+        }
       }
     }
   }

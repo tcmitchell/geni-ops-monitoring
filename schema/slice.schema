@@ -18,10 +18,15 @@
       "description": "GENI slice authority which created this slice",
       "type": "object",
       "properties" : {
-          "urn": {"type":"string"},
-          "href": {"type":"string"}
+        "urn": {
+	  "type":"string",
+          "required": true
+        },
+        "href": {
+          "type":"string",
+          "required": true
+        }
       },
-      "required": ["urn","href"],
       "additionalProperties": false
     },
     "created": {
@@ -41,11 +46,19 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type":"string"},
-	   "role": {"type":"string"},
-	   "href": {"type":"string"}
+          "urn": {
+	    "type":"string",
+            "required": true
+          },
+          "role": {
+	    "type":"string",
+            "required": true
+          },
+          "href": {
+            "type":"string",
+            "required": true
+          }
         },
-	"required": ["urn","href","role"],
 	"additionalProperties": false
       }
     }

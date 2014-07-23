@@ -16,10 +16,15 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type":"string"},
-	   "href": {"type":"string"}
-        },
-	"required": ["urn","href"]
+          "urn": {
+	    "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     },
     "slices": {
@@ -29,10 +34,15 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type":"string"},
-	   "href": {"type":"string"}
-        },
-	"required": ["urn","href"]
+          "urn": {
+	    "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     }
   }

@@ -16,11 +16,19 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type": "string"},
-	   "amtype": {"type": "string"},
-	   "href": {"type": "string"}
-        },
-	"required": ["urn","amtype","href"]
+          "urn": {
+	    "type": "string",
+            "required": true
+          },
+          "amtype": {
+            "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     },
     "externalcheckstores": {
@@ -30,9 +38,11 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "href": {"type": "string"}
-        },
-	"required": ["href"]
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     },
     "authorities": {
@@ -42,10 +52,15 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "urn": {"type": "string"},
-	   "href": {"type": "string"}
-        },
-	"required": ["urn","href"]
+          "urn": {
+	    "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     },
    "info": {
@@ -54,11 +69,16 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "name": {"type": "string"},
-	   "db_schema":  {"type": "array"}
-	   },
-	   "required": ["name","db_schema"]
-       }
+          "name": {
+	    "type": "string",
+            "required": true
+          },
+          "db_schema": {
+            "type": "array",
+            "required": true
+          }
+        }
+      }
     },
     "events": {
       "type": "object",
@@ -69,14 +89,28 @@
 	  "items": {
 	    "type": "object",
 	    "properties": {
-	        "name": {"type": "string"},
-	        "id": {"type":"string"},
-	        "ts": {"type":"string"},
-	        "v" : {"type":"string"},
-	        "units": {"type":"string"}
+	      "name": {
+		"type": "string",
+		"required": true
 	      },
-	      "required": ["name","id","ts","v","units"]
+	      "id": {
+		"type": "string",
+		"required": true
+	      },
+	      "ts": {
+		"type": "string",
+		"required": true
+	      },
+	      "v": {
+		"type": "string",
+		"required": true
+	      },
+	      "units": {
+		"type": "string",
+		"required": true
+	      }
 	    }
+           }
 	 },
          "aggregate": {
 	  "type": "array",
@@ -84,14 +118,28 @@
 	  "items": {
 	    "type": "object",
 	    "properties": {
-	        "name": {"type": "string"},
-	        "id": {"type":"string"},
-	        "ts": {"type":"string"},
-	        "v" : {"type":"string"},
-	        "units": {"type":"string"}
+	      "name": {
+		"type": "string",
+		"required": true
 	      },
-	      "required": ["name","id","ts","v","units"]
-           }
+	      "id": {
+		"type": "string",
+		"required": true
+	      },
+	      "ts": {
+		"type": "string",
+		"required": true
+	      },
+	      "v": {
+		"type": "string",
+		"required": true
+	      },
+	      "units": {
+		"type": "string",
+		"required": true
+	      }
+            }
+          }
         },
          "experiment": {
 	  "type": "array",
@@ -99,32 +147,59 @@
 	  "items": {
 	    "type": "object",
 	    "properties": {
-	        "name": {"type": "string"},
-	        "id": {"type":"string"},
-	        "ts": {"type":"string"},
-	        "v" : {"type":"string"},
-	        "units": {"type":"string"}
+	      "name": {
+		"type": "string",
+		"required": true
 	      },
-	      "required": ["name","id","ts","v","units"]
-           }
+	      "id": {
+		"type": "string",
+		"required": true
+	      },
+	      "ts": {
+		"type": "string",
+		"required": true
+	      },
+	      "v": {
+		"type": "string",
+		"required": true
+	      },
+	      "units": {
+		"type": "string",
+		"required": true
+	      }
+            }
+          }
         },
         "interfacevlan": {
 	  "type": "array",
 	  "required": true,
 	  "items": {
 	    "type": "object",
-	    "properties": {
-	        "name": {"type": "string"},
-	        "id": {"type":"string"},
-	        "ts": {"type":"string"},
-	        "v" : {"type":"string"},
-	        "units": {"type":"string"}
+            "properties": {
+	      "name": {
+		"type": "string",
+		"required": true
 	      },
-	      "required": ["name","id","ts","v","units"]
-           }
+	      "id": {
+		"type": "string",
+		"required": true
+	      },
+	      "ts": {
+		"type": "string",
+		"required": true
+	      },
+	      "v": {
+		"type": "string",
+		"required": true
+	      },
+	      "units": {
+		"type": "string",
+		"required": true
+	      }
+            }
+          }
         }
       }
     }
   }
 }
-

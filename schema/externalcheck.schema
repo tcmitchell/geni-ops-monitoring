@@ -22,9 +22,11 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "href": {"type":"string"}
-        },
-	"required": ["href"]
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     },
     "monitored_aggregates": {
@@ -34,10 +36,15 @@
       "items": {
         "type": "object",
 	"properties": {
-	   "id": {"type":"string"},
-	   "href": {"type":"string"}
-        },
-	"required": ["id","href"]
+          "id": {
+	    "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        }
       }
     }
   }
