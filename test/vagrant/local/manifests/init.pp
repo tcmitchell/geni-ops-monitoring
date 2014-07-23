@@ -60,6 +60,7 @@ class local {
   include "sslapache::server"
   include "flask::server"
   include "local::server"
+  include "rsyslog::opsmon"
   include "${database_type}::server"
 
   # if you want to populate the fake data, you need psutil
