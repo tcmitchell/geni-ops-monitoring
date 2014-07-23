@@ -22,8 +22,8 @@
        "type":"string",
        "required":false
     },
-    "ports": {
-      "description": "ports attached to the node",
+    "interfaces": {
+      "description": "interfaces attached to the node",
       "type": "array",
       "required": false,
       "items": {
