@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,33 +18,13 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS
 # IN THE WORK.
-#----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-import sys
-import json
+# Put the following two lines of boilerplate at the top of every Makefile.
+ROOT_MK := $(firstword $(realpath root.mk ../root.mk ../../root.mk ../../../root.mk ../../../../root.mk ../../../../../root.mk ../../../../../../root.mk))
+include $(ROOT_MK)
 
-common_path = "../../common/"
+JWC_FILES := $(wildcard *.jwc)
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
-
-def main():
-
-    db_type = "local"
-    config_path = "../../config/"
-#     debug = True
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
-
-    table_str_arr = info_schema.keys() + data_schema.keys()
-    
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
-   
-if __name__ == "__main__":
-    main()
+# Put the following line of boilerplate at the end of every Makefile.
+include $(MAKEFRAGDIR)/epilog.mk

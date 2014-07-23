@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,33 +18,18 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS
 # IN THE WORK.
-#----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-import sys
-import json
+# Make sure the all target is the very first one by putting it here.
+all:: ;
 
-common_path = "../../common/"
+# For debugging the makefiles, you can do 'make SHOW=FOO' to display the value
+# of the make variable FOO.  make -p is also useful.
+ifdef SHOW
+show:
+	@echo export $(SHOW)='"$($(SHOW))"'
+	@echo value comes from $(origin $(SHOW))
+endif
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
-
-def main():
-
-    db_type = "local"
-    config_path = "../../config/"
-#     debug = True
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
-
-    table_str_arr = info_schema.keys() + data_schema.keys()
-    
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
-   
-if __name__ == "__main__":
-    main()
+# Get the dictionary of paths to other parts of the tree.
+include $(MAKEFRAGDIR)/modules.mk

@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,33 +18,25 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS
 # IN THE WORK.
-#----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-import sys
-import json
+# This makefile fragment serves as the link between the makefiles
+# scattered throughout the tree and the central repository of make
+# definitions for this project in the makefile-fragments directory.
+# Having this level of indirection allows directories to be moved
+# around without needing their associated makefiles to be modified.
+#
+# This file should serve no other purpose than the one described
+# above.  It should remain clean and simple.  If you feel the need to
+# put other definitions/rules in this file, you are probably doing
+# something wrong.
 
-common_path = "../../common/"
+# Locate the root of the source tree.
+# ROOT_MK needs to be preset by the makefile that includes this fragment.
+SRCROOT:=$(realpath $(dir $(ROOT_MK)))
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
+# Set MAKEFRAGDIR to where the rest of the makefile definitions reside.
+MAKEFRAGDIR:=$(SRCROOT)/cm/build/makefile-fragments
 
-def main():
-
-    db_type = "local"
-    config_path = "../../config/"
-#     debug = True
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
-
-    table_str_arr = info_schema.keys() + data_schema.keys()
-    
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
-   
-if __name__ == "__main__":
-    main()
+# Pull in a bunch of make definitions to get things rolling.
+include $(MAKEFRAGDIR)/prolog.mk
