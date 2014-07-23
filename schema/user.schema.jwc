@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140501/user#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140822/user#",
   "description": "GENI user",
   "name": "User",
   "type": "object",

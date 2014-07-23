@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/opsconfig#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140822/opsconfig#",
   "id": "geni-prod",
   "selfRef": "https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod",
   "ts": 1404856180792745,
