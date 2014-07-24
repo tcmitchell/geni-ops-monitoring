@@ -50,8 +50,22 @@ Reference Collector README
         chown -R root /usr/local/ops-monitoring
         chgrp -R root /usr/local/ops-monitoring
 
+4. Syslog configuration
 
-4. Configuring the collector to point to local datastore(s)
+    The ops-monitoring software now uses the syslog infrastructure to write to 
+    a log file. The ops-monitoring logging configuration is located in 
+    /usr/local/ops-monitoring/config/logging.conf.
+    By default it uses the local6 facility of syslog, hence the syslog 
+    configuration needs to be set up to handle the local6 events. If your 
+    system is already set up to use the local6 syslog facility for some other
+    purpose, modify the ops-monitoring logging configuration and modify the 
+    line containing handlers.SysLogHandler.LOG_LOCAL6 to reflect the syslog
+    facility you intend to use.
+    To configure the local6 facility of syslog, you can create the file
+    /etc/rsyslog.d/opsmon.conf and have it contain the following line:
+        local6.*                          -/var/log/opsmon.log
+
+5. Configuring the collector to point to local datastore(s)
 
     (1) Attempt to reach the opsconfigdatastore config datastore. Use the unit-tests
     program single_rest_call.py and point to
@@ -65,7 +79,7 @@ Reference Collector README
     and external check datastores
 
 
-5. Collector programs:
+6. Collector programs:
 
    The datastores_dict item in '/config/collector_operator.conf' is
    the collection of local datastores to be queried.  Use these to
@@ -134,14 +148,14 @@ Reference Collector README
 
     */5 * * * * (cd /usr/local/ops-monitoring/collector; python single_local_datastore_object_type_fetcher.py -c /path/to/cert/collector-xyz.pem -a gpo-ig -o i)
 
-6. Query Library
+7. Query Library
 
    The query library is used by services that sit on top of the collector.
    The query library is currently contained in the collector module under
    the file psql_queries.py.  This file should be installed under 
    /usr/local/lib/ at this time.
 
-7. Validictory
+8. Validictory
 
    mkdir ops-monitoring/extern
    cd ops-monitoring/extern
