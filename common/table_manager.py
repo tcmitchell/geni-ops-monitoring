@@ -1,4 +1,4 @@
-#!/usr/bin/python
+-0  #!/usr/bin/python
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -580,7 +580,7 @@ class TableManager:
                 except Exception, e:
                     # TODO replace with logging statement
                     self.logger.warning("Error while executing the following SQL statement: " + statement)
-                    self.logger.warning(e)
+                    self.logger.warning(str(e))
                     con.rollback()
                     # we don't want to retry after this
                     fatalErr = True
