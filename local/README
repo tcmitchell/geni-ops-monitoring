@@ -6,10 +6,11 @@ Table of Contents:
 2. Database Configuration
 3. PSutil Install and Configuration (optional)
 4. Install and configure ops-monitoring software
-5. Apache, WSGI, and Flask Configuration
-6. Datastore database cleanup and initialization 
-7. Start the webserver
-8. Invoke some example queries
+5. Syslog configuration
+6. Apache, WSGI, and Flask Configuration
+7. Datastore database cleanup and initialization 
+8. Start the webserver
+9. Invoke some example queries
 
 
 1. Aptitude packages
@@ -76,7 +77,22 @@ Table of Contents:
         chown -R root /usr/local/ops-monitoring
         chgrp -R root /usr/local/ops-monitoring
 
-5. Apache, WSGI, and Flask Configuration
+5. Syslog configuration
+
+    The ops-monitoring software now uses the syslog infrastructure to write to 
+    a log file. The ops-monitoring logging configuration is located in 
+    /usr/local/ops-monitoring/config/logging.conf.
+    By default it uses the local6 facility of syslog, hence the syslog 
+    configuration needs to be set up to handle the local6 events. If your 
+    system is already set up to use the local6 syslog facility for some other
+    purpose, modify the ops-monitoring logging configuration and modify the 
+    line containing handlers.SysLogHandler.LOG_LOCAL6 to reflect the syslog
+    facility you intend to use.
+    To configure the local6 facility of syslog, you can create the file
+    /etc/rsyslog.d/opsmon.conf and have it contain the following line:
+        local6.*                          -/var/log/opsmon.log
+
+6. Apache, WSGI, and Flask Configuration
 
    The reference configuration customizes apache to make the reference
    datastore available via flask and to enable SSL encryption.  These
@@ -161,7 +177,7 @@ Table of Contents:
     that can be acquired with aptitude works fine too.
 
 
-6. Datastore database cleanup and initialization 
+7. Datastore database cleanup and initialization 
 
    Populate your database either with the schema tables only, or with
    the tables and some sample data if you want to see the localstore
@@ -256,7 +272,7 @@ Table of Contents:
 
 
 
-7. Start the webserver
+8. Start the webserver
 
    Start apache:
     (1) sudo service apache2 restart
@@ -266,7 +282,7 @@ Table of Contents:
     (3) python ./web_server.py
 
 
-8. Invoke some example queries using curl as noted in step 6.  This
+9. Invoke some example queries using curl as noted in step 7.  This
  assumes that your certificate has a private key appended to it.  If
  not pass the --key /path/to/key with this command.  These specific
  queries (about gpo-ig as an aggregate and
