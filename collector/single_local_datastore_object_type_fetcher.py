@@ -286,6 +286,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         if q_res is not None:
             res = q_res[0][0]  # gets first of single tuple
 
+        # We may have gotten a None for the timestamp if the table was empty.
         if res is None:
             res = 0
         self.logger.debug("latest timestamp in " + table_str + " for aggregate " + datastore_id
