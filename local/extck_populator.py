@@ -70,7 +70,6 @@ def db_insert(tbl_mgr, table_str, row_arr):
     tbl_mgr.insert_stmt(table_str, val_str)
     
 def getShortName():
-#     i=1
     for line in inputFile: # Read in line
         if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
             cols = line.strip().split('=')
@@ -145,7 +144,6 @@ def main():
    
     db_name = "local"
     config_path = "../config/"
-#     debug = False
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr,"")
