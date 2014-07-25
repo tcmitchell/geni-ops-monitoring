@@ -522,6 +522,9 @@
                 "units": "percent"
             },
             {   "name": "is_available",
+                // 0 for down/unavailable and 1 for up/ready for use
+                // XXX do we want a richer set of status values, such as
+                // what nagios uses? (OK, WARNING, CRITICAL, UNKNOWN)
                 "id": "varchar",
                 "ts": "int8",
                 "v": "int2",
@@ -542,6 +545,9 @@
         ],
         "aggregate": [
             {   "name": "is_available",
+                // 0 for down/unavailable and 1 for up/ready for use
+                // XXX do we want a richer set of status values, such as
+                // what nagios uses? (OK, WARNING, CRITICAL, UNKNOWN)
                 "id": "varchar",
                 "ts": "int8",
                 "v": "int2",
