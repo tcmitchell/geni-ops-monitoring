@@ -18,9 +18,9 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "amtype": {
@@ -41,7 +41,7 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "href": {
             "type": "string",
             "required": true
@@ -55,9 +55,9 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "href": {
@@ -72,9 +72,9 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "name": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "db_schema": {
@@ -88,118 +88,118 @@
       "type": "object",
       "properties": {
         "node": {
-	  "type": "array",
-	  "required": true,
-	  "items": {
-	    "type": "object",
-	    "properties": {
-	      "name": {
-		"type": "string",
-		"required": true
-	      },
-	      "id": {
-		"type": "string",
-		"required": true
-	      },
-	      "ts": {
-		"type": "string",
-		"required": true
-	      },
-	      "v": {
-		"type": "string",
-		"required": true
-	      },
-	      "units": {
-		"type": "string",
-		"required": true
-	      }
-	    }
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "required": true
+              },
+              "id": {
+                "type": "string",
+                "required": true
+              },
+              "ts": {
+                "type": "string",
+                "required": true
+              },
+              "v": {
+                "type": "string",
+                "required": true
+              },
+              "units": {
+                "type": "string",
+                "required": true
+              }
+            }
            }
-	 },
+         },
          "aggregate": {
-	  "type": "array",
-	  "required": true,
-	  "items": {
-	    "type": "object",
-	    "properties": {
-	      "name": {
-		"type": "string",
-		"required": true
-	      },
-	      "id": {
-		"type": "string",
-		"required": true
-	      },
-	      "ts": {
-		"type": "string",
-		"required": true
-	      },
-	      "v": {
-		"type": "string",
-		"required": true
-	      },
-	      "units": {
-		"type": "string",
-		"required": true
-	      }
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "required": true
+              },
+              "id": {
+                "type": "string",
+                "required": true
+              },
+              "ts": {
+                "type": "string",
+                "required": true
+              },
+              "v": {
+                "type": "string",
+                "required": true
+              },
+              "units": {
+                "type": "string",
+                "required": true
+              }
             }
           }
         },
          "experiment": {
-	  "type": "array",
-	  "required": true,
-	  "items": {
-	    "type": "object",
-	    "properties": {
-	      "name": {
-		"type": "string",
-		"required": true
-	      },
-	      "id": {
-		"type": "string",
-		"required": true
-	      },
-	      "ts": {
-		"type": "string",
-		"required": true
-	      },
-	      "v": {
-		"type": "string",
-		"required": true
-	      },
-	      "units": {
-		"type": "string",
-		"required": true
-	      }
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "required": true
+              },
+              "id": {
+                "type": "string",
+                "required": true
+              },
+              "ts": {
+                "type": "string",
+                "required": true
+              },
+              "v": {
+                "type": "string",
+                "required": true
+              },
+              "units": {
+                "type": "string",
+                "required": true
+              }
             }
           }
         },
         "interfacevlan": {
-	  "type": "array",
-	  "required": true,
-	  "items": {
-	    "type": "object",
+          "type": "array",
+          "required": true,
+          "items": {
+            "type": "object",
             "properties": {
-	      "name": {
-		"type": "string",
-		"required": true
-	      },
-	      "id": {
-		"type": "string",
-		"required": true
-	      },
-	      "ts": {
-		"type": "string",
-		"required": true
-	      },
-	      "v": {
-		"type": "string",
-		"required": true
-	      },
-	      "units": {
-		"type": "string",
-		"required": true
-	      }
+              "name": {
+                "type": "string",
+                "required": true
+              },
+              "id": {
+                "type": "string",
+                "required": true
+              },
+              "ts": {
+                "type": "string",
+                "required": true
+              },
+              "v": {
+                "type": "string",
+                "required": true
+              },
+              "units": {
+                "type": "string",
+                "required": true
+              }
             }
           }
         }

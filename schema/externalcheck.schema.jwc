@@ -27,7 +27,7 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "href": {
             "type": "string",
             "required": true
@@ -41,9 +41,9 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "id": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "href": {

@@ -18,9 +18,9 @@
       "required": false,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "href": {
@@ -36,9 +36,9 @@
       "required": false,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type": "string",
+            "type": "string",
             "required": true
           },
           "href": {

@@ -27,16 +27,16 @@
       "required": false,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type":"string",
+            "type":"string",
             "required": true
           },
           "href": {
             "type":"string",
             "required": true
           }
-	}
+        }
       }
     },
     // We are interested in seeing ALL slivers, whether they are of GENI

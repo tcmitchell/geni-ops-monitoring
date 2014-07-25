@@ -15,17 +15,17 @@
     "authority": {
         "description": "GENI authority at which this user is registered",
         "type": "object",
-	"properties" : {
-	  "urn": {
-	    "type": "string",
-	    "required": true
-	  },
-	  "href": {
-	    "type": "string",
-	    "required": true
-	  }
-	},
-	"additionalProperties": false
+        "properties" : {
+          "urn": {
+            "type": "string",
+            "required": true
+          },
+          "href": {
+            "type": "string",
+            "required": true
+          }
+        },
+        "additionalProperties": false
     },
     // Any aggregate that provides this information must use SSL!
     "fullname": {

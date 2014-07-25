@@ -22,7 +22,7 @@
       "type": "object",
       "properties" : {
         "urn": {
-	  "type":"string",
+          "type":"string",
           "required": true
         },
         "href": {
@@ -48,13 +48,13 @@
       "required": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type":"string",
+            "type":"string",
             "required": true
           },
           "role": {
-	    "type":"string",
+            "type":"string",
             "required": true
           },
           "href": {
@@ -62,7 +62,7 @@
             "required": true
           }
         },
-	"additionalProperties": false
+        "additionalProperties": false
       }
     }
   }
