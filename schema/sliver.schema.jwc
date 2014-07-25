@@ -43,12 +43,12 @@
       "required": false
     },
     "created": {
-      "description": "Creation time: 64-bit integer timestamp",
+      "description": "Creation time: number of microseconds since Jan 1 1970 00:00:00 UTC",
       "type": "integer",
       "required": true
     },
     "expires": {
-      "description": "Expiration time: 64-bit integer timestamp",
+      "description": "Expiration time: number of microseconds since Jan 1 1970 00:00:00 UTC",
       "type": "integer",
       "required": true
     },

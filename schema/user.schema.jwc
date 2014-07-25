@@ -27,6 +27,7 @@
 	},
 	"additionalProperties": false
     },
+    // Any aggregate that provides this information must use SSL!
     "fullname": {
       "description": "Name of this user",
       "type": "string",

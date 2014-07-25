@@ -247,6 +247,11 @@
        "href": "https://ch.geni.net/info/authority/ch.geni.net"
     }
   ],
+
+  // The following comments apply to the remainder of this file:
+  // Fields named "ts" are timestamps representing number of microseconds
+  // since Jan 1 1970 00:00:00 UTC.
+
   "info": [
     {  "name": "aggregate",
        "db_schema": [

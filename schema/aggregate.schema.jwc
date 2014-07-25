@@ -15,6 +15,9 @@
     "measRef": {
       "description":
         "Location of measurement data about this aggregate and its resources",
+      // This specifes where to go to satisfy REST calls of the form
+      //    https://<datastore-host>/data/?q= ... (see data.schema)
+      // for this aggregate.
       "type": "string",
       "required": true
     },

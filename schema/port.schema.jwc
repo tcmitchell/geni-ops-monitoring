@@ -23,7 +23,7 @@
        "required":false
     },
     "ops_monitoring:max_pps": {
-       "description":"Maximum bps on interface",
+       "description":"Maximum pps on interface",
        "type":"number",
        "required":false    
     }
