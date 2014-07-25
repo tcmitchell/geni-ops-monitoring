@@ -39,6 +39,8 @@
 	}
       }
     },
+    // We are interested in seeing ALL slivers, whether they are of GENI
+    // or non-GENI origin (e.g., ORCA).
     "slivers": {
       "description": "active slivers at this aggregate",
       "type": "array",

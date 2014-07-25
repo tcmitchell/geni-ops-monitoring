@@ -38,7 +38,12 @@
       "required": false
     },
     "creator_urn": {
-      "description": "URN of the GENI user who created this sliver",
+      "description": "user who created this sliver",
+      // For GENI users, this should be the user's URN.
+      // For non-GENI users, use the best option you have available.  You can
+      // omit the field if there are no good options.
+      // If you use an email address, make sure there are no privacy concerns
+      // related to exposing the user's email address.
       "type": "string",
       "required": false
     },
