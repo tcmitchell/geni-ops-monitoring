@@ -1,30 +1,34 @@
-1. To test the local datastore as a unit test:
+Any files in this directory appear in a shared folder on the VM in the
+/vagrant directory.
 
- As configured, Vagrant and Puppet will initialize the datastore 
- To test if valid output of the local datastore, make sure your tools
- certificate is in this directory.  If you concatenate the private key
- used to make the certificate, you will not need to copy that file
- separately. Any files in this directory are in a shared folder on
- the VM in the /vagrant directory.
+1. To test the local datastore:
 
- vagrant up 
- vagrant provision
- vagrant ssh
+a. Make sure you have a collector tools certificate.  Look for the phrase
+"tool certificate" in ops-monitoring/collector/README for instructions
+on how to get one.  Below, we will use "/path/to/collector/cert" to denote
+the path to your certificate file; replace this string with the actual path.
 
- curl -k --cert /path/to/tools-collector-cert-with-priv-key.pem https://192.168.33.10/info/aggregate/gpo-ig
+b. Build the software if not already done.
+   $ cd ../../..; make; cd -
 
- curl -k --cert /path/to/tools-collector-cert-with-priv-key.pem https://192.168.33.10/info/node/instageni.gpolab.bbn.com_node_pc1
+c. Bring up the VM.
+   $ vagrant up
 
- If you do not have your private key concatenated with your
- certificate, you'll need to specify a key with the --key </key/path>
- argument.
+d. Provision the VM.  This makes sure the latest build is installed on
+   the VM, sets up database passwords, etc.
+   $ vagrant provision
 
- For testing all the API calls, go to the
- /usr/local/ops-monitoring/collector/unit-tests directory the script:
+e. See if you can log in to the VM.
+   $ vagrant ssh
+     control-D to logout
 
- python ./single_rest_call.py -u https://192.168.33.10/info/aggregate/gpo-ig -c /path/to/tools-collector-cert-with-priv-key.pem -v /path/to/validictory
+f. Try fetching some monitoring info from the web server running on the VM.
+  $ curl -k --cert /path/to/collector/cert https://192.168.33.10/info/aggregate/gpo-ig
+  $ curl -k --cert /path/to/collector/cert https://192.168.33.10/info/node/instageni.gpolab.bbn.com_node_pc1
 
- python ./multi_rest_call.py -u https://192.168.33.10/info/aggregate/gpo-ig -c /path/to/tools-collector-cert-with-priv-key.pem -v /path/to/validictory
+g. Try fetching some monitoring info using multi_rest_call.py:
+  $ cd ../../../collector/unit-tests
+  $ python ./multi_rest_call.py -u https://192.168.33.10/info/aggregate/gpo-ig -c /path/to/collector/cert -v /path/to/validictory
 
 XXX the following needs work
 
