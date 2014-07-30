@@ -39,7 +39,7 @@ Puppet.
 
  The modules included are:
 
-  * apache - configures the local datastore to be exposed on port 80 (which is port forwarded to port 8081 as defined in /local/Vagrantfile)
+  * apache - configures the local datastore to be exposed on port 80
 
   * apt - execution of apt-get update before installing other modules
 
