@@ -156,71 +156,23 @@ class TableManager:
 
         # parses the DB schemas
         info_schema = ocl.get_info_schema()
-        data_schema = ocl.get_data_schema()
+        self.data_schema = ocl.get_data_schema()
         info_constraints = ocl.get_info_constraints()
         info_dependencies = ocl.get_info_dependencies()
         self.event_types = ocl.get_event_types()
 
         # hold the DB schemas in the schema dictionary
-        self.schema_dict = self.__create_schema_dict__(data_schema, info_schema)
+        self.schema_dict = self.__create_schema_dict__(self.data_schema, info_schema)
         # hold the DB constraints in the constraints dictionary
-        self.contraints_dict = self.__create_constraints_dict__(data_schema, info_constraints)
+        self.contraints_dict = self.__create_constraints_dict__(self.data_schema, info_constraints)
 
-        all_dependencies_dict = self.__create_dependencies_dict__(data_schema, info_dependencies)
+        all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
 
         self.tables = self.__create_ordered_table_list__(all_dependencies_dict)
 
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
 
 
-    # This is a special table for bootstrapping the configuration
-    # It stores the other schemas. This function drops and creates
-    # these tables
-    def reset_opsconfig_tables(self):
-
-        self.db_lock.acquire()
-
-        table_str = "ops_opsconfig_info"
-        schema_arr = [['tablename', 'varchar'], ['schemaarray', 'varchar']]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                                "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig info table %s %s" % (table_str, schema_str))
-
-
-
-        table_str = "ops_opsconfig_event"
-        schema_arr = [["object_type", "varchar"], ["name", "varchar"], ["id", "varchar"], ["ts", "varchar"], ["v", "varchar"], ["units", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                                "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig event table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig"
-        schema_arr = [["$schema", "varchar"], ["id", "varchar"], ["selfRef", "varchar"], ["ts", "int8"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig_aggregate"
-        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["amtype", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig_authority"
-        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig authority table %s %s" % (table_str, schema_str))
-
-        self.db_lock.release()
 
     def init_dbmanager(self):
         """
@@ -553,7 +505,7 @@ class TableManager:
         for table_str in table_str_arr:
             # Ensures table_str is in ops_ namespace
             if table_str.startswith("ops_"):
-                self.establish_table(table_str)
+                self.__establish_table__(table_str)
 
 
     def establish_all_tables(self):
@@ -572,13 +524,12 @@ class TableManager:
         :param table_str: the name of the table to create.
         """
 
-        schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], self.contraints_dict[table_str], table_str)
-
         if self.table_exists(table_str):
-            self.logger.debug("INFO: table " + table_str + " already exists with schema: \n" + schema_str)
+            self.logger.debug("table " + table_str + " already exists.")
             self.logger.debug("Skipping creation of " + table_str)
 
         else:
+            schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], self.contraints_dict[table_str], table_str)
             self.db_lock.acquire()
             self.logger.info("create table " + table_str + schema_str)
             if not self.execute_sql("create table " + table_str + schema_str):
@@ -592,6 +543,13 @@ class TableManager:
         reverse_table_order = self.tables[:]
         reverse_table_order.reverse()
         self.__drop_tables__(reverse_table_order)
+
+    def drop_data_tables(self):
+        """
+        Drops the DB data tables (not the info ones)
+        """
+        # no need to consider the tables order because the data tables only depend on info tables.
+        self.__drop_tables__(self.data_schema.keys())
 
     def __drop_tables__(self, table_str_arr):
         """
