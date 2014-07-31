@@ -79,22 +79,18 @@ def main(argv):
 
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
+    event_types = ocl.get_event_types()
 
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
-
-    table_str_arr = info_schema.keys() + data_schema.keys()
-
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
+    tbl_mgr.drop_all_tables()
+    tbl_mgr.establish_all_tables()
 
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)
     ip.insert_fake_info()
        
-    cur = tbl_mgr.con.cursor();
-    cur.execute("select count(*) from ops_aggregate");
-    print "Aggregate has entries", cur.fetchone()[0], "entries"
+    q_res = tbl_mgr.query("select count(*) from ops_aggregate")
+    if q_res is not None:
+        print "Aggregate has entries", q_res[0][0], "entries"
     
     # data population 
     node_event_str_arr = event_types["node"]
@@ -123,9 +119,6 @@ def main(argv):
     #for ev in (node_event_str_arr + interface_event_str_arr):
     #    cur.execute("select * from ops_" + ev + " limit 1");
     #    print ev, "has this entry:\n", cur.fetchone()
-
-    cur.close()
-    tbl_mgr.con.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
