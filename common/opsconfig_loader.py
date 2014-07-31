@@ -88,6 +88,14 @@ class OpsconfigLoader:
 
 
     def get_data_schema(self):
+        """
+        Method to get the DB data tables schema.
+        The schema is a dictionary where the keys are the table names and the values are lists.
+        These lists contain lists each with 2 objects: column name, column type. There is 
+        one extra list in the value list, which contains the "units" string and the type of the
+        units for that table.
+        :return: the DB tables data schema. 
+        """
 
         opsconfig = self.config_json
         data_schema = {}
@@ -118,6 +126,12 @@ class OpsconfigLoader:
 
 
     def get_info_schema(self):
+        """
+        Method to get the DB information tables schema.
+        The schema is a dictionary where the keys are the table names and the values are lists.
+        These lists contain lists each with 3 objects: column name, column type and whether the column is required.
+        :return: the DB information tables schema. 
+        """
 
         opsconfig = self.config_json
         info_schema = {}
@@ -129,3 +143,40 @@ class OpsconfigLoader:
             info_schema["ops_"+info_i["name"]] = info_i["db_schema"]
 
         return info_schema
+
+    def get_info_constraints(self):
+        """
+        Method to get the DB information tables constraints.
+        The constraints object is a dictionary where the keys are the table names and the values are lists.
+        These lists contain lists each with 2 objects: a constraint format string and a list of arguments 
+        for the format (i.e. column or table names).
+        :return: the DB information tables constraints. 
+        """
+        opsconfig = self.config_json
+        info_constr = {}
+
+        # info schema is json-formatted array
+        # add ops_ to avoid namespace collision with database (i.e.,
+        # user not allowed)
+        for info_i in opsconfig["info"]:
+            info_constr["ops_" + info_i["name"]] = info_i["constraints"]
+
+        return info_constr
+
+    def get_info_dependencies(self):
+        """
+        Method to get the DB information tables dependencies.
+        The dependencies object is a dictionary where the keys are the table names and the values are lists.
+        These lists contain the names of the tables the table identified by the key, is dependent upon.
+        :return: the DB information tables dependencies. 
+        """
+        opsconfig = self.config_json
+        info_dep = {}
+
+        # info schema is json-formatted array
+        # add ops_ to avoid namespace collision with database (i.e.,
+        # user not allowed)
+        for info_i in opsconfig["info"]:
+            info_dep["ops_" + info_i["name"]] = info_i["dependencies"]
+
+        return info_dep
