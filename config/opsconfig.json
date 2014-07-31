@@ -255,7 +255,14 @@
              ["urn", "varchar", true],
              ["ts", "int8", true],
              ["measRef","varchar", false]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["UNIQUE (%s)", ["measRef"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"node",
         "db_schema": [
@@ -266,7 +273,13 @@
              ["ts", "int8", true],
              ["properties$mem_total_kb", "int8", false],
              ["properties$vm_server_type", "varchar", false]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name": "link",
         "db_schema": [
@@ -275,7 +288,13 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name": "sliver",
         "db_schema": [
@@ -292,7 +311,16 @@
              ["creator", "varchar", false],
              ["created", "int8", true],
              ["expires", "int8", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["UNIQUE (%s)", ["uuid"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_urn", "ops_aggregate", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_href", "ops_aggregate", "selfRef"]]
+        ],
+        "dependencies" : ["ops_aggregate"]
     },
     {   "name":"interface",
         "db_schema": [
@@ -306,7 +334,13 @@
              ["properties$role", "varchar", false],
              ["properties$max_bps", "int8", false],
              ["properties$max_pps", "int8", false]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name": "interfacevlan",
         "db_schema": [
@@ -318,9 +352,33 @@
              ["tag", "int8", true],
              ["interface_urn", "varchar", true],
              ["interface_href", "varchar", true]
-        ]
-   },
-   {   "name": "slice",
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["UNIQUE (%s)", ["tag"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_urn", "ops_interface", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_href", "ops_interface", "selfRef"]]
+        ],
+        "dependencies" : ["ops_interface"]
+    },
+    {   "name":"authority",
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["urn", "varchar", true],
+             ["ts", "int8", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name": "slice",
        "db_schema": [
              ["$schema", "varchar", true],
              ["id", "varchar", true],
@@ -332,7 +390,16 @@
              ["authority_href", "varchar", true],
              ["created", "int8", true],
              ["expires", "int8", true]
-       ]
+       ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["UNIQUE (%s)", ["uuid"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_urn", "ops_authority", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_href", "ops_authority", "selfRef"]]
+        ],
+        "dependencies" : ["ops_authority"]
     },
     {   "name":"user",
         "db_schema": [
@@ -345,16 +412,15 @@
              ["authority_href", "varchar", true],
              ["fullname", "varchar", true],
              ["email", "varchar", true]
-        ]
-    },
-    {   "name":"authority",
-        "db_schema": [
-             ["$schema", "varchar", true],
-             ["id", "varchar", true],
-             ["selfRef", "varchar", true],
-             ["urn", "varchar", true],
-             ["ts", "int8", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_urn", "ops_authority", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_href", "ops_authority", "selfRef"]]
+        ],
+        "dependencies" : ["ops_authority"]
     },
     {   "name":"externalcheck",
         "db_schema": [
@@ -363,7 +429,12 @@
              ["selfRef", "varchar", true],
              ["ts", "int8", true],
              ["measRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"experiment",
         "db_schema": [
@@ -377,7 +448,12 @@
              ["source_aggregate_href", "varchar", true],
              ["destination_aggregate_urn", "varchar", true],
              ["destination_aggregate_href", "varchar", true]
-         ]
+         ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"opsconfig",
         "db_schema": [
@@ -385,7 +461,12 @@
              ["id", "varchar", true],
              ["selfRef", "varchar", true],
              ["ts", "int8", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"aggregate_resource",
         "db_schema" : [
@@ -393,7 +474,13 @@
              ["aggregate_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"aggregate_sliver",
         "db_schema" : [
@@ -401,7 +488,15 @@
              ["aggregate_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_sliver", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_id", "ops_aggregate", "id"]]
+        ],
+        "dependencies" : ["ops_sliver", "ops_aggregate"]
     },
     {   "name":"link_interfacevlan",
         "db_schema" : [
@@ -409,7 +504,15 @@
              ["link_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-         ]
+         ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "link_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interfacevlan", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
+        ],
+        "dependencies" : ["ops_interfacevlan", "ops_link"]
     },
     {   "name":"sliver_resource",
          "db_schema" : [
@@ -417,7 +520,13 @@
              ["sliver_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "sliver_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"node_interface",
         "db_schema": [
@@ -425,7 +534,15 @@
              ["node_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "node_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interface", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["node_id", "ops_node", "id"]]
+        ],
+        "dependencies" : ["ops_interface", "ops_node"]
     },
     {   "name":"slice_user",
         "db_schema": [
@@ -434,7 +551,15 @@
              ["urn","varchar", true],
              ["role","varchar", true],
              ["selfRef","varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "slice_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_user", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["slice_id", "ops_slice", "id"]]
+        ],
+        "dependencies" : ["ops_user", "ops_slice"]
     },
     {   "name":"authority_user",
         "db_schema": [
@@ -442,7 +567,15 @@
              ["authority_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_user", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_id", "ops_authority", "id"]]
+        ],
+        "dependencies" : ["ops_user", "ops_authority"]
     },
     {   "name":"authority_slice",
         "db_schema": [
@@ -450,7 +583,15 @@
              ["authority_id","varchar", true],
              ["urn","varchar", true],
              ["selfRef","varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_slice", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["authority_id", "ops_authority", "id"]]
+        ],
+        "dependencies" : ["ops_slice", "ops_authority"]
     },
     {   "name":"opsconfig_aggregate",
         "db_schema": [
@@ -459,7 +600,14 @@
              ["amtype", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["opsconfig_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"opsconfig_authority",
         "db_schema": [
@@ -467,7 +615,14 @@
              ["opsconfig_id", "varchar", true],
              ["urn", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["opsconfig_id"]],
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["urn"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"opsconfig_event",
         "db_schema": [
@@ -477,21 +632,36 @@
              ["ts", "varchar", true],
              ["v", "varchar", true],
              ["units", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["object_type"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"externalcheck_experiment",
         "db_schema": [
              ["id", "varchar", true],
              ["externalcheck_id", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["externalcheck_id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
     },
     {   "name":"externalcheck_monitoredaggregate",
         "db_schema": [
              ["id", "varchar", true],
              ["externalcheck_id", "varchar", true],
              ["selfRef", "varchar", true]
-        ]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
     }
   ],
   "events": 
