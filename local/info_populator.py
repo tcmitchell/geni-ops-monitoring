@@ -131,7 +131,7 @@ class InfoPopulator():
 
 
          interface1 = []
-         interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
+         interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
          interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
          interface1.append(url_local_info + "interface/" + interface1[1])
          interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
@@ -146,7 +146,7 @@ class InfoPopulator():
 
          
          interface2 = []
-         interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
+         interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
          interface2.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
          interface2.append(url_local_info + "interface/" + interface2[1])
          interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
@@ -161,27 +161,27 @@ class InfoPopulator():
 
 
          interfacevlan1 = []
-         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
+         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
          interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
          interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
          interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
          interfacevlan1.append(str(int(time.time()*1000000)))
          interfacevlan1.append(str(1750)) # tag type
-         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1") # port urn
-         interfacevlan1.append(url_local_info + "interface/" + interface1[1]) # port href
+         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1") # interface urn
+         interfacevlan1.append(url_local_info + "interface/" + interface1[1]) # interface href
 
          info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan1)
 
 
          interfacevlan2 = []
-         interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
+         interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
          interfacevlan2.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
          interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
          interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
          interfacevlan2.append(str(int(time.time()*1000000)))
          interfacevlan2.append(str(1750)) # tag type
-         interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1") # port urn
-         interfacevlan2.append(url_local_info + "interface/" + interface2[1]) # port href
+         interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1") # interface urn
+         interfacevlan2.append(url_local_info + "interface/" + interface2[1]) # interface href
          info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan2)
 
 
