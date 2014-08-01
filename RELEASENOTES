@@ -2,9 +2,9 @@ Changes for Release 2.0
 August 22, 2014
 ------------------------------
 
+* The REST calls changed as follows:
+
 * The local datastore's database schema changed as follows:
-  1. In table ops_interfacevlan, the port field is renamed to interface.
-  2. Table ops_node_port is renamed to ops_node_interface.
 
 
 Changes for Release 1.1_patch1
