@@ -37,7 +37,7 @@
 "interfacevlan": {
 		"$schema":"schema:string",
 
-		"port": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
+		"interface": {"schema:type":"schema:dict", "urn":"schema:string", "href":"schema:string"},
 
 
 		"id":"schema:string",
@@ -54,7 +54,7 @@
 "node": {
 		"$schema":"schema:string",
 
-		"ports": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
+		"interfaces": {"schema:type":"schema:list", "urn":"schema:string", "href":"schema:string"},
 
 		"ops_monitoring:mem_total_kb":"schema:number",
 
