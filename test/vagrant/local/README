@@ -1,41 +1,17 @@
-Any files in this directory appear in a shared folder on the VM in the
-/vagrant directory.
+To test the local datastore:
 
-1. To test the local datastore:
+a. Follow the instructions "To use the VMs:" in ../README.
 
-a. Make sure you have a collector tools certificate.  Look for the phrase
-"tool certificate" in ops-monitoring/collector/README for instructions
-on how to get one.  Below, we will use "/path/to/collector/cert" to denote
-the path to your certificate file; replace this string with the actual path.
+b. Commands that must be run on the collector VM are prefixed with
+"local$".
 
-b. Build the software if not already done.
-   $ cd ../../..; make; cd -
+c. Try fetching some monitoring info from the web server running on the VM.
+vboxhost$ curl -k --cert ${TOOLCERT} https://192.168.33.10/info/aggregate/gpo-ig
+vboxhost$ curl -k --cert ${TOOLCERT} https://192.168.33.10/info/node/instageni.gpolab.bbn.com_node_pc1
 
-c. Bring up the VM.
-   $ vagrant up
+d. Try fetching some monitoring info using multi_rest_call.py:
+vboxhost$ cd ${TOP}/collector/unit-tests
+vboxhost$ python ./multi_rest_call.py -u https://192.168.33.10/info/aggregate/gpo-ig -c ${TOOLCERT} -v ${TOP}/extern/validictory
 
-d. Provision the VM.  This makes sure the latest build is installed on
-   the VM, sets up database passwords, etc.
-   $ vagrant provision
-
-e. See if you can log in to the VM.
-   $ vagrant ssh
-     control-D to logout
-
-f. Try fetching some monitoring info from the web server running on the VM.
-  $ curl -k --cert /path/to/collector/cert https://192.168.33.10/info/aggregate/gpo-ig
-  $ curl -k --cert /path/to/collector/cert https://192.168.33.10/info/node/instageni.gpolab.bbn.com_node_pc1
-
-g. Try fetching some monitoring info using multi_rest_call.py:
-  $ cd ../../../collector/unit-tests
-  $ python ./multi_rest_call.py -u https://192.168.33.10/info/aggregate/gpo-ig -c /path/to/collector/cert -v /path/to/validictory
-
-XXX the following needs work
-
-2. To test the local datastore with a collector on a different host:
-
- To test this with a collector vagrant vm, go to:
- /usr/local/ops-monitoring/local/unit-tests
-
- python local_restart_node_interface_stats.py -b https://192.168.1.10
- where 192.168.1.10 is the ipaddress of the host machine (see ifconfig)
+e. You can test the local datastore further by running the collector VM.
+See ${TOP}/test/vagrant/collector/README.

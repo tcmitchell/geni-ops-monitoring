@@ -24,10 +24,6 @@
 
 import time
 import sys
-import json
-import ConfigParser
-
-from pprint import pprint as pprint
 
 common_path = "../common/"
 
@@ -38,7 +34,7 @@ import opsconfig_loader
 class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
 
-        self.tbl_mgr = tbl_mgr 
+        self.tbl_mgr = tbl_mgr
         self.url_base = url_base
         # steal config path from table_manager
         self.config_path = tbl_mgr.config_path
@@ -356,15 +352,129 @@ class InfoPopulator():
          authslice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
          authslice1.append(url_local_info + "slice/" + authslice1[0])
 
-         info_insert(self.tbl_mgr, "ops_authority_slice", authslice1)
+        aggres3 = []
+        aggres3.append("arbitrary_link_id_001")
+        aggres3.append("gpo-ig")
+        aggres3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
+        aggres3.append(url_local_info + "link/" + aggres3[0])
+
+        info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres3)
+
+
+        aggsliv1 = []
+        aggsliv1.append("instageni.gpolab.bbn.com_sliver_26947")
+        aggsliv1.append("gpo-ig")
+        aggsliv1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
+        aggsliv1.append(url_local_info + "sliver/" + aggsliv1[0])
+
+        info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv1)
+
+
+        aggsliv2 = []
+        aggsliv2.append("instageni.gpolab.bbn.com_sliver_26950")
+        aggsliv2.append("gpo-ig")
+        aggsliv2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
+        aggsliv2.append(url_local_info + "sliver/" + aggsliv2[0])
+
+        info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv2)
+
+
+        nodeiface1 = []
+        nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
+        nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
+        nodeiface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
+        nodeiface1.append(url_local_info + "interface/" + nodeiface1[0])
+
+        info_insert(self.tbl_mgr, "ops_node_interface", nodeiface1)
+
+
+        nodeiface2 = []
+        nodeiface2.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
+        nodeiface2.append("instageni.gpolab.bbn.com_node_pc2")
+        nodeiface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
+        nodeiface2.append(url_local_info + "interface/" + nodeiface2[0])
+
+        info_insert(self.tbl_mgr, "ops_node_interface", nodeiface2)
+
+
+        linkifacevlan1 = []
+        linkifacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
+        linkifacevlan1.append("arbitrary_link_id_001")
+        linkifacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
+        linkifacevlan1.append(url_local_info + "interfacevlan/" + linkifacevlan1[0])
+
+        info_insert(self.tbl_mgr, "ops_link_interfacevlan", linkifacevlan1)
+
+
+        linkifacevlan2 = []
+        linkifacevlan2.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
+        linkifacevlan2.append("arbitrary_link_id_001")
+        linkifacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
+        linkifacevlan2.append(url_local_info + "interfacevlan/" + linkifacevlan2[0])
+
+        info_insert(self.tbl_mgr, "ops_link_interfacevlan", linkifacevlan2)
+
+
+        slivernode1 = []
+        slivernode1.append("instageni.gpolab.bbn.com_node_pc1")
+        slivernode1.append("instageni.gpolab.bbn.com_sliver_26947")
+        slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+        slivernode1.append(url_local_info + "node/" + slivernode1[0])
+
+        info_insert(self.tbl_mgr, "ops_sliver_resource", slivernode1)
+
+
+        slivernode2 = []
+        slivernode2.append("instageni.gpolab.bbn.com_node_pc2")
+        slivernode2.append("instageni.gpolab.bbn.com_sliver_26950")
+        slivernode2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
+        slivernode2.append(url_local_info + "node/" + slivernode2[0])
+
+        info_insert(self.tbl_mgr, "ops_sliver_resource", slivernode2)
+
+
+        sliverlink1 = []
+        sliverlink1.append("arbitrary_link_id_001")
+        sliverlink1.append("instageni.gpolab.bbn.com_sliver_26947")
+        sliverlink1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
+        sliverlink1.append(url_local_info + "link/" + sliverlink1[0])
+
+        info_insert(self.tbl_mgr, "ops_sliver_resource", sliverlink1)
+
+        sliceuser1 = []
+        sliceuser1.append("tupty")
+        sliceuser1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
+        sliceuser1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+        sliceuser1.append("lead")
+        sliceuser1.append(url_opsconfig_local_info + "user/" + sliceuser1[0])
+
+        info_insert(self.tbl_mgr, "ops_slice_user", sliceuser1)
+
+
+        authuser1 = []
+        authuser1.append("tupty")
+        authuser1.append("ch.geni.net")
+        authuser1.append("urn:publicid:IDN+ch.geni.net+user+tupty")
+        authuser1.append(url_local_info + "user/" + authuser1[0])
+
+        info_insert(self.tbl_mgr, "ops_authority_user", authuser1)
+
+
+        authslice1 = []
+        authslice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
+        authslice1.append("ch.geni.net")
+        authslice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
+        authslice1.append(url_local_info + "slice/" + authslice1[0])
+
+        info_insert(self.tbl_mgr, "ops_authority_slice", authslice1)
 
     # Dummy information to test the external check store
     def insert_externalcheck_store(self):
         self.insert_externalcheck_store_info()
-        
+
     def insert_externalcheck_store_info(self):
         extck_id = "gpo"
-        ts = str(int(time.time()*1000000))
+        ts = str(int(time.time() * 1000000))
         extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
         info_insert(self.tbl_mgr, "ops_externalcheck", extck)
 
@@ -373,10 +483,10 @@ class InfoPopulator():
         info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1)
 
         exp1_id = "missouri_ig_to_gpo_ig"
-        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn","source aggregate local datastore href", "urn:destination_aggregate_urn","destination aggregate local datastore href"]
+        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn", "source aggregate local datastore href", "urn:destination_aggregate_urn", "destination aggregate local datastore href"]
         info_insert(self.tbl_mgr, "ops_experiment", exp1)
 
-        mon_agg = ["gpo_ig","gpo",self.url_base + "/info/aggregate/gpo-ig"] 
+        mon_agg = ["gpo_ig", "gpo", self.url_base + "/info/aggregate/gpo-ig"]
         info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg)
 
 
@@ -384,16 +494,16 @@ def info_insert(tbl_mgr, table_str, row_arr):
     val_str = "('"
 
     for val in row_arr:
-        val_str += val + "','" # join won't do this
+        val_str += val + "','"  # join won't do this
 
-    val_str = val_str[:-2] + ")" # remove last 2 of 3 chars: ',' and add )
+    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
 
     tbl_mgr.insert_stmt(table_str, val_str)
 
 
 def main():
 
-   
+
     db_name = "local"
     config_path = "../config"
     debug = False
@@ -401,20 +511,20 @@ def main():
     tbl_mgr.poll_config_store()
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     info_schema = ocl.get_info_schema()
-   
+
     tbl_mgr.drop_tables(info_schema.keys())
     tbl_mgr.establish_tables(info_schema.keys())
     ip = InfoPopulator(tbl_mgr)
 
     ip.insert_fake_info()
-   
-    
+
+
     cur = tbl_mgr.con.cursor();
     cur.execute("select count(*) from aggregate");
     print "num entries", cur.fetchone()[0]
 
     cur.close();
     tbl_mgr.close_con();
-    
+
 if __name__ == "__main__":
     main()
