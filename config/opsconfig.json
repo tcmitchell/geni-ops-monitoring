@@ -5,9 +5,9 @@
   "ts": 1391192685740849,
   "aggregatestores": [
     {
-      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
+      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
