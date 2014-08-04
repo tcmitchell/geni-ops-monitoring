@@ -20,6 +20,11 @@
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.net.internet2.edu"
     },
     {
+      "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
+      "amtype": "network-aggregate",
+      "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
+    },
+    {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
        "amtype": "instageni",
        "href": "https://www.utah.geniracks.net:5001/info/aggregate/utah-ig"
@@ -233,6 +238,11 @@
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
+    }
+    {
+       "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
+       "amtype": "opengeni",
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson"
     }
   ],
   "externalcheckstores": [
