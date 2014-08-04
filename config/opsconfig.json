@@ -238,7 +238,7 @@
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
-    }
+    },
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
        "amtype": "opengeni",
