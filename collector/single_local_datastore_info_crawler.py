@@ -203,8 +203,8 @@ class SingleLocalDatastoreInfoCrawler:
 
 
     # Updates all interfaces information
-    # First queries all nodes at aggregate and looks for their ports
-    # Then, loops through each port in the node_dict
+    # First queries all nodes at aggregate and looks for their interfaces
+    # Then, loops through each interface in the node_dict
     def refresh_all_interfaces_info(self):
 
         node_urls = self.get_all_nodes_of_aggregate()
@@ -212,9 +212,9 @@ class SingleLocalDatastoreInfoCrawler:
         for node_url in node_urls:
             node_dict = handle_request(node_url, self.cert_path, self.logger)
             if node_dict:
-                if "ports" in node_dict:
-                    for port in node_dict["ports"]:
-                        interface_dict = handle_request(port["href"], self.cert_path, self.logger)
+                if "interfaces" in node_dict:
+                    for interface in node_dict["interfaces"]:
+                        interface_dict = handle_request(interface["href"], self.cert_path, self.logger)
                         if interface_dict:
                             interface_info_list = self.get_interface_attributes(interface_dict, schema)
                             info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug, self.logger)
@@ -315,30 +315,30 @@ class SingleLocalDatastoreInfoCrawler:
         for key in schema:
             noval = False
             if key[0] == "interface_href":
-                if "port" in ifv_dict:
-                    if "href" in ifv_dict["port"]:
-                        ifv_info_list.append(ifv_dict["port"]["href"])
+                if "interface" in ifv_dict:
+                    if "href" in ifv_dict["interface"]:
+                        ifv_info_list.append(ifv_dict["interface"]["href"])
                     else:
                         noval = True
                 else:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json interface-vlan field [\"port\"][\"href\"] is missing. Replacing with empty string...")
+                        print("WARNING: value for required json interface-vlan field [\"interface\"][\"href\"] is missing. Replacing with empty string...")
                         ifv_info_list.append("")
                     else:
                         ifv_info_list.append(None)
             elif key[0] == "interface_urn":
-                if "port" in ifv_dict:
-                    if "urn" in ifv_dict["port"]:
-                        ifv_info_list.append(ifv_dict["port"]["urn"])
+                if "interface" in ifv_dict:
+                    if "urn" in ifv_dict["interface"]:
+                        ifv_info_list.append(ifv_dict["interface"]["urn"])
                     else:
                         noval = True
                 else:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json interface-vlan field [\"port\"][\"urn\"] is missing. Replacing with empty string...")
+                        print("WARNING: value for required json interface-vlan field [\"interface\"][\"urn\"] is missing. Replacing with empty string...")
                         ifv_info_list.append("")
                     else:
                         ifv_info_list.append(None)

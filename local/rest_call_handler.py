@@ -443,12 +443,12 @@ def get_interfacevlan_info_dict(schema, info_row):
                 json_dict[schema[col_i][0]] = info_row[col_i]
             
     if (iface_urn is not None) or (iface_href is not None):
-        json_dict["port"] = {}
+        json_dict["interface"] = {}
         if (iface_urn is not None):
-            json_dict["port"]["urn"] = iface_urn;
+            json_dict["interface"]["urn"] = iface_urn;
         if (iface_href is not None):
-            json_dict["port"]["href"] = iface_href;
-    # json_dict["port"] = {"urn":iface_urn,"href":iface_href}
+            json_dict["interface"]["href"] = iface_href;
+    # json_dict["interface"] = {"urn":iface_urn,"href":iface_href}
 
     return json_dict
 
@@ -480,7 +480,7 @@ def get_user_info_dict(schema, info_row):
 
 
 # Forms node info dictionary (to be made to JSON)
-def get_node_info_dict(schema, info_row, port_refs):
+def get_node_info_dict(schema, info_row, interface_refs):
 
     json_dict = {}
 
@@ -493,11 +493,11 @@ def get_node_info_dict(schema, info_row, port_refs):
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
-    if port_refs:
-        json_dict["ports"] = []
-        for port_ref in port_refs:
-            if len(port_ref) > 0:
-                json_dict["ports"].append({"href":port_ref[0], "urn":port_ref[1]})
+    if interface_refs:
+        json_dict["interfaces"] = []
+        for interface_ref in interface_refs:
+            if len(interface_ref) > 0:
+                json_dict["interfaces"].append({"href":interface_ref[0], "urn":interface_ref[1]})
             
     return json_dict
 

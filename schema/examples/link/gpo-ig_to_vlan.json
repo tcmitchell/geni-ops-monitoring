@@ -7,11 +7,11 @@
   "endpoints": [
     {
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1",
-      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc2:eth1"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interface/instageni.gpolab.bbn.com_interface_pc2:eth1"
     },
     {
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750",
-      "href": "https://datastore.instageni.gpolab.bbn.com/port-vlans/instageni.gpolab.bbn.com_interface_pc1:eth1:1750"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interfacevlan/instageni.gpolab.bbn.com_interface_pc1:eth1:1750"
     }
   ]
 }

@@ -6,22 +6,22 @@
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
   "ops_monitoring:mem_total_kb": 50331648,
   "ops_monitoring:vm_server_type": "xen",
-  "ports": [
+  "interfaces": [
     { 
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth0",
-      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth0"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interface/instageni.gpolab.bbn.com_interface_pc1%3Aeth0"
     },
     { 
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
-      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth1"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interface/instageni.gpolab.bbn.com_interface_pc1%3Aeth1"
     },
     { 
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth2",
-      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth2"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interface/instageni.gpolab.bbn.com_interface_pc1%3Aeth2"
     },
     { 
       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth3",
-      "href": "https://datastore.instageni.gpolab.bbn.com/ports/instageni.gpolab.bbn.com_interface_pc1%3Aeth3"
+      "href": "https://datastore.instageni.gpolab.bbn.com/info/interface/instageni.gpolab.bbn.com_interface_pc1%3Aeth3"
     }
   ]
 }
