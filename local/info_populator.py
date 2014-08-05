@@ -388,28 +388,23 @@ def info_insert(tbl_mgr, table_str, row_arr):
 
 def main():
 
-
     db_name = "local"
     config_path = "../config"
-    debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
-    tbl_mgr.poll_config_store()
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
 
-    tbl_mgr.drop_tables(info_schema.keys())
-    tbl_mgr.establish_tables(info_schema.keys())
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
+    tbl_mgr.poll_config_store()
+
+    tbl_mgr.drop_all_tables()
+    tbl_mgr.establish_all_tables()
     ip = InfoPopulator(tbl_mgr)
 
     ip.insert_fake_info()
 
 
-    cur = tbl_mgr.con.cursor();
-    cur.execute("select count(*) from aggregate");
-    print "num entries", cur.fetchone()[0]
+    q_res = tbl_mgr.query("select count(*) from aggregate");
+    if q_res is not None:
+        print "num entries", q_res[0][0]
 
-    cur.close();
-    tbl_mgr.close_con();
 
 if __name__ == "__main__":
     main()
