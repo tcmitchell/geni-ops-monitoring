@@ -255,11 +255,11 @@
   // In the "info" section, each subsection represents an info DB table.
   // each subsection has 4 entries: "name", "db_schema", "constraints"
   // and "dependencies".
-  // - The table name will ops_<name> where <name> is the value for the "name" entry.
+  // - The table name will be ops_<name> where <name> is the value for the "name" entry.
   // - The "db_schema" represents the columns of the table. There are 3 attributes
   //   for each column: the column name, the column type and whether a value is required
   //   for that column for an entry in the table (i.e. whether the column is NOT NULL
-  //   in SQL.
+  //   in SQL.)
   // - The "constraints" entry represents the SQL constraints for that table. For each 
   //   constraint, there are 2 fields: first the constraint format string and second the 
   //   list of arguments to apply to that constraint string. The reason that the 
@@ -695,7 +695,7 @@
   ],
   // The "events" section represents all the tables that will capture measurement data.
   // Each subsection represents the tables for a type of monitoring object (node, 
-  // interface, etc.). Each of the subsection of an object section represent a data table
+  // interface, etc.). Each of the subsections of an object section represent a data table
   // for a specific measurment for that object. There are 5 attributes for each table:
   // - "name" identifies the measurement for the object. The table created will be ops_<object>_<measurement name>
   // - "id" a column always present in the measurement table, always of varchar type. 
