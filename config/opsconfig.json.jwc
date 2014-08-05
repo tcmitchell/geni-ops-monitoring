@@ -361,12 +361,7 @@
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
-// Commenting out the unique requirement for the selfRef of an interface.
-// This is because for inter-aggregate links, an aggregate will report
-// a link with an interface-vlan whose interface "belongs" to  a remote 
-// aggregate. In that case, the selfRef will be some special string,
-// common to all interfaces of that type ("belonging" to a remote aggregate).
-//            ["UNIQUE (%s)", ["selfRef"]],
+            ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]]
         ],
         "dependencies" : []
