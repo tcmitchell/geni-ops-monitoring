@@ -29,7 +29,6 @@ common_path = "../common/"
 
 sys.path.append(common_path)
 import table_manager
-import opsconfig_loader
 
 class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
