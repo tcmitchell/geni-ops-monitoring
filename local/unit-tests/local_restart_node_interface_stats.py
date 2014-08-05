@@ -79,24 +79,16 @@ def main(argv):
 
     [base_url, node_id, interface_id, aggregate_id, experiment_id, num_ins, per_sec] = parse_args(argv)
 
-    os.system("python local_table_reset.py")
-    
-
     db_type = "local"
     config_path = "../../config/"
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
     event_types = ocl.get_event_types()
 
-    # perhaps table manager should do this wihtout passing keys
-    table_str_arr = info_schema.keys() + data_schema.keys()
-
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
+    tbl_mgr.drop_all_tables()
+    tbl_mgr.establish_all_tables()
 
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)

@@ -40,7 +40,7 @@ def usage():
 def get_gram_defaults():
 
     # External IP addr of Gram rack local datastore
-    base_url = "128.1.1.1"  
+    base_url = "128.1.1.1"
 
     # json-schema
     agg_schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
@@ -53,7 +53,7 @@ def get_gram_defaults():
     # Node info used for info and data query
     # memory per node in kB
     mem_total_kb = 4000000  # 4 GB
-    
+
     # aggregate dictionary
     aggregate = {}
 
@@ -62,13 +62,13 @@ def get_gram_defaults():
     aggregate['id'] = agg_id
 
     aggregate['urn'] = 'urn:aggregate'
-    
+
     # aggregate info query url
     aggregate['href'] = base_url + '/info/aggregate/' + agg_id
 
     # time-series data measurement reference
     aggregate['meas_ref'] = base_url + "/data/"
-    
+
     # json schema
     aggregate['schema'] = agg_schema
 
@@ -86,8 +86,8 @@ def get_gram_defaults():
     nodes[node_id]['href'] = base_url + '/info/node/' + node_id
 
     # change if different
-    nodes[node_id]['mem_total_kb'] = mem_total_kb 
-    
+    nodes[node_id]['mem_total_kb'] = mem_total_kb
+
     nodes[node_id]['schema'] = node_schema
 
     # setting the rest of the nodes dictionary using dense code
@@ -152,7 +152,7 @@ def main(argv):
     # Local for local datastore (vs collector for a collector)
     # This is not the database name or database program
     # Those are set in /ops-monitoring/config/<db_type>_operator.conf
-    db_type = "local" 
+    db_type = "local"
     config_path = "../../config/"
     tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
 
@@ -161,18 +161,16 @@ def main(argv):
 
     # get info schema from table manager
     info_schema = tbl_mgr.info_schema
-        
+
     # Drops all informational tables
-    table_str_arr = info_schema.keys()
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
+    tbl_mgr.drop_all_tables()
+    tbl_mgr.establish_all_tables()
 
     # supports aggregate info query
     set_aggregate_info(tbl_mgr, aggregate, nodes)
 
-    set_node_info(tbl_mgr, nodes)    
+    set_node_info(tbl_mgr, nodes)
 
-    tbl_mgr.con.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

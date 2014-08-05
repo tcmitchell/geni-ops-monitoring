@@ -152,67 +152,27 @@ class TableManager:
     # fetches DB schemas from config local datastore
     def poll_config_store(self):
 
-        self.ocl = opsconfig_loader.OpsconfigLoader(self.config_path)
+        ocl = opsconfig_loader.OpsconfigLoader(self.config_path)
 
         # parses the DB schemas
-        self.info_schema = self.ocl.get_info_schema()
-        self.data_schema = self.ocl.get_data_schema()
-        self.event_types = self.ocl.get_event_types()
+        info_schema = ocl.get_info_schema()
+        self.data_schema = ocl.get_data_schema()
+        info_constraints = ocl.get_info_constraints()
+        info_dependencies = ocl.get_info_dependencies()
+        self.event_types = ocl.get_event_types()
 
         # hold the DB schemas in the schema dictionary
-        self.schema_dict = self.create_schema_dict(self.data_schema, self.info_schema)
+        self.schema_dict = self.__create_schema_dict__(self.data_schema, info_schema)
+        # hold the DB constraints in the constraints dictionary
+        self.contraints_dict = self.__create_constraints_dict__(self.data_schema, info_constraints)
+
+        all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
+
+        self.tables = self.__create_ordered_table_list__(all_dependencies_dict)
 
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
 
 
-    # This is a special table for bootstrapping the configuration
-    # It stores the other schemas. This function drops and creates
-    # these tables
-    def reset_opsconfig_tables(self):
-
-        self.db_lock.acquire()
-
-        table_str = "ops_opsconfig_info"
-        schema_arr = [['tablename', 'varchar'], ['schemaarray', 'varchar']]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                                "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig info table %s %s" % (table_str, schema_str))
-
-
-
-        table_str = "ops_opsconfig_event"
-        schema_arr = [["object_type", "varchar"], ["name", "varchar"], ["id", "varchar"], ["ts", "varchar"], ["v", "varchar"], ["units", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                                "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig event table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig"
-        schema_arr = [["$schema", "varchar"], ["id", "varchar"], ["selfRef", "varchar"], ["ts", "int8"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig_aggregate"
-        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["amtype", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig aggregate table %s %s" % (table_str, schema_str))
-
-
-        table_str = "ops_opsconfig_authority"
-        schema_arr = [["id", "varchar"], ["opsconfig_id", "varchar"], ["urn", "varchar"], ["selfRef", "varchar"]]
-        schema_str = self.translate_table_schema_to_schema_str(schema_arr, table_str)
-        if not self.execute_sql("drop table if exists " + table_str, \
-                         "create table if not exists " + table_str + schema_str):
-            self.logger.warning("Exception while reseting opsconfig authority table %s %s" % (table_str, schema_str))
-
-        self.db_lock.release()
 
     def init_dbmanager(self):
         """
@@ -232,7 +192,18 @@ class TableManager:
             self.logger.critical("%s is not a valid database program\n" % self.database_program)
             sys.exit(1)
 
-    def create_schema_dict(self, data_schema, info_schema):
+    def __create_schema_dict__(self, data_schema, info_schema):
+        """
+        Creates a unified dictionary of the DB schema, containing both the 
+        tables supporting the "information" and the tables supporting the 
+        "data" (i.e. measurements)
+        :param data_schema: the schema dictionary for the data tables
+        :param info_schema: the schema dictionary for the information tables
+        :return: a unified dictionary of the DB schema for all the tables.
+        :note: The returned dictionary has the tables names as keys, and a list
+        for value. That list contains the name of the DB column, the DB type of
+        the column, and whether a value for that column is required.
+        """
         schema_dict = {}
         schema_dict["units"] = {}
         if (len(dict(data_schema.items() + info_schema.items())) != len(data_schema) + len(info_schema)):
@@ -248,12 +219,132 @@ class TableManager:
                 l = data_schema[ds_k][:-1]
                 l.insert(0, ["aggregate_id", "varchar"])
                 schema_dict[ds_k] = l
+            # All fields of the data table are required...
+            for k in range(len(schema_dict[ds_k])):
+                schema_dict[ds_k][k].append(True)
             schema_dict["units"][ds_k] = data_schema[ds_k][-1][1]
 
         for is_k in info_schema.keys():
             schema_dict[is_k] = info_schema[is_k]
 
         return schema_dict
+
+    def __create_constraints_dict__(self, data_schema, info_constraints):
+        """
+        Creates a unified dictionary of the DB constraints, containing both the 
+        tables supporting the "information" and the tables supporting the "data"
+        (i.e. measurements)
+        :param data_schema: the schema dictionary for the data tables
+        :param info_schema: the constraint dictionary for the information tables
+        :return: a unified dictionary of the DB constraints for all the tables.
+        :note: The returned dictionary has the tables names as keys, and a list
+        for value. That list contains a constraint format string as the first 
+        object and a list as a second object, which contains column names and 
+        or table names. The constraint string is meant to be "merged" via the 
+        python % operator with the list.
+        """
+        constraints_dict = {}
+
+        for ds_k in data_schema.keys():
+            # last of list is units
+            # 2nd of tuple is a string of what unit type is (i.e., percent)
+            if self.database_type == "local":
+                constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s)", ["id", "ts"]]]
+            elif self.database_type == "collector":
+                constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["aggregate_id", "id", "ts"]],
+                                          ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_id", "ops_aggregate", "id"]]
+                                         ]
+            if ds_k.startswith("ops_node"):
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_node", "id"]])
+            elif ds_k.startswith("ops_interfacevlan"):
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interfacevlan", "id"]])
+            elif ds_k.startswith("ops_interface"):
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interface", "id"]])
+            elif ds_k.startswith("ops_aggregate"):
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_aggregate", "id"]])
+            elif ds_k.startswith("ops_experiment"):
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_experiment", "id"]])
+
+        for ic_k in info_constraints.keys():
+            constraints_dict[ic_k] = info_constraints[ic_k]
+
+        return constraints_dict
+
+    def __create_dependencies_dict__(self, data_schema, info_dependencies):
+        """
+        Creates a unified dictionary of the DB table dependencies, containing 
+        both the tables supporting the "information" and the tables supporting 
+        the "data" (i.e. measurements)
+        :param data_schema: the schema dictionary for the data tables
+        :param info_schema: the dependencies dictionary for the information tables
+        :return: a unified dictionary of the DB dependencies for all the tables.
+        :note: The returned dictionary has the tables names as keys, and a list
+        for value. That list contains the names of the tables the table 
+        (identified via the key) is dependent upon.
+        """
+        dependencies_dict = {}
+
+        for ds_k in data_schema.keys():
+            if self.database_type == "collector":
+                dependencies_dict[ds_k] = ["ops_aggregate"]
+            else:
+                dependencies_dict[ds_k] = []
+
+            if ds_k.startswith("ops_node"):
+                dependencies_dict[ds_k].append("ops_node")
+            elif ds_k.startswith("ops_interfacevlan"):
+                dependencies_dict[ds_k].append("ops_interfacevlan")
+            elif ds_k.startswith("ops_interface"):
+                dependencies_dict[ds_k].append("ops_interface")
+            elif ds_k.startswith("ops_aggregate"):
+                dependencies_dict[ds_k].append("ops_aggregate")
+            elif ds_k.startswith("ops_experiment"):
+                dependencies_dict[ds_k].append("ops_experiment")
+
+        for id_k in info_dependencies.keys():
+            dependencies_dict[id_k] = info_dependencies[id_k]
+
+        return dependencies_dict
+
+    def __create_ordered_table_list__(self, dependencies_dict):
+        """
+        Creates a list of DB table names ordered by their dependencies, in the 
+        order needed for table creation.
+        :param dependencies_dict: a dependency dictionary such as the one created by 
+        create_dependencies_dict().
+        :return: a list of DB table names ordered by their dependencies, in the 
+        order needed for table creation.
+        """
+        table_list = dependencies_dict.keys()
+        # no absolutely necessary but so that we always end up with the same order.
+        table_list.sort()
+
+        keepGoing = True
+        iterNb = 0
+        while keepGoing:
+            keepGoing = False
+            iterNb += 1
+            for idx in range(len(table_list)):
+                deps = dependencies_dict[table_list[idx]]
+                if len(deps) > 0:
+                # we want to move that table after all its dependencies
+                    maxIdx = 0
+                    for j in range(idx + 1, len(table_list)):
+                        if table_list[j] in deps:
+                            if j > maxIdx:
+                                maxIdx = j
+                    if maxIdx > 0:
+                        # switch tables
+                        tmp = table_list[idx]
+                        table_list[idx] = table_list[maxIdx]
+                        table_list[maxIdx] = tmp
+                        keepGoing = True
+            if iterNb > 1000:
+                self.logger.critical("Sorting table dependencies is taking more than 1000 iterations... circular dependencies?")
+                self.logger.critical("exiting")
+                sys.exit(-1)
+
+        return table_list
 
     def purge_old_tsdata(self, table_name, delete_older_than_ts):
         self.db_lock.acquire()
@@ -319,11 +410,12 @@ class TableManager:
     # break this into postgres and mysql
     def table_exists(self, table_str):
         if self.database_program == "postgres":
-            return self.table_exists_psql(table_str)
+            return self.__table_exists_psql__(table_str)
         elif self.database_program == "mysql":
-            return self.table_exists_mysql(table_str)
+            return self.__table_exists_mysql__(table_str)
+        return False
 
-    def table_exists_mysql(self, table_str):
+    def __table_exists_mysql__(self, table_str):
         exists = False
         self.db_lock.acquire()
         q_res = self.query("show tables like '" + table_str + "'")
@@ -333,7 +425,7 @@ class TableManager:
 
         return exists
 
-    def table_exists_psql(self, table_str):
+    def __table_exists_psql__(self, table_str):
         exists = False
         self.db_lock.acquire()
         q_res = self.query("select exists(select relname from pg_class where relname='" + table_str + "')")
@@ -405,48 +497,79 @@ class TableManager:
         return col_names
 
 
-    def establish_tables(self, table_str_arr):
+    def __establish_tables__(self, table_str_arr):
+        """
+        Creates a list of tables
+        :param table_str_arr: the list of tables to create.
+        """
         for table_str in table_str_arr:
             # Ensures table_str is in ops_ namespace
             if table_str.startswith("ops_"):
-                self.establish_table(table_str)
+                self.__establish_table__(table_str)
 
 
     def establish_all_tables(self):
-        self.establish_tables(self.schema_dict.keys())
+        """
+        Creates all the DB tables
+        """
+        self.__establish_tables__(self.tables)
 
     def purge_outdated_resources_from_info_tables(self):
         pass  # TODO fill in
 
 
-    def establish_table(self, table_str):
-
-        schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], table_str)
+    def __establish_table__(self, table_str):
+        """
+        Creates a specific table
+        :param table_str: the name of the table to create.
+        """
 
         if self.table_exists(table_str):
-            self.logger.debug("INFO: table " + table_str + " already exists with schema: \n" + schema_str)
+            self.logger.debug("table " + table_str + " already exists.")
             self.logger.debug("Skipping creation of " + table_str)
 
         else:
+            schema_str = self.translate_table_schema_to_schema_str(self.schema_dict[table_str], self.contraints_dict[table_str], table_str)
             self.db_lock.acquire()
             self.logger.info("create table " + table_str + schema_str)
             if not self.execute_sql("create table " + table_str + schema_str):
                 self.logger.warning("Exception while creating table %s %s" % (table_str, schema_str))
             self.db_lock.release()
 
+    def drop_all_tables(self):
+        """
+        Drops all the DB tables
+        """
+        reverse_table_order = self.tables[:]
+        reverse_table_order.reverse()
+        self.__drop_tables__(reverse_table_order)
 
-    def drop_tables(self, table_str_arr):
+    def drop_data_tables(self):
+        """
+        Drops the DB data tables (not the info ones)
+        """
+        # no need to consider the tables order because the data tables only depend on info tables.
+        self.__drop_tables__(self.data_schema.keys())
+
+    def __drop_tables__(self, table_str_arr):
+        """
+        Drops a list of tables
+        :param table_str_arr: the list of tables to be dropped.
+        """
         for table_str in table_str_arr:
-            self.drop_table(table_str)
+            self.__drop_table__(table_str)
 
 
-    def drop_table(self, table_str):
-
+    def __drop_table__(self, table_str):
+        """
+        Drops a specific table
+        :param table_str: the name of the table to be dropped
+        """
         self.db_lock.acquire()
         self.logger.debug("drop table if exists " + table_str)
 
         if self.execute_sql("drop table if exists " + table_str):
-            self.logger.info("Dropped table" + table_str)
+            self.logger.info("Dropped table: " + table_str)
         else:
             self.logger.warning("Error while dropping table %s" % (table_str))
 
@@ -470,18 +593,35 @@ class TableManager:
 
 
 
-    def translate_table_schema_to_schema_str(self, table_schema_dict, table_str):
+    def translate_table_schema_to_schema_str(self, table_schema_dict, table_constraint_dict, table_str):
+        self.logger.debug("creating table schema statement for " + table_str)
         schema_str = "("
-        if self.database_program == "postgres":
-            for col_i in range(len(table_schema_dict)):
-                schema_str += "\"" + table_schema_dict[col_i][0] + "\" " + table_schema_dict[col_i][1] + ","
-        else:
-            for col_i in range(len(table_schema_dict)):
+        for col_i in range(len(table_schema_dict)):
+            schema_str += self.get_column_name(table_schema_dict[col_i][0]) + " " + table_schema_dict[col_i][1]
+            # for mysql varchar are not unlimited
+            if self.database_program == "mysql":
                 if table_schema_dict[col_i][1] == "varchar":
-                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + "(512),"
-                else:
-                    schema_str += table_schema_dict[col_i][0] + " " + table_schema_dict[col_i][1] + ","
+                    schema_str += "(512)"
+            if table_schema_dict[col_i][2]:
+                schema_str += " NOT NULL"
+            schema_str += ","
 
+        for const_i in range(len(table_constraint_dict)):
+            col_names = []
+            for col_i in range(len(table_constraint_dict[const_i][1])):
+                col_names.append(self.get_column_name(table_constraint_dict[const_i][1][col_i]))
+            try:
+                schema_str += table_constraint_dict[const_i][0] % tuple(col_names)
+            except TypeError, e:
+                self.logger.warning(str(e))
+                self.logger.critical("Could not create table " + table_str +
+                                     "\n error building constraint statement with % operator\n" +
+                                     table_constraint_dict[const_i][0] + "\n" +
+                                     str(col_names))
+                self.logger.critical("Exiting")
+                sys.exit(-1)
+
+            schema_str += ","
         # remove , and add )
         return schema_str[:-1] + ")"
 
