@@ -30,7 +30,6 @@ import getopt
 common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
-import opsconfig_loader
 import logger
 
 # am_urls is a list of dictionaies with hrefs to reach the datastore of
@@ -83,7 +82,10 @@ class SingleLocalDatastoreInfoCrawler:
     def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path):
         self.tbl_mgr = tbl_mgr
         self.logger = logger.get_logger(config_path)
-        self.tbl_mgr.establish_all_tables()
+        # ensures tables exist in database
+        if not self.tbl_mgr.establish_all_tables():
+            self.logger.critical("Could not establish all the tables. Exiting")
+            sys.exit(-1)
 
         if info_url[-1] == '/':
             info_url = info_url[:-1]
@@ -103,7 +105,6 @@ class SingleLocalDatastoreInfoCrawler:
 
         self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path, self.logger)
         if self.am_dict:
-            self.tbl_mgr.establish_table("ops_aggregate")
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
@@ -115,7 +116,6 @@ class SingleLocalDatastoreInfoCrawler:
 
         self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path, self.logger)
         if self.extck_dict:
-            self.tbl_mgr.establish_table("ops_externalcheck")
             schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
             extck_info_list = []
             for key in schema:
@@ -126,7 +126,6 @@ class SingleLocalDatastoreInfoCrawler:
     def refresh_all_monitoredaggregates_info(self):
 
         if self.extck_dict:
-            self.tbl_mgr.establish_table("ops_externalcheck_monitoredaggregate")
 #             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
 #             mon_aggs = []
             for mon_agg in self.extck_dict["monitored_aggregates"]:
@@ -484,10 +483,23 @@ def handle_request(url, cert_path, logger):
 
 
 def info_update(tbl_mgr, table_str, obj_id, row_arr, debug, logger):
+    """
+    Function to update the information about an object.
+    :param tbl_mgr: an instance of TableManager that will be used to execute the SQL statements.
+    :param table_str: the name of the table to operate on.
+    :param obj_id: the id of the object
+    :param row_arr: a list of values for the object to be updated with.
+    :param debug: boolean to decide whether to truly update the information (False) or
+        just print statements of what would be executed (True)
+    :param logger: the logger instance.
+    :return: True if the update happened with any issue, False otherwise.
+    """
+    ok = True
     if debug:
         logger.info("<print only> delete " + obj_id + " from " + table_str)
     else:
-        tbl_mgr.delete_stmt(table_str, obj_id)
+        if not tbl_mgr.delete_stmt(table_str, obj_id):
+            ok = False
 
     val_str = "("
     for val in row_arr:
@@ -500,7 +512,9 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug, logger):
     if debug:
         logger.info("<print only> insert " + table_str + " values: " + val_str)
     else:
-        tbl_mgr.insert_stmt(table_str, val_str)
+        if not tbl_mgr.insert_stmt(table_str, val_str):
+            ok = False
+    return ok
 
 
 def main(argv):
@@ -520,12 +534,6 @@ def main(argv):
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
     crawler = SingleLocalDatastoreInfoCrawler(tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path)
-
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-
-    # ensures tables exist in database
-    tbl_mgr.establish_tables(info_schema.keys())
 
     # Only do head aggregate info query if nodes, sliver, interface, vlan objects are in objecttypes
     if 'n' in objecttypes or 'l' in objecttypes or 's' in objecttypes or 'v' in objecttypes or 'i' in objecttypes:
