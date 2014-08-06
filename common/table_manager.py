@@ -393,15 +393,24 @@ class TableManager:
 
     # deletes done here to handle cursor write locking
     def delete_stmt(self, table_name, obj_id):
+        """
+        Method to delete a specific row from a table
+        :param table_name: the name of the table to delete from.
+        :param obj_id: the id of the object to delete. (It is assumed that the table has a column named id)
+        :return: True if the delete statement executed correctly, False otherwise.
+        """
 
+        ok = True
         self.db_lock.acquire()
         del_str = "delete from " + table_name + " where id = '" + obj_id + "'"
         self.logger.debug(del_str)
 
         if not self.execute_sql(del_str):
             self.logger.warning("Trouble deleting %s as id from %s.\n" % (obj_id, table_name))
+            ok = False
 
         self.db_lock.release()
+        return ok
 
 
     '''
