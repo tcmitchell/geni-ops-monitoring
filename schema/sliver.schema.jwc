@@ -57,23 +57,21 @@
       "type": "integer",
       "required": true
     },
-    "resources": {
-      "description": "resources controlled by this aggregate",
-      "type": "array",
-      "required": false,
-      "items": {
-        "type": "object",
-	"properties": {
-          "urn": {
-	    "type": "string",
-            "required": true
-          },
-          "href": {
-            "type": "string",
-            "required": true
-          }
-        }
-      }
+    // A sliver contains either a single node or a single link.
+    "resource_type": {
+        "description": "Type of the resource in this sliver",
+        "enum": [ "node", "link" ],
+        "required": true
+    },
+    "resource_urn": {
+      "description": "URN of the resource in this sliver",
+      "type": "string",
+      "required": true
+    },
+    "resource_href": {
+      "description": "href (URL) of the resource in this sliver",
+      "type": "string",
+      "required": true
     }
   }
 }
