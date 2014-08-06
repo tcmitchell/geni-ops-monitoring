@@ -334,7 +334,10 @@
              ["slice_uuid", "varchar", false],
              ["creator", "varchar", false],
              ["created", "int8", true],
-             ["expires", "int8", true]
+             ["expires", "int8", true],
+             ["resource_type", "varchar", true],
+             ["resource_urn", "varchar", true],
+             ["resource_href", "varchar", true],
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
@@ -343,6 +346,9 @@
             ["UNIQUE (%s)", ["uuid"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_urn", "ops_aggregate", "urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_href", "ops_aggregate", "selfRef"]]
+            // resource_urn and resource_href should be in either the ops_node
+	    // table or the ops_link table, but we don't know which one here, so we can't put a
+            // foreign key constraint for them.
         ],
         "dependencies" : ["ops_aggregate"]
     },
@@ -542,20 +548,6 @@
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
         ],
         "dependencies" : ["ops_interfacevlan", "ops_link"]
-    },
-    {   "name":"sliver_resource",
-         "db_schema" : [
-             ["id", "varchar", true],
-             ["sliver_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "sliver_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
-        ],
-        "dependencies" : []
     },
     {   "name":"node_interface",
         "db_schema": [

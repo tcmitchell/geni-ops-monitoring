@@ -6,6 +6,11 @@ August 22, 2014
 
 * The local datastore's database schema changed as follows:
 
+  * The ops_sliver table has new fields resource_type,
+    resource_urn, and resource_href that need to be
+    populated.
+  * The ops_sliver_resource table is gone.  Use the ops_sliver
+    table instead.
 
 Changes for Release 1.1_patch1
 June 4, 2014
