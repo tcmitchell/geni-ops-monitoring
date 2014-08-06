@@ -29,7 +29,6 @@ common_path = "../common/"
 
 sys.path.append(common_path)
 import table_manager
-import opsconfig_loader
 
 class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
@@ -39,7 +38,7 @@ class InfoPopulator():
         # steal config path from table_manager
         self.config_path = tbl_mgr.config_path
 
-    def insert_fake_info(self):
+    def insert_fake_info(self): 
         url_local_info = self.url_base + "/info/"
         url_local_data = self.url_base + "/data/"
         url_opsconfig_local_info = self.url_base + "/info/"
@@ -49,9 +48,9 @@ class InfoPopulator():
         agg1.append("gpo-ig")
         agg1.append(url_local_info + "aggregate/" + agg1[1])
         agg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
-        agg1.append(str(int(time.time() * 1000000)))
+        agg1.append(str(int(time.time()*1000000)))
         agg1.append(url_local_data)
-        
+
         info_insert(self.tbl_mgr, "ops_aggregate", agg1)
 
 
@@ -60,9 +59,9 @@ class InfoPopulator():
         node1.append("instageni.gpolab.bbn.com_node_pc1")
         node1.append(url_local_info + "node/" + node1[1])
         node1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
-        node1.append(str(int(time.time() * 1000000)))
-        node1.append(str(2 * 1000000))  # mem_total_kb
-        node1.append("xen")  # vm_server_type
+        node1.append(str(int(time.time()*1000000)))
+        node1.append(str(2*1000000)) # mem_total_kb
+        node1.append("xen") # vm_server_type
 
         info_insert(self.tbl_mgr, "ops_node", node1)
 
@@ -72,9 +71,9 @@ class InfoPopulator():
         node2.append("instageni.gpolab.bbn.com_node_pc2")
         node2.append(url_local_info + "node/" + node2[1])
         node2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
-        node2.append(str(int(time.time() * 1000000)))
-        node2.append(str(2 * 1000000))  # mem_total_kb
-        node2.append("xen")  # vm_server_type
+        node2.append(str(int(time.time()*1000000)))
+        node2.append(str(2*1000000)) # mem_total_kb
+        node2.append("xen") # vm_server_type
 
         info_insert(self.tbl_mgr, "ops_node", node2)
 
@@ -84,15 +83,15 @@ class InfoPopulator():
         sliver1.append("instageni.gpolab.bbn.com_sliver_26947")
         sliver1.append(url_local_info + "sliver/" + sliver1[1])
         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947")
-        sliver1.append("30752b06-8ea8-11e3-8d30-000000000000")  # uuid
-        sliver1.append(str(int(time.time() * 1000000)))  # current ts
-        sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")  # agg_urn
-        sliver1.append(url_local_info + "aggregate/gpo-ig")  # agg_href
-        sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")  # slice_urn
-        sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
-        sliver1.append(str(int(1391626683000000)))  # created
-        sliver1.append(str(int(1391708989000000)))  # expires
+        sliver1.append("30752b06-8ea8-11e3-8d30-000000000000") #uuid
+        sliver1.append(str(int(time.time()*1000000))) #current ts
+        sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
+        sliver1.append(url_local_info + "aggregate/gpo-ig") # agg_href
+        sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive") # slice_urn
+        sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
+        sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
+        sliver1.append(str(int(1391626683000000))) # created
+        sliver1.append(str(int(1391708989000000))) # expires
 
         info_insert(self.tbl_mgr, "ops_sliver", sliver1)
 
@@ -102,15 +101,15 @@ class InfoPopulator():
         sliver2.append("instageni.gpolab.bbn.com_sliver_26950")
         sliver2.append(url_local_info + "sliver/" + sliver2[1])
         sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950")
-        sliver2.append("30752b06-8ea8-11e3-8d30-000005000000")  # uuid
-        sliver2.append(str(int(time.time() * 1000000)))  # current ts
-        sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")  # agg_urn
-        sliver2.append(url_local_info + "aggregate/gpo-ig")  # agg_href
-        sliver2.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2")  # slice_urn
-        sliver2.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver2.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
-        sliver2.append(str(int(1391626683000000)))  # created
-        sliver2.append(str(int(1391708989000000)))  # expires
+        sliver2.append("30752b06-8ea8-11e3-8d30-000005000000") #uuid
+        sliver2.append(str(int(time.time()*1000000))) #current ts
+        sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
+        sliver2.append(url_local_info + "aggregate/gpo-ig") # agg_href
+        sliver2.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2") # slice_urn
+        sliver2.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
+        sliver2.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
+        sliver2.append(str(int(1391626683000000))) # created
+        sliver2.append(str(int(1391708989000000))) # expires
 
         info_insert(self.tbl_mgr, "ops_sliver", sliver2)
 
@@ -120,63 +119,63 @@ class InfoPopulator():
         link1.append("arbitrary_link_id_001")
         link1.append(url_local_info + "link/" + link1[1])
         link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
-        link1.append(str(int(time.time() * 1000000)))
+        link1.append(str(int(time.time()*1000000)))
 
         info_insert(self.tbl_mgr, "ops_link", link1)
 
 
         interface1 = []
-        interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
+        interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
         interface1.append(url_local_info + "interface/" + interface1[1])
         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
-        interface1.append(str(int(time.time() * 1000000)))
-        interface1.append("ipv4")  # addr type
-        interface1.append("192.1.242.140")  # addr
-        interface1.append("control")  # role
-        interface1.append(str(10000000))  # max bps
-        interface1.append(str(1000000))  # max pps
+        interface1.append(str(int(time.time()*1000000)))
+        interface1.append("ipv4") # addr type
+        interface1.append("192.1.242.140") # addr
+        interface1.append("control") # role
+        interface1.append(str(10000000)) #max bps
+        interface1.append(str(1000000)) #max pps
 
         info_insert(self.tbl_mgr, "ops_interface", interface1)
 
 
         interface2 = []
-        interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port#")
+        interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
         interface2.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
         interface2.append(url_local_info + "interface/" + interface2[1])
         interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
-        interface2.append(str(int(time.time() * 1000000)))
-        interface2.append("ipv4")  # addr type
-        interface2.append("192.1.242.140")  # addr
-        interface2.append("control")  # role
-        interface2.append(str(10000000))  # max bps
-        interface2.append(str(1000000))  # max pps
+        interface2.append(str(int(time.time()*1000000)))
+        interface2.append("ipv4") # addr type
+        interface2.append("192.1.242.140") # addr
+        interface2.append("control") # role
+        interface2.append(str(10000000)) #max bps
+        interface2.append(str(1000000)) #max pps
 
         info_insert(self.tbl_mgr, "ops_interface", interface2)
 
 
         interfacevlan1 = []
-        interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
+        interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
         interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
         interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
-        interfacevlan1.append(str(int(time.time() * 1000000)))
-        interfacevlan1.append(str(1750))  # tag type
-        interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")  # port urn
-        interfacevlan1.append(url_local_info + "interface/" + interface1[1])  # port href
+        interfacevlan1.append(str(int(time.time()*1000000)))
+        interfacevlan1.append(str(1750)) # tag type
+        interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1") # interface urn
+        interfacevlan1.append(url_local_info + "interface/" + interface1[1]) # interface href
 
         info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan1)
 
 
         interfacevlan2 = []
-        interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/port-vlan#")
+        interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
         interfacevlan2.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
         interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
         interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
-        interfacevlan2.append(str(int(time.time() * 1000000)))
-        interfacevlan2.append(str(1750))  # tag type
-        interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")  # port urn
-        interfacevlan2.append(url_local_info + "interface/" + interface2[1])  # port href
+        interfacevlan2.append(str(int(time.time()*1000000)))
+        interfacevlan2.append(str(1750)) # tag type
+        interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1") # interface urn
+        interfacevlan2.append(url_local_info + "interface/" + interface2[1]) # interface href
         info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan2)
 
 
@@ -187,9 +186,9 @@ class InfoPopulator():
         slice1.append(url_local_info + "slice/" + slice1[1])
         slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
         slice1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")
-        slice1.append(str(int(time.time() * 1000000)))
-        slice1.append("urn:publicid:IDN+ch.geni.net+authority+ch")  # authority urn
-        slice1.append(url_opsconfig_local_info + "authority/ch.geni.net")  # authority href
+        slice1.append(str(int(time.time()*1000000)))
+        slice1.append("urn:publicid:IDN+ch.geni.net+authority+ch") # authority urn
+        slice1.append(url_opsconfig_local_info + "authority/ch.geni.net") # authority href
         slice1.append("1391626683000000")
         slice1.append("1391708989000000")
 
@@ -201,9 +200,9 @@ class InfoPopulator():
         user1.append("tupty")
         user1.append(url_local_info + "user/" + user1[1])
         user1.append("tupty_user_urn")
-        user1.append(str(int(time.time() * 1000000)))
-        user1.append("urn:publicid:IDN+ch.geni.net+authority+ch")  # authority urn
-        user1.append(url_opsconfig_local_info + "authority/ch.geni.net")  # authority href
+        user1.append(str(int(time.time()*1000000)))
+        user1.append("urn:publicid:IDN+ch.geni.net+authority+ch") # authority urn
+        user1.append(url_opsconfig_local_info + "authority/ch.geni.net") # authority href
         user1.append("Tim Exampleuser")
         user1.append("tupty@example.com")
 
@@ -215,7 +214,7 @@ class InfoPopulator():
         authority1.append("ch.geni.net")
         authority1.append(url_local_info + "authority/" + authority1[1])
         authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
-        authority1.append(str(int(time.time() * 1000000)))
+        authority1.append(str(int(time.time()*1000000)))
 
         info_insert(self.tbl_mgr, "ops_authority", authority1)
 
@@ -388,28 +387,23 @@ def info_insert(tbl_mgr, table_str, row_arr):
 
 def main():
 
-
     db_name = "local"
     config_path = "../config"
-    debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
-    tbl_mgr.poll_config_store()
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
 
-    tbl_mgr.drop_tables(info_schema.keys())
-    tbl_mgr.establish_tables(info_schema.keys())
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
+    tbl_mgr.poll_config_store()
+
+    tbl_mgr.drop_all_tables()
+    tbl_mgr.establish_all_tables()
     ip = InfoPopulator(tbl_mgr)
 
     ip.insert_fake_info()
 
 
-    cur = tbl_mgr.con.cursor();
-    cur.execute("select count(*) from aggregate");
-    print "num entries", cur.fetchone()[0]
+    q_res = tbl_mgr.query("select count(*) from aggregate");
+    if q_res is not None:
+        print "num entries", q_res[0][0]
 
-    cur.close();
-    tbl_mgr.close_con();
 
 if __name__ == "__main__":
     main()
