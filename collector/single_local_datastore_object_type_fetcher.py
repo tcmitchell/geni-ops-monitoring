@@ -91,7 +91,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
         self.cert_path = cert_path
 
         # ensures tables exist
-        self.tbl_mgr.establish_tables(event_types)
+        if not self.tbl_mgr.establish_all_tables():
+            self.logger.critical("Could not establish all the tables. Exiting")
+            sys.exit(-1)
         self.db_event_tables = ["ops_" + obj_type + "_" + ev_str for ev_str in event_types]
 
         self.event_types = ["ops_monitoring:" + ev_str for ev_str in event_types]
@@ -110,7 +112,11 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
 
     def fetch_and_insert(self):
-
+        """
+        Method to fetch the data and store it in the collector DB.
+        :return: True if everything went OK, False otherwise.
+        """
+        ok = True
         # poll datastore
         json_texts = self.poll_datastore()
 #        if self.debug:
@@ -126,6 +132,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
             except ValueError, e:
                 self.logger.warning("Unable to load response in json %s\n" % e)
                 self.logger.warning("response = \n" + json_text)
+                ok = False
 
             if data is not None:
                 onlyErr = False
@@ -151,12 +158,12 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
                         tsdata = result["tsdata"]
                         if len(tsdata) > 0:
-                            tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug, self.logger)
+                            if not tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug, self.logger):
+                                ok = False
 
         if onlyErr:
-            return 1
-        else:
-            return 0
+            ok = False
+        return ok
 
     def get_latest_ts(self):
         max_ts = 0
@@ -362,6 +369,19 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
 # Builds the multi-row insert value string
 def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug, logger):
+    """
+    Function to insert time series data into a given table about a given object.
+    :param tbl_mgr: an instance of TableManager to use to execute the SQL statements
+    :param agg_id: the id of the aggregate that reported the data
+    :param obj_id: the id of the object that the data is pertaining to.
+    :param table_str: the name of the table
+    :param tsdata: the list of time series data in dictionary format
+    :param debug: a boolean saying whether to actually perform the insertion (False) or 
+        just print what would happen.
+    :param logger: an instance of the logger to use.
+    :return: True if the insertion happened (or would have happened in debug mode) correctly, False otherwise.
+    """
+    ok = True
     vals_str = ""
     for tsdata_i in tsdata:
         vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
@@ -371,7 +391,9 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug, logger):
     if debug:
         logger.info("<print only> insert " + table_str + " values: " + vals_str)
     else:
-        tbl_mgr.insert_stmt(table_str, vals_str)
+        if not tbl_mgr.insert_stmt(table_str, vals_str):
+            ok = False
+    return ok
 
 
 def main(argv):
@@ -390,11 +412,8 @@ def main(argv):
     tbl_mgr.poll_config_store()
 
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    data_schema = ocl.get_data_schema()
     all_event_types = ocl.get_event_types()
 
-    # ensures tables exist in database
-    tbl_mgr.establish_tables(data_schema.keys())
 
     node_event_types = all_event_types["node"]
     interface_event_types = all_event_types["interface"]
@@ -421,9 +440,9 @@ def main(argv):
 
     fetcher = SingleLocalDatastoreObjectTypeFetcher(tbl_mgr, aggregate_id, extck_id, object_type, event_types, cert_path, debug, config_path)
 
-    ret_val = fetcher.fetch_and_insert()
-    if ret_val != 0:
-        logger.get_logger(config_path).warning("fetch_and_insert() failed")
+    if not fetcher.fetch_and_insert():
+        logger.get_logger(config_path).critical("fetch_and_insert() failed")
+        sys.exit(-1)
 
 
 if __name__ == "__main__":

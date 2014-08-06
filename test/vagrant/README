@@ -32,7 +32,7 @@ on how to get one.  Below, we will use ${TOOLCERT} to denote the path
 to your certificate file.
 
 e. Build the software if not already done.
-vboxhost$ cd ${TOP}; make; cd ${TOP}/test/vagrant/${VM}
+    vboxhost$ cd ${TOP}; make; cd ${TOP}/test/vagrant/${VM}
 
 f. Optionally edit settings in
 ${TOP}/test/vagrant/${VM}/manifests/init.pp as desired.  In the
@@ -41,8 +41,8 @@ appropriate values for what you want to test.  We recommend keeping
 the default settings when first starting out.
 
 g. Bring up the VM.
-vboxhost$ cd ${TOP}/test/vagrant/${VM}
-vboxhost$ vagrant up
+    vboxhost$ cd ${TOP}/test/vagrant/${VM}
+    vboxhost$ vagrant up
 
 Files in ${TOP}/test/vagrant/${VM} are automatically shared
 on the VM in the /vagrant directory, providing a convenient way to
@@ -50,10 +50,10 @@ move files between vboxhost and ${VM}.
 
 h. Provision the VM.  This makes sure the latest build is installed on
 the VM, sets up database passwords, etc.
-vboxhost$ vagrant provision
+    vboxhost$ vagrant provision
 
 i. See if you can log in to the VM.
-vboxhost$ vagrant ssh
+    vboxhost$ vagrant ssh
 
 j.  Continue with the instructions in ${TOP}/test/vagrant/${VM}/README.
 
