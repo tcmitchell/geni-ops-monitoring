@@ -347,6 +347,14 @@ class TableManager:
         return table_list
 
     def purge_old_tsdata(self, table_name, delete_older_than_ts):
+        """
+        Method to delete data older than a given timestamp from a specific table.
+        :param table_name: the table to delete from
+        :param delete_older_than_ts: the timestamp with which to compare the data in the table.
+        :return: True if there was no problem deleting the data (even if no data was deleting 
+            according to the criteria), False otherwise.
+        """
+        ok = True
         self.db_lock.acquire()
 
         del_str = "delete from " + table_name + " where ts < " + str(delete_older_than_ts)
@@ -355,12 +363,22 @@ class TableManager:
         if not self.execute_sql(del_str):
             self.logger.warning("Trouble deleting data to %s.\n" % table_name)
             self.logger.warning("delete_older_than_ts %s\n" % delete_older_than_ts)
+            ok = False
 
         self.db_lock.release()
+        return ok
 
     # inserts done here to handle cursor write locking
     def insert_stmt(self, table_name, val_str):
-
+        """
+        Method to insert values in a table.
+        :param table_name: the name of the table to insert values in.
+        :param val_str: a string listing (exhaustively) the values to be inserted.
+            It is expected to be in the form "( val1, val2, val3, ..., valn)" if the 
+            table has n columns.
+        :return: True if there no issue inserting the data, false otherwise.
+        """
+        ret = True
         self.db_lock.acquire()
         ins_str = "insert into " + table_name + " values " + val_str
         self.logger.debug(ins_str)
@@ -368,7 +386,10 @@ class TableManager:
         if not self.execute_sql(ins_str):
             self.logger.warning("Trouble inserting data to %s.\n" % table_name)
             self.logger.warning("val str %s\n" % val_str)
+            ret = False
         self.db_lock.release()
+
+        return ret
 
     # deletes done here to handle cursor write locking
     def delete_stmt(self, table_name, obj_id):
@@ -438,7 +459,7 @@ class TableManager:
 
     def get_column_name(self, column):
         """
-        Method to return the column name properly quoted, or not for the DB engine currently used.
+        Method to return the column name properly quoted, or not, for the DB engine currently used.
         :param column: the name of the column
         :return: the column string to be inserted into a SQL statement 
         """
@@ -501,18 +522,22 @@ class TableManager:
         """
         Creates a list of tables
         :param table_str_arr: the list of tables to create.
+        :return: True if the tables were successfully created, False otherwise
         """
+        ok = True
         for table_str in table_str_arr:
             # Ensures table_str is in ops_ namespace
             if table_str.startswith("ops_"):
-                self.__establish_table__(table_str)
-
+                if not self.__establish_table__(table_str):
+                    ok = False
+        return ok
 
     def establish_all_tables(self):
         """
         Creates all the DB tables
+        :return: True if the tables were successfully created, False otherwise
         """
-        self.__establish_tables__(self.tables)
+        return self.__establish_tables__(self.tables)
 
     def purge_outdated_resources_from_info_tables(self):
         pass  # TODO fill in
@@ -522,8 +547,9 @@ class TableManager:
         """
         Creates a specific table
         :param table_str: the name of the table to create.
+        :return: True if the table was successfully created, False otherwise
         """
-
+        ok = True
         if self.table_exists(table_str):
             self.logger.debug("table " + table_str + " already exists.")
             self.logger.debug("Skipping creation of " + table_str)
@@ -534,47 +560,59 @@ class TableManager:
             self.logger.info("create table " + table_str + schema_str)
             if not self.execute_sql("create table " + table_str + schema_str):
                 self.logger.warning("Exception while creating table %s %s" % (table_str, schema_str))
+                ok = False
             self.db_lock.release()
+        return ok
 
     def drop_all_tables(self):
         """
         Drops all the DB tables
+        :return: True if the tables were dropped, false if there was any kind of issue.
         """
         reverse_table_order = self.tables[:]
         reverse_table_order.reverse()
-        self.__drop_tables__(reverse_table_order)
+        return self.__drop_tables__(reverse_table_order)
 
     def drop_data_tables(self):
         """
         Drops the DB data tables (not the info ones)
+        :return: True if the tables were dropped, false if there was any kind of issue.
         """
         # no need to consider the tables order because the data tables only depend on info tables.
-        self.__drop_tables__(self.data_schema.keys())
+        return self.__drop_tables__(self.data_schema.keys())
 
     def __drop_tables__(self, table_str_arr):
         """
         Drops a list of tables
         :param table_str_arr: the list of tables to be dropped.
+        :return: True if the tables were dropped, false if there was any kind of issue.
         """
+        ok = True
         for table_str in table_str_arr:
-            self.__drop_table__(table_str)
+            if not self.__drop_table__(table_str):
+                ok = False
+
+        return ok
 
 
     def __drop_table__(self, table_str):
         """
         Drops a specific table
         :param table_str: the name of the table to be dropped
+        :return: True if the tables was dropped, false if there was any kind of issue.
         """
         self.db_lock.acquire()
         self.logger.debug("drop table if exists " + table_str)
 
         if self.execute_sql("drop table if exists " + table_str):
             self.logger.info("Dropped table: " + table_str)
+            ok = True
         else:
             self.logger.warning("Error while dropping table %s" % (table_str))
+            ok = False
 
         self.db_lock.release()
-
+        return ok
 
     def get_all_ids_from_table(self, table_str):
 
@@ -594,7 +632,6 @@ class TableManager:
 
 
     def translate_table_schema_to_schema_str(self, table_schema_dict, table_constraint_dict, table_str):
-        self.logger.debug("creating table schema statement for " + table_str)
         schema_str = "("
         for col_i in range(len(table_schema_dict)):
             schema_str += self.get_column_name(table_schema_dict[col_i][0]) + " " + table_schema_dict[col_i][1]
