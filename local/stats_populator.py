@@ -66,26 +66,29 @@ class StatsPopulator(threading.Thread):
         self.pkts_last_rx_dps = psutil.network_io_counters().dropin
         self.ts_last_tx_dps = int(time.time())
         self.pkts_last_tx_dps = psutil.network_io_counters().dropout
+        self.run_ok = True
 
 
     def run(self):
 
         print "Starting thread for populating stats about" + self.obj_id
 
-        self.run_stats_main()
+        self.run_ok = self.run_stats_main()
 
         print "Exiting thread for populating stats about" + self.obj_id
 
     def run_stats_main(self):
-
+        ok = True
         for _ in range(self.num_inserts):
             print "%d %s wakeup and sample" % (time.time() * 1000000, self.obj_id)
             for ev_t in self.event_types_arr:
-                self.stat_insert(ev_t)
+                if not self.stat_insert(ev_t):
+                    ok = False
             time.sleep(self.sleep_period_sec)
+        return ok
 
     def stat_insert(self, ev_t):
-
+        ok = True
         time_sec_epoch = int(time.time() * 1000000)
         data = self.get_data(ev_t)
         if data != None:
@@ -93,11 +96,15 @@ class StatsPopulator(threading.Thread):
             table_str = "ops_" + self.obj_type + "_" + ev_t
             old_ts = (time.time() - self.data_life_time_sec) * 1000000
 
-            self.tbl_mgr.insert_stmt(table_str, val_str)
+            if not self.tbl_mgr.insert_stmt(table_str, val_str):
+                ok = False
 
-            self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
+            if not self.tbl_mgr.purge_old_tsdata(table_str, old_ts):
+                ok = False
         else:
             print "No data received for event_type:", ev_t
+
+        return ok
 
     # Simple calls to get data
     # These should be non-blocking
@@ -258,8 +265,13 @@ def main():
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     event_types = ocl.get_event_types()
 
-    tbl_mgr.drop_data_tables()
-    tbl_mgr.establish_all_tables()
+    if not tbl_mgr.drop_all_tables():
+        sys.stderr.write("\nCould not drop all tables.\n")
+        sys.exit(-1)
+
+    if not tbl_mgr.establish_all_tables():
+        sys.stderr.write("\nCould not create all tables.\n")
+        sys.exit(-1)
 
     node_id = "instageni.gpolab.bbn.com_node_pc1"
     event_types_arr = event_types["node"]
@@ -281,9 +293,16 @@ def main():
     threads.append(nsp)
     threads.append(isp)
 
+    ok = True
     # join all threads
     for t in threads:
         t.join()
+        if not t.run_ok:
+            ok = False
+    if not ok:
+        sys.stderr.write("\nCould not populate statistics properly.\n")
+        sys.exit(-1)
+
 
 if __name__ == "__main__":
     main()

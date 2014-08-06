@@ -50,7 +50,7 @@ def parse_args(argv):
     per_sec = 0.2;
 
     try:
-        opts, args = getopt.getopt(argv,"hb:n:i:r:s:a:e:",["baseurl=","nodeid=","interfaceid=","numinserts=","sleepperiodsec=","aggregateid=","experimentid="])
+        opts, args = getopt.getopt(argv, "hb:n:i:r:s:a:e:", ["baseurl=", "nodeid=", "interfaceid=", "numinserts=", "sleepperiodsec=", "aggregateid=", "experimentid="])
     except getopt.GetoptError:
         usage()
 
@@ -74,7 +74,7 @@ def parse_args(argv):
 
     return [base_url, node_id, interface_id, aggregate_id, experiment_id, num_ins, per_sec]
 
-            
+
 def main(argv):
 
     [base_url, node_id, interface_id, aggregate_id, experiment_id, num_ins, per_sec] = parse_args(argv)
@@ -87,18 +87,29 @@ def main(argv):
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     event_types = ocl.get_event_types()
 
-    tbl_mgr.drop_all_tables()
-    tbl_mgr.establish_all_tables()
+    if not tbl_mgr.drop_all_tables():
+        sys.stderr.write("\nCould not drop all tables.\n")
+        sys.exit(-1)
+    if not tbl_mgr.establish_all_tables():
+        sys.stderr.write("\nCould not create all tables.\n")
+        sys.exit(-1)
 
     # info population
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)
-    ip.insert_fake_info()    
-    ip.insert_externalcheck_store()
+    error = False
+    if not ip.insert_fake_info():
+        error = True
+    if not ip.insert_externalcheck_store():
+        error = True
+
+    if error:
+        sys.stderr.write("Error populating local datastore\n")
+        sys.exit(-1)
 
     q_res = tbl_mgr.query("select count(*) from ops_aggregate")
     if q_res is not None:
         print "Aggregate has ", q_res[0][0], "entries"
-    
+
     # data population
     node_event_str_arr = event_types["node"]
     interface_event_str_arr = event_types["interface"]
@@ -130,11 +141,18 @@ def main(argv):
     threads.append(aggregate_sp)
     threads.append(experiment_sp)
 
+    ok = True
     # join all threads
     for t in threads:
         t.join()
+        if not t.run_ok:
+            ok = False
 
-    #for ev in (node_event_str_arr + interface_event_str_arr):
+    if not ok:
+        sys.stderr.write("\nCould not populate statistics properly.\n")
+        sys.exit(-1)
+
+    # for ev in (node_event_str_arr + interface_event_str_arr):
     #    cur.execute("select * from ops_" + ev + " limit 1");
     #    print ev, "has this entry:\n", cur.fetchone()
 
