@@ -381,7 +381,6 @@
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["UNIQUE (%s)", ["tag"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_urn", "ops_interface", "urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_href", "ops_interface", "selfRef"]]
         ],
