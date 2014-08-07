@@ -347,7 +347,7 @@
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_urn", "ops_aggregate", "urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_href", "ops_aggregate", "selfRef"]]
             // resource_urn and resource_href should be in either the ops_node
-	    // table or the ops_link table, but we don't know which one here, so we can't put a
+            // table or the ops_link table, but we don't know which one here, so we can't put a
             // foreign key constraint for them.
         ],
         "dependencies" : ["ops_aggregate"]
