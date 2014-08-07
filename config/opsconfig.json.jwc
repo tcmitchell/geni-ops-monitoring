@@ -337,7 +337,7 @@
              ["expires", "int8", true],
              ["resource_type", "varchar", true],
              ["resource_urn", "varchar", true],
-             ["resource_href", "varchar", true],
+             ["resource_href", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
