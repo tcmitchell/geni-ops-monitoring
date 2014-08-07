@@ -37,8 +37,13 @@ def main():
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
 
-    tbl_mgr.drop_all_tables()
-    tbl_mgr.establish_all_tables()
+    if not tbl_mgr.drop_all_tables():
+        sys.stderr.write("\nCould not drop all tables.\n")
+        sys.exit(-1)
+
+    if not tbl_mgr.establish_all_tables():
+        sys.stderr.write("\nCould not create all tables.\n")
+        sys.exit(-1)
 
 if __name__ == "__main__":
     main()
