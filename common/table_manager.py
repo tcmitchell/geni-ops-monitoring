@@ -671,6 +671,18 @@ class TableManager:
         # remove , and add )
         return schema_str[:-1] + ")"
 
+    def get_column_from_schema(self, schema, column_name):
+        """
+        Method to find the index of a column in the schema
+        :param schema: a table schema
+        :param column_name: the name of a column
+        return the index of the column in the schema, or None if it was not found
+        """
+        for col in range(len(schema)):
+            if schema[col][0] == column_name:
+                return col
+        return None
+
     def query(self, querystr):
         """
         Execute a query and returns the results.
@@ -687,7 +699,9 @@ class TableManager:
         cur = con.cursor()
         q_res = None
         try:
+            self.logger.debug("About to execute: %s" % (querystr))
             cur.execute(querystr)
+            self.logger.debug("Modified row count: %d " % (cur.rowcount))
             if cur.rowcount > 0:
                 q_res = cur.fetchall()
         except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
@@ -752,7 +766,9 @@ class TableManager:
             for statement in statements:
                 err = True
                 try:
+                    self.logger.debug("About to execute: %s" % (statement))
                     cur.execute(statement)
+                    self.logger.debug("Modified row count: %d " % (cur.rowcount))
                     err = False
                 except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
                     self.logger.info("Trying to reconnect")
@@ -785,6 +801,71 @@ class TableManager:
         self.dbmanager.return_connection(con)
 
         return res
+
+    def upsert(self, table_name, table_schema, row, id_column):
+        # TODO: consider the case where several columns form the key
+        """
+        Method to insert or update (aka merge or upsert) a row of data into a table.
+        :param table_name: the name of the table to modify
+        :param table_schema:the schema of the table
+        :param row: the row to insert or update (i.e. a list of values)
+        :param id_column: the position of the column in the table that can act as a key.
+        :return: True if the insert or update happened successfully, False otherwise.
+        :note: With a postgres engine, this method only works for tables which have 
+            primary keys defined.
+        """
+        if (len(table_schema) != len(row)):
+            self.logger.warning("Problem with data for table %s: schema has %d fields, row has %d!\n %s\n %s" % \
+                                (table_name, len(table_schema), len(row), str(table_schema), str(row)))
+            return False
+        ok = True
+        statements = []
+        schema_str = "("
+        for col in range(len(table_schema)):
+            if col > 0:
+                schema_str += ", "
+            schema_str += self.get_column_name(table_schema[col][0])
+        schema_str += ")"
+        values_str = ""
+        for col in range(len(row)):
+            if col > 0:
+                values_str += ", "
+            values_str += "'" + str(row[col]) + "'"
+        field_value_str = ""
+        for col in range(len(table_schema)):
+            if col > 0:
+                field_value_str += ", "
+            field_value_str += self.get_column_name(table_schema[col][0]) + "='" + str(row[col]) + "'"
+
+        if (self.database_program == "postgres"):
+            # for postgres there are 2 statements executed in the same transaction.
+            # The syntax used is as follows:
+            # UPDATE table SET field1=value1, field2=value2, ... , fieldn=valuen WHERE id_field=id_value;
+            # INSERT INTO table (field1, field2, ... fieldn)
+            #    SELECT value1, value2, ... , valuen WHERE NOT EXISTS(SELECT 1 FROM table WHERE id_field=id_value);
+            # the UPDATE will succeed if a row with id_field=id_value exists, otherwise has no effect.
+            # the INSERT will succeed only if a row with id_field=id_value does not already exists.
+            statement = "UPDATE \"" + table_name + "\" SET " + field_value_str + \
+                        " WHERE " + self.get_column_name(table_schema[id_column][0]) + "='" \
+                        + str(row[id_column]) + "'"
+            statements.append(statement)
+            statement = "INSERT INTO \"" + table_name + "\" " + schema_str + \
+                        " SELECT " + values_str + " WHERE NOT EXISTS ( SELECT 1 from " + \
+                        table_name + " WHERE " + self.get_column_name(table_schema[id_column][0]) + \
+                        "='" + str(row[id_column]) + "')"
+            statements.append(statement)
+        elif (self.database_program == "mysql"):
+            # for MySql, the statement executed has the following syntax:
+            # INSERT INTO table (field1, field2, ... fieldn) VALUES ( value1, value2, ... , valuen )
+            # ON DUPLICATE KEY UPDATE field1=value1, field2=value2, ... , fieldn=valuen
+            # NOTE: this works only on tables which have a primary key defined.
+            #      (Possibly NOT NULL UNIQUE column as well)
+            statement = "INSERT INTO " + table_name + schema_str + \
+                        " VALUE (" + values_str + ") ON DUPLICATE KEY UPDATE " + field_value_str
+            statements.append(statement)
+        if not self.execute_sql(statements):
+            ok = False
+        return ok
 
 # used only if arguments passed to program
 # gets each argument as a table name
