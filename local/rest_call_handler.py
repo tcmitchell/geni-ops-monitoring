@@ -53,8 +53,8 @@ def handle_ts_data_query(tm, filters):
     if ts_where_str == "":
         return "[]"
 
-    resp_arr = []    
-    
+    resp_arr = []
+
     for event_type in event_types:
         et_split = event_type.split(':')
         if et_split[0] == "ops_monitoring":
@@ -62,10 +62,10 @@ def handle_ts_data_query(tm, filters):
             obj_type = objects["type"]
             for obj_id in objects["id"]:
                 resp_i = {}
-                        
+
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
                 obj_schema = get_object_schema(tm, obj_type, obj_id)
-            
+
                 if (ts_arr != None):
                     resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#"
                     resp_i["id"] = event_type + ":" + obj_id
@@ -155,7 +155,7 @@ def handle_sliver_info_query(tm, sliver_id):
                 res_refs.append(node_ref)
             elif len(link_ref) > 0:
                 res_refs.append(link_ref)
-            
+
         return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, res_refs))
 
     else:
@@ -169,7 +169,7 @@ def handle_aggregate_info_query(tm, agg_id):
     table_str = "ops_aggregate"
     agg_schema = tm.schema_dict[table_str]
 
-    res_refs = []    
+    res_refs = []
     slv_refs = []
 
     agg_info = get_object_info(tm, table_str, agg_id)
@@ -177,7 +177,7 @@ def handle_aggregate_info_query(tm, agg_id):
 
         resources = get_related_objects(tm, "ops_aggregate_resource", "aggregate_id", agg_id)
 
-        for res_i in resources: 
+        for res_i in resources:
             # not sure if resource is a node or link.  Query for both add proper result.
             node_ref = get_refs(tm, "ops_node", res_i)
             link_ref = get_refs(tm, "ops_link", res_i)
@@ -202,7 +202,7 @@ def handle_externalcheck_info_query(tm, extck_id):
     table_str = "ops_externalcheck"
     extck_schema = tm.schema_dict[table_str]
 
-    exp_refs = []    
+    exp_refs = []
 
     extck_info = get_object_info(tm, table_str, extck_id)
     if extck_info is not None:
@@ -211,7 +211,7 @@ def handle_externalcheck_info_query(tm, extck_id):
 
         experiments = get_related_objects(tm, "ops_externalcheck_experiment", "externalcheck_id", extck_id)
 
-        for exp_i in experiments: 
+        for exp_i in experiments:
             exp_ref = get_self_ref(tm, "ops_experiment", exp_i)
             if exp_ref:
                 exp_refs.append(exp_ref)
@@ -229,7 +229,7 @@ def handle_authority_info_query(tm, auth_id):
     table_str = "ops_authority"
     auth_schema = tm.schema_dict[table_str]
 
-    user_refs = []    
+    user_refs = []
     slice_refs = []
 
     auth_info = get_object_info(tm, table_str, auth_id)
@@ -256,7 +256,7 @@ def handle_slice_info_query(tm, slice_id):
     table_str = "ops_slice"
     slice_schema = tm.schema_dict[table_str]
 
-    user_refs = []    
+    user_refs = []
 
     slice_info = get_object_info(tm, table_str, slice_id)
     if slice_info is not None:
@@ -293,16 +293,26 @@ def handle_link_info_query(tm, link_id):
     table_str = "ops_link"
     link_schema = tm.schema_dict[table_str]
 
-    endpt_refs = []    
 
     link_info = get_object_info(tm, table_str, link_id)
     if link_info is not None:
-
+        endpt_refs = []
+        parent_refs = []
+        children_refs = []
         endpts = get_related_objects(tm, "ops_link_interfacevlan", "link_id", link_id)
         for endpt_i in endpts:
             endpt_refs.append(get_refs(tm, "ops_interfacevlan", endpt_i))
+        parent_ids = get_related_objects(tm, "ops_link_relations", "child_id", link_id, "parent_id")
+        for parent_id in parent_ids:
+            parent_info = get_object_info(tm, table_str, parent_id)
+            parent_refs.append(get_object_href_and_urn(link_schema, parent_info))
+        # same for childrea
+        children_ids = get_related_objects(tm, "ops_link_relations", "parent_id", link_id, "child_id")
+        for child_id in children_ids:
+            child_info = get_object_info(tm, table_str, child_id)
+            children_refs.append(get_object_href_and_urn(link_schema, child_info))
 
-        return json.dumps(get_link_info_dict(link_schema, link_info, endpt_refs))
+        return json.dumps(get_link_info_dict(link_schema, link_info, endpt_refs, parent_refs, children_refs))
 
     else:
         opslog.debug("link not found: " + link_id)
@@ -344,7 +354,7 @@ def check_data_query_keys(q_dict):
     if "filters" not in q_dict:
         opslog.debug(str(q_dict) + "\n has dictionary error.  It is missing filters key")
         return (False, "query: " + str(q_dict) + "<br><br>has dictionary error.  It is missing filters key")
-        
+
     missing_keys = []
     if "ts" not in q_dict["filters"]:
         missing_keys.append("ts")
@@ -407,15 +417,15 @@ def get_experiment_info_dict(schema, info_row):
                 dest_agg_href = info_row[col_i]
             else:  # top level keys are equal to what is in DB
                 json_dict[schema[col_i][0]] = info_row[col_i]
-                
+
 #    json_dict["source_aggregate"] = {"urn":src_agg_urn,"href":src_agg_href}
     if (src_agg_urn is not None) or (src_agg_href is not None):
         json_dict["source_aggregate"] = {}
-        if (src_agg_urn is not None): 
+        if (src_agg_urn is not None):
             json_dict["source_aggregate"]["urn"] = src_agg_urn
         if (src_agg_href is not None):
             json_dict["source_aggregate"]["href"] = src_agg_href
-        
+
 #    json_dict["destination_aggregate"] = {"urn":dest_agg_urn,"href":dest_agg_href}
     if (dest_agg_urn is not None) or (dest_agg_href is not None):
         json_dict["destination_aggregate"] = {}
@@ -441,7 +451,7 @@ def get_interfacevlan_info_dict(schema, info_row):
                 iface_href = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
-            
+
     if (iface_urn is not None) or (iface_href is not None):
         json_dict["interface"] = {}
         if (iface_urn is not None):
@@ -467,7 +477,7 @@ def get_user_info_dict(schema, info_row):
                 auth_href = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
-            
+
 #    json_dict["authority"] = {"urn":auth_urn,"href":auth_href}
     if (auth_urn is not None) or (auth_href is not None):
         json_dict["authority"] = {}
@@ -488,7 +498,7 @@ def get_node_info_dict(schema, info_row, interface_refs):
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
             if schema[col_i][0].startswith("properties$"):
-            # parse off properties$ 
+            # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
@@ -498,7 +508,7 @@ def get_node_info_dict(schema, info_row, interface_refs):
         for interface_ref in interface_refs:
             if len(interface_ref) > 0:
                 json_dict["interfaces"].append({"href":interface_ref[0], "urn":interface_ref[1]})
-            
+
     return json_dict
 
 
@@ -523,7 +533,7 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
         for auth_ref in auth_refs:
             if len(auth_ref) > 0:
                 json_dict["authorities"].append({"href":auth_ref[0], "urn":auth_ref[1]})
-            
+
     if events_list:
         json_dict["events"] = {}
         json_dict["events"]["node"] = []
@@ -562,7 +572,7 @@ def get_sliver_info_dict(schema, info_row, res_refs):
                 agg_href = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
-            
+
 #    json_dict["aggregate"] = {"urn":agg_urn,"href":agg_href}
     if (agg_urn is not None) or (agg_href is not None):
         json_dict["aggregate"] = {}
@@ -576,7 +586,7 @@ def get_sliver_info_dict(schema, info_row, res_refs):
         for res_ref in res_refs:
             if len(res_ref) > 0:
                 json_dict["resources"].append({"href":res_ref[0], "urn":res_ref[1]})
-            
+
     return json_dict
 
 
@@ -584,7 +594,7 @@ def get_sliver_info_dict(schema, info_row, res_refs):
 def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
 
     json_dict = {}
-    
+
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
@@ -600,14 +610,14 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
             if len(slv_ref) > 0:
-                json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})  
+                json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})
     return json_dict
 
 # Forms external check store info dictionary (to be made to JSON)
 def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
 
     json_dict = {}
-    
+
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
@@ -629,10 +639,10 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
 
 
 # Forms link info dictionary (to be made to JSON)
-def get_link_info_dict(schema, info_row, endpt_refs):
+def get_link_info_dict(schema, info_row, endpt_refs, parent_refs, children_refs):
 
     json_dict = {}
-    
+
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
@@ -641,8 +651,21 @@ def get_link_info_dict(schema, info_row, endpt_refs):
     if endpt_refs:
         json_dict["endpoints"] = []
         for endpt_ref in endpt_refs:
-            if len(endpt_ref) > 0:
+            if len(endpt_ref) >= 2:
                 json_dict["endpoints"].append({"href":endpt_ref[0], "urn":endpt_ref[1]})
+
+    if parent_refs:
+        # right now there can only be one parent. If/when we have multiple parents
+        # we'll add them as an array (like children)
+        parent_ref = parent_refs[0]
+        if len(parent_ref) >= 2:
+                json_dict["parent"] = {"href":parent_ref[0], "urn":parent_ref[1]}
+
+    if children_refs:
+        json_dict["children"] = []
+        for child_ref in children_refs:
+            if len(child_ref) >= 2:
+                json_dict["children"].append({"href":child_ref[0], "urn":child_ref[1]})
 
     return json_dict
 
@@ -651,7 +674,7 @@ def get_link_info_dict(schema, info_row, endpt_refs):
 def get_slice_info_dict(schema, info_row, user_refs):
 
     json_dict = {}
-                
+
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
@@ -675,7 +698,7 @@ def get_slice_info_dict(schema, info_row, user_refs):
         for member_ref in user_refs:
             if len(member_ref) > 0:
                 json_dict["members"].append({"href":member_ref[0], "urn":member_ref[1], "role":member_ref[2]})
-            
+
     return json_dict
 
 
@@ -683,7 +706,7 @@ def get_slice_info_dict(schema, info_row, user_refs):
 def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 
     json_dict = {}
-    
+
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
@@ -700,7 +723,7 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
         for slice_ref in slice_refs:
             if len(slice_ref) > 0:
                 json_dict["slices"].append({"href":slice_ref[0], "urn":slice_ref[1]})
-            
+
     return json_dict
 
 
@@ -715,19 +738,43 @@ def get_object_info(tm, table_str, obj_id):
         res = q_res[0]  # first (and only) row...
     return res
 
+def get_object_href_and_urn(schema, object_info):
+    """
+    Function to get the href and urn values from a row of information about an object.
+    The row of information is expected to be a tuple or a list of value, in the order 
+    specified by the schema.
+    :param schema: the schema representing the columns of the object information row.
+    :param object_info: the list of values representing the object information.
+    :return: a list with 2 elements, first the href, second the urn
+    """
+    res = []
+    col_selfRef = 0
+    col_urn = 0;
+    for col_i in range(len(schema)):
+        if schema[col_i] == "selfRef":
+            col_selfRef = col_i
+        elif schema[col_i] == "urn":
+            col_urn = col_i
+
+    res.append(object_info[col_selfRef])
+    res.append(object_info[col_urn])
+    return res
+
+
 # Gets event types for an object
 def get_events_list(tm):
     return tm.query("select object_type, name, id, ts, v, units from ops_opsconfig_event")
 
 # Gets info for an object
 def get_info_list(tm):
-    return tm.query("select tablename, schemaarray from ops_opsconfig_info") 
+    return tm.query("select tablename, schemaarray from ops_opsconfig_info")
 
 
 # Gets related objects
-def get_related_objects(tm, table_str, colname_str, id_str):
-    
-    q_res = tm.query("select distinct id from " + table_str + " where " + colname_str + " = '" + id_str + "'")
+def get_related_objects(tm, table_str, colname_str, id_str, id_column="id"):
+
+    q_res = tm.query("select distinct " + tm.get_column_name(id_column) + " from "
+                     + table_str + " where " + colname_str + " = '" + id_str + "'")
     res = []
     if q_res is not None:
         for res_i in range(len(q_res)):
@@ -755,7 +802,7 @@ def get_self_ref(tm, table_str, object_id):
                      " where id = '" + object_id + "' limit 1")
     if q_res is not None:
         self_ref = q_res[0]  # gets first of single tuple
-    
+
     return self_ref
 
 
@@ -778,7 +825,7 @@ def get_slice_user_refs(tm, table_str, user_id):
     return refs
 
 
-# special get of refs for opsconfig aggregates which includes amtype  
+# special get of refs for opsconfig aggregates which includes amtype
 # TODO refactor similar functions
 def get_opsconfig_aggregate_refs(tm, table_str, opsconfig_id):
 
@@ -821,7 +868,7 @@ def build_ts_where_str(ts_dict):
                 ts_filters.append("ts < " + str(ts_v))
     except Exception, e:
         opslog.warning(str(e), "ts filters has invalid key or value:")
-    
+
     try:
         ts_where_str = ts_filters[0] + " and " + ts_filters[1]
     except Exception, e:
