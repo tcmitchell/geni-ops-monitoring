@@ -102,41 +102,51 @@ class SingleLocalDatastoreInfoCrawler:
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
-
+        ok = True
         self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path, self.logger)
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
                 am_info_list.append(self.am_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_aggregate", self.am_dict["id"], am_info_list, self.debug, self.logger)
+            if not info_update(self.tbl_mgr, "ops_aggregate", schema, am_info_list, \
+                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                ok = False
+        return ok
 
     # Updates externalcheck information
     def refresh_externalcheck_info(self):
-
+        ok = True
         self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path, self.logger)
         if self.extck_dict:
             schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
             extck_info_list = []
             for key in schema:
                 extck_info_list.append(self.extck_dict[key[0]])
-            info_update(self.tbl_mgr, "ops_externalcheck", self.extck_dict["id"], extck_info_list, self.debug, self.logger)
+            if not info_update(self.tbl_mgr, "ops_externalcheck", schema, extck_info_list, \
+                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                ok = False
+        return ok
 
     # Updates all the monitored aggregates
     def refresh_all_monitoredaggregates_info(self):
-
+        ok = True
         if self.extck_dict:
-#             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
+            schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
 #             mon_aggs = []
             for mon_agg in self.extck_dict["monitored_aggregates"]:
                 mon_agg_info = [mon_agg["id"], self.extck_dict["id"], mon_agg["href"]]
-                info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg["id"], mon_agg_info, self.debug, self.logger)
+                if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
+                                   self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                    ok = False
+        return ok
 
     # Updates all nodes information
     def refresh_all_links_info(self):
-
+        ok = True
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_link"]
+            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
@@ -145,15 +155,21 @@ class SingleLocalDatastoreInfoCrawler:
                         if res_dict["$schema"].endswith("link#"):  # if a link
                             # get each attribute out of response into list
                             link_info_list = self.get_link_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_link", res_dict["id"], link_info_list, self.debug, self.logger)
+                            if not info_update(self.tbl_mgr, "ops_link", schema, link_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                                ok = False
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug, self.logger)
+                        if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
+                            ok = False
+        return ok
 
 
     def refresh_all_slivers_info(self):
-
+        ok = True
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_sliver"]
+            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_sliver"]
             # Need to check because "slivers" is optional
             if "slivers" in self.am_dict:
                 for slv_i in self.am_dict["slivers"]:
@@ -161,15 +177,21 @@ class SingleLocalDatastoreInfoCrawler:
                     if slv_dict:
                         # get each attribute out of response into list
                         slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                        info_update(self.tbl_mgr, "ops_sliver", slv_dict["id"], slv_info_list, self.debug, self.logger)
+                        if not info_update(self.tbl_mgr, "ops_sliver", schema, slv_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                            ok = False
                         agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_sliver", slv_dict["id"], agg_slv_info_list, self.debug, self.logger)
+                        if not info_update(self.tbl_mgr, "ops_aggregate_sliver", res_schema, agg_slv_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
+                            ok = False
+        return ok
 
 
     def refresh_all_nodes_info(self):
-
+        ok = True
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
+            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
@@ -178,15 +200,21 @@ class SingleLocalDatastoreInfoCrawler:
                         if res_dict["$schema"].endswith("node#"):  # if a node
                             # get each attribute out of response into list
                             node_info_list = self.get_node_attributes(res_dict, schema)
-                            info_update(self.tbl_mgr, "ops_node", res_dict["id"], node_info_list, self.debug, self.logger)
+                            if not info_update(self.tbl_mgr, "ops_node", schema, node_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                                ok = False
                         agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        info_update(self.tbl_mgr, "ops_aggregate_resource", res_dict["id"], agg_res_info_list, self.debug, self.logger)
+                        if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
+                            ok = False
+        return ok
 
 
     def refresh_all_interfacevlans_info(self):
-
+        ok = True
         link_urls = self.get_all_links_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
+        link_ifvlan_schema = self.tbl_mgr.schema_dict["ops_link_interfacevlan"]
         for link_url in link_urls:
             link_dict = handle_request(link_url, self.cert_path, self.logger)
             if link_dict:
@@ -195,19 +223,24 @@ class SingleLocalDatastoreInfoCrawler:
                         ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
                         if ifacevlan_dict:
                             ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interfacevlan", ifacevlan_dict["id"], ifacevlan_info_list, self.debug, self.logger)
+                            if not info_update(self.tbl_mgr, "ops_interfacevlan", schema, ifacevlan_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                                ok = False
                             link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
-                            info_update(self.tbl_mgr, "ops_link_interfacevlan", ifacevlan_dict["id"], link_ifacevlan_info_list, self.debug, self.logger)
-
+                            if not info_update(self.tbl_mgr, "ops_link_interfacevlan", link_ifvlan_schema, link_ifacevlan_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(link_ifvlan_schema, "id"), self.debug, self.logger):
+                                ok = False
+        return ok
 
 
     # Updates all interfaces information
     # First queries all nodes at aggregate and looks for their ports
     # Then, loops through each port in the node_dict
     def refresh_all_interfaces_info(self):
-
+        ok = True
         node_urls = self.get_all_nodes_of_aggregate()
         schema = self.tbl_mgr.schema_dict["ops_interface"]
+        nodeif_schema = self.tbl_mgr.schema_dict["ops_node_interface"]
         for node_url in node_urls:
             node_dict = handle_request(node_url, self.cert_path, self.logger)
             if node_dict:
@@ -216,9 +249,14 @@ class SingleLocalDatastoreInfoCrawler:
                         interface_dict = handle_request(port["href"], self.cert_path, self.logger)
                         if interface_dict:
                             interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                            info_update(self.tbl_mgr, "ops_interface", interface_dict["id"], interface_info_list, self.debug, self.logger)
+                            if not info_update(self.tbl_mgr, "ops_interface", schema, interface_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                                ok = False
                             node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                            info_update(self.tbl_mgr, "ops_node_interface", interface_dict["id"], node_interface_info_list, self.debug, self.logger)
+                            if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
+                                ok = False
+        return ok
 
     def get_default_attribute_for_type(self, vartype):
         val = "";
@@ -482,7 +520,7 @@ def handle_request(url, cert_path, logger):
     return None
 
 
-def info_update(tbl_mgr, table_str, obj_id, row_arr, debug, logger):
+def info_update(tbl_mgr, table_str, table_schema, row_arr, id_column, debug, logger):
     """
     Function to update the information about an object.
     :param tbl_mgr: an instance of TableManager that will be used to execute the SQL statements.
@@ -496,29 +534,16 @@ def info_update(tbl_mgr, table_str, obj_id, row_arr, debug, logger):
     """
     ok = True
     if debug:
-        logger.info("<print only> delete " + obj_id + " from " + table_str)
+        logger.info("<print only> updating or inserting " + str(row_arr[id_column]) + " from " + table_str)
     else:
-        if not tbl_mgr.delete_stmt(table_str, obj_id):
+        if not tbl_mgr.upsert(table_str, table_schema, row_arr, id_column):
             ok = False
 
-    val_str = "("
-    for val in row_arr:
-        if val is None:
-            val_str += "NULL, "
-        else:
-            val_str += "'" + str(val) + "', "  # join won't do this
-    val_str = val_str[:-2] + ")"  # remove last 2 of 3: ', ' add ')'
-
-    if debug:
-        logger.info("<print only> insert " + table_str + " values: " + val_str)
-    else:
-        if not tbl_mgr.insert_stmt(table_str, val_str):
-            ok = False
     return ok
 
 
 def main(argv):
-
+    ok = True
     [info_url, aggregate_id, extck_id, objecttypes, cert_path, debug] = parse_args(argv)
 
     if info_url == "" or cert_path == "" or (extck_id == "" and aggregate_id == ""):
@@ -537,27 +562,39 @@ def main(argv):
 
     # Only do head aggregate info query if nodes, sliver, interface, vlan objects are in objecttypes
     if 'n' in objecttypes or 'l' in objecttypes or 's' in objecttypes or 'v' in objecttypes or 'i' in objecttypes:
-        crawler.refresh_aggregate_info()
+        if not crawler.refresh_aggregate_info():
+            ok = False
 
     if 'x' in objecttypes or 'e' in objecttypes:
-        crawler.refresh_externalcheck_info()
+        if not crawler.refresh_externalcheck_info():
+            ok = False
 
     # depending on what is in the objecttypes string, get other object
     # info.  Order of these should stay as is (v after l, i after n).
     if 'n' in objecttypes:
-        crawler.refresh_all_nodes_info()
+        if not crawler.refresh_all_nodes_info():
+            ok = False
     if 'l' in objecttypes:
-        crawler.refresh_all_links_info()
+        if not crawler.refresh_all_links_info():
+            ok = False
     if 's' in objecttypes:
-        crawler.refresh_all_slivers_info()
+        if not crawler.refresh_all_slivers_info():
+            ok = False
     if 'i' in objecttypes:
-        crawler.refresh_all_interfaces_info()
+        if not crawler.refresh_all_interfaces_info():
+            ok = False
     if 'v' in objecttypes:
-        crawler.refresh_all_interfacevlans_info()
+        if not crawler.refresh_all_interfacevlans_info():
+            ok = False
     if 'e' in objecttypes:
-        crawler.refresh_all_monitoredaggregates_info()
+        if not crawler.refresh_all_monitoredaggregates_info():
+            ok = False
     if 'x' in objecttypes:
-        crawler.refresh_all_experiments_info()
+        if not crawler.refresh_all_experiments_info():
+            ok = False
+    if not ok:
+        sys.stderr.write("Error while crawling data store...\n")
+        sys.exit(-1)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
