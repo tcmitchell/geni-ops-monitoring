@@ -29,9 +29,9 @@
       "uniqueItems": true,
       "items": {
         "type": "object",
-	"properties": {
+        "properties": {
           "urn": {
-	    "type":"string",
+            "type":"string",
             "required": true
           },
           "href": {
@@ -42,19 +42,38 @@
       }
     },
     "parent": {
-        "description": "upper-layer link that this link is part of",
-        // This is optional!
-        // XXX Though urn/href can point to any object, we really only
-        // have endpoint objects defined for layer2, namely, interfacevlan.
-        // To fully support other link layers, it seems that we need to
-        // define endpoint objects that are appropriate for those layers.
-        // A physical layer optical endpoint isn't likely to have a vlan
-        // associated with it.
-        "required": false,
-        "additionalProperties": false,
-	"properties": {
+       "description": "upper-layer link that this link is part of",
+       // This is optional!
+       // XXX Though urn/href can point to any object, we really only
+       // have endpoint objects defined for layer2, namely, interfacevlan.
+       // To fully support other link layers, it seems that we need to
+       // define endpoint objects that are appropriate for those layers.
+       // A physical layer optical endpoint isn't likely to have a vlan
+       // associated with it.
+       "required": false,
+       "additionalProperties": false,
+       "properties": {
+         "urn": {
+           "type":"string",
+           "required": true
+         },
+         "href": {
+           "type":"string",
+           "required": true
+         }
+       }
+    },
+    "children": {
+      "required": false,
+      "type": "array",
+      // Links can have children
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "properties": {
           "urn": {
-	    "type":"string",
+            "type":"string",
             "required": true
           },
           "href": {
@@ -62,7 +81,8 @@
             "required": true
           }
         }
-     }
-   }
+      }
+    }
+  }
 }
 
