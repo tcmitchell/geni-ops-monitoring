@@ -311,6 +311,7 @@
              ["id", "varchar", true],
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
+             ["layer", "varchar", false],
              ["ts", "int8", true]
         ],
         "constraints": [
@@ -521,6 +522,18 @@
         ],
         "dependencies" : ["ops_sliver", "ops_aggregate"]
     },
+    {   "name":"link_relations",
+        "db_schema" : [
+             ["parent_id", "varchar", true],
+             ["child_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["parent_id", "child_id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["parent_id", "ops_link", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["child_id", "ops_link", "id"]]
+        ],
+        "dependencies" : ["ops_link"]
+    },
     {   "name":"link_interfacevlan",
         "db_schema" : [
              ["id", "varchar", true],
@@ -530,8 +543,8 @@
          ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "link_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
+            ["UNIQUE (%s, %s)", ["selfRef", "link_id"]],
+            ["UNIQUE (%s, %s)", ["urn", "link_id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interfacevlan", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
         ],
