@@ -5,6 +5,8 @@ August 22, 2014
 * The REST calls changed as follows:
 
 * The local datastore's database schema changed as follows:
+ 1. ops_link table now has a layer column
+ 2. There is a new ops_link_relations to express parent/child relation between links.
 
 
 Changes for Release 1.1_patch1
