@@ -73,6 +73,61 @@ class DBManager(object):
         provided by the DB driver module. 
         """
         raise NotImplementedError();
+    
+    def get_table_schema_string(self, table_schema):
+        """
+        Method to get a schema string, i.e. "( col1Name, col2Name, .... , colnName)"
+        from a "usual" table schema list of tuples containing (column name, column type, required)
+        :param table_schema: A table schema in the usual format
+        :return: the corresponding schema string
+        """
+        schema_str = "("
+        for col in range(len(table_schema)):
+            if col > 0:
+                schema_str += ", "
+            schema_str += self.get_column_name(table_schema[col][0])
+        schema_str += ")"
+        return schema_str
+    
+    def get_table_values_string(self, row):
+        """
+        Method to get a string of value, i.e. "'value1', 'value2', ... , 'valuen'"
+        from a list of values.
+        :param row: the list of values
+        :return: the string of all the values.
+        """
+        values_str = ""
+        for col in range(len(row)):
+            if col > 0:
+                values_str += ", "
+            values_str += "'" + str(row[col]) + "'"
+        return values_str
+
+    def get_table_field_values_string(self, table_schema, row):
+        """
+        Method to get a string of field/values, i.e. "field1='value1', field2='value2', ... , fieldn='valuen'"
+        from the table schema and a list of values.
+        :param table_schema: A table schema in the usual format
+        :param row: the list of values
+        return the string of field/values
+        """
+        field_value_str = ""
+        for col in range(len(table_schema)):
+            if col > 0:
+                field_value_str += ", "
+            field_value_str += self.get_column_name(table_schema[col][0]) + "='" + str(row[col]) + "'"
+        return field_value_str
+
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        """
+        Method to provide the insert or update (aka merge or upsert) SQL statements for a row of data into a table.
+        :param table_name: the name of the table to modify
+        :param table_schema:the schema of the table
+        :param row: the row to insert or update (i.e. a list of values)
+        :param id_column: the position of the column in the table that can act as a key.
+        :return: The proper upsert SQL statements.
+        """
+        raise NotImplementedError();
 
 
 class MySQLDBManager (DBManager):
@@ -102,6 +157,20 @@ class MySQLDBManager (DBManager):
         import MySQLdb
         return MySQLdb
 
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        statements = []
+        # for MySql, the statement executed has the following syntax:
+        # INSERT INTO table (field1, field2, ... fieldn) VALUES ( value1, value2, ... , valuen )
+        # ON DUPLICATE KEY UPDATE field1=value1, field2=value2, ... , fieldn=valuen
+        # NOTE: this works only on tables which have a primary key defined.
+        #      (Possibly NOT NULL UNIQUE column as well)
+        statement = "INSERT INTO " + table_name + " " + self.get_table_schema_string(table_schema) + \
+                    " VALUE (" + self.get_table_values_string(row) + ") ON DUPLICATE KEY UPDATE " + \
+                    self.get_table_field_values_string(table_schema, row)
+        statements.append(statement)
+        return statements
+
+
 class PostgreSQLDBManager (DBManager):
     """
     Database Manager class for postgreSQL. 
@@ -123,6 +192,24 @@ class PostgreSQLDBManager (DBManager):
     def get_import_module_name(self):
         import psycopg2
         return psycopg2
+
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        statements = []
+        # for postgres there are 2 statements executed in the same transaction.
+        # The syntax used is as follows:
+        # UPDATE table SET field1=value1, field2=value2, ... , fieldn=valuen WHERE id_field=id_value;
+        # INSERT INTO table (field1, field2, ... fieldn)
+        #    SELECT value1, value2, ... , valuen WHERE NOT EXISTS(SELECT 1 FROM table WHERE id_field=id_value);
+        # the UPDATE will succeed if a row with id_field=id_value exists, otherwise has no effect.
+        # the INSERT will succeed only if a row with id_field=id_value does not already exists.
+        statement = "UPDATE \"" + table_name + "\" SET " + self.get_table_field_values_string(table_schema, row) + \
+                    " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "'"
+        statements.append(statement)
+        statement = "INSERT INTO \"" + table_name + "\" " + self.get_table_schema_string(table_schema) + \
+                    " SELECT " + self.get_table_values_string(row) + " WHERE NOT EXISTS ( SELECT 1 from " + \
+                    table_name + " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "')"
+        statements.append(statement)
+        return statements
 
 
 class TableManager:
@@ -819,50 +906,7 @@ class TableManager:
                                 (table_name, len(table_schema), len(row), str(table_schema), str(row)))
             return False
         ok = True
-        statements = []
-        schema_str = "("
-        for col in range(len(table_schema)):
-            if col > 0:
-                schema_str += ", "
-            schema_str += self.get_column_name(table_schema[col][0])
-        schema_str += ")"
-        values_str = ""
-        for col in range(len(row)):
-            if col > 0:
-                values_str += ", "
-            values_str += "'" + str(row[col]) + "'"
-        field_value_str = ""
-        for col in range(len(table_schema)):
-            if col > 0:
-                field_value_str += ", "
-            field_value_str += self.get_column_name(table_schema[col][0]) + "='" + str(row[col]) + "'"
-
-        if (self.database_program == "postgres"):
-            # for postgres there are 2 statements executed in the same transaction.
-            # The syntax used is as follows:
-            # UPDATE table SET field1=value1, field2=value2, ... , fieldn=valuen WHERE id_field=id_value;
-            # INSERT INTO table (field1, field2, ... fieldn)
-            #    SELECT value1, value2, ... , valuen WHERE NOT EXISTS(SELECT 1 FROM table WHERE id_field=id_value);
-            # the UPDATE will succeed if a row with id_field=id_value exists, otherwise has no effect.
-            # the INSERT will succeed only if a row with id_field=id_value does not already exists.
-            statement = "UPDATE \"" + table_name + "\" SET " + field_value_str + \
-                        " WHERE " + self.get_column_name(table_schema[id_column][0]) + "='" \
-                        + str(row[id_column]) + "'"
-            statements.append(statement)
-            statement = "INSERT INTO \"" + table_name + "\" " + schema_str + \
-                        " SELECT " + values_str + " WHERE NOT EXISTS ( SELECT 1 from " + \
-                        table_name + " WHERE " + self.get_column_name(table_schema[id_column][0]) + \
-                        "='" + str(row[id_column]) + "')"
-            statements.append(statement)
-        elif (self.database_program == "mysql"):
-            # for MySql, the statement executed has the following syntax:
-            # INSERT INTO table (field1, field2, ... fieldn) VALUES ( value1, value2, ... , valuen )
-            # ON DUPLICATE KEY UPDATE field1=value1, field2=value2, ... , fieldn=valuen
-            # NOTE: this works only on tables which have a primary key defined.
-            #      (Possibly NOT NULL UNIQUE column as well)
-            statement = "INSERT INTO " + table_name + schema_str + \
-                        " VALUE (" + values_str + ") ON DUPLICATE KEY UPDATE " + field_value_str
-            statements.append(statement)
+        statements = self.dbmanager.get_upsert_statements(table_name, table_schema, row, id_column)
         if not self.execute_sql(statements):
             ok = False
         return ok
