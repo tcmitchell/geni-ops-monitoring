@@ -37,7 +37,7 @@
       "type": "string",
       "required": false
     },
-    "creator_urn": {
+    "creator": {
       "description": "user who created this sliver",
       // For GENI users, this should be the user's URN.
       // For non-GENI users, use the best option you have available.  You can
