@@ -116,6 +116,7 @@ class LocalDatastoreServer:
         logger.get_logger(self.config_path).critical("Stopping ops monitoring")
 
 if __name__ == '__main__':
-
+    # We only come here when running directly under Flask, i.e.,
+    # when run as "python ./web_server.py"
     server = LocalDatastoreServer('..')
-    server.app.run(debug = True, port = 5000)
+    server.app.run(debug = True, host = "0.0.0.0", port = 5000)
