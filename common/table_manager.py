@@ -73,6 +73,61 @@ class DBManager(object):
         provided by the DB driver module. 
         """
         raise NotImplementedError();
+    
+    def get_table_schema_string(self, table_schema):
+        """
+        Method to get a schema string, i.e. "( col1Name, col2Name, .... , colnName)"
+        from a "usual" table schema list of tuples containing (column name, column type, required)
+        :param table_schema: A table schema in the usual format
+        :return: the corresponding schema string
+        """
+        schema_str = "("
+        for col in range(len(table_schema)):
+            if col > 0:
+                schema_str += ", "
+            schema_str += self.get_column_name(table_schema[col][0])
+        schema_str += ")"
+        return schema_str
+    
+    def get_table_values_string(self, row):
+        """
+        Method to get a string of value, i.e. "'value1', 'value2', ... , 'valuen'"
+        from a list of values.
+        :param row: the list of values
+        :return: the string of all the values.
+        """
+        values_str = ""
+        for col in range(len(row)):
+            if col > 0:
+                values_str += ", "
+            values_str += "'" + str(row[col]) + "'"
+        return values_str
+
+    def get_table_field_values_string(self, table_schema, row):
+        """
+        Method to get a string of field/values, i.e. "field1='value1', field2='value2', ... , fieldn='valuen'"
+        from the table schema and a list of values.
+        :param table_schema: A table schema in the usual format
+        :param row: the list of values
+        return the string of field/values
+        """
+        field_value_str = ""
+        for col in range(len(table_schema)):
+            if col > 0:
+                field_value_str += ", "
+            field_value_str += self.get_column_name(table_schema[col][0]) + "='" + str(row[col]) + "'"
+        return field_value_str
+
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        """
+        Method to provide the insert or update (aka merge or upsert) SQL statements for a row of data into a table.
+        :param table_name: the name of the table to modify
+        :param table_schema:the schema of the table
+        :param row: the row to insert or update (i.e. a list of values)
+        :param id_column: the position of the column in the table that can act as a key.
+        :return: The proper upsert SQL statements.
+        """
+        raise NotImplementedError();
 
 
 class MySQLDBManager (DBManager):
@@ -102,6 +157,20 @@ class MySQLDBManager (DBManager):
         import MySQLdb
         return MySQLdb
 
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        statements = []
+        # for MySql, the statement executed has the following syntax:
+        # INSERT INTO table (field1, field2, ... fieldn) VALUES ( value1, value2, ... , valuen )
+        # ON DUPLICATE KEY UPDATE field1=value1, field2=value2, ... , fieldn=valuen
+        # NOTE: this works only on tables which have a primary key defined.
+        #      (Possibly NOT NULL UNIQUE column as well)
+        statement = "INSERT INTO " + table_name + " " + self.get_table_schema_string(table_schema) + \
+                    " VALUE (" + self.get_table_values_string(row) + ") ON DUPLICATE KEY UPDATE " + \
+                    self.get_table_field_values_string(table_schema, row)
+        statements.append(statement)
+        return statements
+
+
 class PostgreSQLDBManager (DBManager):
     """
     Database Manager class for postgreSQL. 
@@ -123,6 +192,24 @@ class PostgreSQLDBManager (DBManager):
     def get_import_module_name(self):
         import psycopg2
         return psycopg2
+
+    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+        statements = []
+        # for postgres there are 2 statements executed in the same transaction.
+        # The syntax used is as follows:
+        # UPDATE table SET field1=value1, field2=value2, ... , fieldn=valuen WHERE id_field=id_value;
+        # INSERT INTO table (field1, field2, ... fieldn)
+        #    SELECT value1, value2, ... , valuen WHERE NOT EXISTS(SELECT 1 FROM table WHERE id_field=id_value);
+        # the UPDATE will succeed if a row with id_field=id_value exists, otherwise has no effect.
+        # the INSERT will succeed only if a row with id_field=id_value does not already exists.
+        statement = "UPDATE \"" + table_name + "\" SET " + self.get_table_field_values_string(table_schema, row) + \
+                    " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "'"
+        statements.append(statement)
+        statement = "INSERT INTO \"" + table_name + "\" " + self.get_table_schema_string(table_schema) + \
+                    " SELECT " + self.get_table_values_string(row) + " WHERE NOT EXISTS ( SELECT 1 from " + \
+                    table_name + " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "')"
+        statements.append(statement)
+        return statements
 
 
 class TableManager:
@@ -671,6 +758,18 @@ class TableManager:
         # remove , and add )
         return schema_str[:-1] + ")"
 
+    def get_column_from_schema(self, schema, column_name):
+        """
+        Method to find the index of a column in the schema
+        :param schema: a table schema
+        :param column_name: the name of a column
+        return the index of the column in the schema, or None if it was not found
+        """
+        for col in range(len(schema)):
+            if schema[col][0] == column_name:
+                return col
+        return None
+
     def query(self, querystr):
         """
         Execute a query and returns the results.
@@ -687,7 +786,9 @@ class TableManager:
         cur = con.cursor()
         q_res = None
         try:
+            self.logger.debug("About to execute: %s" % (querystr))
             cur.execute(querystr)
+            self.logger.debug("Modified row count: %d " % (cur.rowcount))
             if cur.rowcount > 0:
                 q_res = cur.fetchall()
         except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
@@ -752,7 +853,9 @@ class TableManager:
             for statement in statements:
                 err = True
                 try:
+                    self.logger.debug("About to execute: %s" % (statement))
                     cur.execute(statement)
+                    self.logger.debug("Modified row count: %d " % (cur.rowcount))
                     err = False
                 except (AttributeError, self.dbmanager.get_import_module_name().OperationalError):
                     self.logger.info("Trying to reconnect")
@@ -785,6 +888,28 @@ class TableManager:
         self.dbmanager.return_connection(con)
 
         return res
+
+    def upsert(self, table_name, table_schema, row, id_column):
+        # TODO: consider the case where several columns form the key
+        """
+        Method to insert or update (aka merge or upsert) a row of data into a table.
+        :param table_name: the name of the table to modify
+        :param table_schema:the schema of the table
+        :param row: the row to insert or update (i.e. a list of values)
+        :param id_column: the position of the column in the table that can act as a key.
+        :return: True if the insert or update happened successfully, False otherwise.
+        :note: With a postgres engine, this method only works for tables which have 
+            primary keys defined.
+        """
+        if (len(table_schema) != len(row)):
+            self.logger.warning("Problem with data for table %s: schema has %d fields, row has %d!\n %s\n %s" % \
+                                (table_name, len(table_schema), len(row), str(table_schema), str(row)))
+            return False
+        ok = True
+        statements = self.dbmanager.get_upsert_statements(table_name, table_schema, row, id_column)
+        if not self.execute_sql(statements):
+            ok = False
+        return ok
 
 # used only if arguments passed to program
 # gets each argument as a table name
