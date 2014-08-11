@@ -2,6 +2,9 @@ Changes for Release 2.0
 August 22, 2014
 ------------------------------
 
+* A new program, collector/rest_call.py, replaces several others
+  for exercisng the REST API and validating JSON responses.
+
 * The REST calls changed as follows:
 
 * The local datastore's database schema changed as follows:
