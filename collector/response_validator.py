@@ -27,17 +27,43 @@ as compared to json-schema.
 
 '''
 
+import sys
 import json
 import urllib2
 import traceback
 
-def parse_schema(schemaurl):
+def parse_schema(schemaurl, schema_dir=None):
+  """
+  Convert a JSON schema into a python dict representation suitable for
+  use by validictory.
 
-  try:
-    schema = json.load(urllib2.urlopen(schemaurl))
-  except Exception, e:
-      print e, schemaurl
+  :param schemaurl: URL of the schema to convert
+  :param schema_dir: if None, the schema to convert is fetched from
+    schemaurl.  If not None, it is used as a directory name on the
+    local machine from which to retrieve the schema.  In this case
+    the schema name is extracted from schemaurl to form the complete
+    filename.
+  :return: the python dict representation of the schema, or None if
+    there was an error in the conversion.
+  """
+  if schema_dir:
+    try:
+      # attempts to open .schema file in directory schema_dir
+      local_schema_path = schema_dir + "/" + \
+                          schemaurl[schemaurl.rfind('/')+1:-1] + ".schema"
+      print "Looking for schema in file %s" % (local_schema_path)
+      schema = json.load(open(local_schema_path))
+    except Exception, e:
+      print "Couldn't load schema %s from file %s\n%s" % (
+        schemaurl, schema_dir, str(e))
       return None
+  else:
+    # load the schema directly from schemaurl, i.e., from the web
+    try:
+      schema = json.load(urllib2.urlopen(schemaurl))
+    except Exception, e:
+        print "Couldn't load schema %s\n%s" % (schemaurl, str(e))
+        return None
 
   if 'extends' in schema and '$ref' in schema['extends']:
 
@@ -58,22 +84,31 @@ def parse_schema(schemaurl):
   return schema
 
 
-def validate(json_resp, schema, validictory_path, schema_base):
+def validate(json_resp, schema, validictory_path, schema_base=None):
+  """
+  Validate JSON data according to its schema.
 
-  # assumes /extern/valedictory exists (see /cm for instructions)
-  import sys
-  sys.path.append(validictory_path)
+  :param json_resp: JSON data to check against the schema.  This should be
+    a dictionary with the field names as keys.
+  :param schema: schema to validate json_resp against
+  :param validictory_path: path to validictory python module
+  :param schema_base: if not None, checks whether the $schema key starts
+    with this string, and prints a warning if it isn't.
+    If None, this check is not performed.  In any case, the return
+    value is not affected.
+  :return: True if validation succeeded, else False
+  """
+  # assumes /extern/validictory exists (see /cm for instructions)
+  if not validictory_path in sys.path:
+    sys.path.append(validictory_path)
   import validictory
   
   try:
-    if json_resp["$schema"].startswith(schema_base) == False:
-      print "JSON schema is of ", json_resp["$schema"], "instead of", schema_base
-      return False
+    if schema_base and not json_resp["$schema"].startswith(schema_base):
+      print "Warning: JSON schema is ", json_resp["$schema"], "instead of ", schema_base
     validictory.validate(json_resp, schema)
-    print "JSON is valid" 
     return True
   except Exception, e:
     print "Received exception %s while trying to validate: %s\n  %s" % (
       str(e), json_resp, traceback.format_exc())
     return False
-  
