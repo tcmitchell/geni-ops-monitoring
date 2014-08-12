@@ -106,7 +106,7 @@ def validate(json_resp, schema, validictory_path, schema_base=None):
   try:
     if schema_base and not json_resp["$schema"].startswith(schema_base):
       print "Warning: JSON schema is ", json_resp["$schema"], "instead of ", schema_base
-    validictory.validate(json_resp, schema)
+    validictory.validate(json_resp, schema, required_by_default=False)
     return True
   except Exception, e:
     print "Received exception %s while trying to validate: %s\n  %s" % (
