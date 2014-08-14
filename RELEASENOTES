@@ -10,19 +10,16 @@ August 28, 2014
 * The JSON schemas for the responses to REST calls changed as follows:
 
   * In sliver.schema:
-
     * The field creator_urn is renamed to creator because it might not
       be a URN.
-
     * The field resources is renamed to resource, which is now
       required and can only contain one resource instead of a list.
       resource has subfields resoure_type, urn, and href.
 
 * The local datastore's database schema changed as follows:
 
-  * The ops_sliver table has new fields resource_type,
-    resource_urn, and resource_href that need to be
-    populated.
+  * The ops_sliver table has new fields node_id and link_id
+    that need to be populated.
   * The ops_sliver_resource table is gone.  Use the ops_sliver
     table instead.
 

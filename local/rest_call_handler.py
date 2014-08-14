@@ -142,7 +142,32 @@ def handle_sliver_info_query(tm, sliver_id):
     sliver_info = get_object_info(tm, table_str, sliver_id)
 
     if sliver_info is not None:
-        return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info))
+        resource_type = None
+        resource_ref = None
+
+        # See if the sliver resource is a node
+        resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
+                                                            "node_id")]
+        if resource_id != "NULL":
+            node_ref = get_refs(tm, "ops_node", resource_id)
+            if len(node_ref) > 0:
+                resource_type = "node"
+                resource_ref = node_ref
+        else:
+            # Resource is not a node; see if it's a link
+            resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
+                                                                "link_id")]
+            if resource_id != "NULL":
+                link_ref = get_refs(tm, "ops_link", resource_id)
+                if len(link_ref) > 0:
+                    resource_type = "link"
+                    resource_ref = link_ref
+
+        if not resource_type or not resource_ref:
+            opslog.warning("Failed to find resource for sliver %s" % (sliver_id))
+
+        return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info,
+                                               resource_type, resource_ref))
     else:
         opslog.debug("sliver not found: " + sliver_id)
         return "sliver not found"
@@ -322,7 +347,7 @@ def handle_opsconfig_info_query(tm, opsconfig_id):
 
 # ## Argument checker for tsdata queries
 
-# Checks the filters for data queies. It needs a filters dictionary
+# Checks the filters for data queries. It needs a filters dictionary
 # with ts, eventType, and obj keys
 def check_data_query_keys(q_dict):
     opslog = logger.get_logger()
@@ -534,7 +559,7 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
 
 
 # Forms sliver info dictionary (to be made to JSON)
-def get_sliver_info_dict(schema, info_row):
+def get_sliver_info_dict(schema, info_row, resource_type, resource_ref):
 
     json_dict = {}
 
@@ -545,12 +570,9 @@ def get_sliver_info_dict(schema, info_row):
                 agg_urn = info_row[col_i]
             elif schema[col_i][0] == "aggregate_href":
                 agg_href = info_row[col_i]
-            elif schema[col_i][0] == "resource_type":
-                resource_type = info_row[col_i]
-            elif schema[col_i][0] == "resource_urn":
-                resource_urn = info_row[col_i]
-            elif schema[col_i][0] == "resource_href":
-                resource_href = info_row[col_i]
+            elif (schema[col_i][0] == "node_id" or
+                  schema[col_i][0] == "link_id"):
+                pass # caller has dealt with these fields
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
             
@@ -566,12 +588,11 @@ def get_sliver_info_dict(schema, info_row):
 #                            "urn":  resource_urn,
 #                            "href": resource_href }
     json_dict["resource"] = {}
-    if resource_type is not None:
+    if resource_type:
         json_dict["resource"]["resource_type"] = resource_type
-    if resource_type is not None:
-        json_dict["resource"]["urn"] = resource_urn
-    if resource_type is not None:
-        json_dict["resource"]["href"] = resource_href
+    if resource_ref:
+        json_dict["resource"]["href"] = resource_ref[0]
+        json_dict["resource"]["urn"]  = resource_ref[1]
 
     return json_dict
 
