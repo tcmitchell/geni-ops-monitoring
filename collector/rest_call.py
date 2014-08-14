@@ -138,6 +138,10 @@ def validate_response(json_dict, options):
     if not schema:
         return False
 
+    if options.print_schema:
+        print "Schema used for validation:\n%s" % (json.dumps(schema, indent=4,
+                                                              sort_keys=True))
+
     valid = response_validator.validate(json_dict, schema,
                                         options.validictory_path,
                                         options.schema_base)
@@ -209,6 +213,9 @@ def main(argv):
     parser.add_option("--skip-validation", dest="skip_validation",
                       default=False, action="store_true",
                       help="don't do JSON validation of responses")
+    parser.add_option("--print-schema", dest="print_schema",
+                      default=False, action="store_true",
+                      help="print the schema used to validate each response")
     (options, url_args) = parser.parse_args()
 
     # Do some more checking on the options provided

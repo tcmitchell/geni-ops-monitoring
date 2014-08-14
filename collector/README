@@ -67,16 +67,13 @@ Reference Collector README
 
 5. Configuring the collector to point to local datastore(s)
 
-    (1) Attempt to reach the opsconfigdatastore config datastore. Use the unit-tests
-    program single_rest_call.py and point to
+    Attempt to reach the opsconfigdatastore config datastore with rest_call.py:
 
-    cd unit-tests
-    python single_rest_call.py -u https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod -c /path/to/collector/certificate
+    cd collector
+    ./rest_call.py -c /path/to/collector/certificate -v ../extern/validictory/ https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod
 
-    See unit-tests/README for more detail
-
-    (2) The output of this config store will list the URLs of the aggregate
-    and external check datastores
+    The output of this config store will list the URLs of the aggregate and
+    external check datastores.
 
 
 6. Collector programs:

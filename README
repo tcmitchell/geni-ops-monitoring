@@ -85,19 +85,15 @@ This directory contains one subdirectory for each component:
    for the requested objects' type.  It is configured to query all
    objects of the requested type.
  
+ * collector/rest_call.py - This program sends a REST call to a datastore,
+   prints the response, and validates it with validictory.  It can crawl an
+   entire datastore either all at once or interactively.  Run with
+   --help for more information.
 
  -- Collector Testing Programs --
 
  * collector/unit-tests/collector_table_reset.py - for reseting/initializing
    database tables at the collector.
-
- * collector/unit-tests/single_rest_call.py - This program calls a
-  datastore, prints the response, and validates it with validictory.
-
- * collector/unit-tests/multi_rest_call.py - Essentially this is an
-  extension of the single_rest_call.py program, but it reads each url
-  from the response and prompts the user if he/she wants to continue
-  crawling the datastore.
 
  * collector/response_validator.py - Technically a set of functions
    that help determine if the json response from a datastore is

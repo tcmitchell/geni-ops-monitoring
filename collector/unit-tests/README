@@ -16,30 +16,3 @@ packages to run these programs.
   for object id, ts for timestamp, and v which is of whatever type
   specified in the subdictionary of that event (as shown in the
   particular event sub-dictionary).
-
-
-2. single_rest_call.py
-
-  This program calls a datastore, prints the response, and validates
-  it with validictory if the -v argument is provided.  Arguments to
-  the program include:
-
-  -v /path/to/validictory 
-   For json-schema validation.  This should point to a git clone of this:
-   https://github.com/sunlightlabs/validictory
-  
-  -u https://<path/to/datastore>/info/aggregate/<aggregate_id>
-   This is the url to go to.  Often this can be the head aggregate info
-   query as shown above.
-
-  -c /path/to/tools-collector-cert 
-   This is the certificate that is provided by the GPO for
-   collectors. This does assumes this is a pass-phrase less key.
-
-
-3.  multi_rest_call.py
-
-  Essentially this is an extension of the single_rest_call.py program,
-  but it reads each url from the response and prompts the user if
-  he/she wants to continue crawling the datastore.  Arguments are the
-  same (see above).
