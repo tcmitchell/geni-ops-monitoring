@@ -545,6 +545,12 @@ def get_sliver_info_dict(schema, info_row):
                 agg_urn = info_row[col_i]
             elif schema[col_i][0] == "aggregate_href":
                 agg_href = info_row[col_i]
+            elif schema[col_i][0] == "resource_type":
+                resource_type = info_row[col_i]
+            elif schema[col_i][0] == "resource_urn":
+                resource_urn = info_row[col_i]
+            elif schema[col_i][0] == "resource_href":
+                resource_href = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
             
@@ -555,7 +561,18 @@ def get_sliver_info_dict(schema, info_row):
             json_dict["aggregate"]["urn"] = agg_urn
         if (agg_href is not None):
             json_dict["aggregate"]["href"] = agg_href
-            
+
+#   json_dict["resource"] = {"resource_type": resource_type,
+#                            "urn":  resource_urn,
+#                            "href": resource_href }
+    json_dict["resource"] = {}
+    if resource_type is not None:
+        json_dict["resource"]["resource_type"] = resource_type
+    if resource_type is not None:
+        json_dict["resource"]["urn"] = resource_urn
+    if resource_type is not None:
+        json_dict["resource"]["href"] = resource_href
+
     return json_dict
 
 

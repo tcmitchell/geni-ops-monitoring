@@ -1,11 +1,22 @@
 Changes for Release 2.0
-August 22, 2014
+August 28, 2014
 ------------------------------
 
 * A new program, collector/rest_call.py, replaces several others
   for exercisng the REST API and validating JSON responses.
 
 * The REST calls changed as follows:
+
+* The JSON schemas for the responses to REST calls changed as follows:
+
+  * In sliver.schema:
+
+    * The field creator_urn is renamed to creator because it might not
+      be a URN.
+
+    * The field resources is renamed to resource, which is now
+      required and can only contain one resource instead of a list.
+      resource has subfields resoure_type, urn, and href.
 
 * The local datastore's database schema changed as follows:
 
