@@ -32,11 +32,12 @@ def handle_ts_data_query(tm, filters):
     opslog = logger.get_logger()
     schema_dict = tm.schema_dict
     try:
-        q_dict = eval(filters)  # try to make a dictionary
+        q_dict = json.loads(filters)  # try to make a dictionary
 
     except Exception, e:
-        opslog.warning(filters + "failed to evaluate as dictionary\n" + str(e))
-        return "query: " + filters + "<br><br>had error: " + str(e) + "<br><br> failed to evaluate as dictionary"
+        opslog.warning(filters + "failed to parse as JSON\n" + str(e))
+        return "query: " + filters + "<br><br>had error: " + str(e) + \
+            "<br><br> failed to parse as JSON"
 
     # check for necessary keys
     (ok, fail_str) = check_data_query_keys(q_dict)
@@ -509,52 +510,6 @@ def get_node_info_dict(schema, info_row, interface_refs):
             if len(interface_ref) > 0:
                 json_dict["interfaces"].append({"href":interface_ref[0], "urn":interface_ref[1]})
             
-    return json_dict
-
-
-# Forms opsconfig info dictionary (to be made to JSON)
-def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, info_list):
-
-    json_dict = {}
-
-    # All of info_row goes into top level dictionary
-    for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
-            json_dict[schema[col_i][0]] = info_row[col_i]
-
-    if agg_refs:
-        json_dict["aggregates"] = []
-        for agg_ref in agg_refs:
-            if len(agg_ref) > 0:
-                json_dict["aggregates"].append({"href":agg_ref[0], "urn":agg_ref[1], "amtype":agg_ref[2]})
-
-    if auth_refs:
-        json_dict["authorities"] = []
-        for auth_ref in auth_refs:
-            if len(auth_ref) > 0:
-                json_dict["authorities"].append({"href":auth_ref[0], "urn":auth_ref[1]})
-            
-    if events_list:
-        json_dict["events"] = {}
-        json_dict["events"]["node"] = []
-        json_dict["events"]["interface"] = []
-        json_dict["events"]["interfacevlan"] = []
-        for ev_i in events_list:
-            if ev_i[0] == "node":
-                json_dict["events"]["node"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
-            elif ev_i[0] == "interface":
-                json_dict["events"]["interface"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
-            elif ev_i[0] == "interfacevlan":
-                json_dict["events"]["interfacevlan"].append({"name":ev_i[1], "id":ev_i[2], "ts":ev_i[3], "v":ev_i[4], "units":ev_i[5]})
-
-    if info_list:
-        json_dict["info"] = []
-        for if_i in info_list:
-            table_dict = {}
-            table_dict["name"] = if_i[0]
-            table_dict["db_schema"] = eval(if_i[1])
-            json_dict["info"].append(table_dict)
-
     return json_dict
 
 
