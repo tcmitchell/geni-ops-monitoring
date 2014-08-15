@@ -329,9 +329,41 @@ class SingleLocalDatastoreInfoCrawler:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
+                        print("WARNING: value for required json sliver field [\"aggregate\"][\"urn\"] is missing. Replacing with empty string...")
                         slv_info_list.append("")
                     else:
+                        slv_info_list.append(None)
+            elif key[0] == "node_id":
+                if ("resource" in slv_dict and
+                    "resource_type" in slv_dict["resource"] and
+                    slv_dict["resource"]["resource_type"] == "node" and
+                    "urn" in slv_dict["resource"]) :
+
+                    node_urn = slv_dict["resource"]["urn"]
+                    node_id =  self.get_id_from_urn("ops_node", node_urn)
+                    slv_info_list.append(node_id)
+                else:
+                    if key[2]:
+                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        slv_info_list.append(None)
+            elif key[0] == "link_id":
+                if ("resource" in slv_dict and
+                    "resource_type" in slv_dict["resource"] and
+                    slv_dict["resource"]["resource_type"] == "link" and
+                    "urn" in slv_dict["resource"]) :
+
+                    link_urn = slv_dict["resource"]["urn"]
+                    link_id = self.get_id_from_urn("ops_link", link_urn)
+                    slv_info_list.append(link_id)
+                else:
+                    if key[2]:
+                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
                         slv_info_list.append(None)
             else:
                 if key[0] in slv_dict:
@@ -493,6 +525,26 @@ class SingleLocalDatastoreInfoCrawler:
             meas_ref = q_res[0][0]  # gets first of single tuple
 
         return meas_ref
+
+
+    def get_id_from_urn(self, table_name, urn):
+        """
+        Given a urn and a table name, find its id.
+
+        :param table_name: database table name to search
+        :param urn: urn to look for
+        :return: the id that goes with urn, or None if not found
+        """
+        tbl_mgr = self.tbl_mgr
+        id = None
+
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("id") +
+                              " from " + table_name + " where urn = '" + urn +
+                              "' limit 1")
+        if q_res is not None:
+            id = q_res[0][0]  # gets first of single tuple
+
+        return id
 
 
 def handle_request(url, cert_path, logger):

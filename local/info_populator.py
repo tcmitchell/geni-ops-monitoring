@@ -84,7 +84,7 @@ class InfoPopulator():
 
 
         sliver1 = []
-        sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#")
+        sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
         sliver1.append("instageni.gpolab.bbn.com_sliver_26947")
         sliver1.append(url_local_info + "sliver/" + sliver1[1])
         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947")
@@ -97,13 +97,15 @@ class InfoPopulator():
         sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
         sliver1.append(str(int(1391626683000000))) # created
         sliver1.append(str(int(1391708989000000))) # expires
+        sliver1.append("instageni.gpolab.bbn.com_node_pc1") # node_id
+        sliver1.append("NULL") # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver1):
             ok = False
 
 
         sliver2 = []
-        sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#")
+        sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
         sliver2.append("instageni.gpolab.bbn.com_sliver_26950")
         sliver2.append(url_local_info + "sliver/" + sliver2[1])
         sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950")
@@ -116,6 +118,8 @@ class InfoPopulator():
         sliver2.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
         sliver2.append(str(int(1391626683000000))) # created
         sliver2.append(str(int(1391708989000000))) # expires
+        sliver2.append("instageni.gpolab.bbn.com_node_pc2") # node_id
+        sliver2.append("NULL") # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver2):
             ok = False
@@ -129,6 +133,27 @@ class InfoPopulator():
         link1.append(str(int(time.time()*1000000)))
 
         if not info_insert(self.tbl_mgr, "ops_link", link1):
+            ok = False
+
+
+        sliver3 = []
+        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
+        sliver3.append("instageni.gpolab.bbn.com_sliver_26999")
+        sliver3.append(url_local_info + "sliver/" + sliver3[1])
+        sliver3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26999")
+        sliver3.append("30752b06-8ea8-11e3-8d30-000006000000") #uuid
+        sliver3.append(str(int(time.time()*1000000))) #current ts
+        sliver3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm") # agg_urn
+        sliver3.append(url_local_info + "aggregate/gpo-ig") # agg_href
+        sliver3.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive") # slice_urn
+        sliver3.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8") #slice uuid
+        sliver3.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
+        sliver3.append(str(int(1391626683000005))) # created
+        sliver3.append(str(int(1391708989000006))) # expires
+        sliver3.append("NULL") # node_id
+        sliver3.append("arbitrary_link_id_001") # link_id
+
+        if not info_insert(self.tbl_mgr, "ops_sliver", sliver3):
             ok = False
 
 
@@ -281,6 +306,16 @@ class InfoPopulator():
             ok = False
 
 
+        aggsliv3 = []
+        aggsliv3.append(sliver3[1])  # id
+        aggsliv3.append("gpo-ig")
+        aggsliv3.append(sliver3[3])  # urn
+        aggsliv3.append(sliver3[2])  # href
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
+            ok = False
+
+
         nodeiface1 = []
         nodeiface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
         nodeiface1.append("instageni.gpolab.bbn.com_node_pc1")
@@ -320,35 +355,6 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", linkifacevlan2):
             ok = False
 
-
-        slivernode1 = []
-        slivernode1.append("instageni.gpolab.bbn.com_node_pc1")
-        slivernode1.append("instageni.gpolab.bbn.com_sliver_26947")
-        slivernode1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
-        slivernode1.append(url_local_info + "node/" + slivernode1[0])
-
-        if not info_insert(self.tbl_mgr, "ops_sliver_resource", slivernode1):
-            ok = False
-
-
-        slivernode2 = []
-        slivernode2.append("instageni.gpolab.bbn.com_node_pc2")
-        slivernode2.append("instageni.gpolab.bbn.com_sliver_26950")
-        slivernode2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
-        slivernode2.append(url_local_info + "node/" + slivernode2[0])
-
-        if not info_insert(self.tbl_mgr, "ops_sliver_resource", slivernode2):
-            ok = False
-
-
-        sliverlink1 = []
-        sliverlink1.append("arbitrary_link_id_001")
-        sliverlink1.append("instageni.gpolab.bbn.com_sliver_26947")
-        sliverlink1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
-        sliverlink1.append(url_local_info + "link/" + sliverlink1[0])
-
-        if not info_insert(self.tbl_mgr, "ops_sliver_resource", sliverlink1):
-            ok = False
 
         sliceuser1 = []
         sliceuser1.append("tupty")

@@ -260,11 +260,6 @@ Table of Contents:
     Continuing the "ops_node_interface" example, a row would be:
     ('interface_id', 'node_id', 'inteface_urn', 'interface_href').
 
-    Another example is "ops_silver_resource":
-    ('resource_id', 'sliver_id', 'resource_urn', 'resource_href')
-    where resource is either a node or link. Node and Link ids, 
-    urns, and hrefs co-exist in this table.
-    
     Tables containing measurement event data are prefixed with the
     object type, so the table for the event type "cpu_util" on node
     objects is in table "ops_node_cpu_util". These tables all have 

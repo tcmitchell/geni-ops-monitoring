@@ -334,7 +334,12 @@
              ["slice_uuid", "varchar", false],
              ["creator", "varchar", false],
              ["created", "int8", true],
-             ["expires", "int8", true]
+             ["expires", "int8", true],
+             // One of node_id or link_id must be set, but not both.
+             // These get translated into the "resource" property in
+             // sliver.schema.
+             ["node_id", "varchar", false],
+             ["link_id", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
@@ -343,6 +348,14 @@
             ["UNIQUE (%s)", ["uuid"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_urn", "ops_aggregate", "urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_href", "ops_aggregate", "selfRef"]]
+            // Having these foreign keys doesn't work because if you try
+            // to insert NULL in one of these fields, you get an error like
+            // this: (1452, 'Cannot add or update a child row: a foreign key
+            // constraint fails (`local`.`ops_sliver`, CONSTRAINT `ops_sliver_ibfk_4`
+            // FOREIGN KEY (`link_id`) REFERENCES `ops_link` (`id`))')
+            // which is saying that NULL isn't a valid id in the ops_link table.
+            // ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["node_id", "ops_node", "id"]],
+            // ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
         ],
         "dependencies" : ["ops_aggregate"]
     },
@@ -536,20 +549,6 @@
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
         ],
         "dependencies" : ["ops_interfacevlan", "ops_link"]
-    },
-    {   "name":"sliver_resource",
-         "db_schema" : [
-             ["id", "varchar", true],
-             ["sliver_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "sliver_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
-        ],
-        "dependencies" : []
     },
     {   "name":"node_interface",
         "db_schema": [
