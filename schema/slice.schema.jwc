@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/slice/<slice object id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140822/slice#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/slice#",
   "description": "GENI slice",
   "name": "Slice",
   "type": "object",

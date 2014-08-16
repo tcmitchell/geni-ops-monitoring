@@ -84,7 +84,7 @@ class InfoPopulator():
 
 
         sliver1 = []
-        sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
+        sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
         sliver1.append("instageni.gpolab.bbn.com_sliver_26947")
         sliver1.append(url_local_info + "sliver/" + sliver1[1])
         sliver1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947")
@@ -105,7 +105,7 @@ class InfoPopulator():
 
 
         sliver2 = []
-        sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
+        sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
         sliver2.append("instageni.gpolab.bbn.com_sliver_26950")
         sliver2.append(url_local_info + "sliver/" + sliver2[1])
         sliver2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950")
@@ -137,7 +137,7 @@ class InfoPopulator():
 
 
         sliver3 = []
-        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/sliver#")
+        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
         sliver3.append("instageni.gpolab.bbn.com_sliver_26999")
         sliver3.append(url_local_info + "sliver/" + sliver3[1])
         sliver3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26999")
@@ -158,7 +158,7 @@ class InfoPopulator():
 
 
         interface1 = []
-        interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
+        interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
         interface1.append("instageni.gpolab.bbn.com_interface_pc1:eth1")
         interface1.append(url_local_info + "interface/" + interface1[1])
         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
@@ -174,7 +174,7 @@ class InfoPopulator():
 
 
         interface2 = []
-        interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
+        interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
         interface2.append("instageni.gpolab.bbn.com_interface_pc2:eth1")
         interface2.append(url_local_info + "interface/" + interface2[1])
         interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
@@ -190,7 +190,7 @@ class InfoPopulator():
 
 
         interfacevlan1 = []
-        interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
+        interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:1750")
         interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
         interfacevlan1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1750")
@@ -204,7 +204,7 @@ class InfoPopulator():
 
 
         interfacevlan2 = []
-        interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
+        interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan2.append("instageni.gpolab.bbn.com_interface_pc2:eth1:1750")
         interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
         interfacevlan2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:1750")
