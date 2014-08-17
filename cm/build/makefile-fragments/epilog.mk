@@ -73,9 +73,9 @@ endef
 # $1 : filename to strip comments from
 # $2 : filename to write uncommented results to
 define remove-comments-from-json-file
-
 $2: $1
-	sed '/^[ \t]*\/\/.*$//d' < $1 > $2
+	$(BUILD_DIR)/strip_comments.py < $1 > $2
+
 endef
 
 # Get a list of files to generate
