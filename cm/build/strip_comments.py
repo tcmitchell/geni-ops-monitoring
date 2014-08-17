@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -20,37 +22,15 @@
 # IN THE WORK.
 #------------------------------------------------------------------------------
 
-# This file provides a set of make variables that define the locations
-# of various things, mostly libraries (a.k.a. modules), that may
-# need to be referenced from other parts of the tree.  By using the
-# symbolic names here, we avoid hardcoding paths into the makefiles,
-# making tree reorganization less painful.
+# This is a simple program to strip //-style comments from our .jwc
+# files.  It takes no arguments and acts as a simple filter, reading
+# from stdin and writing to stdout.  It was easier to use python for
+# this than to introduce a dependency on another program whose
+# behavior varies across platforms like sed or awk.
 
+import sys
+import re
 
-# $(call declare-module,name,dir)
-# Generate make variable declarations for a module.
-#
-# Arguments:
-# $1 : name of the module as it will appear in other makefiles
-# $2 : directory containing the module's sources
-#
-# For example, if name ($1) is FOO, this function will provide
-# the following make variables that can be used in other
-# makefiles to refer to this module:
-#
-# FOO_DIR, directory containing the module's sources
-
-define declare-module
-MODULE_NAMES += $1
-$1_DIR := $2
-endef
-
-#------------------------------------------------------------------------------
-
-#
-# Module declarations
-#
-
-$(eval $(call declare-module,SCHEMA,$(SRCROOT)/schema))
-$(eval $(call declare-module,CONFIG,$(SRCROOT)/config))
-$(eval $(call declare-module,BUILD,$(SRCROOT)/cm/build))
+for line in sys.stdin:
+    if not re.match("\s*//", line):
+        print line,
