@@ -175,7 +175,7 @@ def handle_sliver_info_query(tm, sliver_id):
 
 
 # Main handle aggregate for info queries
-def handle_aggregate_info_query(tm, agg_id):
+def handle_aggregate_info_query(tm, agg_id, monitoring_version):
     opslog = logger.get_logger()
     table_str = "ops_aggregate"
     agg_schema = tm.schema_dict[table_str]
@@ -201,7 +201,9 @@ def handle_aggregate_info_query(tm, agg_id):
         for slv_i in slivers:
             slv_refs.append(get_refs(tm, "ops_sliver", slv_i))
 
-        return json.dumps(get_aggregate_info_dict(agg_schema, agg_info, res_refs, slv_refs))
+        return json.dumps(get_aggregate_info_dict(agg_schema, agg_info,
+                                                  res_refs, slv_refs,
+                                                  monitoring_version))
 
     else:
         opslog.debug("aggregate not found: " + agg_id)
@@ -553,8 +555,8 @@ def get_sliver_info_dict(schema, info_row, resource_type, resource_ref):
 
 
 # Forms aggregate info dictionary (to be made to JSON)
-def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
-
+def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
+                            monitoring_version):
     json_dict = {}
     
     # All of info_row goes into top level dictionary
@@ -573,6 +575,9 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
         for slv_ref in slv_refs:
             if len(slv_ref) > 0:
                 json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})  
+
+    json_dict["monitoring_version"] = monitoring_version
+
     return json_dict
 
 # Forms external check store info dictionary (to be made to JSON)

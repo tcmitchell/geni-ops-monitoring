@@ -21,6 +21,27 @@
       "type": "string",
       "required": true
     },
+    "monitoring_version": {
+      "description": "monitoring software version",
+      // This is the version of the software running "above" the database,
+      // i.e., the piece that fields REST calls and queries the database to
+      // create responses.  For the GPO reference implementation, this is
+      // the git version of the GPO ops-monitoring release.
+      // If you do not use the GPO implementation, put whatever version
+      // information makes sense for you.
+      "type": "string",
+      "required": true
+    },
+    "populator_version": {
+      "description": "database population software version",
+      // This is the version of the software running "below" the database,
+      // i.e., the piece that collects information about your aggregate
+      // and puts it in the database.  If you do not use the GPO
+      // implementation and this split doesn't apply, you can omit
+      // this field.
+      "type": "string",
+      "required": false
+    },
     "resources": {
       "description": "resources controlled by this aggregate",
       "type": "array",

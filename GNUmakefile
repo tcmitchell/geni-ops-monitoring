@@ -26,5 +26,9 @@ include $(ROOT_MK)
 
 SUBDIRS = schema config
 
+all:: VERSION
+VERSION::
+	git describe --tags > VERSION
+
 # Put the following line of boilerplate at the end of every Makefile.
 include $(MAKEFRAGDIR)/epilog.mk

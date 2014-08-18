@@ -39,7 +39,8 @@ class LocalDatastoreServer:
         import table_manager
         import logger
 
-        logger.get_logger(self.config_path).critical("Starting ops monitoring")
+        opslog = logger.get_logger(self.config_path)
+        opslog.critical("Starting ops monitoring")
 
         self.db_name = "local"
 
@@ -47,12 +48,27 @@ class LocalDatastoreServer:
         self.tm = table_manager.TableManager(self.db_name, self.config_path)
         self.tm.poll_config_store()
 
+        # Try to get the software version we're running from the VERSION file
+        # in the top-level directory.
+        version_filename = parent_path + "/VERSION"
+        try:
+            version_file = open(version_filename)
+            self.monitoring_version = version_file.readline().strip()
+            version_file.close()
+        except Exception, e:
+            opslog.warning("Could not read monitoring version from file %s: %s" % (
+                    version_filename, str(e)))
+            self.monitoring_version = "unknown"
+
+        opslog.info("Monitoring version is %s" % (self.monitoring_version))
+
         self.app = Flask(__name__)
-       
+
+
         @self.app.route('/info/aggregate/<path:agg_id>', methods = ['GET'])
         def info_aggregate_args(agg_id): 
             return rest_call_handler.handle_aggregate_info_query(
-                self.tm, agg_id)
+                self.tm, agg_id, self.monitoring_version)
 
         @self.app.route('/info/externalcheck/<path:extck_id>', methods = ['GET'])
         def info_externalcheck_args(extck_id): 

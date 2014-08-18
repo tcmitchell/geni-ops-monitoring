@@ -51,7 +51,8 @@ class InfoPopulator():
         agg1.append(url_local_info + "aggregate/" + agg1[1])
         agg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
         agg1.append(str(int(time.time()*1000000)))
-        agg1.append(url_local_data)
+        agg1.append(url_local_data) # measRef
+        agg1.append("1.0") # populator_version
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg1):
             ok = False
