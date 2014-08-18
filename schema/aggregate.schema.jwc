@@ -51,6 +51,14 @@
       // other: anything else that doesn't fit one of the above
       "required": true
     },
+    "routable_ip_poolsize" : {
+      "description": "Size of publicly routable IP address pool",
+      // How many IP addresses that are reachable from anywhere on the
+      // internet does this aggregate have available to assign?
+      // see also: opsconfig.json:publicly_routable_ipaddrs_available
+      "type": "integer",
+      "required": false
+    },
     "resources": {
       "description": "resources controlled by this aggregate",
       "type": "array",

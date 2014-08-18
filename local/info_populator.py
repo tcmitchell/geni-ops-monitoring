@@ -54,6 +54,7 @@ class InfoPopulator():
         agg1.append(url_local_data) # measRef
         agg1.append("1.0") # populator_version
         agg1.append("development") # operational_status
+        agg1.append("0") # routable_ip_poolsize
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg1):
             ok = False
