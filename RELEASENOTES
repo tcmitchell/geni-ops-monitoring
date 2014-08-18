@@ -16,12 +16,21 @@ August 28, 2014
       required and can only contain one resource instead of a list.
       resource has subfields resoure_type, urn, and href.
 
+  * In aggregate.schema:
+    * New required fields: monitoring_version and
+      operational status.
+    * New optional fields: populator_version, routable_ip_poolsize.
+
 * The local datastore's database schema changed as follows:
 
   * The ops_sliver table has new fields node_id and link_id
     that need to be populated.
   * The ops_sliver_resource table is gone.  Use the ops_sliver
     table instead.
+  * The ops_aggregate table has new fields populator_version,
+    operational_status, and routable_ip_poolsize that need to
+    be populated.
+
 
 Changes for Release 1.1_patch1
 June 4, 2014

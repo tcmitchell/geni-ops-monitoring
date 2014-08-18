@@ -278,7 +278,10 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true],
-             ["measRef","varchar", false]
+             ["measRef","varchar", false],
+             ["populator_version", "varchar", false],
+             ["operational_status", "varchar", true],
+             ["routable_ip_poolsize", "int4", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
