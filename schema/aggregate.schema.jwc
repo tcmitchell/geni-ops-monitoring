@@ -42,6 +42,15 @@
       "type": "string",
       "required": false
     },
+    "operational_status": {
+      "description": "fitness for use of the datastore",
+      "enum": [ "development", "production", "other" ],
+      // development: datastore is in the process of being set up and
+      //              populated with real data
+      // production:  datastore is ready for production use
+      // other: anything else that doesn't fit one of the above
+      "required": true
+    },
     "resources": {
       "description": "resources controlled by this aggregate",
       "type": "array",

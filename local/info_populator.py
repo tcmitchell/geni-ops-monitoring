@@ -46,13 +46,14 @@ class InfoPopulator():
         url_opsconfig_local_info = self.url_base + "/info/"
 
         agg1 = []
-        agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#")
+        agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#")
         agg1.append("gpo-ig")
         agg1.append(url_local_info + "aggregate/" + agg1[1])
         agg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
         agg1.append(str(int(time.time()*1000000)))
         agg1.append(url_local_data) # measRef
         agg1.append("1.0") # populator_version
+        agg1.append("development") # operational_status
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg1):
             ok = False
