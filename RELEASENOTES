@@ -15,11 +15,13 @@ August 28, 2014
     * The field resources is renamed to resource, which is now
       required and can only contain one resource instead of a list.
       resource has subfields resoure_type, urn, and href.
-
   * In aggregate.schema:
     * New required fields: monitoring_version and
-      operational status.
+      operational_status.
     * New optional fields: populator_version, routable_ip_poolsize.
+  * In node.schema:
+    * New required field node_type.
+    * ops_monitoring:vm_server_type is renamed to virtualization_type.
 
 * The local datastore's database schema changed as follows:
 
@@ -30,6 +32,9 @@ August 28, 2014
   * The ops_aggregate table has new fields populator_version,
     operational_status, and routable_ip_poolsize that need to
     be populated.
+  * In the ops_node table:
+    * properties$vm_server_type is renamed to virtualization_type.
+    * New required field node_type.
 
 
 Changes for Release 1.1_patch1
