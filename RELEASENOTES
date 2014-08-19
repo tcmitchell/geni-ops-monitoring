@@ -5,6 +5,9 @@ August 28, 2014
 * A new program, collector/rest_call.py, replaces several others
   for exercisng the REST API and validating JSON responses.
 
+* If your local datastore is listening on port 5001, we recommend
+  switching to port 4334 to avoid conflicting with iperf.
+
 * The REST calls changed as follows:
 
 * The JSON schemas for the responses to REST calls changed as follows:
