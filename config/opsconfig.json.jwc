@@ -298,6 +298,7 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true],
+             ["node_type", "varchar", false],
              ["properties$mem_total_kb", "int8", false],
              ["virtualization_type", "varchar", false]
         ],
