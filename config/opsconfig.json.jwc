@@ -299,7 +299,7 @@
              ["urn", "varchar", true],
              ["ts", "int8", true],
              ["properties$mem_total_kb", "int8", false],
-             ["properties$vm_server_type", "varchar", false]
+             ["virtualization_type", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],

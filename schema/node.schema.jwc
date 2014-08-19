@@ -26,9 +26,13 @@
        "type":"number",
        "required":false
     },
-    "ops_monitoring:vm_server_type": { 
-       "description":"VM server type",
-       "type":"string",
+    "virtualization_type": {
+       "description":"Machine virtualization platform in use",
+       // This property only makes sense on a physical server node, so
+       // the value of node_type should be "server" if this property
+       // is specified.  It only specifies the virtualization system
+       // used on the node.
+       "enum": [ "xen", "openvz", "kvm" ],
        "required":false
     },
     "interfaces": {

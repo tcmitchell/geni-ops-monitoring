@@ -61,28 +61,28 @@ class InfoPopulator():
 
 
         node1 = []
-        node1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/node#")
+        node1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
         node1.append("instageni.gpolab.bbn.com_node_pc1")
         node1.append(url_local_info + "node/" + node1[1])
         node1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
         node1.append(str(int(time.time()*1000000)))
         node1.append("server") # node_type
         node1.append(str(2*1000000)) # mem_total_kb
-        node1.append("xen") # vm_server_type
+        node1.append("xen") # virtualization_type
 
         if not info_insert(self.tbl_mgr, "ops_node", node1):
             ok = False
 
 
         node2 = []
-        node2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/node#")
+        node2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
         node2.append("instageni.gpolab.bbn.com_node_pc2")
         node2.append(url_local_info + "node/" + node2[1])
         node2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2")
         node2.append(str(int(time.time()*1000000)))
         node2.append("server") # node_type
         node2.append(str(2*1000000)) # mem_total_kb
-        node2.append("xen") # vm_server_type
+        node2.append("xen") # virtualization_type
 
         if not info_insert(self.tbl_mgr, "ops_node", node2):
             ok = False
