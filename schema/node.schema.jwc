@@ -12,14 +12,27 @@
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },
   "properties": {
+    "node_type" : {
+      "description": "What kind of node this represents",
+      "enum": [ "server", "vm", "switch", "wimax_bs" ],
+      // server: "bare metal" node
+      // vm: virtual machine
+      // switch: network switch
+      // wimax_bs: WiMAX base station
+      "required": true
+    },
     "ops_monitoring:mem_total_kb": { 
        "description":"Total memory in kilobytes",
        "type":"number",
        "required":false
     },
-    "ops_monitoring:vm_server_type": { 
-       "description":"VM server type",
-       "type":"string",
+    "virtualization_type": {
+       "description":"Machine virtualization platform in use",
+       // This property only makes sense on a physical server node, so
+       // the value of node_type should be "server" if this property
+       // is specified.  It only specifies the virtualization system
+       // used on the node.
+       "enum": [ "xen", "openvz", "kvm" ],
        "required":false
     },
     "interfaces": {

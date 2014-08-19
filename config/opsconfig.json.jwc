@@ -298,8 +298,9 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true],
+             ["node_type", "varchar", false],
              ["properties$mem_total_kb", "int8", false],
-             ["properties$vm_server_type", "varchar", false]
+             ["virtualization_type", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
