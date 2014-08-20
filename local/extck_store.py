@@ -171,9 +171,7 @@ def getShortName():
             cols1=cols[1].strip().split(',')
             urn = cols1[0] # Grab urn
             cols2=cols1[1].strip().split('/')
-            cols3=cols2[2].strip().split(':')
-            fqdn=cols3[0] # Grab fqdn
-
+            fqdn=cols2[2] # Grab modified version of fqdn
             if aggShortName == "plc" or aggShortName=="ion":
                 amtype="myplc"
             else:
@@ -244,6 +242,7 @@ def main():
     ip = InfoPopulator(tbl_mgr,"")
     # read list of urls (or short-names)
     shortName=getShortName()
+    
     slices=getSlices()
     srcPingCampus=['gpo-ig','utah-ig']
     srcPingCore=['gpo-ig-3715_core','gpo-ig-3716_core']   
