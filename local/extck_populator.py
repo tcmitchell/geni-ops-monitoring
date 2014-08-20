@@ -80,8 +80,9 @@ def getShortName():
             aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
             cols2=cols1[1].strip().split('/')
-            cols3=cols2[2].strip().split(':')
-            fqdn=cols3[0] # Grab fqdn
+            fqdn=cols2[2] # Grab modified version of fqdn
+           # cols3=cols2[2].strip().split(':')
+           # fqdn=cols3[0] # Grab fqdn
 
             if aggShortName == "plc" or aggShortName=="ion":
                 amtype="myplc"
@@ -152,14 +153,16 @@ def main():
 
     # read list of urls (or short-names)
     shortName=getShortName()
-    for fqdn in shortName:
-        amtype = shortName[fqdn][1]
+    for fqdnMod in shortName:# We've got a modified version of the fqdn
+        amtype = shortName[fqdnMod][1]
+        cols=fqdnMod.strip().split(':')# Remove port
+        fqdn=cols[0]
         p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
         output, err = p.communicate()
         state=getAMState(output)
-        shortName[fqdn].append(state)
-        shortName[fqdn].append(str(int(time.time()*1000000)))
-        ip.insert_agg_is_avail_datapoint(shortName[fqdn])
+        shortName[fqdnMod].append(state)
+        shortName[fqdnMod].append(str(int(time.time()*1000000)))
+        ip.insert_agg_is_avail_datapoint(shortName[fqdnMod])
     tbl_mgr.close_con();
     
 if __name__ == "__main__":
