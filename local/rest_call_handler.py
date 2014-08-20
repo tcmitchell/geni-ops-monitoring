@@ -751,9 +751,9 @@ def get_object_href_and_urn(schema, object_info):
     col_selfRef = 0
     col_urn = 0;
     for col_i in range(len(schema)):
-        if schema[col_i] == "selfRef":
+        if schema[col_i][0] == "selfRef":
             col_selfRef = col_i
-        elif schema[col_i] == "urn":
+        elif schema[col_i][0] == "urn":
             col_urn = col_i
 
     res.append(object_info[col_selfRef])
