@@ -113,7 +113,13 @@ def handle_interface_info_query(tm, iface_id):
     iface_info = get_object_info(tm, table_str, iface_id)
 
     if iface_info is not None:
-        return json.dumps(get_interface_info_dict(iface_schema, iface_info))
+        addr_table_str = "ops_interface_addresses"
+        address_schema = tm.schema_dict[addr_table_str]
+        address_rows = get_related_objects_full(tm, addr_table_str,
+                                                "interface_id", iface_id)
+        return json.dumps(get_interface_info_dict(iface_schema, iface_info,
+                                                  address_schema,
+                                                  address_rows))
     else:
         opslog.debug("interface not found: " + iface_id)
         return "interface not found"
@@ -376,30 +382,36 @@ def check_data_query_keys(q_dict):
 # ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
-def get_interface_info_dict(schema, info_row):
+def get_interface_info_dict(schema, info_row, address_schema, address_rows):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
-            if schema[col_i][0] == "address_address":
-                addr = info_row[col_i]
-            elif schema[col_i][0] == "address_type":
-                addr_type = info_row[col_i]
-            elif schema[col_i][0].startswith("properties$"):
+            if schema[col_i][0].startswith("properties$"):
             # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
-#    json_dict["address"] = {"address":addr,"type":addr_type}
-    if (addr is not None) or (addr_type is not None):
-        json_dict["address"] = {}
-        if (addr is not None):
-            json_dict["address"]["address"] = addr
-        if (addr_type is not None):
-            json_dict["address"]["type"] = addr_type
+    # construct the list of addresses
+    json_address_list = []
+    for address_row in address_rows:
+        json_addr = {}
+        for col_i in range(len(address_schema)):
+            fieldname = address_schema[col_i][0]
+            if ((address_row[col_i] is not None) or
+                ((address_row[col_i] is None) and address_schema[col_i][2])):
+               if fieldname == "id" or fieldname == "interface_id":
+                   # these fields don't go in the json response
+                   pass
+               else:
+                   # all other fields go in the json response
+                   json_addr[fieldname] = address_row[col_i]
+        json_address_list.append(json_addr)
 
+    if len(json_address_list) > 0:
+        json_dict["addresses"] = json_address_list
     return json_dict
 
 
@@ -709,6 +721,27 @@ def get_related_objects(tm, table_str, colname_str, id_str):
     if q_res is not None:
         for res_i in range(len(q_res)):
             res.append(q_res[res_i][0])  # gets first of single tuple
+
+    return res
+
+
+# Gets related objects
+def get_related_objects_full(tm, table_str, colname_str, id_str):
+    """
+    Query a table for objects related to a given id and return full
+    information about all of them.
+    :param tm: table manager to use for the query
+    :param table_str: table to query
+    :param colname_str: column name of that table in which to look for id
+    :param id_str: id to look for in the given column
+    :return: a tuple of tuples.  Each inner tuple represents one row that
+             matched (was related by id) from the given table.
+    """
+    q_res = tm.query("select * from " + table_str + " where " + colname_str + " = '" + id_str + "'")
+    res = []
+    if q_res is not None:
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
 
     return res
 

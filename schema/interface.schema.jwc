@@ -9,9 +9,43 @@
   "type": "object",
   "additionalProperties": false,
   "extends": {
-    "$ref": "http://unis.incntre.iu.edu/schema/20120709/port#"
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/networkresource#"
   },
   "properties": {
+    "addresses" : {
+      "description" : "Addresses assigned to this interface",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "object",
+        "properties": {
+          "addrtype": {
+            "enum" : [ "802.3", "IPv4", "IPv6" ],
+            // 802.3: ethernet-style MAC address
+            // Most useful addresses to list:
+            //   publicly routable IP addresses
+            //   MAC addresses on node interfaces (for OpenFlow debugging)
+            // Least useful addresses to list:
+            //   Control plane IP addresses
+            //   MAC addresses on switch interfaces (ports)
+            "required": true
+          },
+          "scope" : {
+            // This only applies to IP addresses.  Omit for others.
+            "enum" : [ "private", "public" ],
+            // public: "publicly routable," i.e., reachable from the Internet
+            //         at large
+            // private: local to the aggregate, i.e., not public
+            "required": false
+          },
+          "address": {
+            "type" : "string",
+            "required": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "ops_monitoring:role": { 
        "description":"Role of interface (experimental, control)",
        "type":"string",

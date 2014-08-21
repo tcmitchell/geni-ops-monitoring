@@ -256,6 +256,12 @@ class SingleLocalDatastoreInfoCrawler:
                             if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
                                                self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
                                 ok = False
+                            ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
+                            interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
+                            for address in interface_address_list:
+                                if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address, \
+                                                   self.tbl_mgr.get_column_from_schema(ifaddr_schema, "id"), self.debug, self.logger):
+                                    ok = False
         return ok
 
     def get_default_attribute_for_type(self, vartype):
@@ -430,51 +436,56 @@ class SingleLocalDatastoreInfoCrawler:
         interface_info_list = []
         for key in schema:
             noval = False
-            if key[0] == "address_type":
-                if "address" in interface_dict:
-                    if "type" in interface_dict["address"]:
-                        interface_info_list.append(interface_dict["address"]["type"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        print("WARNING: value for required json interface field [\"address\"][\"type\"] is missing. Replacing with empty string...")
-                        interface_info_list.append("")
-                    else:
-                        interface_info_list.append(None)
-
-            elif key[0] == "address_address":
-                if "address" in interface_dict:
-                    if "address" in interface_dict["address"]:
-                        interface_info_list.append(interface_dict["address"]["address"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        print("WARNING: value for required json interface field [\"address\"][\"address\"] is missing. Replacing with empty string...")
-                        interface_info_list.append("")
-                    else:
-                        interface_info_list.append(None)
+            if key[0].startswith("properties$"):
+                jsonkey = "ops_monitoring:" + key[0].split('$')[1]
             else:
-                if key[0].startswith("properties$"):
-                    jsonkey = "ops_monitoring:" + key[0].split('$')[1]
+                jsonkey = key[0]
+            if jsonkey in interface_dict:
+                interface_info_list.append(interface_dict[jsonkey])
+            else:
+                if key[2]:
+                    print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                    interface_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
-                    jsonkey = key[0]
-                if jsonkey in interface_dict:
-                    interface_info_list.append(interface_dict[jsonkey])
-                else:
-                    if key[2]:
-                        print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
-                        interface_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        interface_info_list.append(None)
+                    # This is OK. This was an optional field.
+                    interface_info_list.append(None)
 
         return interface_info_list
+
+
+    def get_interface_addresses(self, interface_dict, schema):
+        """
+        Extract addresses from an interface dictionary.
+        :param interface_dict: the interface to extract addresses from
+        :param schema: database schema for the ops_interface_addresses table
+        :return: a list of lists, where each of the inner lists contains
+                 a row of values representing one address
+        """
+        address_list = []
+        if "addresses" in interface_dict:
+            for json_address in interface_dict["addresses"]:
+                oneaddr_row = []
+                for key in schema:
+                    jsonkey = key[0]
+                    if jsonkey == "interface_id":
+                        oneaddr_row.append(interface_dict["id"])
+                    elif jsonkey in json_address:
+                        oneaddr_row.append(json_address[jsonkey])
+                    else:
+                        # XXX we don't have an id, so when jsonkey == id ends up here.
+                        # Since id is the primary key, and we're using the same default
+                        # value for every address, we can only ever have one address
+                        # associated with an interface.  Probably need to rethink this.
+                        if key[2]:
+                            print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                            oneaddr_row.append(self.get_default_attribute_for_type(key[1]))
+                        else:
+                            # This is OK. This was an optional field.
+                            oneaddr_row.append(None)
+                if len(oneaddr_row) > 0:
+                    address_list.append(oneaddr_row)
+
+        return address_list
 
 
     def get_all_nodes_of_aggregate(self):
