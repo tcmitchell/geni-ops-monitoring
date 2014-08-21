@@ -402,7 +402,7 @@ def get_interface_info_dict(schema, info_row, address_schema, address_rows):
             fieldname = address_schema[col_i][0]
             if ((address_row[col_i] is not None) or
                 ((address_row[col_i] is None) and address_schema[col_i][2])):
-               if fieldname == "id" or fieldname == "interface_id":
+               if fieldname == "interface_id":
                    # these fields don't go in the json response
                    pass
                else:

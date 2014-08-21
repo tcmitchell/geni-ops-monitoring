@@ -689,14 +689,13 @@
     },
     {   "name":"interface_addresses",
         "db_schema": [
-             ["id", "varchar", true],
              ["interface_id", "varchar", true],
              ["addrtype", "varchar", true],
              ["scope", "varchar", false],
              ["address", "varchar", true]
         ],
         "constraints": [
-            ["PRIMARY KEY (%s)", ["id"]],
+            ["PRIMARY KEY (%s, %s)", ["interface_id", "address"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_id", "ops_interface", "id"]]
         ],
         "dependencies" : ["ops_interface"]

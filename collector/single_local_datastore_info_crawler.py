@@ -258,9 +258,11 @@ class SingleLocalDatastoreInfoCrawler:
                                 ok = False
                             ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
                             interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
+                            primary_key_columns = [self.tbl_mgr.get_column_from_schema(ifaddr_schema, "interface_id"),
+                                                   self.tbl_mgr.get_column_from_schema(ifaddr_schema, "address")]
                             for address in interface_address_list:
-                                if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address, \
-                                                   self.tbl_mgr.get_column_from_schema(ifaddr_schema, "id"), self.debug, self.logger):
+                                if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address,
+                                                   primary_key_columns, self.debug, self.logger):
                                     ok = False
         return ok
 
@@ -472,10 +474,6 @@ class SingleLocalDatastoreInfoCrawler:
                     elif jsonkey in json_address:
                         oneaddr_row.append(json_address[jsonkey])
                     else:
-                        # XXX we don't have an id, so when jsonkey == id ends up here.
-                        # Since id is the primary key, and we're using the same default
-                        # value for every address, we can only ever have one address
-                        # associated with an interface.  Probably need to rethink this.
                         if key[2]:
                             print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
                             oneaddr_row.append(self.get_default_attribute_for_type(key[1]))
@@ -583,7 +581,7 @@ def handle_request(url, cert_path, logger):
     return None
 
 
-def info_update(tbl_mgr, table_str, table_schema, row_arr, id_column, debug, logger):
+def info_update(tbl_mgr, table_str, table_schema, row_arr, id_columns, debug, logger):
     """
     Function to update the information about an object.
     :param tbl_mgr: an instance of TableManager that will be used to execute the SQL statements.
@@ -597,9 +595,19 @@ def info_update(tbl_mgr, table_str, table_schema, row_arr, id_column, debug, log
     """
     ok = True
     if debug:
-        logger.info("<print only> updating or inserting " + str(row_arr[id_column]) + " from " + table_str)
+        # Convert id_columns to a list if it is not one already.
+        try:
+            i = iter(id_columns) # attempt to access it as an iterable
+        except TypeError:
+            id_columns = [id_columns]
+
+        # Create a list of NAME=VALUE, for all of the id_columns
+        name_value_pairs = ""
+        for col in id_columns:
+            name_value_pairs += table_schema[col][0] + "=" + str(row_arr[col]) + ", "
+        logger.info("<print only> updating or inserting " + name_value_pairs + "in table " + table_str)
     else:
-        if not tbl_mgr.upsert(table_str, table_schema, row_arr, id_column):
+        if not tbl_mgr.upsert(table_str, table_schema, row_arr, id_columns):
             ok = False
 
     return ok

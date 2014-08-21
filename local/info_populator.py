@@ -177,7 +177,6 @@ class InfoPopulator():
 
 
         interfaceaddr1 = []
-        interfaceaddr1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:addr1") # id
         interfaceaddr1.append("instageni.gpolab.bbn.com_interface_pc1:eth1") # interface_id
         interfaceaddr1.append("IPv4") # addrtype
         interfaceaddr1.append("public") # scope
@@ -188,7 +187,6 @@ class InfoPopulator():
 
 
         interfaceaddr2 = []
-        interfaceaddr2.append("instageni.gpolab.bbn.com_interface_pc1:eth1:addr2") # id
         interfaceaddr2.append("instageni.gpolab.bbn.com_interface_pc1:eth1") # interface_id
         interfaceaddr2.append("802.3") # addrtype
         interfaceaddr2.append("NULL") # scope
