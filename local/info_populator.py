@@ -168,13 +168,33 @@ class InfoPopulator():
         interface1.append(url_local_info + "interface/" + interface1[1])
         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
         interface1.append(str(int(time.time()*1000000)))
-        interface1.append("ipv4") # addr type
-        interface1.append("192.1.242.140") # addr
         interface1.append("control") # role
         interface1.append(str(10000000)) #max bps
         interface1.append(str(1000000)) #max pps
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
+            ok = False
+
+
+        interfaceaddr1 = []
+        interfaceaddr1.append("instageni.gpolab.bbn.com_interface_pc1:eth1:addr1") # id
+        interfaceaddr1.append("instageni.gpolab.bbn.com_interface_pc1:eth1") # interface_id
+        interfaceaddr1.append("IPv4") # addrtype
+        interfaceaddr1.append("public") # scope
+        interfaceaddr1.append("12.34.56.78") # address
+
+        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr1):
+            ok = False
+
+
+        interfaceaddr2 = []
+        interfaceaddr2.append("instageni.gpolab.bbn.com_interface_pc1:eth1:addr2") # id
+        interfaceaddr2.append("instageni.gpolab.bbn.com_interface_pc1:eth1") # interface_id
+        interfaceaddr2.append("802.3") # addrtype
+        interfaceaddr2.append("NULL") # scope
+        interfaceaddr2.append("ab:cd:ef:01:23") # address
+
+        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr2):
             ok = False
 
 
@@ -184,8 +204,6 @@ class InfoPopulator():
         interface2.append(url_local_info + "interface/" + interface2[1])
         interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
         interface2.append(str(int(time.time()*1000000)))
-        interface2.append("ipv4") # addr type
-        interface2.append("192.1.242.140") # addr
         interface2.append("control") # role
         interface2.append(str(10000000)) #max bps
         interface2.append(str(1000000)) #max pps
@@ -430,12 +448,23 @@ def info_insert(tbl_mgr, table_str, row_arr):
     :param row_arr: a list of values.
     :return: True if the insertion happened correctly, false otherwise.
     """
-    val_str = "('"
+    val_str = ""
+    val_prefix = "("
 
     for val in row_arr:
-        val_str += val + "','"  # join won't do this
+        val_str += val_prefix
+        if val != "NULL":
+            # Put single quotes around the value
+            val_str += "'" + val + "'"
+        else:
+            # Special case the string "NULL" by NOT putting single quotes
+            # around it, leaving just a bare NULL.  If you insert 'NULL',
+            # you're inserting a string, not a database NULL, and that's
+            # almost surely not what you want.  NULL != 'NULL' !!!
+            val_str += "NULL"
+        val_prefix = ","
 
-    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
+    val_str += ")"
 
     return tbl_mgr.insert_stmt(table_str, val_str)
 
@@ -443,7 +472,7 @@ def info_insert(tbl_mgr, table_str, row_arr):
 def main():
 
     db_name = "local"
-    config_path = "../config"
+    config_path = "../config/"
 
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
