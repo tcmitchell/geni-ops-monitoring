@@ -33,7 +33,6 @@ def handle_ts_data_query(tm, filters):
     schema_dict = tm.schema_dict
     try:
         q_dict = json.loads(filters)  # try to make a dictionary
-
     except Exception, e:
         opslog.warning(filters + "failed to parse as JSON\n" + str(e))
         return "query: " + filters + "<br><br>had error: " + str(e) + \
@@ -56,24 +55,41 @@ def handle_ts_data_query(tm, filters):
 
     resp_arr = []    
     
+    # Remember if we are wildcarding (selecting all of) the objects.
+    # If we are, none of the other object ids in the list (if any)
+    # matter, since we're going to get them all anyway.
+    obj_wildcard = "*" in objects["id"]
+
     for event_type in event_types:
         et_split = event_type.split(':')
         if et_split[0] == "ops_monitoring":
             event_type = et_split[1]
             obj_type = objects["type"]
-            for obj_id in objects["id"]:
+
+            # Construct the name of the database table.
+            table_str = "ops_" + obj_type + "_" + event_type
+
+            # If wildcarding the objects, get all possible object ids
+            # from this table.
+            if obj_wildcard:
+                obj_list = get_object_ids(tm, table_str)
+            else:
+                # Use the list of object ids supplied in the REST call.
+                obj_list = objects["id"]
+
+            for obj_id in obj_list:
                 resp_i = {}
                         
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
                 obj_schema = get_object_schema(tm, obj_type, obj_id)
             
                 if (ts_arr != None):
-                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#"
+                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#"
                     resp_i["id"] = event_type + ":" + obj_id
                     resp_i["subject"] = {"href":obj_schema}
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
-                    resp_i["units"] = schema_dict["units"]["ops_" + obj_type + "_" + event_type]
+                    resp_i["units"] = schema_dict["units"][table_str]
                     resp_i["tsdata"] = ts_arr
                     resp_arr.append(resp_i)
         else:
@@ -825,6 +841,20 @@ def get_object_schema(tm, obj_type, obj_id):
         res = q_res[0][0]
 
     return res
+
+
+def get_object_ids(tm, table_str):
+    """
+    Get all unique object ids from a table.
+    :param table_str: the table to search for ids in
+    :return: a list of object ids that appear in the given table.
+    """
+    obj_ids = []
+    q_res = tm.query("select distinct id from " + table_str)
+    if q_res is not None:
+        obj_ids = [x[0] for x in q_res]
+
+    return obj_ids
 
 def main():
     print "no unit test"
