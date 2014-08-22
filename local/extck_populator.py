@@ -27,8 +27,19 @@ import json
 import ConfigParser
 import subprocess
 from string import digits
-
 from pprint import pprint as pprint
+
+##################################################
+# geni-lib config for FOAM/FV listresources test #
+geniLibConfigPath="/usr/local/geni-lib/samples"  #
+geniLibPath="/usr/local/geni-lib"                #
+sys.path.append(geniLibConfigPath)               #
+sys.path.append(geniLibPath)                     #
+
+import amcanary_config                           #
+context = amcanary_config.buildContext()         #
+from geni.aggregate.core import AM               #
+##################################################
 
 common_path = "../common/"
 # input file with short-names and Urls aggregates 
@@ -38,7 +49,31 @@ inputFile=open('/home/amcanary/src/gcf/agg_nick_cache.base')
 # where state is 0 for up and 1 for down
 shortName={}
 sys.path.append(common_path)
+
+
 import table_manager
+
+
+class SiteOF(AM):
+  def __init__ (self, name, url = None):
+    super(SiteOF, self).__init__(name, url, "amapiv2", "foam")
+
+def getOFState(context, site=None):
+  try:
+      ad = site.listresources(context) # Run listresources for a particular site
+  except:
+      print "Control plane connection to", site.name, "for FOAM/FV Offline"
+      return str(0) # Can't reach the site via control path
+
+  prtFlag=0 # Check to see if dpids have ports.
+            # No ports on all dpids for a given switch indicates possible FV issues.
+  for switch in ad.datapaths:
+    if len(switch.ports) == 0:
+      print "NO ports found on ", switch.dpid, ". FV may be hang or connection from dpid to FV is broken."
+    else: # If any dpid has ports listed, FV is working for that switch
+      prtFlag=1
+      return str(prtFlag)
+  return str(0) # All dpids on that switch had no ports. FV is down. 
 
 class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
@@ -51,8 +86,8 @@ class InfoPopulator():
     def insert_agg_is_avail_datapoint(self,aggRow):
         # Insert into ops_externalcheck 
         agg_id = aggRow[0] # agg_id
-        ts = aggRow[3]#str(int(time.time()*1000000))
-        v = aggRow[2] 
+        ts = aggRow[4]#str(int(time.time()*1000000))
+        v = aggRow[3] 
         datapoint = [agg_id, ts, v]
         db_insert(self.tbl_mgr, "ops_aggregate_is_available", datapoint)  
         db_purge(self.tbl_mgr,"ops_aggregate_is_available")
@@ -81,21 +116,19 @@ def getShortName():
             cols1=cols[1].strip().split(',')
             cols2=cols1[1].strip().split('/')
             fqdn=cols2[2] # Grab modified version of fqdn
-           # cols3=cols2[2].strip().split(':')
-           # fqdn=cols3[0] # Grab fqdn
-
+            url=cols1[1]
             if aggShortName == "plc" or aggShortName=="ion":
                 amtype="myplc"
             else: 
                 amtype=cols2[3] # Grab amtype
 
             if is_empty(shortName) == "True": # If dic is empty
-                shortName[fqdn]= [aggShortName,amtype]
+                shortName[fqdn]= [aggShortName,amtype, url]
             else:
                 if shortName.has_key(fqdn): # If we have the shortName move to next line
                    continue 
                 else:
-                    shortName[fqdn]=[aggShortName,amtype]
+                    shortName[fqdn]=[aggShortName,amtype, url]
     return shortName
 
 def formatShortName(shortName):
@@ -154,12 +187,18 @@ def main():
     # read list of urls (or short-names)
     shortName=getShortName()
     for fqdnMod in shortName:# We've got a modified version of the fqdn
+        siteName = shortName[fqdnMod][0]
         amtype = shortName[fqdnMod][1]
+        url=shortName[fqdnMod][2]  
         cols=fqdnMod.strip().split(':')# Remove port
         fqdn=cols[0]
-        p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
-        output, err = p.communicate()
-        state=getAMState(output)
+        if amtype== "foam":
+          site = SiteOF(siteName, url)
+          state= getOFState(context, site)
+        else:  
+          p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
+          output, err = p.communicate()
+          state=getAMState(output)
         shortName[fqdnMod].append(state)
         shortName[fqdnMod].append(str(int(time.time()*1000000)))
         ip.insert_agg_is_avail_datapoint(shortName[fqdnMod])
