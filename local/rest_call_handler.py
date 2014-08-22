@@ -31,6 +31,7 @@ def handle_ts_data_query(tm, filters):
 
     opslog = logger.get_logger()
     schema_dict = tm.schema_dict
+    opslog.debug("handling time series query for filter ='" + str(filters) + "'")
     try:
         q_dict = eval(filters)  # try to make a dictionary
 
@@ -42,8 +43,12 @@ def handle_ts_data_query(tm, filters):
     (ok, fail_str) = check_data_query_keys(q_dict)
     if ok == True:
         ts_filters = q_dict["filters"]["ts"]
-        event_types = q_dict["filters"]["eventType"]
+        # eliminate possible redundancy in list of types.
+        event_types = set(q_dict["filters"]["eventType"])
         objects = q_dict["filters"]["obj"]
+        # eliminate possible redundancy in list of object ids.
+        objid_set = set(objects["id"])
+        obj_type = objects["type"]
     else:
         return fail_str  # returns why filters failed
 
@@ -54,13 +59,11 @@ def handle_ts_data_query(tm, filters):
         return "[]"
 
     resp_arr = []
-
     for event_type in event_types:
         et_split = event_type.split(':')
         if et_split[0] == "ops_monitoring":
             event_type = et_split[1]
-            obj_type = objects["type"]
-            for obj_id in objects["id"]:
+            for obj_id in objid_set:
                 resp_i = {}
 
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
@@ -212,7 +215,7 @@ def handle_externalcheck_info_query(tm, extck_id):
         experiments = get_related_objects(tm, "ops_externalcheck_experiment", "externalcheck_id", extck_id)
 
         for exp_i in experiments:
-            exp_ref = get_self_ref(tm, "ops_experiment", exp_i)
+            exp_ref = get_refs(tm, "ops_experiment", exp_i)
             if exp_ref:
                 exp_refs.append(exp_ref)
 
@@ -303,14 +306,13 @@ def handle_link_info_query(tm, link_id):
         for endpt_i in endpts:
             endpt_refs.append(get_refs(tm, "ops_interfacevlan", endpt_i))
         parent_ids = get_related_objects(tm, "ops_link_relations", "child_id", link_id, "parent_id")
+        # get parent info
         for parent_id in parent_ids:
-            parent_info = get_object_info(tm, table_str, parent_id)
-            parent_refs.append(get_object_href_and_urn(link_schema, parent_info))
-        # same for childrea
+            parent_refs.append(get_refs(tm, table_str, parent_id))
+        # same for children
         children_ids = get_related_objects(tm, "ops_link_relations", "parent_id", link_id, "child_id")
         for child_id in children_ids:
-            child_info = get_object_info(tm, table_str, child_id)
-            children_refs.append(get_object_href_and_urn(link_schema, child_info))
+            children_refs.append(get_refs(tm, table_str, child_id))
 
         return json.dumps(get_link_info_dict(link_schema, link_info, endpt_refs, parent_refs, children_refs))
 
@@ -370,6 +372,21 @@ def check_data_query_keys(q_dict):
     return (True, None)
 
 
+def should_include_json_field(schema, info_row, column):
+    """
+    Function to determine whether or not a particular column of the information for an object
+    should be included in the json response given the knowledge we have of the schema.
+    :param schema: the schema for the corresponding table (in the usual format)
+    :param info_row: the row of information from the table
+    :param column: the index of the column in the schema and row to consider.
+    :return: True if the value for that column shold be included, False otherwise.
+    """
+    condition = (info_row[column] is not None) or ((info_row[column] is None) and schema[column][2])
+    if len(schema[column]) == 3:
+        return condition
+    elif len(schema[column]) == 4:
+        return condition or schema[column][3]
+
 # ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
@@ -378,7 +395,7 @@ def get_interface_info_dict(schema, info_row):
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "address_address":
                 addr = info_row[col_i]
             elif schema[col_i][0] == "address_type":
@@ -406,7 +423,7 @@ def get_experiment_info_dict(schema, info_row):
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "source_aggregate_urn":
                 src_agg_urn = info_row[col_i]
             elif schema[col_i][0] == "source_aggregate_href":
@@ -444,7 +461,7 @@ def get_interfacevlan_info_dict(schema, info_row):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "interface_urn":
                 iface_urn = info_row[col_i]
             elif schema[col_i][0] == "interface_href":
@@ -452,13 +469,13 @@ def get_interfacevlan_info_dict(schema, info_row):
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
+#     Not including only if both are null
     if (iface_urn is not None) or (iface_href is not None):
         json_dict["interface"] = {}
         if (iface_urn is not None):
             json_dict["interface"]["urn"] = iface_urn;
         if (iface_href is not None):
             json_dict["interface"]["href"] = iface_href;
-    # json_dict["interface"] = {"urn":iface_urn,"href":iface_href}
 
     return json_dict
 
@@ -470,7 +487,7 @@ def get_user_info_dict(schema, info_row):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "authority_urn":
                 auth_urn = info_row[col_i]
             elif schema[col_i][0] == "authority_href":
@@ -496,7 +513,7 @@ def get_node_info_dict(schema, info_row, interface_refs):
 
     # Not all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0].startswith("properties$"):
             # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
@@ -519,7 +536,7 @@ def get_opsconfig_info_dict(schema, info_row, agg_refs, auth_refs, events_list, 
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if agg_refs:
@@ -565,7 +582,7 @@ def get_sliver_info_dict(schema, info_row, res_refs):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "aggregate_urn":
                 agg_urn = info_row[col_i]
             elif schema[col_i][0] == "aggregate_href":
@@ -597,7 +614,7 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs):
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if res_refs:
@@ -620,7 +637,7 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if exp_refs:
@@ -645,7 +662,7 @@ def get_link_info_dict(schema, info_row, endpt_refs, parent_refs, children_refs)
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if endpt_refs:
@@ -677,7 +694,7 @@ def get_slice_info_dict(schema, info_row, user_refs):
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "authority_href":
                 auth_href = info_row[col_i]
             elif schema[col_i][0] == "authority_urn":
@@ -709,7 +726,7 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
-        if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
+        if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if user_refs:
@@ -737,29 +754,6 @@ def get_object_info(tm, table_str, obj_id):
     if q_res is not None:
         res = q_res[0]  # first (and only) row...
     return res
-
-def get_object_href_and_urn(schema, object_info):
-    """
-    Function to get the href and urn values from a row of information about an object.
-    The row of information is expected to be a tuple or a list of value, in the order 
-    specified by the schema.
-    :param schema: the schema representing the columns of the object information row.
-    :param object_info: the list of values representing the object information.
-    :return: a list with 2 elements, first the href, second the urn
-    """
-    res = []
-    col_selfRef = 0
-    col_urn = 0;
-    for col_i in range(len(schema)):
-        if schema[col_i][0] == "selfRef":
-            col_selfRef = col_i
-        elif schema[col_i][0] == "urn":
-            col_urn = col_i
-
-    res.append(object_info[col_selfRef])
-    res.append(object_info[col_urn])
-    return res
-
 
 # Gets event types for an object
 def get_events_list(tm):
@@ -792,18 +786,6 @@ def get_refs(tm, table_str, object_id):
     if q_res is not None:
         refs = q_res[0]
     return refs
-
-
-# Get self reference only TODO refactor similar functions
-def get_self_ref(tm, table_str, object_id):
-
-    self_ref = None
-    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn from " + table_str + \
-                     " where id = '" + object_id + "' limit 1")
-    if q_res is not None:
-        self_ref = q_res[0]  # gets first of single tuple
-
-    return self_ref
 
 
 # Get self reference only TODO refactor similar functions
