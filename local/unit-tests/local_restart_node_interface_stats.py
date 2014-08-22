@@ -44,6 +44,7 @@ def parse_args(argv):
     base_url = "http://127.0.0.1:5000"
     node_id = "instageni.gpolab.bbn.com_node_pc1"
     interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
+    interfacevlan_id = "instageni.gpolab.bbn.com_interface_pc1:eth1:1750"
     aggregate_id = "gpo-ig"
     experiment_id = "missouri_ig_to_gpo_ig"
     num_ins = 10;
@@ -63,6 +64,8 @@ def parse_args(argv):
             node_id = arg
         elif opt in ("-i", "--interfaceid"):
             interface_id = arg
+        elif opt in ("-v", "--interfacevlanid"):
+            interfacevlan_id = arg
         elif opt in ("-a", "--aggregateid"):
             aggregate_id = arg
         elif opt in ("-e", "--experimentid"):
@@ -72,12 +75,12 @@ def parse_args(argv):
         elif opt in ("-s", "--sleepperiodsec"):
             per_sec = float(arg)
 
-    return [base_url, node_id, interface_id, aggregate_id, experiment_id, num_ins, per_sec]
+    return [base_url, node_id, interface_id, interfacevlan_id, aggregate_id, experiment_id, num_ins, per_sec]
 
 
 def main(argv):
 
-    [base_url, node_id, interface_id, aggregate_id, experiment_id, num_ins, per_sec] = parse_args(argv)
+    [base_url, node_id, interface_id, interfacevlan_id, aggregate_id, experiment_id, num_ins, per_sec] = parse_args(argv)
 
     db_type = "local"
     config_path = "../../config/"
@@ -113,6 +116,7 @@ def main(argv):
     # data population
     node_event_str_arr = event_types["node"]
     interface_event_str_arr = event_types["interface"]
+    interfacevlan_event_str_arr = event_types["interfacevlan"]
     aggregate_event_str_arr = event_types["aggregate"]
     experiment_event_str_arr = event_types["experiment"]
 
@@ -123,6 +127,9 @@ def main(argv):
     obj_type = "interface"
     interface_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interface_id, num_ins, per_sec, interface_event_str_arr)
 
+    obj_type = "interfacevlan"
+    interfacevlan_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interfacevlan_id, num_ins, per_sec, interface_event_str_arr)
+
     obj_type = "aggregate"
     aggregate_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, aggregate_id, num_ins, per_sec, aggregate_event_str_arr)
 
@@ -132,12 +139,14 @@ def main(argv):
     # start threads
     node_sp.start()
     interface_sp.start()
+    interfacevlan_sp.start()
     aggregate_sp.start()
     experiment_sp.start()
 
     threads = []
     threads.append(node_sp)
     threads.append(interface_sp)
+    threads.append(interfacevlan_sp)
     threads.append(aggregate_sp)
     threads.append(experiment_sp)
 
