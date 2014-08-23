@@ -103,7 +103,7 @@ class InfoPopulator():
         sliver1.append(str(int(1391626683000000))) # created
         sliver1.append(str(int(1391708989000000))) # expires
         sliver1.append("instageni.gpolab.bbn.com_node_pc1") # node_id
-        sliver1.append("NULL") # link_id
+        sliver1.append(None) # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver1):
             ok = False
@@ -124,7 +124,7 @@ class InfoPopulator():
         sliver2.append(str(int(1391626683000000))) # created
         sliver2.append(str(int(1391708989000000))) # expires
         sliver2.append("instageni.gpolab.bbn.com_node_pc2") # node_id
-        sliver2.append("NULL") # link_id
+        sliver2.append(None) # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver2):
             ok = False
@@ -155,7 +155,7 @@ class InfoPopulator():
         sliver3.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
         sliver3.append(str(int(1391626683000005))) # created
         sliver3.append(str(int(1391708989000006))) # expires
-        sliver3.append("NULL") # node_id
+        sliver3.append(None) # node_id
         sliver3.append("arbitrary_link_id_001") # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver3):
@@ -168,13 +168,31 @@ class InfoPopulator():
         interface1.append(url_local_info + "interface/" + interface1[1])
         interface1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1")
         interface1.append(str(int(time.time()*1000000)))
-        interface1.append("ipv4") # addr type
-        interface1.append("192.1.242.140") # addr
         interface1.append("control") # role
         interface1.append(str(10000000)) #max bps
         interface1.append(str(1000000)) #max pps
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
+            ok = False
+
+
+        interfaceaddr1 = []
+        interfaceaddr1.append(interface1[1]) # interface_id
+        interfaceaddr1.append("IPv4") # addrtype
+        interfaceaddr1.append("public") # scope
+        interfaceaddr1.append("12.34.56.78") # address
+
+        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr1):
+            ok = False
+
+
+        interfaceaddr2 = []
+        interfaceaddr2.append(interface1[1]) # interface_id
+        interfaceaddr2.append("802.3") # addrtype
+        interfaceaddr2.append(None) # scope
+        interfaceaddr2.append("ab:cd:ef:01:23") # address
+
+        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr2):
             ok = False
 
 
@@ -184,8 +202,6 @@ class InfoPopulator():
         interface2.append(url_local_info + "interface/" + interface2[1])
         interface2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1")
         interface2.append(str(int(time.time()*1000000)))
-        interface2.append("ipv4") # addr type
-        interface2.append("192.1.242.140") # addr
         interface2.append("control") # role
         interface2.append(str(10000000)) #max bps
         interface2.append(str(1000000)) #max pps
@@ -427,15 +443,20 @@ def info_insert(tbl_mgr, table_str, row_arr):
     Function to insert values into a table.
     :param tbl_mgr: the instance of TableManager to use.
     :param table_str: the name of the table to insert into.
-    :param row_arr: a list of values.
+    :param row_arr: a list of values.  If any of the values are None,
+                    they are translated to a SQL NULL.
     :return: True if the insertion happened correctly, false otherwise.
     """
-    val_str = "('"
+    val_str = "("
 
-    for val in row_arr:
-        val_str += val + "','"  # join won't do this
-
-    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
+    for col in range(len(row_arr)):
+        if col > 0:
+            val_str += ", "
+        if row_arr[col] is None:
+            val_str += "NULL"
+        else:
+            val_str += "'" + row_arr[col] + "'"
+    val_str += ")"
 
     return tbl_mgr.insert_stmt(table_str, val_str)
 
@@ -443,7 +464,7 @@ def info_insert(tbl_mgr, table_str, row_arr):
 def main():
 
     db_name = "local"
-    config_path = "../config"
+    config_path = "../config/"
 
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()

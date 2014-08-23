@@ -370,8 +370,6 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true],
-             ["address_type", "varchar", true],
-             ["address_address", "varchar", true],
              ["properties$role", "varchar", false],
              ["properties$max_bps", "int8", false],
              ["properties$max_pps", "int8", false]
@@ -688,6 +686,19 @@
             ["UNIQUE (%s)", ["selfRef"]]
         ],
         "dependencies" : []
+    },
+    {   "name":"interface_addresses",
+        "db_schema": [
+             ["interface_id", "varchar", true],
+             ["addrtype", "varchar", true],
+             ["scope", "varchar", false],
+             ["address", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["interface_id", "address"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["interface_id", "ops_interface", "id"]]
+        ],
+        "dependencies" : ["ops_interface"]
     }
   ],
   // The "events" section represents all the tables that will capture measurement data.
@@ -805,6 +816,25 @@
                 "ts": "int8",
                 "v":"float4",
                 "units":"pps"
+            },
+            // WiMAX events:
+            {   "name":"tx_power",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"dBM"
+            },
+            {   "name":"tx_frequency",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"Mhz"
+            },
+            {   "name":"wmx_noc",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int8",
+                "units":"number of clients"
             }
         ],
         "interfacevlan": [

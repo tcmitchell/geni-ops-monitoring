@@ -256,6 +256,14 @@ class SingleLocalDatastoreInfoCrawler:
                             if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
                                                self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
                                 ok = False
+                            ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
+                            interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
+                            primary_key_columns = [self.tbl_mgr.get_column_from_schema(ifaddr_schema, "interface_id"),
+                                                   self.tbl_mgr.get_column_from_schema(ifaddr_schema, "address")]
+                            for address in interface_address_list:
+                                if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address,
+                                                   primary_key_columns, self.debug, self.logger):
+                                    ok = False
         return ok
 
     def get_default_attribute_for_type(self, vartype):
@@ -429,52 +437,52 @@ class SingleLocalDatastoreInfoCrawler:
         # get each attribute out of response into list
         interface_info_list = []
         for key in schema:
-            noval = False
-            if key[0] == "address_type":
-                if "address" in interface_dict:
-                    if "type" in interface_dict["address"]:
-                        interface_info_list.append(interface_dict["address"]["type"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        print("WARNING: value for required json interface field [\"address\"][\"type\"] is missing. Replacing with empty string...")
-                        interface_info_list.append("")
-                    else:
-                        interface_info_list.append(None)
-
-            elif key[0] == "address_address":
-                if "address" in interface_dict:
-                    if "address" in interface_dict["address"]:
-                        interface_info_list.append(interface_dict["address"]["address"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        print("WARNING: value for required json interface field [\"address\"][\"address\"] is missing. Replacing with empty string...")
-                        interface_info_list.append("")
-                    else:
-                        interface_info_list.append(None)
+            if key[0].startswith("properties$"):
+                jsonkey = "ops_monitoring:" + key[0].split('$')[1]
             else:
-                if key[0].startswith("properties$"):
-                    jsonkey = "ops_monitoring:" + key[0].split('$')[1]
+                jsonkey = key[0]
+            if jsonkey in interface_dict:
+                interface_info_list.append(interface_dict[jsonkey])
+            else:
+                if key[2]:
+                    print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                    interface_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
-                    jsonkey = key[0]
-                if jsonkey in interface_dict:
-                    interface_info_list.append(interface_dict[jsonkey])
-                else:
-                    if key[2]:
-                        print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
-                        interface_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        interface_info_list.append(None)
+                    # This is OK. This was an optional field.
+                    interface_info_list.append(None)
 
         return interface_info_list
+
+
+    def get_interface_addresses(self, interface_dict, schema):
+        """
+        Extract addresses from an interface dictionary.
+        :param interface_dict: the interface to extract addresses from
+        :param schema: database schema for the ops_interface_addresses table
+        :return: a list of lists, where each of the inner lists contains
+                 a row of values representing one address
+        """
+        address_list = []
+        if "addresses" in interface_dict:
+            for json_address in interface_dict["addresses"]:
+                oneaddr_row = []
+                for key in schema:
+                    jsonkey = key[0]
+                    if jsonkey == "interface_id":
+                        oneaddr_row.append(interface_dict["id"])
+                    elif jsonkey in json_address:
+                        oneaddr_row.append(json_address[jsonkey])
+                    else:
+                        if key[2]:
+                            print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                            oneaddr_row.append(self.get_default_attribute_for_type(key[1]))
+                        else:
+                            # This is OK. This was an optional field.
+                            oneaddr_row.append(None)
+                if len(oneaddr_row) > 0:
+                    address_list.append(oneaddr_row)
+
+        return address_list
 
 
     def get_all_nodes_of_aggregate(self):
@@ -536,15 +544,15 @@ class SingleLocalDatastoreInfoCrawler:
         :return: the id that goes with urn, or None if not found
         """
         tbl_mgr = self.tbl_mgr
-        id = None
+        objid = None
 
         q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("id") +
                               " from " + table_name + " where urn = '" + urn +
                               "' limit 1")
         if q_res is not None:
-            id = q_res[0][0]  # gets first of single tuple
+            objid = q_res[0][0]  # gets first of single tuple
 
-        return id
+        return objid
 
 
 def handle_request(url, cert_path, logger):
@@ -572,7 +580,7 @@ def handle_request(url, cert_path, logger):
     return None
 
 
-def info_update(tbl_mgr, table_str, table_schema, row_arr, id_column, debug, logger):
+def info_update(tbl_mgr, table_str, table_schema, row_arr, id_columns, debug, logger):
     """
     Function to update the information about an object.
     :param tbl_mgr: an instance of TableManager that will be used to execute the SQL statements.
@@ -586,9 +594,19 @@ def info_update(tbl_mgr, table_str, table_schema, row_arr, id_column, debug, log
     """
     ok = True
     if debug:
-        logger.info("<print only> updating or inserting " + str(row_arr[id_column]) + " from " + table_str)
+        # Convert id_columns to a list if it is not one already.
+        try:
+            _ = iter(id_columns) # attempt to access it as an iterable
+        except TypeError:
+            id_columns = [id_columns]
+
+        # Create a list of NAME=VALUE, for all of the id_columns
+        name_value_pairs = ""
+        for col in id_columns:
+            name_value_pairs += table_schema[col][0] + "=" + str(row_arr[col]) + ", "
+        logger.info("<print only> updating or inserting " + name_value_pairs + "in table " + table_str)
     else:
-        if not tbl_mgr.upsert(table_str, table_schema, row_arr, id_column):
+        if not tbl_mgr.upsert(table_str, table_schema, row_arr, id_columns):
             ok = False
 
     return ok

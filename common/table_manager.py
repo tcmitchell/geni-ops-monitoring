@@ -157,7 +157,7 @@ class MySQLDBManager (DBManager):
         import MySQLdb
         return MySQLdb
 
-    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+    def get_upsert_statements(self, table_name, table_schema, row, id_columns):
         statements = []
         # for MySql, the statement executed has the following syntax:
         # INSERT INTO table (field1, field2, ... fieldn) VALUES ( value1, value2, ... , valuen )
@@ -193,7 +193,7 @@ class PostgreSQLDBManager (DBManager):
         import psycopg2
         return psycopg2
 
-    def get_upsert_statements(self, table_name, table_schema, row, id_column):
+    def get_upsert_statements(self, table_name, table_schema, row, id_columns):
         statements = []
         # for postgres there are 2 statements executed in the same transaction.
         # The syntax used is as follows:
@@ -202,12 +202,26 @@ class PostgreSQLDBManager (DBManager):
         #    SELECT value1, value2, ... , valuen WHERE NOT EXISTS(SELECT 1 FROM table WHERE id_field=id_value);
         # the UPDATE will succeed if a row with id_field=id_value exists, otherwise has no effect.
         # the INSERT will succeed only if a row with id_field=id_value does not already exists.
+
+        # Convert id_columns to a list if it is not one already.
+        try:
+            _ = iter(id_columns) # attempt to access it as an iterable
+        except TypeError:
+            id_columns = [id_columns]
+
+        # Build the WHERE clause of the SQL statement using the column indices in id_columns.
+        where_clause = " WHERE "
+        and_str = ""
+        for col in id_columns:
+            where_clause += and_str + '"' + table_schema[col][0] + "\"='" + str(row[col]) + "'"
+            and_str = " AND "
+
         statement = "UPDATE \"" + table_name + "\" SET " + self.get_table_field_values_string(table_schema, row) + \
-                    " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "'"
+                    where_clause
         statements.append(statement)
         statement = "INSERT INTO \"" + table_name + "\" " + self.get_table_schema_string(table_schema) + \
                     " SELECT " + self.get_table_values_string(row) + " WHERE NOT EXISTS ( SELECT 1 from " + \
-                    table_name + " WHERE \"" + table_schema[id_column][0] + "\"='" + str(row[id_column]) + "')"
+                    table_name + where_clause + ")"
         statements.append(statement)
         return statements
 
