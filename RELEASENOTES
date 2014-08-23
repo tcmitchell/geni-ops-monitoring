@@ -26,6 +26,9 @@ August 28, 2014
     * New required fields: monitoring_version and
       operational_status.
     * New optional fields: populator_version, routable_ip_poolsize.
+    * In the list of resources, in addition to href and urn, there
+      is a new resource_type field indicating whether the resource
+      is a node or a link.
   * In node.schema:
     * New required field node_type.
     * ops_monitoring:vm_server_type is renamed to virtualization_type.
