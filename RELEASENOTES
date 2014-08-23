@@ -10,6 +10,10 @@ August 28, 2014
 
 * The REST calls changed as follows:
 
+  * In the bulk data request (/data/?q={"filters"...), if the list
+    of object ids contains a "*", then data is returned for all
+    possible objects.
+
 * The JSON schemas for the responses to REST calls changed as follows:
 
   * In sliver.schema:
