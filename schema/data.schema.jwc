@@ -13,7 +13,6 @@
 //
 // If <list of object ids> is "*", it means "all objects known to the
 // datastore of type <object type name>."
-// XXX is "*" difficult to deal with for AL2S?  For UKY?
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
   "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#",

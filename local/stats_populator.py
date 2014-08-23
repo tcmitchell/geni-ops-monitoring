@@ -265,24 +265,23 @@ def main():
     ocl = opsconfig_loader.OpsconfigLoader(config_path)
     event_types = ocl.get_event_types()
 
-    if not tbl_mgr.drop_all_tables():
-        sys.stderr.write("\nCould not drop all tables.\n")
-        sys.exit(-1)
-
-    if not tbl_mgr.establish_all_tables():
-        sys.stderr.write("\nCould not create all tables.\n")
-        sys.exit(-1)
-
     node_id = "instageni.gpolab.bbn.com_node_pc1"
     event_types_arr = event_types["node"]
-    nsp = StatsPopulator(tbl_mgr, node_id, num_ins, per_sec, event_types_arr)
+    nsp1 = StatsPopulator(tbl_mgr, "node", node_id, num_ins, per_sec, event_types_arr)
+    nsp1.start()
 
-    iface_id = "instageni.gpolab.bbn.com_interface_pc1:eth0"
+    node_id = "instageni.gpolab.bbn.com_node_pc2"
+    nsp2 = StatsPopulator(tbl_mgr, "node", node_id, num_ins, per_sec, event_types_arr)
+    nsp2.start()
+
+    iface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
     event_types_arr = event_types["interface"]
-    isp = StatsPopulator(tbl_mgr, iface_id, num_ins, per_sec, event_types_arr)
+    isp1 = StatsPopulator(tbl_mgr, "interface", iface_id, num_ins, per_sec, event_types_arr)
+    isp1.start()
 
-    nsp.start()
-    isp.start()
+    iface_id = "instageni.gpolab.bbn.com_interface_pc2:eth1"
+    isp2 = StatsPopulator(tbl_mgr, "interface", iface_id, num_ins, per_sec, event_types_arr)
+    isp2.start()
 
     q_res = tbl_mgr.query("select count(*) from ops_" + event_types_arr[0]);
     if q_res is not None:
@@ -290,8 +289,10 @@ def main():
 
 
     threads = []
-    threads.append(nsp)
-    threads.append(isp)
+    threads.append(nsp1)
+    threads.append(nsp2)
+    threads.append(isp1)
+    threads.append(isp2)
 
     ok = True
     # join all threads

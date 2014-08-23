@@ -33,7 +33,6 @@ def handle_ts_data_query(tm, filters):
     schema_dict = tm.schema_dict
     try:
         q_dict = json.loads(filters)  # try to make a dictionary
-
     except Exception, e:
         opslog.warning(filters + "failed to parse as JSON\n" + str(e))
         return "query: " + filters + "<br><br>had error: " + str(e) + \
@@ -56,24 +55,41 @@ def handle_ts_data_query(tm, filters):
 
     resp_arr = []    
     
+    # Remember if we are wildcarding (selecting all of) the objects.
+    # If we are, none of the other object ids in the list (if any)
+    # matter, since we're going to get them all anyway.
+    obj_wildcard = "*" in objects["id"]
+
     for event_type in event_types:
         et_split = event_type.split(':')
         if et_split[0] == "ops_monitoring":
             event_type = et_split[1]
             obj_type = objects["type"]
-            for obj_id in objects["id"]:
+
+            # Construct the name of the database table.
+            table_str = "ops_" + obj_type + "_" + event_type
+
+            # If wildcarding the objects, get all possible object ids
+            # from this table.
+            if obj_wildcard:
+                obj_list = get_object_ids(tm, table_str)
+            else:
+                # Use the list of object ids supplied in the REST call.
+                obj_list = objects["id"]
+
+            for obj_id in obj_list:
                 resp_i = {}
                         
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
                 obj_schema = get_object_schema(tm, obj_type, obj_id)
             
                 if (ts_arr != None):
-                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#"
+                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#"
                     resp_i["id"] = event_type + ":" + obj_id
                     resp_i["subject"] = {"href":obj_schema}
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
-                    resp_i["units"] = schema_dict["units"]["ops_" + obj_type + "_" + event_type]
+                    resp_i["units"] = schema_dict["units"][table_str]
                     resp_i["tsdata"] = ts_arr
                     resp_arr.append(resp_i)
         else:
@@ -113,7 +129,13 @@ def handle_interface_info_query(tm, iface_id):
     iface_info = get_object_info(tm, table_str, iface_id)
 
     if iface_info is not None:
-        return json.dumps(get_interface_info_dict(iface_schema, iface_info))
+        addr_table_str = "ops_interface_addresses"
+        address_schema = tm.schema_dict[addr_table_str]
+        address_rows = get_related_objects_full(tm, addr_table_str,
+                                                "interface_id", iface_id)
+        return json.dumps(get_interface_info_dict(iface_schema, iface_info,
+                                                  address_schema,
+                                                  address_rows))
     else:
         opslog.debug("interface not found: " + iface_id)
         return "interface not found"
@@ -149,7 +171,7 @@ def handle_sliver_info_query(tm, sliver_id):
         # See if the sliver resource is a node
         resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
                                                             "node_id")]
-        if resource_id != "NULL":
+        if resource_id != None:
             node_ref = get_refs(tm, "ops_node", resource_id)
             if len(node_ref) > 0:
                 resource_type = "node"
@@ -158,7 +180,7 @@ def handle_sliver_info_query(tm, sliver_id):
             # Resource is not a node; see if it's a link
             resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
                                                                 "link_id")]
-            if resource_id != "NULL":
+            if resource_id != None:
                 link_ref = get_refs(tm, "ops_link", resource_id)
                 if len(link_ref) > 0:
                     resource_type = "link"
@@ -376,30 +398,36 @@ def check_data_query_keys(q_dict):
 # ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
-def get_interface_info_dict(schema, info_row):
+def get_interface_info_dict(schema, info_row, address_schema, address_rows):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if (info_row[col_i] is not None) or ((info_row[col_i] is None) and schema[col_i][2]):
-            if schema[col_i][0] == "address_address":
-                addr = info_row[col_i]
-            elif schema[col_i][0] == "address_type":
-                addr_type = info_row[col_i]
-            elif schema[col_i][0].startswith("properties$"):
+            if schema[col_i][0].startswith("properties$"):
             # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
-#    json_dict["address"] = {"address":addr,"type":addr_type}
-    if (addr is not None) or (addr_type is not None):
-        json_dict["address"] = {}
-        if (addr is not None):
-            json_dict["address"]["address"] = addr
-        if (addr_type is not None):
-            json_dict["address"]["type"] = addr_type
+    # construct the list of addresses
+    json_address_list = []
+    for address_row in address_rows:
+        json_addr = {}
+        for col_i in range(len(address_schema)):
+            fieldname = address_schema[col_i][0]
+            if ((address_row[col_i] is not None) or
+                ((address_row[col_i] is None) and address_schema[col_i][2])):
+                if fieldname == "interface_id":
+                    # these fields don't go in the json response
+                    pass
+                else:
+                    # all other fields go in the json response
+                    json_addr[fieldname] = address_row[col_i]
+        json_address_list.append(json_addr)
 
+    if len(json_address_list) > 0:
+        json_dict["addresses"] = json_address_list
     return json_dict
 
 
@@ -715,6 +743,28 @@ def get_related_objects(tm, table_str, colname_str, id_str):
     return res
 
 
+# Gets related objects
+def get_related_objects_full(tm, table_str, colname_str, id_str):
+    """
+    Query a table for objects related to a given id and return full
+    information (complete table rows) about all of them.
+    :param tm: table manager to use for the query
+    :param table_str: table to query
+    :param colname_str: column name of that table in which to look for id
+    :param id_str: id to look for in the given column
+    :return: a tuple of tuples.  Each inner tuple represents one row that
+             matched (was related by id) from the given table.
+    """
+    q_res = tm.query("select * from " + table_str + " where " + \
+                     tm.get_column_name(colname_str) + " = '" + id_str + "'")
+    res = []
+    if q_res is not None:
+        for res_i in range(len(q_res)):
+            res.append(q_res[res_i])
+
+    return res
+
+
 # Get references of objects TODO refactor similar functions
 def get_refs(tm, table_str, object_id):
 
@@ -827,6 +877,20 @@ def get_object_schema(tm, obj_type, obj_id):
         res = q_res[0][0]
 
     return res
+
+
+def get_object_ids(tm, table_str):
+    """
+    Get all unique object ids from a table.
+    :param table_str: the table to search for ids in
+    :return: a list of object ids that appear in the given table.
+    """
+    obj_ids = []
+    q_res = tm.query("select distinct id from " + table_str)
+    if q_res is not None:
+        obj_ids = [x[0] for x in q_res]
+
+    return obj_ids
 
 def main():
     print "no unit test"
