@@ -816,6 +816,25 @@
                 "ts": "int8",
                 "v":"float4",
                 "units":"pps"
+            },
+            // WiMAX events:
+            {   "name":"tx_power",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"dBM"
+            },
+            {   "name":"tx_frequency",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"float4",
+                "units":"Mhz"
+            },
+            {   "name":"wmx_noc",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int8",
+                "units":"number of clients"
             }
         ],
         "interfacevlan": [
