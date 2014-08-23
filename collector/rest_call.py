@@ -281,11 +281,13 @@ def main(argv):
         # maybe "crawl"; harvest other URLs from the response
 
         if options.follow_urls:
-            # Find the URLs embedded in this response.  Any that we have
-            # not already visited go into unvisited_urls.
+            # Find the URLs embedded in this response.  Any that we
+            # have not already visited go into unvisited_urls if not
+            # already there.
             embedded_urls = find_embedded_urls(json_dict)
             for embedded_url in embedded_urls:
-                if not (embedded_url in visited_urls):
+                if (not (embedded_url in visited_urls) and
+                    not (embedded_url in unvisited_urls)):
                     unvisited_urls.append(embedded_url)
 
     # print a summary of this run
