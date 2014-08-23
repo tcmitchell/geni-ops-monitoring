@@ -103,7 +103,7 @@ class InfoPopulator():
         sliver1.append(str(int(1391626683000000))) # created
         sliver1.append(str(int(1391708989000000))) # expires
         sliver1.append("instageni.gpolab.bbn.com_node_pc1") # node_id
-        sliver1.append("NULL") # link_id
+        sliver1.append(None) # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver1):
             ok = False
@@ -124,7 +124,7 @@ class InfoPopulator():
         sliver2.append(str(int(1391626683000000))) # created
         sliver2.append(str(int(1391708989000000))) # expires
         sliver2.append("instageni.gpolab.bbn.com_node_pc2") # node_id
-        sliver2.append("NULL") # link_id
+        sliver2.append(None) # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver2):
             ok = False
@@ -155,7 +155,7 @@ class InfoPopulator():
         sliver3.append("urn:publicid:IDN+ch.geni.net+user+tupty") # creator
         sliver3.append(str(int(1391626683000005))) # created
         sliver3.append(str(int(1391708989000006))) # expires
-        sliver3.append("NULL") # node_id
+        sliver3.append(None) # node_id
         sliver3.append("arbitrary_link_id_001") # link_id
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver3):
@@ -189,7 +189,7 @@ class InfoPopulator():
         interfaceaddr2 = []
         interfaceaddr2.append(interface1[1]) # interface_id
         interfaceaddr2.append("802.3") # addrtype
-        interfaceaddr2.append("NULL") # scope
+        interfaceaddr2.append(None) # scope
         interfaceaddr2.append("ab:cd:ef:01:23") # address
 
         if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr2):
@@ -443,25 +443,19 @@ def info_insert(tbl_mgr, table_str, row_arr):
     Function to insert values into a table.
     :param tbl_mgr: the instance of TableManager to use.
     :param table_str: the name of the table to insert into.
-    :param row_arr: a list of values.
+    :param row_arr: a list of values.  If any of the values are None,
+                    they are translated to a SQL NULL.
     :return: True if the insertion happened correctly, false otherwise.
     """
-    val_str = ""
-    val_prefix = "("
+    val_str = "("
 
-    for val in row_arr:
-        val_str += val_prefix
-        if val != "NULL":
-            # Put single quotes around the value
-            val_str += "'" + val + "'"
-        else:
-            # Special case the string "NULL" by NOT putting single quotes
-            # around it, leaving just a bare NULL.  If you insert 'NULL',
-            # you're inserting a string, not a database NULL, and that's
-            # almost surely not what you want.  NULL != 'NULL' !!!
+    for col in range(len(row_arr)):
+        if col > 0:
+            val_str += ", "
+        if row_arr[col] is None:
             val_str += "NULL"
-        val_prefix = ","
-
+        else:
+            val_str += "'" + row_arr[col] + "'"
     val_str += ")"
 
     return tbl_mgr.insert_stmt(table_str, val_str)
