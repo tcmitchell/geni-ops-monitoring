@@ -66,6 +66,11 @@
       "items": {
         "type": "object",
         "properties": {
+          "resource_type": {
+            "description": "Type of this resource",
+            "enum": ["node", "link"],
+            "required": true
+          },
           "urn": {
             "type":"string",
             "required": true

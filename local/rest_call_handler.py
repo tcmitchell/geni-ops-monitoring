@@ -193,9 +193,9 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
             node_ref = get_refs(tm, "ops_node", res_i)
             link_ref = get_refs(tm, "ops_link", res_i)
             if len(node_ref) > 0:
-                res_refs.append(node_ref)
+                res_refs.append((node_ref[0], node_ref[1], "node"))
             elif len(link_ref) > 0:
-                res_refs.append(link_ref)
+                res_refs.append((link_ref[0], link_ref[1], "link"))
 
         slivers = get_related_objects(tm, "ops_aggregate_sliver", "aggregate_id", agg_id)
         for slv_i in slivers:
@@ -568,7 +568,9 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
         json_dict["resources"] = []
         for res_ref in res_refs:
             if len(res_ref) > 0:
-                json_dict["resources"].append({"href":res_ref[0], "urn":res_ref[1]})
+                json_dict["resources"].append({"href":res_ref[0],
+                                               "urn": res_ref[1],
+                                               "resource_type":res_ref[2]})
 
     if slv_refs:
         json_dict["slivers"] = []
