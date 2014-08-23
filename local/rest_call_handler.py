@@ -171,7 +171,7 @@ def handle_sliver_info_query(tm, sliver_id):
         # See if the sliver resource is a node
         resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
                                                             "node_id")]
-        if resource_id != "NULL":
+        if resource_id != None:
             node_ref = get_refs(tm, "ops_node", resource_id)
             if len(node_ref) > 0:
                 resource_type = "node"
@@ -180,7 +180,7 @@ def handle_sliver_info_query(tm, sliver_id):
             # Resource is not a node; see if it's a link
             resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
                                                                 "link_id")]
-            if resource_id != "NULL":
+            if resource_id != None:
                 link_ref = get_refs(tm, "ops_link", resource_id)
                 if len(link_ref) > 0:
                     resource_type = "link"
