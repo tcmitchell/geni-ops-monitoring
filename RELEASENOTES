@@ -25,6 +25,9 @@ August 28, 2014
   * In node.schema:
     * New required field node_type.
     * ops_monitoring:vm_server_type is renamed to virtualization_type.
+  * In interface.schema:
+    * New field addresses to hold the list of addresses for an
+      interface.  This replaces the address (singular) field.
 
 * The local datastore's database schema changed as follows:
 
@@ -38,7 +41,10 @@ August 28, 2014
   * In the ops_node table:
     * properties$vm_server_type is renamed to virtualization_type.
     * New required field node_type.
-
+  * In the ops_interface table:
+    * Removed fields address_type and address_address.
+  * There is a new table ops_interface_addresses to hold the
+    addresses for an interface.
 
 Changes for Release 1.1_patch1
 June 4, 2014
