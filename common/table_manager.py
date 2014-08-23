@@ -205,7 +205,7 @@ class PostgreSQLDBManager (DBManager):
 
         # Convert id_columns to a list if it is not one already.
         try:
-            i = iter(id_columns) # attempt to access it as an iterable
+            _ = iter(id_columns) # attempt to access it as an iterable
         except TypeError:
             id_columns = [id_columns]
 

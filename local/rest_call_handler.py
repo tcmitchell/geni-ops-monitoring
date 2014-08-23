@@ -402,12 +402,12 @@ def get_interface_info_dict(schema, info_row, address_schema, address_rows):
             fieldname = address_schema[col_i][0]
             if ((address_row[col_i] is not None) or
                 ((address_row[col_i] is None) and address_schema[col_i][2])):
-               if fieldname == "interface_id":
-                   # these fields don't go in the json response
-                   pass
-               else:
-                   # all other fields go in the json response
-                   json_addr[fieldname] = address_row[col_i]
+                if fieldname == "interface_id":
+                    # these fields don't go in the json response
+                    pass
+                else:
+                    # all other fields go in the json response
+                    json_addr[fieldname] = address_row[col_i]
         json_address_list.append(json_addr)
 
     if len(json_address_list) > 0:
@@ -729,7 +729,7 @@ def get_related_objects(tm, table_str, colname_str, id_str):
 def get_related_objects_full(tm, table_str, colname_str, id_str):
     """
     Query a table for objects related to a given id and return full
-    information about all of them.
+    information (complete table rows) about all of them.
     :param tm: table manager to use for the query
     :param table_str: table to query
     :param colname_str: column name of that table in which to look for id
@@ -737,7 +737,8 @@ def get_related_objects_full(tm, table_str, colname_str, id_str):
     :return: a tuple of tuples.  Each inner tuple represents one row that
              matched (was related by id) from the given table.
     """
-    q_res = tm.query("select * from " + table_str + " where " + colname_str + " = '" + id_str + "'")
+    q_res = tm.query("select * from " + table_str + " where " + \
+                     tm.get_column_name(colname_str) + " = '" + id_str + "'")
     res = []
     if q_res is not None:
         for res_i in range(len(q_res)):

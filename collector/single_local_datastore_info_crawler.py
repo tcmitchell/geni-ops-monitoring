@@ -437,7 +437,6 @@ class SingleLocalDatastoreInfoCrawler:
         # get each attribute out of response into list
         interface_info_list = []
         for key in schema:
-            noval = False
             if key[0].startswith("properties$"):
                 jsonkey = "ops_monitoring:" + key[0].split('$')[1]
             else:
@@ -545,15 +544,15 @@ class SingleLocalDatastoreInfoCrawler:
         :return: the id that goes with urn, or None if not found
         """
         tbl_mgr = self.tbl_mgr
-        id = None
+        objid = None
 
         q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("id") +
                               " from " + table_name + " where urn = '" + urn +
                               "' limit 1")
         if q_res is not None:
-            id = q_res[0][0]  # gets first of single tuple
+            objid = q_res[0][0]  # gets first of single tuple
 
-        return id
+        return objid
 
 
 def handle_request(url, cert_path, logger):
@@ -597,7 +596,7 @@ def info_update(tbl_mgr, table_str, table_schema, row_arr, id_columns, debug, lo
     if debug:
         # Convert id_columns to a list if it is not one already.
         try:
-            i = iter(id_columns) # attempt to access it as an iterable
+            _ = iter(id_columns) # attempt to access it as an iterable
         except TypeError:
             id_columns = [id_columns]
 
