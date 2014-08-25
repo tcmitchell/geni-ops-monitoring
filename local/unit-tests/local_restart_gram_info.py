@@ -43,7 +43,7 @@ def get_gram_defaults():
     base_url = "128.1.1.1"
 
     # json-schema
-    agg_schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
+    agg_schema = "http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#"
     node_schema = "http://unis.incntre.iu.edu/schema/20120709/node#"
 
 

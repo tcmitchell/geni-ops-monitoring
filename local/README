@@ -218,7 +218,7 @@ Table of Contents:
 
     - $schema : The json-schema file used for checking if the response
        is valid.  An example value is: 
-       http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#
+       http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#
 
     - id : The ID of the object that is unique to this particular 
        datastore.  It is preferred that this is a globally unique

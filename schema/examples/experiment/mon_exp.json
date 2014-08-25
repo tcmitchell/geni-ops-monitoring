@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/experiment#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
   "id": "missouri-ig_to_gpo-ig_rtt",
   "selfRef": "https://datastore.externalchecks.geni.net/info/experiment/missouri-ig_to_gpo-ig_rtt",
   "slice_urn": "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive",

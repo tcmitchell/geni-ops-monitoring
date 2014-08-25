@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#",
   "id": "instageni.gpolab.bbn.com_sliver_26947",
   "selfRef": "https://datastore.instageni.gpolab.bbn.com/slivers/instageni.gpolab.bbn.com_sliver_26947",
   "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947",

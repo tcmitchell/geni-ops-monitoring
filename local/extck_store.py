@@ -97,7 +97,7 @@ class InfoPopulator():
                    
                         urnHrefs=getSiteInfo(srcSite, dstSite, shortName)# [srcUrn, srcHref, dstUrn, dstHref]
                         ts = str(int(time.time()*1000000))    
-                        exp=["http://www.gpolab.bbn.com/monitoring/schema/20140501/experiment#", exp_id, 
+                        exp=["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#", exp_id, 
                             dataStoreBaseUrl + "/info/experiment/"+  exp_id, ts, sliceUrn, sliceUuid,    
                             urnHrefs[0], urnHrefs[1], urnHrefs[2], urnHrefs[3]]
                         dataInsert(self.tbl_mgr, fileLoc2, exp_id, exp, "ops_experiment")   
@@ -115,7 +115,7 @@ class InfoPopulator():
         dataStoreSite="gpo"
         dataStore_url_base="https://extckdatastore.gpolab.bbn.com"
         ts = str(int(time.time()*1000000))
-        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", dataStoreSite, dataStore_url_base + "/info/externalcheck/" + dataStoreSite, ts, dataStore_url_base + "/data/"]
+        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#", dataStoreSite, dataStore_url_base + "/info/externalcheck/" + dataStoreSite, ts, dataStore_url_base + "/data/"]
         fileLoc="/home/amcanary/ops_externalcheck_Registry"
         dataInsert(self.tbl_mgr, fileLoc, extck[0], extck, "ops_externalcheck")
         

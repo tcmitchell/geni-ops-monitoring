@@ -1,5 +1,5 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/slice#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140828/slice#",
   "id": "ch.geni.net_gpo-infra_slice_tuptyexclusive",
   "selfRef": "https://datastore.ch.geni.net/slices/ch.geni.net_gpo-infra_slice_tuptyexclusive",
   "urn": "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive",
