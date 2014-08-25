@@ -88,13 +88,13 @@ class InfoPopulator():
             ok = False
 
         switch1 = []
-        switch1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/node#")
+        switch1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
         switch1.append("instageni.gpolab.bbn.com_node_interconnect")
         switch1.append(url_local_info + "node/" + switch1[1])
         switch1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+interconnect")
         switch1.append(str(int(time.time() * 1000000)))
+        switch1.append("switch")  # node_type
         switch1.append(str(2 * 1000000))  # mem_total_kb
-        switch1.append("swicth")  # node_type
         switch1.append(None)  # virtualization_type
         if not info_insert(self.tbl_mgr, "ops_node", switch1):
             ok = False
@@ -143,7 +143,7 @@ class InfoPopulator():
 
 
         sliver3 = []
-        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/sliver#")
+        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
         sliver3.append("instageni.gpolab.bbn.com_sliver_26951")
         sliver3.append(url_local_info + "sliver/" + sliver3[1])
         sliver3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26951")
@@ -164,7 +164,7 @@ class InfoPopulator():
 
 
         link1 = []
-        link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/link#")
+        link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
         link1.append("arbitrary_link_id_001")
         link1.append(url_local_info + "link/" + link1[1])
         link1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001")
@@ -175,7 +175,7 @@ class InfoPopulator():
             ok = False
 
         sublink1 = []
-        sublink1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/link#")
+        sublink1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
         sublink1.append("arbitrary_link_id_002")
         sublink1.append(url_local_info + "link/" + sublink1[1])
         sublink1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_002")
@@ -186,7 +186,7 @@ class InfoPopulator():
             ok = False
 
         sublink2 = []
-        sublink2.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/link#")
+        sublink2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
         sublink2.append("arbitrary_link_id_003")
         sublink2.append(url_local_info + "link/" + sublink2[1])
         sublink2.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_003")
@@ -197,7 +197,7 @@ class InfoPopulator():
             ok = False
 
         egress_link = []
-        egress_link.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/link#")
+        egress_link.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
         egress_link.append("link_id_egress01")
         egress_link.append(url_local_info + "link/" + egress_link[1])
         egress_link.append("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_egress01")
@@ -276,7 +276,7 @@ class InfoPopulator():
             ok = False
 
         interface3 = []
-        interface3.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
+        interface3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
         interface3.append("instageni.gpolab.bbn.com_interface_interconnect:port0")
         interface3.append(url_local_info + "interface/" + interface3[1])
         interface3.append("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+interconnect:port0")
@@ -289,7 +289,7 @@ class InfoPopulator():
             ok = False
 
         remoteinterface1 = []
-        remoteinterface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interface#")
+        remoteinterface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
         remoteinterface1.append("instageni.gpolab.bbn.com_interface_newy.ion.internet2.edu:ae0")
         remoteinterface1.append(url_local_info + "interface/" + remoteinterface1[1])
         remoteinterface1.append("urn:publicid:IDN+ion.internet2.edu+interface+rtr.newy:ae0")
@@ -330,7 +330,7 @@ class InfoPopulator():
             ok = False
 
         interfacevlan3 = []
-        interfacevlan3.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
+        interfacevlan3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan3.append("instageni.gpolab.bbn.com_interface_interconnect:port0:1750")
         interfacevlan3.append(url_local_info + "interfacevlan/" + interfacevlan3[1])
         interfacevlan3.append(interface3[3] + ":" + str(vlan1))
@@ -343,7 +343,7 @@ class InfoPopulator():
 
 
         remoteinterfacevlan1 = []
-        remoteinterfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140822/interfacevlan#")
+        remoteinterfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         remoteinterfacevlan1.append("instageni.gpolab.bbn.com_interface_newy.ion.internet2.edu:ae0:1750")
         remoteinterfacevlan1.append(url_local_info + "interfacevlan/" + remoteinterfacevlan1[1])
         remoteinterfacevlan1.append(remoteinterface1[3] + ":" + str(vlan1))
@@ -357,7 +357,7 @@ class InfoPopulator():
 
 
         authority1 = []
-        authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/authority#")
+        authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/authority#")
         authority1.append("ch.geni.net")
         authority1.append(url_local_info + "authority/" + authority1[1])
         authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
@@ -367,7 +367,7 @@ class InfoPopulator():
             ok = False
 
         slice1 = []
-        slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/slice#")
+        slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/slice#")
         slice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
         slice1.append(url_local_info + "slice/" + slice1[1])
         slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
@@ -383,7 +383,7 @@ class InfoPopulator():
 
 
         user1 = []
-        user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140501/user#")
+        user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/user#")
         user1.append("tupty")
         user1.append(url_local_info + "user/" + user1[1])
         user1.append("tupty_user_urn")
@@ -663,7 +663,7 @@ class InfoPopulator():
         ok = True
         extck_id = "gpo"
         ts = str(int(time.time() * 1000000))
-        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
+        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
         if not info_insert(self.tbl_mgr, "ops_externalcheck", extck):
             ok = False
 
@@ -673,7 +673,7 @@ class InfoPopulator():
             ok = False
 
         exp1_id = "missouri_ig_to_gpo_ig"
-        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn", "source aggregate local datastore href", "urn:destination_aggregate_urn", "destination aggregate local datastore href"]
+        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn", "source aggregate local datastore href", "urn:destination_aggregate_urn", "destination aggregate local datastore href"]
         if not info_insert(self.tbl_mgr, "ops_experiment", exp1):
             ok = False
 
