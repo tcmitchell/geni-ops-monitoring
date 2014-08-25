@@ -496,6 +496,16 @@ class InfoPopulator():
             ok = False
 
 
+        aggsliv4 = []
+        aggsliv4.append(sliver4[1])  # id
+        aggsliv4.append(agg1[1])
+        aggsliv4.append(sliver4[3])  # urn
+        aggsliv4.append(sliver4[2])  # href
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
+            ok = False
+
+
         nodeiface1 = []
         nodeiface1.append(interface1[1])
         nodeiface1.append(node1[1])
