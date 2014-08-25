@@ -6,9 +6,9 @@
   "ts": 1404856180792745,
   "aggregatestores": [
     {
-      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
+      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
@@ -19,6 +19,11 @@
       "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.net.internet2.edu"
+    },
+    {
+      "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
+      "amtype": "network-aggregate",
+      "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
     },
     {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
@@ -234,6 +239,11 @@
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
+       "amtype": "opengeni",
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson"
     }
   ],
   "externalcheckstores": [
