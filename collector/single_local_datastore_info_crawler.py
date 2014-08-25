@@ -222,11 +222,16 @@ class SingleLocalDatastoreInfoCrawler:
                     for endpt in link_dict["endpoints"]:
                         ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
                         if ifacevlan_dict:
+                            # before updating the ifvlan info we need to make sure the if info exists
+                            if not self.check_exists("ops_interface", "selfRef", ifacevlan_dict["interface"]["href"]):
+                                interface_dict = handle_request(ifacevlan_dict["interface"]["href"], self.cert_path, self.logger)
+                                if not self.refresh_interface_info(interface_dict):
+                                    ok = False
                             ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
                             if not info_update(self.tbl_mgr, "ops_interfacevlan", schema, ifacevlan_info_list, \
                                                self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
                                 ok = False
-                            link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"], ifacevlan_dict["urn"], ifacevlan_dict["selfRef"]]
+                            link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"]]
                             if not info_update(self.tbl_mgr, "ops_link_interfacevlan", link_ifvlan_schema, link_ifacevlan_info_list, \
                                                self.tbl_mgr.get_column_from_schema(link_ifvlan_schema, "id"), self.debug, self.logger):
                                 ok = False
@@ -239,7 +244,6 @@ class SingleLocalDatastoreInfoCrawler:
     def refresh_all_interfaces_info(self):
         ok = True
         node_urls = self.get_all_nodes_of_aggregate()
-        schema = self.tbl_mgr.schema_dict["ops_interface"]
         nodeif_schema = self.tbl_mgr.schema_dict["ops_node_interface"]
         for node_url in node_urls:
             node_dict = handle_request(node_url, self.cert_path, self.logger)
@@ -248,9 +252,7 @@ class SingleLocalDatastoreInfoCrawler:
                     for interface in node_dict["interfaces"]:
                         interface_dict = handle_request(interface["href"], self.cert_path, self.logger)
                         if interface_dict:
-                            interface_info_list = self.get_interface_attributes(interface_dict, schema)
-                            if not info_update(self.tbl_mgr, "ops_interface", schema, interface_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+                            if not self.refresh_interface_info(interface_dict):
                                 ok = False
                             node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
                             if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
@@ -264,6 +266,20 @@ class SingleLocalDatastoreInfoCrawler:
                                 if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address,
                                                    primary_key_columns, self.debug, self.logger):
                                     ok = False
+        return ok
+
+    def refresh_interface_info(self, interface_dict):
+        """
+        Method to update one interface information at a time
+        :param interface_dict: the json dictionary corresponding to the interface information
+        :return: True if the update went well, False otherwise.
+        """
+        ok = True
+        schema = self.tbl_mgr.schema_dict["ops_interface"]
+        interface_info_list = self.get_interface_attributes(interface_dict, schema)
+        if not info_update(self.tbl_mgr, "ops_interface", schema, interface_info_list, \
+                           self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+            ok = False
         return ok
 
     def get_default_attribute_for_type(self, vartype):
@@ -533,6 +549,26 @@ class SingleLocalDatastoreInfoCrawler:
             meas_ref = q_res[0][0]  # gets first of single tuple
 
         return meas_ref
+
+    def check_exists(self, table_name, fieldname, value):
+        """
+        Method to check if data exists in a given table that has a certain value for a given field name.
+        :param table_name: the name of the table
+        :param fieldname: the name of the field
+        :param value: the value for the field
+        :return: True if such data exists, False otherwise.
+        """
+        exists = False
+        if value is None:
+            valuestr = "NULL"
+        else:
+            valuestr = "'" + value + "'"
+        q_res = self.tbl_mgr.query("select " + self.tbl_mgr.get_column_name(fieldname) + " from " + table_name + " where " \
+                                   + self.tbl_mgr.get_column_name(fieldname) + " = " + valuestr + " limit 1")
+        if q_res is not None:
+            if len(q_res) > 0:
+                exists = True
+        return exists
 
 
     def get_id_from_urn(self, table_name, urn):

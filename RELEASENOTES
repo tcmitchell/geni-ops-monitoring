@@ -34,6 +34,9 @@ August 28, 2014
       interface.  This replaces the address (singular) field.
 
 * The local datastore's database schema changed as follows:
+ 1. ops_link table now has a layer column
+ 2. There is a new ops_link_relations to express parent/child relation between links.
+ 3. The ops_link_interfacevlan no longer has the urn and selfRef columns.
 
   * The ops_sliver table has new fields node_id and link_id
     that need to be populated.

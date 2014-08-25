@@ -48,7 +48,13 @@
     },
     "ops_monitoring:role": { 
        "description":"Role of interface (experimental, control)",
-       "type":"string",
+       "enum": [ "experimental", "control", "stub" ],
+       // experimental: interface belongs to the experimental data plane
+       // control: interface belongs to the control plane
+       // stub: interface belongs to a "remote" node. Thi svalue is used when
+       //   representing inter-aggregate links. One end of the link is an interface-vlan
+       //   whose interface is really under the control of a remote data store. However 
+       //   the local data store still needs a way to represent that interface.
        "required":false
     },
     "ops_monitoring:max_bps": {
