@@ -6,9 +6,9 @@
   "ts": 1404856180792745,
   "aggregatestores": [
     {
-      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/ion.internet2.edu"
+      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
@@ -19,6 +19,11 @@
       "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.net.internet2.edu"
+    },
+    {
+      "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
+      "amtype": "network-aggregate",
+      "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
     },
     {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
@@ -234,6 +239,11 @@
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
+    },
+    {
+       "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
+       "amtype": "opengeni",
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson"
     }
   ],
   "externalcheckstores": [
@@ -256,10 +266,13 @@
   // each subsection has 4 entries: "name", "db_schema", "constraints"
   // and "dependencies".
   // - The table name will be ops_<name> where <name> is the value for the "name" entry.
-  // - The "db_schema" represents the columns of the table. There are 3 attributes
-  //   for each column: the column name, the column type and whether a value is required
-  //   for that column for an entry in the table (i.e. whether the column is NOT NULL
-  //   in SQL.)
+  // - The "db_schema" represents the columns of the table. There are mostly 3 attributes
+  //   for each column, sometimes 4: the column name, the column type and whether a value 
+  //   is required for that column for an entry in the table (i.e. whether the column is 
+  //   NOT NULL in SQL.) That 3rd entry also serves to indicate whether the corresponding 
+  //   field in json needs to be reported. However in some rare instances, we allow NULL
+  //   as a value in the DB (3rd attribute set to false), yet we need it to be reported.
+  //   In that case, a 4th attribute is set (to true).
   // - The "constraints" entry represents the SQL constraints for that table. For each 
   //   constraint, there are 2 fields: first the constraint format string and second the 
   //   list of arguments to apply to that constraint string. The reason that the 
@@ -315,6 +328,7 @@
              ["id", "varchar", true],
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
+             ["layer", "varchar", false],
              ["ts", "int8", true]
         ],
         "constraints": [
@@ -536,17 +550,25 @@
         ],
         "dependencies" : ["ops_sliver", "ops_aggregate"]
     },
+    {   "name":"link_relations",
+        "db_schema" : [
+             ["parent_id", "varchar", true],
+             ["child_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["parent_id", "child_id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["parent_id", "ops_link", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["child_id", "ops_link", "id"]]
+        ],
+        "dependencies" : ["ops_link"]
+    },
     {   "name":"link_interfacevlan",
         "db_schema" : [
              ["id", "varchar", true],
-             ["link_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
+             ["link_id", "varchar", true]
          ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "link_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interfacevlan", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["link_id", "ops_link", "id"]]
         ],

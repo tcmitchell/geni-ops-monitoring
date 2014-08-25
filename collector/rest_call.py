@@ -118,33 +118,44 @@ def find_embedded_urls(json_dict):
     return embedded_urls
 
 
-def validate_response(json_dict, options):
+def validate_response(json_dict, options, schema_stats=None):
     """
     Check a JSON response against its schema.
 
     :param json_dict: dictionary containing a JSON response to validate..
     :param options: command line options object
+    :param schema_stats: dictionary of per-URL schema stats
     :return: True if json_dict was valid, else False
     """
     if not json_dict:
         return False
 
-    if not "$schema" in json_dict:
+    try:
+        schema_url = json_dict["$schema"]
+    except KeyError:
         print "No $schema specified in response"
         return False
 
-    schema = response_validator.parse_schema(json_dict["$schema"],
+    schema = response_validator.parse_schema(schema_url,
                                              options.schema_path)
     if not schema:
         return False
 
+    if schema_stats != None:
+        try:
+            schema_stats[schema_url]["seen"] += 1
+        except KeyError:
+            schema_stats[schema_url] = {"seen": 1, "valid": 0}
+
     if options.print_schema:
         print "Schema used for validation:\n%s" % (json.dumps(schema, indent=4,
                                                               sort_keys=True))
-
     valid = response_validator.validate(json_dict, schema,
                                         options.validictory_path,
                                         options.schema_base)
+    if valid and schema_stats:
+        schema_stats[schema_url]["valid"] += 1
+
     return valid
 
 
@@ -184,6 +195,26 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
         return unvisited_urls[0]
 
 
+def print_schema_stats(schema_stats_dict):
+    """
+    Print per-URL schema statistics.
+
+    :param schema_stats: dictionary of per-URL schema stats
+    """
+
+    # Find the length of the longest URL to format the output nicely.
+
+    max_url_len = 0
+    for url in schema_stats_dict:
+        url_len = len(url)
+        if max_url_len < url_len:
+            max_url_len = url_len
+
+    for url, stats in sorted(schema_stats_dict.items()):
+        print "%-*s seen %d times, valid %d times" % (
+            max_url_len, url, stats["seen"], stats["valid"])
+
+
 def main(argv): 
 
     # Set up command-line options
@@ -216,6 +247,9 @@ def main(argv):
     parser.add_option("--print-schema", dest="print_schema",
                       default=False, action="store_true",
                       help="print the schema used to validate each response")
+    parser.add_option("--schema-stats", dest="schema_stats",
+                      default=False, action="store_true",
+                      help="print statistics on schema usage")
     (options, url_args) = parser.parse_args()
 
     # Do some more checking on the options provided
@@ -247,6 +281,18 @@ def main(argv):
     # Number of URLs visited that returned valid JSON according to their schema
     num_valid_urls = 0
 
+    # Dictionary to track stats about schema URLs that we've seen.
+    # The key into this dictionary is the schema URL.
+    # The value is another dictionary with keys "seen" and "valid".
+    # The value for "seen" is the number of times this schema URL was
+    # encountered.
+    # The value for "valid" is the number of times the response was
+    # valid according to this schema.
+    if options.schema_stats:
+        schema_stats_dict = dict()
+    else:
+        schema_stats_dict = None
+
     # main loop
 
     while unvisited_urls:
@@ -270,7 +316,7 @@ def main(argv):
         # maybe validate the response
 
         if not options.skip_validation:
-            valid = validate_response(json_dict, options)
+            valid = validate_response(json_dict, options, schema_stats_dict)
             print "Response from %s is" % (url),
             if valid:
                 print "valid"
@@ -296,6 +342,10 @@ def main(argv):
     if not options.skip_validation:
         print ", %d valid" % (num_valid_urls)
 
+    # print schema stats if requested
+
+    if options.schema_stats:
+        print_schema_stats(schema_stats_dict)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

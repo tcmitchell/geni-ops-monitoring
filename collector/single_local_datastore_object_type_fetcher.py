@@ -331,7 +331,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
         aggregate_id = self.aggregate_id
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
+        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in \
+                               (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" \
+                               + aggregate_id + "'))")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -344,7 +346,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
         aggregate_id = self.aggregate_id
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_link_interfacevlan where link_id in (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
+        q_res = tbl_mgr.query("select distinct id from ops_link_interfacevlan where link_id in \
+                               (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" \
+                               + aggregate_id + "'))")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple

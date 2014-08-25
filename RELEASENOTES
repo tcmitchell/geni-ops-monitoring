@@ -2,8 +2,15 @@ Changes for Release 2.0
 August 28, 2014
 ------------------------------
 
+* A security vulnerability in local/rest_call_handler.py, part of the
+  local datastore implementation, is fixed.  Python's eval() was being
+  used on parts of URLs from external clients, enabling arbitrary
+  remote code execution.
+
 * A new program, collector/rest_call.py, replaces several others
   for exercisng the REST API and validating JSON responses.
+
+* There is some support for WiMAX monitoring.
 
 * If your local datastore is listening on port 5001, we recommend
   switching to port 4334 to avoid conflicting with iperf.
@@ -14,8 +21,17 @@ August 28, 2014
     of object ids contains a "*", then data is returned for all
     possible objects.
 
+  * The word "port" never appears as an object type in a REST call.
+    Use "interface" or "interfacevlan."
+
 * The JSON schemas for the responses to REST calls changed as follows:
 
+  * There are two versions of each JSON schema and opsconfig.json.
+    One has a suffix .jwc (JSON With Comments) and contains //-style
+    comments describing the schema in more detail.  The other has
+    neither comments nor the .jwc suffix.  The uncommented version is
+    generated from the .jwc file and is used for validation, since a
+    pure JSON schema cannot contain such comments.
   * In sliver.schema:
     * The field creator_urn is renamed to creator because it might not
       be a URN.
@@ -33,11 +49,24 @@ August 28, 2014
     * New required field node_type.
     * ops_monitoring:vm_server_type is renamed to virtualization_type.
   * In interface.schema:
+    * This file was previouly called port.schema.
     * New field addresses to hold the list of addresses for an
       interface.  This replaces the address (singular) field.
+  * In interfacevlan.schema:
+    * This file was previouly called port-vlan.schema.
+    * The unused address field is removed.
+    * The field port is renamed to interface.
 
 * The local datastore's database schema changed as follows:
+ 1. ops_link table now has a layer column
+ 2. There is a new ops_link_relations to express parent/child relation between links.
+ 3. The ops_link_interfacevlan no longer has the urn and selfRef columns.
 
+  * Many tables now have PRIMARY KEY, FOREIGN KEY, and UNIQUE
+    declarations.  Search for "constraints" in
+    config/opsconfig.json.jwc.  This should clarify how the tables
+    relate to each other.  You may have to reorder your table updates
+    to satisfy referential integrity.
   * The ops_sliver table has new fields node_id and link_id
     that need to be populated.
   * The ops_sliver_resource table is gone.  Use the ops_sliver
