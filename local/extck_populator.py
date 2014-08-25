@@ -93,7 +93,7 @@ class InfoPopulator():
         db_purge(self.tbl_mgr,"ops_aggregate_is_available")
             
 def db_purge(tbl_mgr, table_str):
-    old_ts = int((time.time()-504*60*60)*1000000) # Purge data older than 12 hours
+    old_ts = int((time.time()-168*60*60)*1000000) # Purge data older than 1 week (168 hours)
     tbl_mgr.purge_old_tsdata(table_str, old_ts)    
 
 
@@ -195,13 +195,14 @@ def main():
         if amtype== "foam":
           site = SiteOF(siteName, url)
           state= getOFState(context, site)
-        else:  
+        else:          
           p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
           output, err = p.communicate()
           state=getAMState(output)
         shortName[fqdnMod].append(state)
         shortName[fqdnMod].append(str(int(time.time()*1000000)))
         ip.insert_agg_is_avail_datapoint(shortName[fqdnMod])
+        
     tbl_mgr.close_con();
     
 if __name__ == "__main__":
