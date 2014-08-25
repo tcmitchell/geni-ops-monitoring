@@ -1,8 +1,5 @@
 Reference Collector README
 
-
-
-
 1. Packages to install
 
    * IF using postgres
@@ -10,12 +7,13 @@ Reference Collector README
    * IF using mysql
       (1) sudo apt-get install mysql-server mysql-client python-mysqldb
 
-    (2) Install the python requests package.
+    (2) Install python packages.
         (a) sudo apt-get install python-dev python-pip 
         (b) sudo pip install requests
         (c) If requests was installed through apt-get install python-requests,
             upgrade it through pip:
             sudo pip install requests --upgrade
+        (d) sudo pip install validictory
 
 2a. PostgreSQL Configuration
 
@@ -42,13 +40,13 @@ Reference Collector README
 
     (1) cd /usr/local
     (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
-    (3) sudo $EDITOR ops-monitoring/config/collector_datastore_operator.conf
+    (3) sudo $EDITOR ops-monitoring/config/collector_operator.conf
         * set username: <COLLECTOR_OPERATOR_NAME>
         * set password: <psql password for <COLLECTOR_OPERATOR_NAME> you set above>
         * IF you are using mysql, set dbtype: mysql in the [main] section
     (4) Ensure that ownership of the ops-monitoring/ directory is root:root
-        chown -R root /usr/local/ops-monitoring
-        chgrp -R root /usr/local/ops-monitoring
+        sudo chown -R root /usr/local/ops-monitoring
+        sudo chgrp -R root /usr/local/ops-monitoring
 
 4. Syslog configuration
 
@@ -70,7 +68,7 @@ Reference Collector README
     Attempt to reach the opsconfigdatastore config datastore with rest_call.py:
 
     cd collector
-    ./rest_call.py -c /path/to/collector/certificate -v ../extern/validictory/ https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod
+    ./rest_call.py -c /path/to/collector/certificate https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod
 
     The output of this config store will list the URLs of the aggregate and
     external check datastores.
@@ -151,9 +149,3 @@ Reference Collector README
    The query library is currently contained in the collector module under
    the file psql_queries.py.  This file should be installed under 
    /usr/local/lib/ at this time.
-
-8. Validictory
-
-   mkdir ops-monitoring/extern
-   cd ops-monitoring/extern
-   git clone https://github.com/sunlightlabs/validictory 

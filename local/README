@@ -74,8 +74,8 @@ Table of Contents:
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
         * IF you are using mysql, set dbtype: mysql in the [main] section
     (4) Ensure that ownership of the ops-monitoring/ directory is root:root
-        chown -R root /usr/local/ops-monitoring
-        chgrp -R root /usr/local/ops-monitoring
+        sudo chown -R root /usr/local/ops-monitoring
+        sudo chgrp -R root /usr/local/ops-monitoring
 
 5. Syslog configuration
 
