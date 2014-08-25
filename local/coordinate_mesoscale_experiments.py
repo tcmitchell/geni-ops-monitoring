@@ -67,5 +67,5 @@ for site in srcPing:
         val_str += line + ","
     table_str = "ops_experiment_" + experiment_event_types[0]
     tbl_mgr.insert_stmt(table_str, val_str[:-1])
-    old_ts = int((time.time()-504*60*60)*1000000) # Purge data older than 12 hours (504, every 3 wks)
+    old_ts = int((time.time()-168*60*60)*1000000) # Purge data older than 168 hours (1 wk)
     tbl_mgr.purge_old_tsdata(table_str, old_ts)
