@@ -502,7 +502,7 @@ class InfoPopulator():
         aggsliv4.append(sliver4[3])  # urn
         aggsliv4.append(sliver4[2])  # href
 
-        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
+        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv4):
             ok = False
 
 
