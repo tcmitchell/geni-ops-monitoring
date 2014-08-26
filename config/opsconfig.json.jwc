@@ -788,7 +788,15 @@
                 "ts": "int8",
                 "v": "int2",
                 "units": "boolean"
-            }
+            },
+            {   "name": "routable_ip_available",
+                // The value of this is aggregate.schema:routable_ip_poolsize
+                // minus the number of addrs currently allocated to experiments.
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int4",
+                "units": "count"
+           }
         ],
         "interface": [
             {   "name": "rx_bps",

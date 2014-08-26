@@ -55,7 +55,8 @@
       "description": "Size of publicly routable IP address pool",
       // How many IP addresses that are reachable from anywhere on the
       // internet does this aggregate have available to assign?
-      // see also: opsconfig.json:publicly_routable_ipaddrs_available
+      // See also the aggregate event opsconfig.json:routable_ip_available
+      // and the scope field of addresses in interface.schema .
       "type": "integer",
       "required": false
     },
