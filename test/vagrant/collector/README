@@ -13,6 +13,10 @@ d. Try fetching some monitoring info from the web server running on the VM.
 
 e. Try fetching some monitoring info using rest_call.py:
     collector$ cd /usr/local/ops-monitoring/collector
-    collector$ ./rest_call.py -c ${TOOLCERT} -v ../extern/validictory/ -i https://192.168.33.10/info/aggregate/gpo-ig
+    collector$ ./rest_call.py -c ${TOOLCERT} -i https://192.168.33.10/info/aggregate/gpo-ig
 
-f. XXX add info on how to run the collector scripts and look at the database
+f. Do a full crawl of the local datastore VM:
+    collector$ ./rest_call.py -c ${TOOLCERT} -f https://192.168.33.10/info/aggregate/gpo-ig
+
+  The last line of output should be something like this:
+  20 URLs visited , 20 valid

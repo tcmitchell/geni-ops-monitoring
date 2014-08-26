@@ -30,13 +30,7 @@ supplied on the command line.  A disk filename can be given instead of
 a URL to verify test data.  See the commmand line options (invoke with
 --help) for more information about the program's capabilities.
 
-This requires sudo pip install requests --upgrade
-
-and
-
-git clone https://github.com/sunlightlabs/validictory.git
-to ops-monitoring/extern/validictory
-
+This requires the python requests and validictory packages.
 '''
 
 import json

@@ -11,7 +11,7 @@ c. Try fetching some monitoring info from the web server running on the VM.
 
 d. Try fetching some monitoring info using rest_call.py:
     vboxhost$ cd ${TOP}/collector
-    vboxhost$ ./rest_call.py -c ${TOOLCERT} -v ../extern/validictory/ -i https://192.168.33.10/info/aggregate/gpo-ig
+    vboxhost$ ./rest_call.py -c ${TOOLCERT} -i https://192.168.33.10/info/aggregate/gpo-ig
 
 e. You can test the local datastore further by running the collector VM.
 See ${TOP}/test/vagrant/collector/README.
