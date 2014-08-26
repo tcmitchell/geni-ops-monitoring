@@ -57,10 +57,6 @@ August 28, 2014
       * The field port is renamed to interface.
 
   * The local datastore's database schema changed as follows:
-   1. ops_link table now has a layer column
-   2. There is a new ops_link_relations to express parent/child relation between links.
-   3. The ops_link_interfacevlan no longer has the urn and selfRef columns.
-
     * Many tables now have PRIMARY KEY, FOREIGN KEY, and UNIQUE
       declarations.  Search for "constraints" in
       config/opsconfig.json.jwc.  This should clarify how the tables
@@ -68,8 +64,8 @@ August 28, 2014
       to satisfy referential integrity.
     * The ops_sliver table has new fields node_id and link_id
       that need to be populated.
-    * The ops_sliver_resource table is gone.  Use the ops_sliver
-      table instead.
+    * The ops_sliver_resource table is gone.  Use the node_id or link_id 
+      fields in the ops_sliver table instead.
     * The ops_aggregate table has new fields populator_version,
       operational_status, and routable_ip_poolsize that need to
       be populated.
@@ -80,6 +76,10 @@ August 28, 2014
       * Removed fields address_type and address_address.
     * There is a new table ops_interface_addresses to hold the
       addresses for an interface.
+    * ops_link table now has a layer column
+    * There is a new ops_link_relations to express parent/child relation between links.
+    * The ops_link_interfacevlan no longer has the urn and selfRef columns.
+    
 
 * Notes
   * If your local datastore is listening on port 5001, we recommend
