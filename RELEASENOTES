@@ -36,7 +36,7 @@ August 28, 2014
 	be a URN.
       * The field resources is renamed to resource, which is now
 	required and can only contain one resource instead of a list.
-	resource has subfields resoure_type, urn, and href.
+	resource has subfields resource_type, urn, and href.
     * In aggregate.schema:
       * New required fields: monitoring_version and
 	operational_status.
