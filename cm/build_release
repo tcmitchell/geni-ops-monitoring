@@ -42,6 +42,7 @@ RELEASE_TAG=$1
 cd "$(git rev-parse --show-toplevel)"
 
 TARBALL="$(pwd)/release/ops-monitoring.${RELEASE_TAG}.tar.gz"
+TARBALL_GPOONLY="$(pwd)/release/ops-monitoring.gpo-only.${RELEASE_TAG}.tar.gz"
 echo "Creating tarball ${TARBALL}"
 
 
@@ -59,4 +60,11 @@ tar cvzf ${TARBALL} ops-monitoring --exclude='ops-monitoring/.gitignore' --exclu
     --exclude='ops-monitoring/local/coordinate_mesoscale_experiments.py' --exclude='ops-monitoring/local/extck_populator.py' \
     --exclude='ops-monitoring/local/extck_store.py' --exclude='ops-monitoring/local/unit-tests/ips.conf' \
     --exclude='ops-monitoring/local/unit-tests/pinger.py'
+echo "Creating tarball ${TARBALL_GPOONLY}"
+
+tar cvzf ${TARBALL_GPOONLY} ops-monitoring/alerting ops-monitoring/test \
+    ops-monitoring/local/coordinate_mesoscale_experiments.py \
+    ops-monitoring/local/extck_populator.py ops-monitoring/local/extck_store.py \
+    ops-monitoring/local/unit-tests/ips.conf ops-monitoring/local/unit-tests/pinger.py
 ls -l ${TARBALL}
+ls -l ${TARBALL_GPOONLY}
