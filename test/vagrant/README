@@ -31,8 +31,10 @@ phrase "tool certificate" in ${TOP}/collector/README for instructions
 on how to get one.  Below, we will use ${TOOLCERT} to denote the path
 to your certificate file.
 
-e. Build the software if not already done.
-    vboxhost$ cd ${TOP}; make; cd ${TOP}/test/vagrant/${VM}
+e. If you obtained the monitoring software by cloning our git repository,
+   you must build the software.  Do NOT do this is you are using a
+   release tarball; in that case, the build is already done.
+    vboxhost$ cd ${TOP}; make
 
 f. Optionally edit settings in
 ${TOP}/test/vagrant/${VM}/manifests/init.pp as desired.  In the
