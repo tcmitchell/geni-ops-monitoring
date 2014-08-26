@@ -1,8 +1,25 @@
 This README describes some of the configuration files in this
 directory.
 
-whitelist.conf
---------------
+collector_operator.conf: configuration settings for the database that
+runs on the collector host.
+
+config_datastore_operator.conf: appears to be unused.
+
+database_conf_loader.py: python module to parse the database
+configuration files in this directory.
+
+local_datastore_operator.conf: configuration settings for the database
+that runs on the local datastore host.
+
+logging.conf: configuration settings for the logging system.
+
+opsconfig.json.jwc: a multipurpose file that contains the list of
+aggregate stores, the database table schemas, and the event
+definitions for time-series data for aggregates, nodes, interfaces,
+interfacevlans, and experiments.
+
+whitelist.conf:
 
 This file contains a list of URNs identifying collectors that should
 be allowed to get data from local datastores.  These URNs originate

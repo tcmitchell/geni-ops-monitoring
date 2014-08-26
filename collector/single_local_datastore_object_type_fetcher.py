@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -35,7 +35,7 @@ import opsconfig_loader
 import logger
 
 def usage():
-    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -e <extckid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>')
+    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -e <extckid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>\n')
     sys.exit(1)
 
 def parse_args(argv):

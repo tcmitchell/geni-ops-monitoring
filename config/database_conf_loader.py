@@ -149,7 +149,7 @@ def get_db_parameters(config_path, dbengine, dbconfigtype):
         elif dbengine == "mysql":
             return mysql_local(config_path)
         else:
-            logger.get_logger(config_path).critical("No postgres or mysql database engine selected.  Exiting\n")
+            logger.get_logger(config_path).critical("Unrecognized dbengine %s.  Exiting\n" % (dbengine))
             sys.exit(1)
     elif dbconfigtype == "collector":
         if dbengine == "postgres":
@@ -157,7 +157,7 @@ def get_db_parameters(config_path, dbengine, dbconfigtype):
         elif dbengine == "mysql":
             return mysql_collector(config_path)
         else:
-            logger.get_logger(config_path).critical("No postgres or mysql database engine selected.  Exiting\n")
+            logger.get_logger(config_path).critical("Unrecognized dbengine %s.  Exiting\n" % (dbengine))
             sys.exit(1)
     else:
         logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")

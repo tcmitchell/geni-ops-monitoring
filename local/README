@@ -21,12 +21,13 @@ Table of Contents:
       (1) sudo apt-get install mysql-server mysql-client python-mysqldb
 
     (2) sudo apt-get install python-requests 	
+    (3) sudo apt-get install curl
 
     For the Python-Flask webserver:
-    (3) sudo apt-get install python-flask
+    (4) sudo apt-get install python-flask
 
     For the Apache webserver with WSGI:
-    (4) sudo apt-get install apache2 libapache2-mod-wsgi
+    (5) sudo apt-get install apache2 libapache2-mod-wsgi
 
 
 2a. PostgreSQL Configuration
@@ -68,7 +69,7 @@ Table of Contents:
    to point to the correct paths.
 
     (1) cd /usr/local
-    (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
+    (2) sudo tar xvzf /path/to/ops-monitoring.v2.0.tar.gz
     (3) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
         * set username: <LOCAL_OPERATOR_NAME>
         * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
@@ -205,7 +206,7 @@ Table of Contents:
     "ops_" namespace. 
 
     The database schema for each table can be found in
-    "/ops-monitoring/config/opsconfig.json".  Tables supporing
+    ops-monitoring/config/opsconfig.json.  Tables supporing
     information queries about objects (i.e., ops_node about nodes)
     have a schema that can be found in the opsconfig.json dictionary
     in the info array.  The info array contains a list of all tables
@@ -237,8 +238,7 @@ Table of Contents:
     Other important notable values are the following:
      
     - measRef : This is the base url for reference to the datastore
-       measurement queries (i.e.,
-       http://extckdatastore.gpolab.bbn.com/data/)
+       measurement queries
 
     - properties$<property> : This is for information about a
        particular property of the object.
