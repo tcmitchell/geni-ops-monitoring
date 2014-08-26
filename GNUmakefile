@@ -30,5 +30,8 @@ all:: VERSION
 VERSION::
 	git describe --tags > VERSION
 
+clean::
+	rm -f VERSION
+
 # Put the following line of boilerplate at the end of every Makefile.
 include $(MAKEFRAGDIR)/epilog.mk
