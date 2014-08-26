@@ -36,7 +36,6 @@ This requires the python requests and validictory packages.
 import json
 import sys
 import requests
-import getopt
 import re
 import os
 from optparse import OptionParser
@@ -102,7 +101,7 @@ def find_embedded_urls(json_dict):
             if urlKey in json_dict:
                 embedded_urls.append(json_dict[urlKey])
 
-        for (key, dval) in json_dict.items():
+        for (_key, dval) in json_dict.items():
             if isinstance(dval, dict):
                 embedded_urls.extend(find_embedded_urls(dval))
             elif isinstance(dval, list):
