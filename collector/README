@@ -39,7 +39,7 @@ Reference Collector README
    to point to the correct paths.
 
     (1) cd /usr/local
-    (2) sudo tar xvjf /path/to/ops-monitoring.tar.bz2
+    (2) sudo tar xvzf /path/to/ops-monitoring.tar.gz
     (3) sudo $EDITOR ops-monitoring/config/collector_operator.conf
         * set username: <COLLECTOR_OPERATOR_NAME>
         * set password: <psql password for <COLLECTOR_OPERATOR_NAME> you set above>
@@ -76,7 +76,7 @@ Reference Collector README
 
 6. Collector programs:
 
-   The datastores_dict item in '/config/collector_operator.conf' is
+   The datastores_dict item in 'config/collector_operator.conf' is
    the collection of local datastores to be queried.  Use these to
    form arguments in the execution of the collector programs.
 
@@ -86,22 +86,32 @@ Reference Collector README
 
    (2) single_local_datastore_info_crawler.py performs information
    fetching. It puts data in the collector database.  It needs to be
-   called with four arguments:
+   called with four arguments specifying a certificate, a base URL, 
+   either an aggregate id or an external check id and the list of object
+   types to retrieve.
 
-     -c or --certpath <pathname> provides the path to your tool certificate
-     -b or --baseurl with <url_of_info_url> 
-        This starts with "https://" and the convention is to end with "/info"
-     -a or --aggregateid with aggregate_id at -b's datastore (i.e., gpo-ig)
-     -o or --object-types with letters of object types to get info on
-     	n: for node
-	i: for interface
-	s: for sliver
-	l: for link
-	v: for vlan
-	So argument -o nislv will get information on all object types
-     -d or --debug will print what would be added to the collector database
-        to the screen and does not add anything to the database
-     -h or --help prints the usage() function, repeat of this info
+     -c or --certpath= <pathname> provides the path to your tool certificate
+     -b or --baseurl= <local-store-info-base-url> 
+        This usually starts with "https://" and the convention is to end with "/info"
+     -a or --aggregateid= <aggregate_id> 
+        This is the aggregate ID at the base URL (value of -b) data store (i.e., gpo-ig)
+     -e or --extckid= <external_check_id> 
+        This is the external check store ID at the base URL (value of -b) data store (i.e., gpo)
+     -o or --object-types= <objecttypes-of-interest> 
+        This is a list of letters of object types to get info on.
+        If querying information on an aggregate store:
+         - n: for node
+         - i: for interface
+         - s: for sliver
+         - l: for link
+         - v: for vlan
+        If querying information on an external check store:
+         - x: for experiments
+         - e: for external checks
+        So argument -o nislv will get information on all object types for an aggregate.
+     -d or --debug will print what changes would be made to the collector database
+        to the screen and does not modify the database
+     -h or --help prints the usage information.
    
    
    (3) single_local_datastore_object_type_fetcher.py does a single fetch
@@ -149,3 +159,5 @@ Reference Collector README
    The query library is currently contained in the collector module under
    the file psql_queries.py.  This file should be installed under 
    /usr/local/lib/ at this time.
+   To copy the library, execute the following command:
+     sudo cp collector/psql_queries.py /usr/local/lib/psql_queries.py
