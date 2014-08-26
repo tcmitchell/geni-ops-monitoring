@@ -39,7 +39,37 @@ import logger
 # This program populates the collector database on every fetch
 
 def usage():
-    print('single_local_datastore_info_crawler.py -d -b <local-store-info-base-url> -a <aggregate-id> -e <extck-id> -c </cert/path/cert.pem> -o <objecttypes-of-interest (ex: -o nislv gets info on nodes, interfaces, slivers, links, vlans or -o xe for eXperiments, Externalchecks)>')
+    usage = '''
+    single_local_datastore_info_crawler.py performs information
+    fetching. It puts data in the collector database.  It needs to be
+    called with four arguments specifying a certificate, a base URL,
+    either an aggregate id or an external check id and the list of object
+    types to retrieve.
+
+     -c or --certpath= <pathname> provides the path to your tool certificate
+     -b or --baseurl= <local-store-info-base-url>
+        This usually starts with "https://" and the convention is to end with "/info"
+     -a or --aggregateid= <aggregate_id>
+        This is the aggregate ID at the base URL (value of -b) data store (i.e., gpo-ig)
+     -e or --extckid= <external_check_id>
+        This is the external check store ID at the base URL (value of -b) data store (i.e., gpo)
+     -o or --object-types= <objecttypes-of-interest>
+        This is a list of letters of object types to get info on.
+        If querying information on an aggregate store:
+         - n: for node
+         - i: for interface
+         - s: for sliver
+         - l: for link
+         - v: for vlan
+        If querying information on an external check store:
+         - x: for experiments
+         - e: for external checks
+        So argument -o nislv will get information on all object types for an aggregate.
+     -d or --debug will print what changes would be made to the collector database
+        to the screen and does not modify the database
+     -h or --help prints the usage information.
+    '''
+    print(usage)
     sys.exit(1)
 
 def parse_args(argv):
@@ -365,7 +395,7 @@ class SingleLocalDatastoreInfoCrawler:
                     "urn" in slv_dict["resource"]) :
 
                     node_urn = slv_dict["resource"]["urn"]
-                    node_id =  self.get_id_from_urn("ops_node", node_urn)
+                    node_id = self.get_id_from_urn("ops_node", node_urn)
                     slv_info_list.append(node_id)
                 else:
                     if key[2]:
@@ -633,7 +663,7 @@ def info_update(tbl_mgr, table_str, table_schema, row_arr, id_columns, debug, lo
     if debug:
         # Convert id_columns to a list if it is not one already.
         try:
-            _ = iter(id_columns) # attempt to access it as an iterable
+            _ = iter(id_columns)  # attempt to access it as an iterable
         except TypeError:
             id_columns = [id_columns]
 
