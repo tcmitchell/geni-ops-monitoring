@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
 
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
@@ -23,6 +23,8 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
+# Where are the schema files located
+local_schema_dir=$(dirname $0)
 
 # schema_date should be the date embedded in the $schema lines of the
 # schemas.  This script does not verify that the schemas have the
@@ -36,25 +38,29 @@ schema_server="ekron.gpolab.bbn.com"
 schema_dir="/srv/www/monitoring/schema/"$schema_date
 
 dest=$schema_server:$schema_dir
+mytmpdir=$(mktemp -dt $(basename $0).XXXXXX)
+
 
 # Create directory on schema_server if it does not exist
 ssh $schema_server "if [ ! -d $schema_dir ]; then mkdir $schema_dir; fi;"
 
-for schema_file in $(ls *.schema)
+# ekron has some ssh connection throttling that prevents us
+# from making too many connections in quick succession, so
+# we copy the files that we want in a temporary location 
+# with their expected names and we ship them all at once.
+
+for schema_file in $(ls ${local_schema_dir}/*.schema)
 do
     # strip off .schema suffix
     schema_file_no_ext=$(basename $schema_file .schema)
-    scp $schema_file $dest/$schema_file_no_ext
+    cp -pv ${schema_file} ${mytmpdir}/${schema_file_no_ext}
 
-    # ekron has some ssh connection throttling that prevents us
-    # from making too many connections in quick succession, so
-    # we sleep for a minute after each copy so as not to trigger
-    # that.
-    sleep 60
 done
 
+scp ${mytmpdir}/* $dest/
+rm -rf ${mytmpdir}
 # Put all of the .jwc files there too for good measure
-scp *.jwc $dest
+scp ${local_schema_dir}/*.jwc $dest
 
 # update ownership and permissions
 ssh $schema_server "chgrp -R gpo $schema_dir ; chmod -R g+w $schema_dir ;"
