@@ -4,7 +4,7 @@ August 28, 2014
 
 * New Features
   * A new program, collector/rest_call.py, replaces several others
-    for exercisng the REST API and validating JSON responses.
+    for exercising the REST API and validating JSON responses.
   * The datastore and collector implementations now use a python
     logging package which is configured to syslog to /var/log/opsmon.log.
   * There is some support for WiMAX monitoring.
