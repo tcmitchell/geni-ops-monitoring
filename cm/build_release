@@ -50,21 +50,41 @@ if [ -d release ]; then
     rm -rf release
 fi
 mkdir release
-git archive --format=tar --prefix ops-monitoring/ ${RELEASE_TAG} | (cd release && tar xvf -)
-cd release/ops-monitoring 
+prefix=ops-monitoring-${RELEASE_TAG}/
+git archive --format=tar --prefix ${prefix} ${RELEASE_TAG} | (cd release && tar xvf -)
+cd release/${prefix}
 make
 cd ..
-tar cvzf ${TARBALL} ops-monitoring --exclude='ops-monitoring/.gitignore' --exclude='ops-monitoring/alerting' \
-    --exclude='GNUmakefile' --exclude='ops-monitoring/root.mk' --exclude='ops-monitoring/cm' \
-    --exclude='ops-monitoring/doc' --exclude='ops-monitoring/schema/update_schemas.sh' --exclude='ops-monitoring/test' \
-    --exclude='ops-monitoring/local/coordinate_mesoscale_experiments.py' --exclude='ops-monitoring/local/extck_populator.py' \
-    --exclude='ops-monitoring/local/extck_store.py' --exclude='ops-monitoring/local/unit-tests/ips.conf' \
-    --exclude='ops-monitoring/local/unit-tests/pinger.py'
+
+# List of files to exclude from the release tarball
+EXCLUDE_FILES="${prefix}.gitignore \
+               ${prefix}alerting \
+               GNUmakefile \
+               ${prefix}root.mk \
+               ${prefix}cm \
+               ${prefix}doc \
+               ${prefix}schema/update_schemas.sh \
+               ${prefix}test \
+               ${prefix}local/coordinate_mesoscale_experiments.py \
+               ${prefix}local/extck_populator.py \
+               ${prefix}local/extck_store.py \
+               ${prefix}local/unit-tests/ips.conf \
+               ${prefix}local/unit-tests/pinger.py"
+
+tmp_exclude_file=$(mktemp exclude.XXXXXX)
+for pattern in ${EXCLUDE_FILES}; do
+    echo $pattern >> ${tmp_exclude_file}
+done
+
+
+tar cvzf ${TARBALL} -X ${tmp_exclude_file}  ${prefix}
+rm -f ${tmp_exclude_file}
+
 echo "Creating tarball ${TARBALL_GPOONLY}"
 
-tar cvzf ${TARBALL_GPOONLY} ops-monitoring/alerting ops-monitoring/test \
-    ops-monitoring/local/coordinate_mesoscale_experiments.py \
-    ops-monitoring/local/extck_populator.py ops-monitoring/local/extck_store.py \
-    ops-monitoring/local/unit-tests/ips.conf ops-monitoring/local/unit-tests/pinger.py
+tar cvzf ${TARBALL_GPOONLY} ${prefix}alerting ${prefix}test \
+    ${prefix}local/coordinate_mesoscale_experiments.py \
+    ${prefix}local/extck_populator.py ${prefix}local/extck_store.py \
+    ${prefix}local/unit-tests/ips.conf ${prefix}local/unit-tests/pinger.py
 ls -l ${TARBALL}
 ls -l ${TARBALL_GPOONLY}
