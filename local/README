@@ -1,6 +1,6 @@
 Reference Datastore README
 
-Table of Contents: 
+Table of Contents:
 
 1. Aptitude packages
 2. Database Configuration
@@ -106,10 +106,6 @@ Table of Contents:
 
 
 5. Configuration of ops-monitoring software
-
-   This puts the software in /usr/local/ops-monitoring.  You can put it
-   elsewhere, but may need to change other configuration down the line
-   to point to the correct paths.
 
     (1) cd /usr/local
     (2) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
