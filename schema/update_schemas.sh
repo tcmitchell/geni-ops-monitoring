@@ -32,7 +32,7 @@ local_schema_dir=$(dirname $0)
 schema_date=20140828
 
 # Web server hosting the schemas
-schema_server="ekron.gpolab.bbn.com"
+schema_server="www.gpolab.bbn.com"
 
 # Directory on $schema_server to put the schemas in
 schema_dir="/srv/www/monitoring/schema/"$schema_date
