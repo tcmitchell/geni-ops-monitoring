@@ -5,22 +5,23 @@ Table of Contents:
 1. Aptitude packages
 2. Database Configuration
 3. PSutil Install and Configuration (optional)
-4. Install and configure ops-monitoring software
-5. Syslog configuration
-6. Apache, WSGI, and Flask Configuration
-7. Datastore database cleanup and initialization 
-8. Start the webserver
-9. Invoke some example queries
+4. Installation of ops-monitoring software
+5. Configuration of ops-monitoring software
+6. Syslog configuration
+7. Apache, WSGI, and Flask Configuration
+8. Datastore database cleanup and initialization
+9. Start the webserver
+10. Invoke some example queries
 
 
 1. Aptitude packages
 
-   * IF using postgres
+   * IF using PostgreSQL
       (1) sudo apt-get install postgresql python-psycopg2
-   * IF using mysql
+   * IF using MySQL
       (1) sudo apt-get install mysql-server mysql-client python-mysqldb
 
-    (2) sudo apt-get install python-requests 	
+    (2) sudo apt-get install python-requests
     (3) sudo apt-get install curl
 
     For the Python-Flask webserver:
@@ -29,8 +30,29 @@ Table of Contents:
     For the Apache webserver with WSGI:
     (5) sudo apt-get install apache2 libapache2-mod-wsgi
 
+2a. Database configuration when upgrading an existing ops-monitoring installation
 
-2a. PostgreSQL Configuration
+   IF you wish to conserve your database settings from a previous version
+   installation, continue to step 3.
+
+   IF you wish to remove the existing existing database configuration and
+   recreate them from scratch, use the following steps:
+     For PostgreSQL database:
+         (1) sudo -u postgres dropdb local
+         (2) sudo -u postgres dropuser <OLD_LOCAL_OPERATOR_NAME>
+
+         Where <OLD_LOCAL_OPERATOR_NAME> is the value of username in the
+         [postgres] section of
+         /usr/local/ops-monitoring/config/local_datastore_operator.conf
+
+         Continue on with step 2b.
+
+     For MySQL database:
+        (1) echo "DROP DATABASE local" | mysql -u root -p
+
+        Continue on with step 2c.
+
+2b. PostgreSQL Configuration
 
    We use <LOCAL_OPERATOR_NAME>=localuser, but any name you like
    should work.
@@ -42,7 +64,7 @@ Table of Contents:
     (3) sudo -u postgres psql -c '\password <LOCAL_OPERATOR_NAME>' postgres
     (4) sudo -u postgres createdb --owner=<LOCAL_OPERATOR_NAME> local
 
-2b. MySQL Configuration
+2c. MySQL Configuration
 
     (1) echo "CREATE DATABASE local" | mysql -u root -p
     (2) echo "GRANT ALL ON local.* TO <LOCAL_OPERATOR_NAME>@localhost IDENTIFIED BY '<LOCAL_PASSWORD>'" | mysql -u root -p
@@ -62,23 +84,45 @@ Table of Contents:
         sudo pip install psutil --upgrade
 
 
-4. Install and configure ops-monitoring software
+4. Installation of ops-monitoring software
+
+   IF upgrading the ops-monitoring software, you can remove the existing
+   software located in /usr/local/ops-monitoring (for version prior to 1.1)
+   or located in /usr/local/ops-monitoring-<oldversion>.
+   IF you wish to conserve your database settings, set aside the configuration
+   file /usr/local/ops-monitoring/config/local_datastore_operator.conf
+
+   This puts the software in /usr/local/ops-monitoring-v2.0.  You can put it
+   elsewhere, but may need to change other configuration down the line
+   to point to the correct paths.
+
+    (1) cd /usr/local
+    (2) sudo tar xvzf /path/to/ops-monitoring.v2.0.tar.gz
+    (3) Ensure that ownership of the ops-monitoring/ directory is root:root
+        sudo chown -R root /usr/local/ops-monitoring-v2.0
+        sudo chgrp -R root /usr/local/ops-monitoring-v2.0
+    (4) Create a link to /usr/local/ops-monitoring-v2.0:
+        sudo ln -s /usr/local/ops-monitoring-v2.0 /usr/local/ops-monitoring
+
+
+5. Configuration of ops-monitoring software
 
    This puts the software in /usr/local/ops-monitoring.  You can put it
    elsewhere, but may need to change other configuration down the line
    to point to the correct paths.
 
     (1) cd /usr/local
-    (2) sudo tar xvzf /path/to/ops-monitoring.v2.0.tar.gz
-    (3) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
+    (2) sudo $EDITOR ops-monitoring/config/local_datastore_operator.conf
+        IF using PostgreSQL modify the [postgres] section or
+        IF using MySQL modify the [mysql] section:
         * set username: <LOCAL_OPERATOR_NAME>
-        * set password: <psql password for <LOCAL_OPERATOR_NAME> you set above>
-        * IF you are using mysql, set dbtype: mysql in the [main] section
-    (4) Ensure that ownership of the ops-monitoring/ directory is root:root
-        sudo chown -R root /usr/local/ops-monitoring
-        sudo chgrp -R root /usr/local/ops-monitoring
+        * set password: <password for <LOCAL_OPERATOR_NAME> you set above>
+        IF you are using MySQL:
+        * set dbtype: mysql in the [main] section
+        IF you are using PostgreSQL:
+        * set dbtype: postgres in the [main] section
 
-5. Syslog configuration
+6. Syslog configuration
 
     The ops-monitoring software now uses the syslog infrastructure to write to 
     a log file. The ops-monitoring logging configuration is located in 
@@ -93,7 +137,7 @@ Table of Contents:
     /etc/rsyslog.d/opsmon.conf and have it contain the following line:
         local6.*                          -/var/log/opsmon.log
 
-6. Apache, WSGI, and Flask Configuration
+7. Apache, WSGI, and Flask Configuration
 
    The reference configuration customizes apache to make the reference
    datastore available via flask and to enable SSL encryption.  These
@@ -144,10 +188,10 @@ Table of Contents:
         </Directory>
  
     (6) Enable the default SSL site:
-	  sudo a2ensite default-ssl
+      sudo a2ensite default-ssl
 
-	 This creates a link default-ssl file:
-	   /etc/apache2/sites-enabled/default-ssl     to link to
+     This creates a link default-ssl file:
+       /etc/apache2/sites-enabled/default-ssl     to link to
            /etc/apache2/sites-available/default-ssl 
 
 
@@ -178,7 +222,7 @@ Table of Contents:
     that can be acquired with aptitude works fine too.
 
 
-7. Datastore database cleanup and initialization 
+8. Datastore database cleanup and initialization
 
    Populate your database either with the schema tables only, or with
    the tables and some sample data if you want to see the localstore
@@ -188,14 +232,14 @@ Table of Contents:
     (2) IF you want the tables only, run:
           python ./local_table_reset.py
     (3) OR IF you want tables and data, run:
-    	  python ./local_restart_node_interface_stats.py 
+          python ./local_restart_node_interface_stats.py
         This populates the tables with simulated configuration
         information.  It then runs a series of inserts for putting node
         and interface data that take a few seconds to complete.
     (4) Open PostgreSQL to look at the data and tables
         (a) psql -U <LOCAL_OPERATOR_NAME> -h localhost --dbname=local
-  	(c) \dt
-	(d) select * from ops_aggregate;
+        (c) \dt
+        (d) select * from ops_aggregate;
     
     For operators of a local datastore (populating with real data),
     below is a discription for which tables to populate for what
@@ -267,7 +311,7 @@ Table of Contents:
 
 
 
-8. Start the webserver
+9. Start the webserver
 
    Start apache:
     (1) sudo service apache2 restart
@@ -277,7 +321,7 @@ Table of Contents:
     (3) python ./web_server.py
 
 
-9. Invoke some example queries using curl as noted in step 7.  This
+10. Invoke some example queries using curl as noted in step 7.  This
  assumes that your certificate has a private key appended to it.  If
  not pass the --key /path/to/key with this command.  These specific
  queries (about gpo-ig as an aggregate and
