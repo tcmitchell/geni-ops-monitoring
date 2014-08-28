@@ -66,7 +66,7 @@
        "href": "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.northwestern.edu+authority+cm",
+       "urn": "urn:publicid:IDN+instageni.cs.princeton.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig"
     },
