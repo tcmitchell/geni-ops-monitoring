@@ -1,4 +1,4 @@
-// XXX Is this one used, or experiment.schema?
+// XXX This is unused and should be removed.
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
   "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/monitoring-experiment#",

@@ -28,10 +28,10 @@
     },
     "virtualization_type": {
        "description":"Machine virtualization platform in use",
-       // This property only makes sense on a physical server node, so
-       // the value of node_type should be "server" if this property
-       // is specified.  It only specifies the virtualization system
-       // used on the node.
+       // If node_type is "server", this specifies the kind of
+       // VMs hosted on the node.
+       // If node_type is "vm", it specifies what kind of VM
+       // it is.
        "enum": [ "xen", "openvz", "kvm" ],
        "required":false
     },

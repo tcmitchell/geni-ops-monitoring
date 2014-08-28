@@ -14,6 +14,7 @@
   "properties": {
     "tag": {
       "description": "numeric identifier of VLAN on the parent device",
+      // To indicate that there is no VLAN, use the value 0.
       "type": "integer",
       "required": true
     },
@@ -21,6 +22,8 @@
       "description": "parent interface of which this VLAN is a subinterface",
       "type": [
         {
+          // The convention for an interfacevlan URN is to take the interface
+          // URN and append :<VLAN tag>, e.g., :1750 .
           "urn": "string",
           "href": "string"
         }
