@@ -18,7 +18,7 @@
     {
       "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.net.internet2.edu"
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.internet2.edu"
     },
     {
       "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
