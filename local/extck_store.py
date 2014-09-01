@@ -27,25 +27,35 @@ import json
 import ConfigParser
 import subprocess
 import os
+import requests
 from string import digits
 from pprint import pprint as pprint
 
 common_path = "../common/"
+sys.path.append(common_path)
+import opsconfig_loader
+import table_manager
+
 config_path = "/home/amcanary/"
 # input file with short-names and Urls aggregates 
-inputFile=open('/home/amcanary/src/gcf/agg_nick_cache.base')
+# Need this file for sites like EG that aren't in prod but url is not in opsconfig
+#inputFileBackup=open('/home/amcanary/src/gcf/agg_nick_cache.base')
+
+inputFile=open('/home/amcanary/.bssw/geni/nickcache.json')
 
 # Dic to store short name and corresponding url 
-# Format: shortname [fqdn]=[aggShortName,amtype,urn]
-# where state is 0 for up and 1 for down
-shortName={}
+# Format: shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
+
+shortName = {}
+
+# Store cache of nickNames in here
+# nickCache[urn]=[shortName, url]
+nickCache ={}
 
 # Dic to store slice info for campus and core
 # monitoring slices.
 # 
-slices={}
-sys.path.append(common_path)
-import table_manager
+slices = {}
 
 class InfoPopulator():
     def __init__(self, tbl_mgr, url_base):
@@ -59,7 +69,7 @@ class InfoPopulator():
         self.ip_campus = dict(config.items("campus"))
         self.ip_core = dict(config.items("core"))
 
-    def populateInfoTables(self, shortName, slices, srcPing, ipList):
+    def populateInfoTables(self, shortName, slices, srcPing, ipList, aggStores):
         fileLoc1="/home/amcanary/ops_externalcheck_experiment_Registry"
         fileLoc2="/home/amcanary/ops_experiment_Registry"
         dataStoreBaseUrl="https://extckdatastore.gpolab.bbn.com"
@@ -96,22 +106,37 @@ class InfoPopulator():
                         dataInsert(self.tbl_mgr, fileLoc1, exp_id, extck_exp, "ops_externalcheck_experiment")
                    
                         urnHrefs=getSiteInfo(srcSite, dstSite, shortName)# [srcUrn, srcHref, dstUrn, dstHref]
-                        ts = str(int(time.time()*1000000))    
-                        exp=["http://www.gpolab.bbn.com/monitoring/schema/20140501/experiment#", exp_id, 
+                        if urnHrefs[0]=='' or urnHrefs[1]=='' or urnHrefs[2]=='' or urnHrefs[3]=='':
+                            continue 
+                        else:     
+                            print urnHrefs
+                            ts = str(int(time.time()*1000000))    
+                            exp=["http://www.gpolab.bbn.com/monitoring/schema/20140501/experiment#", exp_id, 
                             dataStoreBaseUrl + "/info/experiment/"+  exp_id, ts, sliceUrn, sliceUuid,    
-                            urnHrefs[0], urnHrefs[1], urnHrefs[2], urnHrefs[3]]
-                        dataInsert(self.tbl_mgr, fileLoc2, exp_id, exp, "ops_experiment")   
+                                urnHrefs[0], urnHrefs[1], urnHrefs[2], urnHrefs[3]]
+                            dataInsert(self.tbl_mgr, fileLoc2, exp_id, exp, "ops_experiment")   
 
-    def insert_externalcheck_monitoredaggregate(self,fqdn, aggRow):
+    def insert_externalcheck_monitoredaggregate(self, urn, aggRow):
         extck_id = aggRow[0] # agg_id
         dataStoreSite="gpo"
         ts = str(int(time.time()*1000000))
-        dataStore_url_base="https://datastore."+ fqdn
-        mon_agg = [extck_id, dataStoreSite, dataStore_url_base + "/info/aggregate/" + extck_id]
+        dataStoreHref=aggRow[2]
+        mon_agg = [extck_id, dataStoreSite, dataStoreHref]
         fileLoc="/home/amcanary/ops_externalcheck_monitoredaggregate_Registry"
         dataInsert(self.tbl_mgr, fileLoc, mon_agg[2], mon_agg, "ops_externalcheck_monitoredaggregate")
-  
-    def insert_externalcheck(self):
+
+    def insert_aggregate(self, urn, aggRow):
+        schema =aggRow[6]
+        agg_id = aggRow[0] # agg_id
+        selfRef = aggRow[2]
+        ts = str(int(time.time()*1000000))
+        measRef = aggRow[3]
+        fileLoc="/home/amcanary/ops_aggregate_Registry"  
+        data=[schema, agg_id, selfRef, urn, ts, measRef]
+        # urn is used below to uniquely identify a row in a "tracking" file.
+        dataInsert(self.tbl_mgr, fileLoc, urn, data, "ops_aggregate")
+
+    def insert_externalcheck(self): # This function assumes the existence of only 1 external check datastore
         dataStoreSite="gpo"
         dataStore_url_base="https://extckdatastore.gpolab.bbn.com"
         ts = str(int(time.time()*1000000))
@@ -138,16 +163,26 @@ def dataInsert (tbl_mgr, fileLoc, exp_id, data, table):
         db_insert(tbl_mgr, table , data) 
 
 def getSiteInfo(srcSite, dstSite, shortName):
+    if srcSite == "gpo-ig-3715_core" or srcSite == "gpo-ig-3716_core": srcSite = "gpo-ig"
+    if dstSite == "gpo-ig-3715_core" or dstSite == "gpo-ig-3716_core": dstSite = "gpo-ig"
+    if srcSite == "wisconsin-ig-3715_core": srcSite="wisconsin-ig"
+    if srcSite == "uh-eg-3716_core": srcSite = "uh-eg"
+    if srcSite == "missouri-ig-3716_core": srcSite = "missouri-ig"
+    if dstSite == "wisconsin-ig-3715_core": dstSite="wisconsin-ig"
+    if dstSite == "uh-eg-3716_core": dstSite = "uh-eg"
+    if dstSite == "missouri-ig-3716_core": dstSite = "missouri-ig"
+    
     srcUrn = srcHref = dstUrn = dstHref = ''
     for key in shortName:
         if shortName[key][0] == srcSite:
-            srcUrn=shortName[key][2]
-            srcHref = "https://datastore."+ key + "/info/aggregate/" + srcSite
+            srcUrn=key
+            srcHref= shortName[key][2]
         elif shortName[key][0] == dstSite:
-           dstUrn=shortName[key][2]
-           dstHref = "https://datastore."+ key + "/info/aggregate/" + dstSite
+           dstUrn=key
+           dstHref= shortName[key][2]
   
     return [srcUrn, srcHref, dstUrn, dstHref]    
+
 
 def db_insert(tbl_mgr, table_str, row_arr):
     val_str = "('"
@@ -159,8 +194,99 @@ def db_insert(tbl_mgr, table_str, row_arr):
 
     tbl_mgr.insert_stmt(table_str, val_str)
 
-def getShortName():
-    i=1
+def getShortName(aggStores):
+
+    nickCache=getNickCache()
+   # print "aggStores", aggStores
+    for aggregate in aggStores:                    
+     #   break
+        if aggregate['urn']=="urn:publicid:IDN+genirack.nyu.edu+authority+cm":
+            continue
+        # Do this for all aggregates with a data store 
+     #   print ""
+     #   print "agg", aggregate['amtype']
+     #   print "aggUrn", aggregate['urn'] 
+        
+        if aggregate['amtype']=='instageni' or aggregate['amtype']=='protogeni': 
+        #    print "here",aggregate    
+            aggDetails = handle_request(aggregate['href']) # Use url for site's store to query site
+            selfRef = aggDetails['selfRef']
+            measRef = aggDetails['measRef']
+            urn = aggDetails['urn']
+            schema = aggDetails['$schema']
+            amType = "protogeni"
+            aggShortName = aggDetails['id']  
+        #    print aggregate.keys()
+            if aggregate.has_key('amurl'): # For non-prod aggregates
+                url=aggregate['amurl']
+            else:
+                if nickCache.has_key(urn):
+                    url=nickCache[urn][1]    
+                else:
+                   # No point grabbing data for site without AM URL
+                   print "Missing URL for ", aggShortName 
+                   continue
+            
+            cols=url.strip().split('/')
+            cols1=cols[2].strip().split(':')
+            fqdn=cols1[0]
+            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]   
+
+        elif aggregate['amtype'] == "network-aggregate": # Case for ion
+            if nickCache.has_key(aggregate['urn']):
+                aggDetails = handle_request(aggregate['href'])
+                selfRef = aggDetails['selfRef']; measRef = aggDetails['measRef'] 
+                urn = aggDetails['urn']; amType='myplc'; schema = aggDetails['$schema']
+                aggShortName = aggDetails['id']; url=nickCache[urn][1]
+                cols=url.strip().split('/'); cols1=cols[2].strip().split(':'); fqdn=cols1[0]
+                shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]  
+        elif aggregate['amtype'] == "stitcher": # Special case
+            selfRef = aggregate['href']; measRef = '';urn = aggregate['urn']
+            amType = aggregate['amtype']
+            schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
+            url="http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
+            fqdn=''; aggShortName="scs"        
+            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]    
+        else: # ExoGENI and FOAM
+            selfRef = aggregate['href']
+            measRef = ''
+            urn = aggregate['urn']
+            schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#" 
+            amType = aggregate['amtype'] 
+
+            if aggregate.has_key('amurl'): # For non-prod foam aggregates
+                url = aggregate['amurl']
+            else:
+                if nickCache.has_key(urn):
+                    url=nickCache[urn][1]
+                else:
+                    print "Missing URL for ", urn
+                    continue
+
+            # Get aggShortName
+            if amType == "exogeni":
+                cols=urn.strip().split(':')
+                cols1=cols[3].strip().split('vmsite')
+                aggShortName=cols1[0]+ "-eg"             
+                amType="orca" # Ask stephane to change this
+            elif amType == "foam":
+                cols=selfRef.strip().split('/')
+                aggShortName=cols[5]
+
+             # Get fqdn
+            cols=url.strip().split('/')
+            cols1=cols[2].strip().split(':')
+            fqdn=cols1[0]
+            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
+
+
+    # Ask Stephane to set instageni AM type to protogeni and exogeni am type to orca
+    # Ask Stephane to add amurl for EG aggregates
+    # Ask Stephane to add amurl for OF EG aggregates
+    #i=1
+    return shortName
+
+def getNickCache():
     for line in inputFile: # Read in line
         if line[0]!='#' and line[0]!='[' and line[0]!='\n': # Don't read comments/junk
             cols = line.strip().split('=')
@@ -169,26 +295,14 @@ def getShortName():
                continue
             aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
-            urn = cols1[0] # Grab urn
-            cols2=cols1[1].strip().split('/')
-            fqdn=cols2[2] # Grab modified version of fqdn
-            if aggShortName == "plc" or aggShortName=="ion":
-                amtype="myplc"
-            else:
-                amtype=cols2[3] # Grab amtype
-
-            if is_empty(shortName) == "True": # If dic is empty
-                shortName[fqdn]= [aggShortName,amtype,urn]
-            else:
-                if shortName.has_key(fqdn): # If we have the shortName move to next line
-                   continue
-                else:
-                    shortName[fqdn]=[aggShortName,amtype,urn]
-    return shortName
+            urn = cols1[0] 
+            url = cols1[1]
+            nickCache[urn]=[aggShortName,url] 
+    return nickCache
 
 def formatShortName(shortName):
-    if len(shortName)>5:# Aggregate with 2 chars: ignore
-        shortName = shortName.translate(None, digits) # Remove all #s froms shortName
+  #  if len(shortName)>3:# Aggregate with 2 chars: ignore
+    shortName = shortName.translate(None, digits) # Remove all #s froms shortName
     oldFormat = shortName.strip().split('-')
     suffix=['ig','eg', 'of', 'pg']
     if len(oldFormat)==1: # For cases like "ion"
@@ -211,26 +325,38 @@ def formatShortName(shortName):
         return "i2-of"
     else:
         return newFormat
-def is_empty(any_structure): # Determine if "any_structure" is empty
-    if any_structure:
-       # print('Structure is not empty.')
-        return False
-    else:
-       # print('Structure is empty.')
-        return True
-def getAMState(output):
-    cols=output.strip().split(':')
-    if cols[2] == " Timed out after 60 seconds": # Occurs if subprocess hangs 
-        result =0
-    elif cols[3]==" 0": # check for "returned: 0" output
-        result="1" # Good result
-    else:
-        result="0" # Bad result   
-    return result
 
 def getSlices():
     slices={'sitemon':['urn:publicid:IDN+ch.geni.net:gpoamcanary+slice+sitemon','f42d1c94-506a-4247-a8af-40f5760d7750'], 'gpoI15': ['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI15','35e195e0-430a-488e-a0a7-8314326346f4'], 'gpoI16':['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI16','e85a5108-9ea3-4e01-87b6-b3bc027aeb8f']}
     return slices
+
+
+def handle_request(url=None, cert_path=None):
+
+    if url==None:
+      #url='https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod' 
+      url='https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod'
+      
+    cert_path = '../collector/collector-gpo-withnpkey.pem'
+    resp = None 
+    try:
+        resp = requests.get(url, verify=False, cert=cert_path)
+    except Exception, e:
+        print "No response from local datastore at: " + url
+        print e
+        return None
+
+    if resp:
+        try:
+            json_dict = json.loads(resp.content)
+        except Exception, e:
+            print "Could not load into JSON"
+            print e
+            return None
+
+        return json_dict
+    else:
+        return None
 
 def main():
 
@@ -240,23 +366,29 @@ def main():
     tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr,"")
+   # Grab urns and urls for all agg stores    
+   # url = "https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig"
+    aggRequest = handle_request()
+#    print aggRequest
+    aggStores = aggRequest['aggregatestores']
+
     # read list of urls (or short-names)
-    shortName=getShortName()
-    
+    shortName=getShortName(aggStores)
+   # print shortName 
     slices=getSlices()
     srcPingCampus=['gpo-ig','utah-ig']
     srcPingCore=['gpo-ig-3715_core','gpo-ig-3716_core']   
     # Populate "ops_externalcheck_experiment" and "ops_experiment" tables 
-    ip.populateInfoTables(shortName, slices, srcPingCampus, ip.ip_campus)
-    ip.populateInfoTables(shortName, slices, srcPingCore, ip.ip_core)
+    ip.populateInfoTables(shortName, slices, srcPingCampus, ip.ip_campus, aggStores)
+    ip.populateInfoTables(shortName, slices, srcPingCore, ip.ip_core, aggStores)
     # Populate "ops_externalCheck" table
     ip.insert_externalcheck()    
-    for fqdn in shortName:
-        shortName[fqdn]
+    for urn in shortName:
         # Populate "ops_externalcheck_monitoredaggregate" table 
-        ip.insert_externalcheck_monitoredaggregate(fqdn, shortName[fqdn])
+        ip.insert_externalcheck_monitoredaggregate(urn, shortName[urn])
+        # Populate "ops_aggregate" table
+        ip.insert_aggregate(urn, shortName[urn])
     tbl_mgr.close_con();
 
 if __name__ == "__main__":
     main()
-    
