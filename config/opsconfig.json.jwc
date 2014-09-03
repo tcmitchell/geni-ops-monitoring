@@ -693,9 +693,11 @@
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["externalcheck_id"]],
-            ["UNIQUE (%s)", ["selfRef"]]
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_experiment", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_experiment", "ops_externalcheck"]
     },
     {   "name":"externalcheck_monitoredaggregate",
         "db_schema": [
@@ -705,9 +707,11 @@
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
-            ["UNIQUE (%s)", ["selfRef"]]
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_aggregate", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_aggregate", "ops_externalcheck"]
     },
     {   "name":"interface_addresses",
         "db_schema": [
