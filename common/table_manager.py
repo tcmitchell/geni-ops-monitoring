@@ -318,7 +318,13 @@ class TableManager:
                 schema_dict[ds_k] = data_schema[ds_k][:-1]
             elif self.database_type == "collector":
                 l = data_schema[ds_k][:-1]
-                l.insert(0, ["aggregate_id", "varchar"])
+                # The ops_experiment_XXX tables are coming from external check stores.
+                # and so is ops_aggregate_is_available
+                # The rest of the data are coming from aggregate stores.
+                if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
+                    l.insert(0, ["externalcheck_id", "varchar"])
+                else:
+                    l.insert(0, ["aggregate_id", "varchar"])
                 schema_dict[ds_k] = l
             # All fields of the data table are required...
             for k in range(len(schema_dict[ds_k])):
@@ -352,9 +358,17 @@ class TableManager:
             if self.database_type == "local":
                 constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s)", ["id", "ts"]]]
             elif self.database_type == "collector":
-                constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["aggregate_id", "id", "ts"]],
-                                          ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_id", "ops_aggregate", "id"]]
-                                         ]
+                # The ops_experiment_XXX tables are coming from external check stores.
+                # and so is ops_aggregate_is_available
+                # The rest of the data are coming from aggregate stores.
+                if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
+                    constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["externalcheck_id", "id", "ts"]],
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["externalcheck_id", "ops_externalcheck", "id"]]
+                                            ]
+                else:
+                    constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["aggregate_id", "id", "ts"]],
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_id", "ops_aggregate", "id"]]
+                                            ]
             if ds_k.startswith("ops_node"):
                 constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_node", "id"]])
             elif ds_k.startswith("ops_interfacevlan"):
@@ -387,7 +401,13 @@ class TableManager:
 
         for ds_k in data_schema.keys():
             if self.database_type == "collector":
-                dependencies_dict[ds_k] = ["ops_aggregate"]
+                # The ops_experiment_XXX tables are coming from external check stores.
+                # and so is ops_aggregate_is_available
+                # The rest of the data are coming from aggregate stores.
+                if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
+                    dependencies_dict[ds_k] = ["ops_externalcheck"]
+                else:
+                    dependencies_dict[ds_k] = ["ops_aggregate"]
             else:
                 dependencies_dict[ds_k] = []
 
