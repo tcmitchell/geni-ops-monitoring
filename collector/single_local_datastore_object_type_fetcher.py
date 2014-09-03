@@ -35,7 +35,7 @@ import opsconfig_loader
 import logger
 
 def usage():
-    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -e <extckid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate)>\n')
+    sys.stderr.write('single_datastore_object_type_fetcher.py -d -a <aggregateid> -e <extckid> -c </cert/path/cert.pem> -o <objecttype (ex: -o n for nodes -o i interfaces, s for slivers, l for links, v for vlans, a for aggregate, x for experiments)>\n')
     sys.exit(1)
 
 def parse_args(argv):
@@ -49,7 +49,7 @@ def parse_args(argv):
     debug = False
 
     try:
-        opts, _ = getopt.getopt(argv, "ha:e:c:o:d", ["baseurl=", "aggregateid=", "extckid=", "certpath=", "objecttype=", "help", "debug"])
+        opts, _ = getopt.getopt(argv, "ha:e:c:o:d", ["help", "aggregateid=", "extckid=", "certpath=", "objecttype=", "debug"])
     except getopt.GetoptError:
         usage()
 
@@ -190,6 +190,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
         elif obj_type == "interfacevlan":
             obj_ids = self.get_all_interfacevlans_of_aggregate()
 
+        elif obj_type == "experiment":
+            obj_ids = self.get_all_experiments_of_extckstore()
+
         else:
             sys.stderr.write("Invalid object type %s" % obj_type)
             sys.exit(1)
@@ -283,13 +286,18 @@ class SingleLocalDatastoreObjectTypeFetcher:
     def get_latest_ts_at_table(self, table_str):
         tbl_mgr = self.tbl_mgr
         if self.aggregate_id != "":
+            desc = "aggregate store"
+            column_id = "aggregate_id"
             datastore_id = self.aggregate_id
         elif self.extck_id != "":
+            desc = "external check store"
+            column_id = "externalcheck_id"
             datastore_id = self.extck_id
 
-        self.logger.debug("Getting latest timestamp in " + table_str + " for aggregate " + datastore_id)
+        self.logger.debug("Getting latest timestamp in " + table_str + " for " + desc + " " + datastore_id)
         res = 0
-        q_res = tbl_mgr.query("select max(ts) from " + table_str + " where aggregate_id = '" + datastore_id + "'")
+        q_res = tbl_mgr.query("select max(ts) from " + table_str
+                              + " where " + column_id + " = '" + datastore_id + "'")
         if q_res is not None:
             res = q_res[0][0]  # gets first of single tuple
 
@@ -319,6 +327,18 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         res = [];
         q_res = tbl_mgr.query("select id from ops_externalcheck_monitoredaggregate where externalcheck_id = '" + self.extck_id + "'")
+        if q_res is not None:
+            for res_i in range(len(q_res)):
+                res.append(q_res[res_i][0])  # gets first of single tuple
+
+        return res
+
+
+    def get_all_experiments_of_extckstore(self):
+        tbl_mgr = self.tbl_mgr
+
+        res = [];
+        q_res = tbl_mgr.query("select id from ops_externalcheck_experiment where externalcheck_id = '" + self.extck_id + "'")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -423,6 +443,7 @@ def main(argv):
     interface_event_types = all_event_types["interface"]
     interface_vlan_event_types = all_event_types["interfacevlan"]
     aggregate_event_types = all_event_types["aggregate"]
+    experiment_event_types = all_event_types["experiment"]
 
     # pprint(all_event_types)
 
@@ -438,6 +459,9 @@ def main(argv):
     elif object_type_param == 'a':
         event_types = aggregate_event_types
         object_type = "aggregate"
+    elif object_type_param == 'x':
+        event_types = experiment_event_types
+        object_type = "experiment"
     else:
         sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
