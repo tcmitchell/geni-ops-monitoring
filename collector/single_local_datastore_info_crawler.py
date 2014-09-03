@@ -133,16 +133,27 @@ class SingleLocalDatastoreInfoCrawler:
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
-        ok = True
         self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path, self.logger)
-        if self.am_dict:
+        return self.refresh_specific_aggregate_info(self.am_dict)
+
+    def refresh_specific_aggregate_info(self, agg_dict):
+        """
+        Method to insert aggregate information into the aggregate table given an aggregate dictionary
+        :param agg_dict: the aggregate json dictionary object containing the information to insert or
+          update into the database
+        :return: True if the information was inserted or updated correctly, False otherwise
+        """
+        ok = True
+        if agg_dict:
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
-                am_info_list.append(self.am_dict[key[0]])
+                am_info_list.append(agg_dict[key[0]])
             if not info_update(self.tbl_mgr, "ops_aggregate", schema, am_info_list, \
                                self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
                 ok = False
+        else:
+            ok = False
         return ok
 
     # Updates externalcheck information
@@ -166,10 +177,52 @@ class SingleLocalDatastoreInfoCrawler:
             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
 #             mon_aggs = []
             for mon_agg in self.extck_dict["monitored_aggregates"]:
-                mon_agg_info = [mon_agg["id"], self.extck_dict["id"], mon_agg["href"]]
-                if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
-                                   self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
-                    ok = False
+                # Check that monitored aggregate ID exists in ops_aggregates
+                # if not, get the info from the href and insert it
+                agg_id = mon_agg["id"]
+                agg_url = mon_agg["href"]
+                insert = True
+                if not self.check_exists("ops_aggregate", "id", agg_id):
+                    agg_dict = handle_request(agg_url, self.cert_path, self.logger)
+                    if not self.refresh_specific_aggregate_info(agg_dict):
+                        ok = False
+                        insert = False
+                if insert:
+                    mon_agg_info = [agg_id, self.extck_dict["id"], agg_url]
+                    if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
+                                       (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+                                       self.debug, self.logger):
+                        ok = False
+        return ok
+
+    def refresh_all_experiments_info(self):
+        """
+        Method to refresh the experiment information associated with an external check store
+        :return: True if everything went fine, false otherwise.
+        """
+        ok = True
+        if self.extck_dict:
+            schema = self.tbl_mgr.schema_dict["ops_externalcheck_experiment"]
+            exp_schema = self.tbl_mgr.schema_dict["ops_experiment"]
+
+            for experiment in self.extck_dict["experiments"]:
+                # Check that monitored aggregate ID exists in ops_aggregates
+                # if not, get the info from the href and insert it
+                experiment_url = experiment["href"]
+                insert = True
+                experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
+                experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
+                if not info_update(self.tbl_mgr, "ops_experiment", exp_schema, experiment_info_list, \
+                                   self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
+                                   self.debug, self.logger):
+                        ok = False
+                        insert = False
+                if insert:
+                    experiment_relation_info = [experiment_dict["id"], self.extck_dict["id"], experiment_url]
+                    if not info_update(self.tbl_mgr, "ops_externalcheck_experiment", schema, experiment_relation_info, \
+                                       (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+                                       self.debug, self.logger):
+                        ok = False
         return ok
 
     # Updates all nodes information
@@ -499,6 +552,25 @@ class SingleLocalDatastoreInfoCrawler:
                     interface_info_list.append(None)
 
         return interface_info_list
+
+
+    def get_experiment_attributes(self, experiment_dict, schema):
+        """
+        """
+        # get each attribute out of response into list
+        experiment_info_list = []
+        for key in schema:
+            if key[0] in experiment_dict:
+                experiment_info_list.append(experiment_dict[key[0]])
+            else:
+                if key[2]:
+                    print("WARNING: value for required json interface field " + key[0] + " is missing. Replacing with default value...")
+                    experiment_info_list.append(self.get_default_attribute_for_type(key[1]))
+                else:
+                    # This is OK. This was an optional field.
+                    experiment_info_list.append(None)
+
+        return experiment_info_list
 
 
     def get_interface_addresses(self, interface_dict, schema):
