@@ -37,6 +37,7 @@ class InfoPopulator():
         self.url_base = url_base
         # steal config path from table_manager
         self.config_path = tbl_mgr.config_path
+        self.aggregate_id1 = "gpo-ig"
 
     def insert_fake_info(self):
         ok = True
@@ -47,7 +48,7 @@ class InfoPopulator():
 
         agg1 = []
         agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#")
-        agg1.append("gpo-ig")
+        agg1.append(self.aggregate_id1)
         agg1.append(url_local_info + "aggregate/" + agg1[1])
         agg1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")
         agg1.append(str(int(time.time() * 1000000)))
@@ -663,21 +664,42 @@ class InfoPopulator():
         ok = True
         extck_id = "gpo"
         ts = str(int(time.time() * 1000000))
-        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#", extck_id, self.url_base + "/info/externalcheck/" + extck_id, ts, self.url_base + "/data/"]
+        extck = []
+        extck.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#")
+        extck.append(extck_id)
+        extck.append(self.url_base + "/info/externalcheck/" + extck_id)
+        extck.append(ts)
+        extck.append(self.url_base + "/data/")
         if not info_insert(self.tbl_mgr, "ops_externalcheck", extck):
             ok = False
 
         exp1_id = "missouri_ig_to_gpo_ig"
-        extck_exp1 = [exp1_id, extck_id, self.url_base + "/info/experiment/" + exp1_id]
-        if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
-            ok = False
 
-        exp1_id = "missouri_ig_to_gpo_ig"
-        exp1 = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#", exp1_id, self.url_base + "/info/experiment/" + exp1_id, ts, "urn:slice_urn", "uuid:slice_uuid", "urn:source_aggregate_urn", "source aggregate local datastore href", "urn:destination_aggregate_urn", "destination aggregate local datastore href"]
+        exp1 = []
+        exp1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#")
+        exp1.append(exp1_id)
+        exp1.append(self.url_base + "/info/experiment/" + exp1_id)
+        exp1.append(ts)
+        exp1.append("urn:slice_urn")
+        exp1.append("uuid:slice_uuid")
+        exp1.append("urn:source_aggregate_urn")
+        exp1.append("source aggregate local datastore href")
+        exp1.append("urn:destination_aggregate_urn")
+        exp1.append("destination aggregate local datastore href")
         if not info_insert(self.tbl_mgr, "ops_experiment", exp1):
             ok = False
 
-        mon_agg = ["gpo_ig", "gpo", self.url_base + "/info/aggregate/gpo-ig"]
+        extck_exp1 = []
+        extck_exp1.append(exp1_id)
+        extck_exp1.append(extck_id)
+        extck_exp1.append(self.url_base + "/info/experiment/" + exp1_id)
+        if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
+            ok = False
+
+        mon_agg = []
+        mon_agg.append(self.aggregate_id1)
+        mon_agg.append(extck_id)
+        mon_agg.append(self.url_base + "/info/aggregate/gpo-ig")
         if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
             ok = False
 
