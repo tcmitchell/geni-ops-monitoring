@@ -248,7 +248,7 @@ def handle_externalcheck_info_query(tm, extck_id):
         experiments = get_related_objects(tm, "ops_externalcheck_experiment", "externalcheck_id", extck_id)
 
         for exp_i in experiments:
-            exp_ref = get_refs(tm, "ops_experiment", exp_i)
+            exp_ref = get_refs(tm, "ops_experiment", exp_i, ("selfRef",))
             if exp_ref:
                 exp_refs.append(exp_ref)
 
@@ -654,7 +654,7 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
     if mon_agg_refs:
         json_dict["monitored_aggregates"] = []
         for mon_agg_ref in mon_agg_refs:
-            if len(exp_ref) > 0:
+            if len(mon_agg_ref) > 0:
                 json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0], "href":mon_agg_ref[1]})
 
     return json_dict
@@ -805,10 +805,16 @@ def get_related_objects_full(tm, table_str, colname_str, id_str):
 
 
 # Get references of objects TODO refactor similar functions
-def get_refs(tm, table_str, object_id):
+def get_refs(tm, table_str, object_id, column_names=("selfRef", "urn")):
+
+    col_selection = ""
+    for col_i in range(len(column_names)):
+        if col_i > 0:
+            col_selection += ", "
+        col_selection += tm.get_column_name(column_names[col_i])
 
     refs = [];
-    q_res = tm.query("select " + tm.get_column_name("selfRef") + ", urn from " + table_str + \
+    q_res = tm.query("select " + col_selection + " from " + table_str + \
                      " where id = '" + object_id + "' limit 1")
     if q_res is not None:
         refs = q_res[0]
