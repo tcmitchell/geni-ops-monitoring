@@ -4,27 +4,36 @@
   "id": "geni-prod",
   "selfRef": "https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod",
   "ts": 1404856180792745,
+  // Not yet documented: if an aggregate is not in production, its AM API URL is
+  // not yet known to the GENI clearing house. So we'll include an amurl field,
+  // so that ops-monitoring can be used for acceptance tests.
+  // As soon as an aggregate is in production, we'll remove the amurl field.
   "aggregatestores": [
+    // ION data store
     {
       "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
       "amtype": "network-aggregate",
       "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
     },
+    // AL2S data store
     {
       "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
     },
+    // Mesoscale data store
     {
       "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.internet2.edu"
     },
+    // MAX data store
     {
       "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
       "amtype": "network-aggregate",
       "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
     },
+    // instageni stores
     {
        "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
        "amtype": "instageni",
@@ -68,7 +77,8 @@
     {
        "urn": "urn:publicid:IDN+instageni.cs.princeton.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig"
+       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig",
+       "amurl": "https://instageni.cs.princeton.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.clemson.edu+authority+cm",
@@ -118,7 +128,8 @@
     {
        "urn": "urn:publicid:IDN+instageni.rutgers.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig"
+       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig",
+       "amurl": "https://instageni.rutgers.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.stanford.edu+authority+cm",
@@ -143,12 +154,14 @@
     {
        "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig"
+       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig",
+       "amurl": "https://instageni.iu.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig"
+       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig",
+       "amurl": "https://instageni.nps.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.uidaho.edu+authority+cm",
@@ -158,28 +171,34 @@
     {
        "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig"
+       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig",
+       "amurl": "https://instageni.idre.ucla.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.osu.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.osu.edu:5001/info/aggregate/osu-ig"
+       "href": "https://www.instageni.osu.edu:5001/info/aggregate/osu-ig",
+       "amurl": "https://instageni.osu.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig"
+       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig",
+       "amurl": "https://instageni.umkc.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig"
+       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig",
+       "amurl": "https://geni.uchicago.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig"
+       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig",
+       "amurl": "https://instageni.metrodatacenter.com:12369/protogeni/xmlrpc/am"
     },
+    // EXOgeni stores
     {
        "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
        "amtype": "exogeni",
@@ -223,27 +242,276 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ufl-hn.exogeni.net:5001/info/aggregate/uflvmsite"
+       "href": "https://ufl-hn.exogeni.net:5001/info/aggregate/uflvmsite",
+       "amurl": "https://ufl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ucd-hn.exogeni.net:5001/info/aggregate/ucdvmsite"
+       "href": "https://ucd-hn.exogeni.net:5001/info/aggregate/ucdvmsite",
+       "amurl": "https://ucd-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://sl-hn.exogeni.net:5001/info/aggregate/slvmsite"
+       "href": "https://sl-hn.exogeni.net:5001/info/aggregate/slvmsite",
+       "amurl": "https://sl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite"
+       "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite",
+       "amurl": "https://osf-hn.exogeni.net:11443/orca/xmlrpc"
     },
+    // Open geni stores
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
        "amtype": "opengeni",
-       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson"
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson",
+       "amurl": "https://clemson-clemson-control-1.clemson.edu:5002"
+    },
+    // FOAM aggregate manager stores
+    // For now, the GPO external check store is the "authoritave" store about these aggregate
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.net.internet2.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/i2-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foamyflow.chpc.utah.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uen-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:bbn-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-eg-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:rci-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/renci-eg-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:fiu-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/fiu-eg-of",
+       "amurl": "https://fiu-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:uh-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uh-eg-of",
+       "amurl": "https://uh-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
+       "amurl": "https://ufl-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucd-eg-of",
+       "amurl": "https://ucd-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of",
+       "amurl": "https://osf-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
+       "amurl": "https://ufl-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of",
+       "amurl": "https://sl-hn.exogeni.net:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utah-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.gpolab.bbn.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.lan.sdn.uky.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uky-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.kettering.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kettering-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.northwestern.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/northwestern-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.utahddc.geniracks.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utahddc-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnoc.gatech.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gatech-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nysernet.org+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.sox.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.nysernet.org+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.maxgigapop.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/max-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.clemson.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/clemson-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnet.missouri.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/missouri-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.genirack.nyu.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nyu-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.illinois.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/illinois-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.wisc.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wisconsin-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.it.cornell.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cornell-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.sox.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.ku.gpeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stanford-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:sl-geni.northwestern.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.cenic.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nps.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
+       "amurl": "https://foam.instageni.nps.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of",
+       "amurl": "https://foam.instageni.iu.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of",
+       "amurl": "https://foam.instageni.metrodatacenter.com:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of",
+       "amurl": "https://foam.instageni.cs.princeton.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/rutgers-ig-of",
+       "amurl": "https://foam.instageni.rutgers.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.idre.ucla.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of",
+       "amurl": "https://foam.instageni.idre.ucla.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osu-ig-of",
+       "amurl": "https://foam.instageni.osu.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of",
+       "amurl": "https://foam.instageni.umkc.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uchicago-ig-of",
+       "amurl": "https://foam.geni.uchicago.edu:3626/foam/gapi/2"
+    },
+    // Stiching Computation Service "aggregate" store.
+    // Though SCS isn't an aggregate we're representing it as such for now
+    // so that the GPO external check store is able to report on its availability
+    // As for foam aggregates, the GPO external check store is the authoritative 
+    // store for this aggregate.
+    {
+       "urn": "urn:publicid:IDN+BIGFAKE+sticther:oingo.dragon.maxgigapop.net+authority+am",
+       "amtype": "stitcher",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stitcher"
     }
   ],
   "externalcheckstores": [
