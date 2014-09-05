@@ -556,6 +556,14 @@ class SingleLocalDatastoreInfoCrawler:
 
     def get_experiment_attributes(self, experiment_dict, schema):
         """
+        Method to parse the json dictionary object corresponding to an
+        experiment object and returning the information in a list corresponding
+        to a database record for the experiment table.
+        :param experiment_dict: the json dictionary for the experiment object
+        :param schema: the database schema for the experiment table (in its
+        usual format)
+        :return: a list of experiment attributes ready to be inserted in the
+        experiment table.
         """
         # get each attribute out of response into list
         experiment_info_list = []
