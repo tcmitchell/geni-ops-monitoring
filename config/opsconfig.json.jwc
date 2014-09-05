@@ -788,6 +788,8 @@
                 // 0 for down/unavailable and 1 for up/ready for use
                 // XXX do we want a richer set of status values, such as
                 // what nagios uses? (OK, WARNING, CRITICAL, UNKNOWN)
+                // This particular measurement is provided by the external
+                // check store, not the local datastore.
                 "id": "varchar",
                 "ts": "int8",
                 "v": "int2",
