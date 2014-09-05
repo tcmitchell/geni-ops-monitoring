@@ -267,7 +267,7 @@
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
        "amtype": "opengeni",
-       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/gram-clemson",
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og",
        "amurl": "https://clemson-clemson-control-1.clemson.edu:5002"
     },
     // FOAM aggregate manager stores
@@ -326,12 +326,6 @@
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of",
        "amurl": "https://osf-hn.exogeni.net:3626/foam/gapi/2"
-    },
-    {
-       "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.gpolab.bbn.com+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
-       "amurl": "https://ufl-hn.exogeni.net:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.gpolab.bbn.com+authority+am",
