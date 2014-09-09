@@ -144,7 +144,8 @@
     {
        "urn": "urn:publicid:IDN+instageni.lsu.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig"
+       "href": "https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig",
+       "amurl": "https://instageni.lsu.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+geni.case.edu+authority+cm",
@@ -162,11 +163,6 @@
        "amtype": "instageni",
        "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig",
        "amurl": "https://instageni.nps.edu:12369/protogeni/xmlrpc/am"
-    },
-    {
-       "urn": "urn:publicid:IDN+instageni.uidaho.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.uidaho.edu:5001/info/aggregate/idaho-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
@@ -423,6 +419,12 @@
        "urn": "urn:publicid:IDN+openflow:foam:foam.geni.it.cornell.edu+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cornell-ig-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.lsu.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/lsu-ig-of",
+       "amurl": "https://foam.instageni.lsu.edu:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.sox.net+authority+am",
