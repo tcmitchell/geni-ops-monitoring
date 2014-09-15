@@ -754,7 +754,15 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
 # Gets object info where an object can be anything (node, aggregate,
 # interface, sliver
 def get_object_info(tm, table_str, obj_id):
-    res = []
+    """
+    Method to get the database record of an object with a specific id in a given table.
+    :param tm: the instance of TableManager to use
+    :param table_str: the name of the table to query
+    :param obj_id: the id of the object being looked up.
+    :return: a list of data corresponding to the object information,
+    or None if no object was found matching the given id.
+    """
+    res = None
     q_res = tm.query("select * from " + table_str + " where id = '" + obj_id + "' order by ts desc limit 1")
     if q_res is not None:
         res = q_res[0]  # first (and only) row...
