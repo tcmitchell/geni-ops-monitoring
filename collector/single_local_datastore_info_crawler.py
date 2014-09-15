@@ -148,7 +148,16 @@ class SingleLocalDatastoreInfoCrawler:
             schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             am_info_list = []
             for key in schema:
-                am_info_list.append(agg_dict[key[0]])
+                if key[0] in agg_dict:
+                    am_info_list.append(agg_dict[key[0]])
+                else:
+                    if key[2]:
+                        self.logger.warn("value for required json aggregate field " + key[0] + " is missing. Replacing with default value...")
+                        am_info_list.append(self.get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        am_info_list.append(None)
+
             if not info_update(self.tbl_mgr, "ops_aggregate", schema, am_info_list, \
                                self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
                 ok = False
@@ -164,7 +173,15 @@ class SingleLocalDatastoreInfoCrawler:
             schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
             extck_info_list = []
             for key in schema:
-                extck_info_list.append(self.extck_dict[key[0]])
+                if key[0] in self.extck_dict:
+                    extck_info_list.append(self.extck_dict[key[0]])
+                else:
+                    if key[2]:
+                        self.logger.warn("value for required json aggregate field " + key[0] + " is missing. Replacing with default value...")
+                        extck_info_list.append(self.get_default_attribute_for_type(key[1]))
+                    else:
+                        # This is OK. This was an optional field.
+                        extck_info_list.append(None)
             if not info_update(self.tbl_mgr, "ops_externalcheck", schema, extck_info_list, \
                                self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
                 ok = False
@@ -384,7 +401,7 @@ class SingleLocalDatastoreInfoCrawler:
                 node_info_list.append(res_dict[jsonkey])
             else:
                 if key[2]:
-                    print("WARNING: value for required json node field " + jsonkey + " is missing. Replacing with default value...")
+                    self.logger.warn("value for required json node field " + jsonkey + " is missing. Replacing with default value...")
                     node_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
@@ -400,7 +417,7 @@ class SingleLocalDatastoreInfoCrawler:
                 link_info_list.append(res_dict[key[0]])
             else:
                 if key[2]:
-                    print("WARNING: value for required json link field " + key[0] + " is missing. Replacing with default value...")
+                    self.logger.warn("value for required json link field " + key[0] + " is missing. Replacing with default value...")
                     link_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
@@ -423,7 +440,7 @@ class SingleLocalDatastoreInfoCrawler:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
+                        self.logger.warn("value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
                         slv_info_list.append("")
                     else:
                         slv_info_list.append(None)
@@ -437,7 +454,7 @@ class SingleLocalDatastoreInfoCrawler:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json sliver field [\"aggregate\"][\"urn\"] is missing. Replacing with empty string...")
+                        self.logger.warn("value for required json sliver field [\"aggregate\"][\"urn\"] is missing. Replacing with empty string...")
                         slv_info_list.append("")
                     else:
                         slv_info_list.append(None)
@@ -452,7 +469,7 @@ class SingleLocalDatastoreInfoCrawler:
                     slv_info_list.append(node_id)
                 else:
                     if key[2]:
-                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
                         slv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
@@ -468,7 +485,7 @@ class SingleLocalDatastoreInfoCrawler:
                     slv_info_list.append(link_id)
                 else:
                     if key[2]:
-                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
                         slv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
@@ -478,7 +495,7 @@ class SingleLocalDatastoreInfoCrawler:
                     slv_info_list.append(slv_dict[key[0]])
                 else:
                     if key[2]:
-                        print("WARNING: value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
+                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
                         slv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
@@ -501,7 +518,7 @@ class SingleLocalDatastoreInfoCrawler:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json interface-vlan field [\"interface\"][\"href\"] is missing. Replacing with empty string...")
+                        self.logger.warn("value for required json interface-vlan field [\"interface\"][\"href\"] is missing. Replacing with empty string...")
                         ifv_info_list.append("")
                     else:
                         ifv_info_list.append(None)
@@ -515,7 +532,7 @@ class SingleLocalDatastoreInfoCrawler:
                     noval = True
                 if noval:
                     if key[2]:
-                        print("WARNING: value for required json interface-vlan field [\"interface\"][\"urn\"] is missing. Replacing with empty string...")
+                        self.logger.warn("value for required json interface-vlan field [\"interface\"][\"urn\"] is missing. Replacing with empty string...")
                         ifv_info_list.append("")
                     else:
                         ifv_info_list.append(None)
@@ -524,7 +541,7 @@ class SingleLocalDatastoreInfoCrawler:
                     ifv_info_list.append(ifv_dict[key[0]])
                 else:
                     if key[2]:
-                        print("WARNING: value for required json interface-vlan field " + key[0] + " is missing. Replacing with default value...")
+                        self.logger.warn("value for required json interface-vlan field " + key[0] + " is missing. Replacing with default value...")
                         ifv_info_list.append(self.get_default_attribute_for_type(key[1]))
                     else:
                         # This is OK. This was an optional field.
@@ -545,7 +562,7 @@ class SingleLocalDatastoreInfoCrawler:
                 interface_info_list.append(interface_dict[jsonkey])
             else:
                 if key[2]:
-                    print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                    self.logger.warn("value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
                     interface_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
@@ -572,7 +589,7 @@ class SingleLocalDatastoreInfoCrawler:
                 experiment_info_list.append(experiment_dict[key[0]])
             else:
                 if key[2]:
-                    print("WARNING: value for required json interface field " + key[0] + " is missing. Replacing with default value...")
+                    self.logger.warn("value for required json interface field " + key[0] + " is missing. Replacing with default value...")
                     experiment_info_list.append(self.get_default_attribute_for_type(key[1]))
                 else:
                     # This is OK. This was an optional field.
@@ -601,7 +618,7 @@ class SingleLocalDatastoreInfoCrawler:
                         oneaddr_row.append(json_address[jsonkey])
                     else:
                         if key[2]:
-                            print("WARNING: value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
+                            self.logger.warn("value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
                             oneaddr_row.append(self.get_default_attribute_for_type(key[1]))
                         else:
                             # This is OK. This was an optional field.
