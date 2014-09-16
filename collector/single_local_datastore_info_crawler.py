@@ -145,21 +145,11 @@ class SingleLocalDatastoreInfoCrawler:
         """
         ok = True
         if agg_dict:
-            schema = self.tbl_mgr.schema_dict["ops_aggregate"]
-            am_info_list = []
-            for key in schema:
-                if key[0] in agg_dict:
-                    am_info_list.append(agg_dict[key[0]])
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json aggregate field " + key[0] + " is missing. Replacing with default value...")
-                        am_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        am_info_list.append(None)
+            db_table_schema = self.tbl_mgr.schema_dict["ops_aggregate"]
+            am_info_list = self.extract_row_from_json_dict(db_table_schema, agg_dict, "aggregate")
 
-            if not info_update(self.tbl_mgr, "ops_aggregate", schema, am_info_list, \
-                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+            if not info_update(self.tbl_mgr, "ops_aggregate", db_table_schema, am_info_list, \
+                               self.tbl_mgr.get_column_from_schema(db_table_schema, "id"), self.debug, self.logger):
                 ok = False
         else:
             ok = False
@@ -170,20 +160,11 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         self.extck_dict = handle_request(self.info_url + '/externalcheck/' + self.extck_id, self.cert_path, self.logger)
         if self.extck_dict:
-            schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
-            extck_info_list = []
-            for key in schema:
-                if key[0] in self.extck_dict:
-                    extck_info_list.append(self.extck_dict[key[0]])
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json aggregate field " + key[0] + " is missing. Replacing with default value...")
-                        extck_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        extck_info_list.append(None)
-            if not info_update(self.tbl_mgr, "ops_externalcheck", schema, extck_info_list, \
-                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
+            db_table_schema = self.tbl_mgr.schema_dict["ops_externalcheck"]
+            extck_info_list = self.extract_row_from_json_dict(db_table_schema, self.extck_dict, "external check")
+
+            if not info_update(self.tbl_mgr, "ops_externalcheck", db_table_schema, extck_info_list, \
+                               self.tbl_mgr.get_column_from_schema(db_table_schema, "id"), self.debug, self.logger):
                 ok = False
         return ok
 
@@ -193,23 +174,24 @@ class SingleLocalDatastoreInfoCrawler:
         if self.extck_dict:
             schema = self.tbl_mgr.schema_dict["ops_externalcheck_monitoredaggregate"]
 #             mon_aggs = []
-            for mon_agg in self.extck_dict["monitored_aggregates"]:
-                # Check that monitored aggregate ID exists in ops_aggregates
-                # if not, get the info from the href and insert it
-                agg_id = mon_agg["id"]
-                agg_url = mon_agg["href"]
-                insert = True
-                if not self.check_exists("ops_aggregate", "id", agg_id):
-                    agg_dict = handle_request(agg_url, self.cert_path, self.logger)
-                    if not self.refresh_specific_aggregate_info(agg_dict):
-                        ok = False
-                        insert = False
-                if insert:
-                    mon_agg_info = [agg_id, self.extck_dict["id"], agg_url]
-                    if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
-                                       (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
-                                       self.debug, self.logger):
-                        ok = False
+            if "monitored_aggregates" in self.extck_dict:
+                for mon_agg in self.extck_dict["monitored_aggregates"]:
+                    # Check that monitored aggregate ID exists in ops_aggregates
+                    # if not, get the info from the href and insert it
+                    agg_id = mon_agg["id"]
+                    agg_url = mon_agg["href"]
+                    insert = True
+                    if not self.check_exists("ops_aggregate", "id", agg_id):
+                        agg_dict = handle_request(agg_url, self.cert_path, self.logger)
+                        if not self.refresh_specific_aggregate_info(agg_dict):
+                            ok = False
+                            insert = False
+                    if insert:
+                        mon_agg_info = [agg_id, self.extck_dict["id"], agg_url]
+                        if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
+                                           (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+                                           self.debug, self.logger):
+                            ok = False
         return ok
 
     def refresh_all_experiments_info(self):
@@ -222,24 +204,25 @@ class SingleLocalDatastoreInfoCrawler:
             schema = self.tbl_mgr.schema_dict["ops_externalcheck_experiment"]
             exp_schema = self.tbl_mgr.schema_dict["ops_experiment"]
 
-            for experiment in self.extck_dict["experiments"]:
-                # Check that monitored aggregate ID exists in ops_aggregates
-                # if not, get the info from the href and insert it
-                experiment_url = experiment["href"]
-                insert = True
-                experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
-                experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
-                if not info_update(self.tbl_mgr, "ops_experiment", exp_schema, experiment_info_list, \
-                                   self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
-                                   self.debug, self.logger):
-                        ok = False
-                        insert = False
-                if insert:
-                    experiment_relation_info = [experiment_dict["id"], self.extck_dict["id"], experiment_url]
-                    if not info_update(self.tbl_mgr, "ops_externalcheck_experiment", schema, experiment_relation_info, \
-                                       (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+            if "experiments" in self.extck_dict:
+                for experiment in self.extck_dict["experiments"]:
+                    # Check that monitored aggregate ID exists in ops_aggregates
+                    # if not, get the info from the href and insert it
+                    experiment_url = experiment["href"]
+                    insert = True
+                    experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
+                    experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
+                    if not info_update(self.tbl_mgr, "ops_experiment", exp_schema, experiment_info_list, \
+                                       self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
                                        self.debug, self.logger):
-                        ok = False
+                            ok = False
+                            insert = False
+                    if insert:
+                        experiment_relation_info = [experiment_dict["id"], self.extck_dict["id"], experiment_url]
+                        if not info_update(self.tbl_mgr, "ops_externalcheck_experiment", schema, experiment_relation_info, \
+                                           (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+                                           self.debug, self.logger):
+                            ok = False
         return ok
 
     # Updates all nodes information
@@ -389,241 +372,144 @@ class SingleLocalDatastoreInfoCrawler:
             val = 0
         return val
 
-    def get_node_attributes(self, res_dict, schema):
-        node_info_list = []
-        for key in schema:
-            if key[0].startswith("properties$"):
-                jsonkey = "ops_monitoring:" + key[0].split('$')[1]
-            else:
-                jsonkey = key[0];
-
-            if jsonkey in res_dict:
-                node_info_list.append(res_dict[jsonkey])
-            else:
-                if key[2]:
-                    self.logger.warn("value for required json node field " + jsonkey + " is missing. Replacing with default value...")
-                    node_info_list.append(self.get_default_attribute_for_type(key[1]))
-                else:
-                    # This is OK. This was an optional field.
-                    node_info_list.append(None)
+    def get_node_attributes(self, res_dict, db_table_schema):
+        """
+        method to get the attribute of a node given its json dictionary representation
+        :param res_dict: the json dictionary of the node of interest
+        :param db_table_schema: the database table schema corresponding to the node table.
+        :return: a list of attributes for the node, in the database node table column order.
+        """
+        node_info_list = self.extract_row_from_json_dict(db_table_schema, res_dict, "node")
 
         return node_info_list
 
 
-    def get_link_attributes(self, res_dict, schema):
-        link_info_list = []
-        for key in schema:
-            if key[0] in res_dict:
-                link_info_list.append(res_dict[key[0]])
-            else:
-                if key[2]:
-                    self.logger.warn("value for required json link field " + key[0] + " is missing. Replacing with default value...")
-                    link_info_list.append(self.get_default_attribute_for_type(key[1]))
-                else:
-                    # This is OK. This was an optional field.
-                    link_info_list.append(None)
+    def get_link_attributes(self, res_dict, db_table_schema):
+        """
+        method to get the attribute of a link given its json dictionary representation
+        :param res_dict: the json dictionary of the link of interest
+        :param db_table_schema: the database table schema corresponding to the link table.
+        :return: a list of attributes for the link, in the database link table column order.
+        """
+        link_info_list = self.extract_row_from_json_dict(db_table_schema, res_dict, "link")
 
         return link_info_list
 
 
-    def get_sliver_attributes(self, slv_dict, schema):
-        slv_info_list = []
-        for key in schema:
-            noval = False
-            if key[0] == "aggregate_href":
-                if "aggregate" in slv_dict:
-                    if "href" in slv_dict["aggregate"]:
-                        slv_info_list.append(slv_dict["aggregate"]["href"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        self.logger.warn("value for required json sliver field [\"aggregate\"][\"href\"] is missing. Replacing with empty string...")
-                        slv_info_list.append("")
-                    else:
-                        slv_info_list.append(None)
-            elif key[0] == "aggregate_urn":
-                if "aggregate" in slv_dict:
-                    if "urn" in slv_dict["aggregate"]:
-                        slv_info_list.append(slv_dict["aggregate"]["urn"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        self.logger.warn("value for required json sliver field [\"aggregate\"][\"urn\"] is missing. Replacing with empty string...")
-                        slv_info_list.append("")
-                    else:
-                        slv_info_list.append(None)
-            elif key[0] == "node_id":
-                if ("resource" in slv_dict and
-                    "resource_type" in slv_dict["resource"] and
-                    slv_dict["resource"]["resource_type"] == "node" and
-                    "urn" in slv_dict["resource"]) :
+    def get_sliver_attributes(self, slv_dict, db_table_schema):
+        """
+        Method to parse the json dictionary object corresponding to a
+        sliver object and returning the information in a list corresponding
+        to a database record for the sliver table.
+        :param slv_dict: the json dictionary for the sliver object
+        :param db_table_schema: the database schema for the sliver table (in its
+        usual format)
+        :return: a list of sliver attributes ready to be inserted in the
+        sliver table.
+        """
+        mapping = {}
+        mapping["aggregate_href"] = ("aggregate", "href")
+        mapping["aggregate_urn"] = ("aggregate", "urn")
+        # circumvoluted way of using the standard extraction method.
+        # the resource urn will be put in the node_id column
+        # the resource type will be put in the link_id column
+        mapping["node_id"] = ("resource", "urn")
+        mapping["link_id"] = ("resource", "resource_type")
 
-                    node_urn = slv_dict["resource"]["urn"]
-                    node_id = self.get_id_from_urn("ops_node", node_urn)
-                    slv_info_list.append(node_id)
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
-                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        slv_info_list.append(None)
-            elif key[0] == "link_id":
-                if ("resource" in slv_dict and
-                    "resource_type" in slv_dict["resource"] and
-                    slv_dict["resource"]["resource_type"] == "link" and
-                    "urn" in slv_dict["resource"]) :
+        slv_info_list = self.extract_row_from_json_dict(db_table_schema, slv_dict, "sliver", mapping)
 
-                    link_urn = slv_dict["resource"]["urn"]
-                    link_id = self.get_id_from_urn("ops_link", link_urn)
-                    slv_info_list.append(link_id)
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
-                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        slv_info_list.append(None)
-            else:
-                if key[0] in slv_dict:
-                    slv_info_list.append(slv_dict[key[0]])
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json sliver field " + key[0] + " is missing. Replacing with default value...")
-                        slv_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        slv_info_list.append(None)
+        # now let's reestablish the proper node id or link id
+        node_id_idx = self.tbl_mgr.get_column_from_schema(db_table_schema, "node_id")
+        link_id_idx = self.tbl_mgr.get_column_from_schema(db_table_schema, "link_id")
+        res_urn = slv_info_list[node_id_idx]
+        res_type = slv_info_list[link_id_idx]
+        if (res_type == "node") and (res_urn is not None):
+            node_id = self.get_id_from_urn("ops_node", res_urn)
+            slv_info_list[node_id_idx] = node_id
+            slv_info_list[link_id_idx] = None
+        elif (res_type == "link") and (res_urn is not None):
+            link_id = self.get_id_from_urn("ops_link", res_urn)
+            slv_info_list[node_id_idx] = None
+            slv_info_list[link_id_idx] = link_id
+        else:
+            self.logger.warn("Found a sliver with no resource associated");
+            slv_info_list[node_id_idx] = None
+            slv_info_list[link_id_idx] = None
 
         return slv_info_list
 
 
-    def get_interfacevlan_attributes(self, ifv_dict, schema):
-        ifv_info_list = []
-        for key in schema:
-            noval = False
-            if key[0] == "interface_href":
-                if "interface" in ifv_dict:
-                    if "href" in ifv_dict["interface"]:
-                        ifv_info_list.append(ifv_dict["interface"]["href"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        self.logger.warn("value for required json interface-vlan field [\"interface\"][\"href\"] is missing. Replacing with empty string...")
-                        ifv_info_list.append("")
-                    else:
-                        ifv_info_list.append(None)
-            elif key[0] == "interface_urn":
-                if "interface" in ifv_dict:
-                    if "urn" in ifv_dict["interface"]:
-                        ifv_info_list.append(ifv_dict["interface"]["urn"])
-                    else:
-                        noval = True
-                else:
-                    noval = True
-                if noval:
-                    if key[2]:
-                        self.logger.warn("value for required json interface-vlan field [\"interface\"][\"urn\"] is missing. Replacing with empty string...")
-                        ifv_info_list.append("")
-                    else:
-                        ifv_info_list.append(None)
-            else:
-                if key[0] in ifv_dict:
-                    ifv_info_list.append(ifv_dict[key[0]])
-                else:
-                    if key[2]:
-                        self.logger.warn("value for required json interface-vlan field " + key[0] + " is missing. Replacing with default value...")
-                        ifv_info_list.append(self.get_default_attribute_for_type(key[1]))
-                    else:
-                        # This is OK. This was an optional field.
-                        ifv_info_list.append(None)
+    def get_interfacevlan_attributes(self, ifv_dict, db_table_schema):
+        """
+        Method to parse the json dictionary object corresponding to an
+        interface-vlan object and returning the information in a list corresponding
+        to a database record for the interface-vlan table.
+        :param ifv_dict: the json dictionary for the interface-vlan object
+        :param db_table_schema: the database schema for the interface-vlan table (in its
+        usual format)
+        :return: a list of interface-vlan attributes ready to be inserted in the
+        interface-vlan table.
+        """
+        mapping = {}
+        mapping["interface_href"] = ("interface", "href")
+        mapping["interface_urn"] = ("interface", "urn")
 
+        ifv_info_list = self.extract_row_from_json_dict(db_table_schema, ifv_dict, "interface-vlan", mapping)
         return ifv_info_list
 
 
-    def get_interface_attributes(self, interface_dict, schema):
-        # get each attribute out of response into list
-        interface_info_list = []
-        for key in schema:
-            if key[0].startswith("properties$"):
-                jsonkey = "ops_monitoring:" + key[0].split('$')[1]
-            else:
-                jsonkey = key[0]
-            if jsonkey in interface_dict:
-                interface_info_list.append(interface_dict[jsonkey])
-            else:
-                if key[2]:
-                    self.logger.warn("value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
-                    interface_info_list.append(self.get_default_attribute_for_type(key[1]))
-                else:
-                    # This is OK. This was an optional field.
-                    interface_info_list.append(None)
-
+    def get_interface_attributes(self, interface_dict, db_table_schema):
+        """
+        Method to parse the json dictionary object corresponding to an
+        interface object and returning the information in a list corresponding
+        to a database record for the interface table.
+        :param interface_dict: the json dictionary for the interface object
+        :param db_table_schema: the database schema for the interface table (in its
+        usual format)
+        :return: a list of interface attributes ready to be inserted in the
+        interface table.
+        """
+        interface_info_list = self.extract_row_from_json_dict(db_table_schema, interface_dict, "interface")
         return interface_info_list
 
 
-    def get_experiment_attributes(self, experiment_dict, schema):
+    def get_experiment_attributes(self, experiment_dict, db_table_schema):
         """
         Method to parse the json dictionary object corresponding to an
         experiment object and returning the information in a list corresponding
         to a database record for the experiment table.
         :param experiment_dict: the json dictionary for the experiment object
-        :param schema: the database schema for the experiment table (in its
+        :param db_table_schema: the database schema for the experiment table (in its
         usual format)
         :return: a list of experiment attributes ready to be inserted in the
         experiment table.
         """
-        # get each attribute out of response into list
-        experiment_info_list = []
-        for key in schema:
-            if key[0] in experiment_dict:
-                experiment_info_list.append(experiment_dict[key[0]])
-            else:
-                if key[2]:
-                    self.logger.warn("value for required json interface field " + key[0] + " is missing. Replacing with default value...")
-                    experiment_info_list.append(self.get_default_attribute_for_type(key[1]))
-                else:
-                    # This is OK. This was an optional field.
-                    experiment_info_list.append(None)
-
+        mapping = {}
+        mapping["source_aggregate_urn"] = ("source_aggregate", "urn")
+        mapping["source_aggregate_href"] = ("source_aggregate", "href")
+        mapping["destination_aggregate_urn"] = ("destination_aggregate", "urn")
+        mapping["destination_aggregate_href"] = ("destination_aggregate", "href")
+        experiment_info_list = self.extract_row_from_json_dict(db_table_schema, experiment_dict, "experiment", mapping)
         return experiment_info_list
 
 
-    def get_interface_addresses(self, interface_dict, schema):
+    def get_interface_addresses(self, interface_dict, db_table_schema):
         """
         Extract addresses from an interface dictionary.
         :param interface_dict: the interface to extract addresses from
-        :param schema: database schema for the ops_interface_addresses table
+        :param db_table_schema: database schema for the ops_interface_addresses table
         :return: a list of lists, where each of the inner lists contains
                  a row of values representing one address
         """
         address_list = []
         if "addresses" in interface_dict:
             for json_address in interface_dict["addresses"]:
-                oneaddr_row = []
-                for key in schema:
-                    jsonkey = key[0]
-                    if jsonkey == "interface_id":
-                        oneaddr_row.append(interface_dict["id"])
-                    elif jsonkey in json_address:
-                        oneaddr_row.append(json_address[jsonkey])
-                    else:
-                        if key[2]:
-                            self.logger.warn("value for required json interface field " + jsonkey + " is missing. Replacing with default value...")
-                            oneaddr_row.append(self.get_default_attribute_for_type(key[1]))
-                        else:
-                            # This is OK. This was an optional field.
-                            oneaddr_row.append(None)
-                if len(oneaddr_row) > 0:
+                # duplicating the dictionary so as to not modify the original
+                if_address_dict = dict(json_address)
+                # sticking the interface_id value in.
+                if_address_dict["interface_id"] = interface_dict["id"]
+                oneaddr_row = self.extract_row_from_json_dict(db_table_schema, if_address_dict, "interface")
+                if len(oneaddr_row) > 1:
                     address_list.append(oneaddr_row)
 
         return address_list
@@ -633,7 +519,8 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef") + " from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef")
+                              + " from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
         res = [];
         if q_res is not None:
             for res_i in range(len(q_res)):
@@ -717,6 +604,61 @@ class SingleLocalDatastoreInfoCrawler:
             objid = q_res[0][0]  # gets first of single tuple
 
         return objid
+
+    def extract_row_from_json_dict(self, db_table_schema, object_dict, object_desc, db_to_json_map=None):
+        """
+        Method to extract values from a json dictionary corresponding to database columns.
+        :param db_table_schema: a database table schema in the usual format (list of tuples whose first value is
+        column name, second is column type, third is whether the value is optional or not)
+        :param object_dict: the json dictionary for an object
+        :param object_desc: object short description. This will be used in a warning message if the object
+        attribute was expected but not present in the json dictionary
+        :param db_to_json_map: a map to get the json key(s) from a column name.
+        :return: the list of attributes for the object. This list will be
+        formed with the values from the json dictionary in the order of the database table columns.
+        A value will be None if the field was optional and not present, or a default value if the field
+        was required and not present.
+        """
+        object_attribute_list = []
+        for db_column_schema in db_table_schema:
+            missing = False
+            if (db_to_json_map is not None) and (db_column_schema[0] in db_to_json_map):
+                jsonkeys = db_to_json_map[db_column_schema[0]]
+                missing = False
+                jsondict = object_dict
+                for jsonkey in jsonkeys:
+                    if jsonkey in jsondict:
+                        jsondict = jsondict[jsonkey]
+                    else:
+                        missing = True
+                        break
+                if not missing:
+                    object_attribute_list.append(jsondict)  # the last iteration is the value itself, not another dictionary.
+                else:
+                    jsondesc = ""
+                    for jsonkey in jsonkeys:
+                        jsondesc += "[\"" + jsonkey + "\"]"
+            else:
+                if db_column_schema[0].startswith("properties$"):
+                    jsonkey = "ops_monitoring:" + db_column_schema[0].split('$')[1]
+                else:
+                    jsonkey = db_column_schema[0]
+
+                if jsonkey in object_dict:
+                    object_attribute_list.append(object_dict[jsonkey])
+                else:
+                    missing = True
+                    jsondesc = jsonkey
+
+            if missing:
+                if db_column_schema[2]:
+                    self.logger.warn("value for required json " + object_desc + " field "
+                                     + jsondesc + " is missing. Replacing with default value...")
+                    object_attribute_list.append(self.get_default_attribute_for_type(db_column_schema[1]))
+                else:
+                    # This is OK. This was an optional field.
+                    object_attribute_list.append(None)
+        return object_attribute_list
 
 
 def handle_request(url, cert_path, logger):
