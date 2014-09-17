@@ -121,6 +121,16 @@ def getAMState(output):
         result="0" # Bad result   
     return result
 
+def getStitcherState():
+    cmd= "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
+    echoCmd="echo $?"
+    os.popen(cmd)
+    out=os.popen(echoCmd)
+    result=int(out.read())
+    if result == 0:
+        return "1"
+    else:
+        return "0" 
 
 def main():
 
@@ -142,7 +152,7 @@ def main():
           site = SiteOF(siteName, url)
           state= getOFState(context, site)
         elif amtype== "stitcher": # Do something special
-          continue 
+          state=getStitcherState()           
         else:         
           p=subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich",fqdn,amtype,"GetVersion"], stdout=subprocess.PIPE)            
           output, err = p.communicate()
