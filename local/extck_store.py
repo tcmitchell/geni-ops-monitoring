@@ -102,14 +102,15 @@ class InfoPopulator():
                        pass 
                     else:
                         # Routine for "ops_externalcheck_experiment" Table  
-                        extck_exp = [exp_id, dataStoreSite, dataStoreBaseUrl + "/info/experiment/" + exp_id]
-                        dataInsert(self.tbl_mgr, fileLoc1, exp_id, extck_exp, "ops_externalcheck_experiment")
+                    #    extck_exp = [exp_id, dataStoreSite, dataStoreBaseUrl + "/info/experiment/" + exp_id]
+                    #    dataInsert(self.tbl_mgr, fileLoc1, exp_id, extck_exp, "ops_externalcheck_experiment")
                    
                         urnHrefs=getSiteInfo(srcSite, dstSite, shortName)# [srcUrn, srcHref, dstUrn, dstHref]
                         if urnHrefs[0]=='' or urnHrefs[1]=='' or urnHrefs[2]=='' or urnHrefs[3]=='':
                             continue 
                         else:     
-                            print urnHrefs
+                            extck_exp = [exp_id, dataStoreSite, dataStoreBaseUrl + "/info/experiment/" + exp_id]
+                            dataInsert(self.tbl_mgr, fileLoc1, exp_id, extck_exp, "ops_externalcheck_experiment")
                             ts = str(int(time.time()*1000000))    
                             exp=["http://www.gpolab.bbn.com/monitoring/schema/20140501/experiment#", exp_id, 
                             dataStoreBaseUrl + "/info/experiment/"+  exp_id, ts, sliceUrn, sliceUuid,    
@@ -197,26 +198,18 @@ def db_insert(tbl_mgr, table_str, row_arr):
 def getShortName(aggStores):
 
     nickCache=getNickCache()
-   # print "aggStores", aggStores
     for aggregate in aggStores:                    
-     #   break
-        if aggregate['urn']=="urn:publicid:IDN+genirack.nyu.edu+authority+cm":
-            continue
-        # Do this for all aggregates with a data store 
-     #   print ""
-     #   print "agg", aggregate['amtype']
-     #   print "aggUrn", aggregate['urn'] 
         
-        if aggregate['amtype']=='instageni' or aggregate['amtype']=='protogeni': 
-        #    print "here",aggregate    
+        if aggregate['amtype']=='instageni' or aggregate['amtype']=='protogeni': # When ExoGENI datastores come online, insert here 
             aggDetails = handle_request(aggregate['href']) # Use url for site's store to query site
+            if aggDetails == None:
+               continue
             selfRef = aggDetails['selfRef']
             measRef = aggDetails['measRef']
             urn = aggDetails['urn']
             schema = aggDetails['$schema']
             amType = "protogeni"
             aggShortName = aggDetails['id']  
-        #    print aggregate.keys()
             if aggregate.has_key('amurl'): # For non-prod aggregates
                 url=aggregate['amurl']
             else:
@@ -235,55 +228,62 @@ def getShortName(aggStores):
         elif aggregate['amtype'] == "network-aggregate": # Case for ion
             if nickCache.has_key(aggregate['urn']):
                 aggDetails = handle_request(aggregate['href'])
+                if aggDetails == None:
+                    continue
                 selfRef = aggDetails['selfRef']; measRef = aggDetails['measRef'] 
                 urn = aggDetails['urn']; amType='myplc'; schema = aggDetails['$schema']
                 aggShortName = aggDetails['id']; url=nickCache[urn][1]
                 cols=url.strip().split('/'); cols1=cols[2].strip().split(':'); fqdn=cols1[0]
                 shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]  
         elif aggregate['amtype'] == "stitcher": # Special case
-            selfRef = aggregate['href']; measRef = '';urn = aggregate['urn']
+            selfRef = aggregate['href']; measRef = "https://extckdatastore.gpolab.bbn.com/data/"; urn = aggregate['urn']
             amType = aggregate['amtype']
             schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#"
             url="http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
             fqdn=''; aggShortName="scs"        
-            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]    
-        else: # ExoGENI and FOAM
+            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]   
+        elif aggregate['amtype'] == "exogeni":
+            continue # EG datastores are not reporting as yet.    
+        else: # FOAM and OG
+            amurlFlag=0 # Check to see if a site has a URL
             selfRef = aggregate['href']
-            measRef = ''
+            measRef = "https://extckdatastore.gpolab.bbn.com/data/"
             urn = aggregate['urn']
             schema = "http://www.gpolab.bbn.com/monitoring/schema/20140501/aggregate#" 
             amType = aggregate['amtype'] 
 
             if aggregate.has_key('amurl'): # For non-prod foam aggregates
                 url = aggregate['amurl']
+                amurlFlag=1
             else:
                 if nickCache.has_key(urn):
                     url=nickCache[urn][1]
+                    amurlFlag=1
                 else:
                     print "Missing URL for ", urn
                     continue
+            if amurlFlag == 1:
+                # Get aggShortName
+                if amType == "foam" or amType == "opengeni":
+                    cols=selfRef.strip().split('/')
+                    aggShortName=cols[len(cols)-1] # Grab last component in cols
 
             # Get aggShortName
-            if amType == "exogeni":
-                cols=urn.strip().split(':')
-                cols1=cols[3].strip().split('vmsite')
-                aggShortName=cols1[0]+ "-eg"             
-                amType="orca" # Ask stephane to change this
-            elif amType == "foam":
-                cols=selfRef.strip().split('/')
-                aggShortName=cols[5]
+          #  if amType == "exogeni":
+          #      cols=urn.strip().split(':')
+          #      cols1=cols[3].strip().split('vmsite')
+          #      aggShortName=cols1[0]+ "-eg"             
+          #      amType="orca" # Ask stephane to change this
+          #  elif amType == "foam":
+          #      cols=selfRef.strip().split('/')
+          #      aggShortName=cols[5]
 
              # Get fqdn
-            cols=url.strip().split('/')
-            cols1=cols[2].strip().split(':')
-            fqdn=cols1[0]
-            shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
+                    cols=url.strip().split('/')
+                    cols1=cols[2].strip().split(':')
+                    fqdn=cols1[0]
+                    shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
 
-
-    # Ask Stephane to set instageni AM type to protogeni and exogeni am type to orca
-    # Ask Stephane to add amurl for EG aggregates
-    # Ask Stephane to add amurl for OF EG aggregates
-    #i=1
     return shortName
 
 def getNickCache():
@@ -293,6 +293,7 @@ def getNickCache():
             aggShortName=cols[0]
             if aggShortName == "plcv3" or aggShortName == "plc3": # Only grab fqdn for aggShortName=plc
                continue
+           # print "agg", aggShortName 
             aggShortName=formatShortName(aggShortName) # Grab shortname and convert to current format
             cols1=cols[1].strip().split(',')
             urn = cols1[0] 
@@ -304,7 +305,7 @@ def formatShortName(shortName):
   #  if len(shortName)>3:# Aggregate with 2 chars: ignore
     shortName = shortName.translate(None, digits) # Remove all #s froms shortName
     oldFormat = shortName.strip().split('-')
-    suffix=['ig','eg', 'of', 'pg']
+    suffix=['ig','eg', 'of', 'pg', 'og']
     if len(oldFormat)==1: # For cases like "ion"
        return shortName
     for id in suffix:
@@ -334,10 +335,12 @@ def getSlices():
 def handle_request(url=None, cert_path=None):
 
     if url==None:
-      #url='https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod' 
-      url='https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod'
+      # Production url
+      url='https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod' 
+      # Dev url
+      #url='https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod'
       
-    cert_path = '../collector/collector-gpo-withnpkey.pem'
+    cert_path = '/etc/ssl/certs/collector-gpo-withnpkey2.pem'
     resp = None 
     try:
         resp = requests.get(url, verify=False, cert=cert_path)
@@ -356,7 +359,9 @@ def handle_request(url=None, cert_path=None):
 
         return json_dict
     else:
+        print "could not reach datastore at ", url
         return None
+
 
 def main():
 
@@ -367,14 +372,19 @@ def main():
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr,"")
    # Grab urns and urls for all agg stores    
-   # url = "https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig"
+    #url="https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig" 
+    #https://www.geni.case.edu:5001/info/aggregate/cwru-ig
+    #https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig
     aggRequest = handle_request()
-#    print aggRequest
+   # print aggRequest
+   # return
+    if aggRequest == None:
+        print "WARNING: Could not not contact opsconfigdatastore!"
+        return
     aggStores = aggRequest['aggregatestores']
-
     # read list of urls (or short-names)
     shortName=getShortName(aggStores)
-   # print shortName 
+    json.dump(shortName, open("/home/amcanary/shortName", 'w'))
     slices=getSlices()
     srcPingCampus=['gpo-ig','utah-ig']
     srcPingCore=['gpo-ig-3715_core','gpo-ig-3716_core']   
