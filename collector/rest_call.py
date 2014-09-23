@@ -39,6 +39,7 @@ import requests
 import re
 import os
 from optparse import OptionParser
+import datetime
 
 # XXX this program must be run with the current directory set to
 # collector/ (the directory containing this file) OR with said
@@ -55,24 +56,31 @@ def visit_url(url, cert_path):
       response.  If this doesn't start with http(s)://, interpret it as
       a filename.
     :param cert_path: path to tool certificate file for SSL access.
-    :return: a dictionary containing the JSON response to url, or None if an
-      error occurred.
+    :return: a 2-tuple.  The first item of the tuple is a dictionary
+      containing the JSON response to url, or None if an error occurred.
+      The second item of the tuple is a status string.  If url was
+      really a url, the status string will be the HTTP status code
+      and description, or "No Response" if the web server did not respond.
+      If url was a filename, it will be "File OK" or an errno value and
+      description.
     """
     json_dict = None
+    status_string = "No Response"
 
     if re.match("https?://", url):
         # interpret url as an actual URL
         resp = None
         try:
             resp = requests.get(url, verify=False, cert=cert_path)
+            status_string = str(resp.status_code) + " " + resp.reason
         except Exception, e:
             print "No response from local datastore for URL %s\s%s" % (url,
                                                                        str(e))
-        if resp:
+        if resp is not None:
             try:
                 json_dict = json.loads(resp.content)
             except Exception, e:
-                print "Could not load as URL %s, %s\n%s" % (url, resp.content,
+                print "Could not parse JSON from URL %s, %s\n%s" % (url, resp.content,
                                                            str(e))
         else:
             print "resp object is None from", url
@@ -80,10 +88,15 @@ def visit_url(url, cert_path):
         # interpret url as a file on the local disk
         try:
             json_dict = json.load(open(url))
-        except Exception, e:
-            print "Could not load as file: %s\n%s" % (url, str(e))
+            status_string = "File OK"
+        except IOError, ioe:
+            print "Could not open file: %s\n%s" % (url, str(ioe))
+            status_string = str(ioe.errno) + " " + os.strerror(ioe.errno)
+        except ValueError, ve:
+            print "Could not parse JSON from file: %s\n%s" % (url, str(ve))
+            status_string = str(ve)
 
-    return json_dict
+    return (json_dict, status_string)
 
 
 def find_embedded_urls(json_dict):
@@ -188,6 +201,20 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
         return unvisited_urls[0]
 
 
+def get_max_keylen(d):
+    """
+    Find the longest key length in a given dictionary.
+
+    :param d: dictionary for which to compute longest key length
+    """
+    max_len = 0
+    for k in d:
+        k_len = len(k)
+        if max_len < k_len:
+            max_len = k_len
+    return max_len
+
+
 def print_schema_stats(schema_stats_dict):
     """
     Print per-URL schema statistics.
@@ -197,12 +224,9 @@ def print_schema_stats(schema_stats_dict):
 
     # Find the length of the longest URL to format the output nicely.
 
-    max_url_len = 0
-    for url in schema_stats_dict:
-        url_len = len(url)
-        if max_url_len < url_len:
-            max_url_len = url_len
+    max_url_len = get_max_keylen(schema_stats_dict)
 
+    print "Schema counts:"
     for url, stats in sorted(schema_stats_dict.items()):
         print "%-*s seen %d times, valid %d times" % (
             max_url_len, url, stats["seen"], stats["valid"])
@@ -286,6 +310,8 @@ def main(argv):
     else:
         schema_stats_dict = None
 
+    http_status_dict = dict()
+
     # main loop
 
     while unvisited_urls:
@@ -294,7 +320,10 @@ def main(argv):
         if not url: # chose to exit
             break
 
-        json_dict = visit_url(url, options.cert_path)
+        print 79 * "-", "\n%s Visiting %s returns:" % (
+            str(datetime.datetime.now()), url)
+
+        json_dict, status_string = visit_url(url, options.cert_path)
 
         # now that we've visited it, move this url from unvisited to visited
         unvisited_urls.remove(url)
@@ -302,10 +331,16 @@ def main(argv):
 
         # print the response
 
-        print 79 * "-", \
-            "\nVisiting %s returns:\n%s" % (url,
-                                            json.dumps(json_dict, indent=4,
-                                                       sort_keys=True))
+        print str(datetime.datetime.now()) + " " + status_string
+        print json.dumps(json_dict, indent=4, sort_keys=True)
+
+        # keep track of how many times this status was seen
+
+        try:
+            http_status_dict[status_string] += 1
+        except KeyError:
+            http_status_dict[status_string] = 1
+
         # maybe validate the response
 
         if not options.skip_validation:
@@ -334,6 +369,11 @@ def main(argv):
     print "%d URLs visited" % (len(visited_urls)),
     if not options.skip_validation:
         print ", %d valid" % (num_valid_urls)
+
+    print "HTTP or errno status codes:"
+    max_status_len = get_max_keylen(http_status_dict)
+    for status_string, count in sorted(http_status_dict.items()):
+        print "%-*s seen %d times" % (max_status_len, status_string, count)
 
     # print schema stats if requested
 
