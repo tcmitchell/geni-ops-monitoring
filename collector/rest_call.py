@@ -73,15 +73,15 @@ def visit_url(url, cert_path):
         try:
             resp = requests.get(url, verify=False, cert=cert_path)
             status_string = str(resp.status_code) + " " + resp.reason
-        except Exception, e:
+        except Exception as e:
             print "No response from local datastore for URL %s\s%s" % (url,
                                                                        str(e))
         if resp is not None:
             try:
                 json_dict = json.loads(resp.content)
-            except Exception, e:
+            except Exception as e:
                 print "Could not parse JSON from URL %s, %s\n%s" % (url, resp.content,
-                                                           str(e))
+                                                                    str(e))
         else:
             print "resp object is None from", url
     else:
@@ -89,10 +89,10 @@ def visit_url(url, cert_path):
         try:
             json_dict = json.load(open(url))
             status_string = "File OK"
-        except IOError, ioe:
+        except IOError as ioe:
             print "Could not open file: %s\n%s" % (url, str(ioe))
             status_string = str(ioe.errno) + " " + os.strerror(ioe.errno)
-        except ValueError, ve:
+        except ValueError as ve:
             print "Could not parse JSON from file: %s\n%s" % (url, str(ve))
             status_string = str(ve)
 
@@ -147,7 +147,7 @@ def validate_response(json_dict, options, schema_stats=None):
     if not schema:
         return False
 
-    if schema_stats != None:
+    if schema_stats is not None:
         try:
             schema_stats[schema_url]["seen"] += 1
         except KeyError:
@@ -172,18 +172,19 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
     :param unvisited_urls: candidate URLs that could be visited next.
     :param num_visited_urls: number of URLs already visited.
     :param interactive: boolean, are we in interactive mode?
-    :return: URL (string) to visit next, or None 
+    :return: URL (string) to visit next, or None
     """
     if interactive:
         # If there is only one possible URL, and this is the first time
         # visiting anything, just go there without asking.
         if len(unvisited_urls) == 1 and num_visited_urls == 0:
             return unvisited_urls[0]
-            
-        print 79 * "=" # line of === for visual separation
+
+        print 79 * "="  # line of === for visual separation
         for idx in range(len(unvisited_urls)):
             print str(idx) + ": " + unvisited_urls[idx]
-        user_input = raw_input("Which URL to go to? (enter number from above, or anything else to exit)\n")
+        user_input = raw_input(
+            "Which URL to go to? (enter number from above, or anything else to exit)\n")
         try:
             choice = int(user_input)
         except ValueError:
@@ -232,7 +233,7 @@ def print_schema_stats(schema_stats_dict):
             max_url_len, url, stats["seen"], stats["valid"])
 
 
-def main(argv): 
+def main(argv):
 
     # Set up command-line options
 
@@ -275,7 +276,8 @@ def main(argv):
         print "cert-path %s is not a file" % (options.cert_path)
         return 1
 
-    if options.validictory_path and not os.path.isdir(options.validictory_path):
+    if options.validictory_path and not os.path.isdir(
+            options.validictory_path):
         print "validictory-path %s is not a directory" % (options.validictory_path)
         return 1
 
@@ -290,10 +292,10 @@ def main(argv):
     # Options look good.  Let's get to work.
 
     # URLs that haven't been fetched yet
-    unvisited_urls = list(url_args) # make a copy of url_args
+    unvisited_urls = list(url_args)  # make a copy of url_args
 
     # URLs for which we have attempted to fetch a response
-    visited_urls = set() # empty set to begin
+    visited_urls = set()  # empty set to begin
 
     # Number of URLs visited that returned valid JSON according to their schema
     num_valid_urls = 0
@@ -317,7 +319,7 @@ def main(argv):
     while unvisited_urls:
         url = choose_url_to_visit(unvisited_urls, len(visited_urls),
                                   options.interactive)
-        if not url: # chose to exit
+        if not url:  # chose to exit
             break
 
         print 79 * "-", "\n%s Visiting %s returns:" % (
@@ -361,7 +363,7 @@ def main(argv):
             embedded_urls = find_embedded_urls(json_dict)
             for embedded_url in embedded_urls:
                 if (not (embedded_url in visited_urls) and
-                    not (embedded_url in unvisited_urls)):
+                        not (embedded_url in unvisited_urls)):
                     unvisited_urls.append(embedded_url)
 
     # print a summary of this run
