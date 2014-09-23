@@ -109,6 +109,6 @@ def validate(json_resp, schema, validictory_path, schema_base=None):
     validictory.validate(json_resp, schema, required_by_default=False)
     return True
   except Exception, e:
-    print "Received exception %s while trying to validate: %s\n  %s" % (
-      str(e), json_resp, traceback.format_exc())
+    print "Received exception %s while trying to validate: %s" % (
+      str(e), json_resp)
     return False
