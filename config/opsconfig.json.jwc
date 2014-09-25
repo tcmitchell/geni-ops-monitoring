@@ -194,6 +194,18 @@
        "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig",
        "amurl": "https://instageni.metrodatacenter.com:12369/protogeni/xmlrpc/am"
     },
+    {
+       "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://pks2.sdn.uky.edu:5001/info/aggregate/ukypks2-ig",
+       "amurl": "https://pks2.sdn.uky.edu:12369/protogeni/xmlrpc/am"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
+       "amtype": "instageni",
+       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
+       "amurl": "https://instageni.cenic.net:12369/protogeni/xmlrpc/am"
+    },
     // EXOgeni stores
     {
        "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
@@ -452,6 +464,12 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-of"
     },
     {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of",
+       "amurl": "https://foam.instageni.cenic.net:3626/foam/gapi/2"
+    },
+    {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nps.edu+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
@@ -504,6 +522,12 @@
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uchicago-ig-of",
        "amurl": "https://foam.geni.uchicago.edu:3626/foam/gapi/2"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.pks2.sdn.uky.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukypks2-ig-of",
+       "amurl": "https://foam.pks2.sdn.uky.edu:3626/foam/gapi/2"
     },
     // Stiching Computation Service "aggregate" store.
     // Though SCS isn't an aggregate we're representing it as such for now
