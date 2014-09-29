@@ -538,6 +538,12 @@
        "urn": "urn:publicid:IDN+BIGFAKE+sticther:oingo.dragon.maxgigapop.net+authority+am",
        "amtype": "stitcher",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stitcher"
+    },
+    // Wimax stores
+    {
+       "urn": "urn:publicid:IDN+wimaxrf.rutgers.edu+authority+cm",
+       "amtype": "wimax",
+       "href": "http://oml.orbit-lab.org:5054/genimon/info/aggregate/rutgers.edu"
     }
   ],
   "externalcheckstores": [
