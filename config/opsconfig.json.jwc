@@ -128,7 +128,7 @@
     {
        "urn": "urn:publicid:IDN+instageni.rutgers.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig",
+       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.stanford.edu+authority+cm",
@@ -160,12 +160,12 @@
     {
        "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig",
+       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig",
+       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.osu.edu+authority+cm",
@@ -194,7 +194,7 @@
     {
        "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://pks2.sdn.uky.edu:5001/info/aggregate/ukypks2-ig",
+       "href": "https://pks2.sdn.uky.edu:5001/info/aggregate/ukypks2-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
@@ -468,7 +468,7 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nps.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
@@ -491,12 +491,12 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/rutgers-ig-of",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/rutgers-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.idre.ucla.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
@@ -519,7 +519,7 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.pks2.sdn.uky.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukypks2-ig-of",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukypks2-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
