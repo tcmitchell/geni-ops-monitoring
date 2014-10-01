@@ -553,7 +553,7 @@
     },
     // Wimax stores
     {
-       "urn": "urn:publicid:IDN+wimaxrf.rutgers.edu+authority+cm",
+       "urn": "urn":"urn:publicid:IDN+wimaxrf.rutgers-wimax+authority+cm",
        "amtype": "wimax",
        "href": "http://oml.orbit-lab.org:5054/genimon/info/aggregate/rutgers-wimax"
     }
