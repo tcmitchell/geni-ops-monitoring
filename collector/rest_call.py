@@ -39,6 +39,7 @@ import requests
 import re
 import os
 from optparse import OptionParser
+import datetime
 
 # XXX this program must be run with the current directory set to
 # collector/ (the directory containing this file) OR with said
@@ -55,35 +56,47 @@ def visit_url(url, cert_path):
       response.  If this doesn't start with http(s)://, interpret it as
       a filename.
     :param cert_path: path to tool certificate file for SSL access.
-    :return: a dictionary containing the JSON response to url, or None if an
-      error occurred.
+    :return: a 2-tuple.  The first item of the tuple is a dictionary
+      containing the JSON response to url, or None if an error occurred.
+      The second item of the tuple is a status string.  If url was
+      really a url, the status string will be the HTTP status code
+      and description, or "No Response" if the web server did not respond.
+      If url was a filename, it will be "File OK" or an errno value and
+      description.
     """
     json_dict = None
+    status_string = "No Response"
 
     if re.match("https?://", url):
         # interpret url as an actual URL
         resp = None
         try:
             resp = requests.get(url, verify=False, cert=cert_path)
-        except Exception, e:
+            status_string = str(resp.status_code) + " " + resp.reason
+        except Exception as e:
             print "No response from local datastore for URL %s\s%s" % (url,
                                                                        str(e))
-        if resp:
+        if resp is not None:
             try:
                 json_dict = json.loads(resp.content)
-            except Exception, e:
-                print "Could not load as URL %s, %s\n%s" % (url, resp.content,
-                                                           str(e))
+            except Exception as e:
+                print "Could not parse JSON from URL %s, %s\n%s" % (url, resp.content,
+                                                                    str(e))
         else:
             print "resp object is None from", url
     else:
         # interpret url as a file on the local disk
         try:
             json_dict = json.load(open(url))
-        except Exception, e:
-            print "Could not load as file: %s\n%s" % (url, str(e))
+            status_string = "File OK"
+        except IOError as ioe:
+            print "Could not open file: %s\n%s" % (url, str(ioe))
+            status_string = str(ioe.errno) + " " + os.strerror(ioe.errno)
+        except ValueError as ve:
+            print "Could not parse JSON from file: %s\n%s" % (url, str(ve))
+            status_string = str(ve)
 
-    return json_dict
+    return (json_dict, status_string)
 
 
 def find_embedded_urls(json_dict):
@@ -134,7 +147,7 @@ def validate_response(json_dict, options, schema_stats=None):
     if not schema:
         return False
 
-    if schema_stats != None:
+    if schema_stats is not None:
         try:
             schema_stats[schema_url]["seen"] += 1
         except KeyError:
@@ -159,18 +172,19 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
     :param unvisited_urls: candidate URLs that could be visited next.
     :param num_visited_urls: number of URLs already visited.
     :param interactive: boolean, are we in interactive mode?
-    :return: URL (string) to visit next, or None 
+    :return: URL (string) to visit next, or None
     """
     if interactive:
         # If there is only one possible URL, and this is the first time
         # visiting anything, just go there without asking.
         if len(unvisited_urls) == 1 and num_visited_urls == 0:
             return unvisited_urls[0]
-            
-        print 79 * "=" # line of === for visual separation
+
+        print 79 * "="  # line of === for visual separation
         for idx in range(len(unvisited_urls)):
             print str(idx) + ": " + unvisited_urls[idx]
-        user_input = raw_input("Which URL to go to? (enter number from above, or anything else to exit)\n")
+        user_input = raw_input(
+            "Which URL to go to? (enter number from above, or anything else to exit)\n")
         try:
             choice = int(user_input)
         except ValueError:
@@ -188,6 +202,20 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
         return unvisited_urls[0]
 
 
+def get_max_keylen(d):
+    """
+    Find the longest key length in a given dictionary.
+
+    :param d: dictionary for which to compute longest key length
+    """
+    max_len = 0
+    for k in d:
+        k_len = len(k)
+        if max_len < k_len:
+            max_len = k_len
+    return max_len
+
+
 def print_schema_stats(schema_stats_dict):
     """
     Print per-URL schema statistics.
@@ -197,18 +225,15 @@ def print_schema_stats(schema_stats_dict):
 
     # Find the length of the longest URL to format the output nicely.
 
-    max_url_len = 0
-    for url in schema_stats_dict:
-        url_len = len(url)
-        if max_url_len < url_len:
-            max_url_len = url_len
+    max_url_len = get_max_keylen(schema_stats_dict)
 
+    print "Schema counts:"
     for url, stats in sorted(schema_stats_dict.items()):
         print "%-*s seen %d times, valid %d times" % (
             max_url_len, url, stats["seen"], stats["valid"])
 
 
-def main(argv): 
+def main(argv):
 
     # Set up command-line options
 
@@ -251,7 +276,8 @@ def main(argv):
         print "cert-path %s is not a file" % (options.cert_path)
         return 1
 
-    if options.validictory_path and not os.path.isdir(options.validictory_path):
+    if options.validictory_path and not os.path.isdir(
+            options.validictory_path):
         print "validictory-path %s is not a directory" % (options.validictory_path)
         return 1
 
@@ -266,10 +292,10 @@ def main(argv):
     # Options look good.  Let's get to work.
 
     # URLs that haven't been fetched yet
-    unvisited_urls = list(url_args) # make a copy of url_args
+    unvisited_urls = list(url_args)  # make a copy of url_args
 
     # URLs for which we have attempted to fetch a response
-    visited_urls = set() # empty set to begin
+    visited_urls = set()  # empty set to begin
 
     # Number of URLs visited that returned valid JSON according to their schema
     num_valid_urls = 0
@@ -286,15 +312,20 @@ def main(argv):
     else:
         schema_stats_dict = None
 
+    http_status_dict = dict()
+
     # main loop
 
     while unvisited_urls:
         url = choose_url_to_visit(unvisited_urls, len(visited_urls),
                                   options.interactive)
-        if not url: # chose to exit
+        if not url:  # chose to exit
             break
 
-        json_dict = visit_url(url, options.cert_path)
+        print 79 * "-", "\n%s Visiting %s returns:" % (
+            str(datetime.datetime.now()), url)
+
+        json_dict, status_string = visit_url(url, options.cert_path)
 
         # now that we've visited it, move this url from unvisited to visited
         unvisited_urls.remove(url)
@@ -302,10 +333,16 @@ def main(argv):
 
         # print the response
 
-        print 79 * "-", \
-            "\nVisiting %s returns:\n%s" % (url,
-                                            json.dumps(json_dict, indent=4,
-                                                       sort_keys=True))
+        print str(datetime.datetime.now()) + " " + status_string
+        print json.dumps(json_dict, indent=4, sort_keys=True)
+
+        # keep track of how many times this status was seen
+
+        try:
+            http_status_dict[status_string] += 1
+        except KeyError:
+            http_status_dict[status_string] = 1
+
         # maybe validate the response
 
         if not options.skip_validation:
@@ -326,7 +363,7 @@ def main(argv):
             embedded_urls = find_embedded_urls(json_dict)
             for embedded_url in embedded_urls:
                 if (not (embedded_url in visited_urls) and
-                    not (embedded_url in unvisited_urls)):
+                        not (embedded_url in unvisited_urls)):
                     unvisited_urls.append(embedded_url)
 
     # print a summary of this run
@@ -334,6 +371,11 @@ def main(argv):
     print "%d URLs visited" % (len(visited_urls)),
     if not options.skip_validation:
         print ", %d valid" % (num_valid_urls)
+
+    print "HTTP or errno status codes:"
+    max_status_len = get_max_keylen(http_status_dict)
+    for status_string, count in sorted(http_status_dict.items()):
+        print "%-*s seen %d times" % (max_status_len, status_string, count)
 
     # print schema stats if requested
 
