@@ -48,7 +48,7 @@ import datetime
 import response_validator
 
 
-def visit_url(url, cert_path):
+def visit_url(url, cert_path, http_headers):
     """
     Make a monitoring REST call and collect the response.
 
@@ -56,6 +56,8 @@ def visit_url(url, cert_path):
       response.  If this doesn't start with http(s)://, interpret it as
       a filename.
     :param cert_path: path to tool certificate file for SSL access.
+    :param http_headers: a dictionary of HTTP header names/values to use with
+      the HTTP request.
     :return: a 2-tuple.  The first item of the tuple is a dictionary
       containing the JSON response to url, or None if an error occurred.
       The second item of the tuple is a status string.  If url was
@@ -71,7 +73,8 @@ def visit_url(url, cert_path):
         # interpret url as an actual URL
         resp = None
         try:
-            resp = requests.get(url, verify=False, cert=cert_path)
+            resp = requests.get(url, verify=False, cert=cert_path,
+                                headers=http_headers)
             status_string = str(resp.status_code) + " " + resp.reason
         except Exception as e:
             print "No response from local datastore for URL %s\s%s" % (url,
@@ -268,6 +271,9 @@ def main(argv):
     parser.add_option("--schema-stats", dest="schema_stats",
                       default=False, action="store_true",
                       help="print statistics on schema usage")
+    parser.add_option("--connection-close", dest="connection_close",
+                      default=False, action="store_true",
+                      help="use 'Connection: close' header on HTTP requests")
     (options, url_args) = parser.parse_args()
 
     # Do some more checking on the options provided
@@ -288,6 +294,12 @@ def main(argv):
     # If in interactive mode, enable follow_urls so that the user has choices
     if options.interactive:
         options.follow_urls = True
+
+    # Initialize http headers
+    if options.connection_close:
+        http_headers = {'Connection':'close'}
+    else:
+        http_headers = {}  # empty dictionary
 
     # Options look good.  Let's get to work.
 
@@ -325,7 +337,8 @@ def main(argv):
         print 79 * "-", "\n%s Visiting %s returns:" % (
             str(datetime.datetime.now()), url)
 
-        json_dict, status_string = visit_url(url, options.cert_path)
+        json_dict, status_string = visit_url(url, options.cert_path,
+                                             http_headers)
 
         # now that we've visited it, move this url from unvisited to visited
         unvisited_urls.remove(url)
