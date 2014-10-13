@@ -100,7 +100,10 @@ class DBManager(object):
         for col in range(len(row)):
             if col > 0:
                 values_str += ", "
-            values_str += "'" + str(row[col]) + "'"
+            if row[col] is None:
+                values_str += "NULL"
+            else:
+                values_str += "'" + str(row[col]) + "'"
         return values_str
 
     def get_table_field_values_string(self, table_schema, row):
@@ -115,7 +118,11 @@ class DBManager(object):
         for col in range(len(table_schema)):
             if col > 0:
                 field_value_str += ", "
-            field_value_str += self.get_column_name(table_schema[col][0]) + "='" + str(row[col]) + "'"
+            field_value_str += self.get_column_name(table_schema[col][0])
+            if row[col] is None:
+                field_value_str += "=NULL"
+            else:
+                field_value_str += "='" + str(row[col]) + "'"
         return field_value_str
 
     def get_upsert_statements(self, table_name, table_schema, row, id_column):
