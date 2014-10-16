@@ -212,37 +212,37 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://rci-hn.exogeni.net:5001/info/aggregate/rcivmsite"
+       "href": "https://rci-hn.exogeni.net:4334/info/aggregate/rcivmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:bbnvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://bbn-hn.exogeni.net:5001/info/aggregate/bbnvmsite"
+       "href": "https://bbn-hn.exogeni.net:4334/info/aggregate/bbnvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://nicta-hn.exogeni.net:5001/info/aggregate/nictavmsite"
+       "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://fiu-hn.exogeni.net:5001/info/aggregate/fiuvmsite"
+       "href": "https://fiu-hn.exogeni.net:4334/info/aggregate/fiuvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:uhvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://uh-hn.exogeni.net:5001/info/aggregate/uhvmsite"
+       "href": "https://uh-hn.exogeni.net:4334/info/aggregate/uhvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:ncsuvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ncsu-hn.exogeni.net:5001/info/aggregate/ncsuvmsite"
+       "href": "https://ncsu-hn.exogeni.net:4334/info/aggregate/ncsuvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://wvn-hn.exogeni.net:5001/info/aggregate/wvnvmsite"
+       "href": "https://wvn-hn.exogeni.net:4334/info/aggregate/wvnvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
@@ -252,26 +252,32 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ufl-hn.exogeni.net:5001/info/aggregate/uflvmsite",
+       "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite",
        "amurl": "https://ufl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ucd-hn.exogeni.net:5001/info/aggregate/ucdvmsite",
+       "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
        "amurl": "https://ucd-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://sl-hn.exogeni.net:5001/info/aggregate/slvmsite",
+       "href": "https://sl-hn.exogeni.net:4334/info/aggregate/slvmsite",
        "amurl": "https://sl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://osf-hn.exogeni.net:5001/info/aggregate/osfvmsite",
+       "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite",
        "amurl": "https://osf-hn.exogeni.net:11443/orca/xmlrpc"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
+       "amurl": "https://umass-hn.exogeni.net:11443/orca/xmlrpc"
     },
     // Open geni stores
     {
@@ -349,6 +355,13 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of",
        "amurl": "https://sl-hn.exogeni.net:3626/foam/gapi/2"
     },
+// Place holder for umass exogeni foam aggregate. Don't know the urn yet and AM API replies unspecified_AM_URN for now
+//    {
+//       "urn": "?",
+//       "amtype": "foam",
+//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
+//       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2"
+//    },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
        "amtype": "foam",
