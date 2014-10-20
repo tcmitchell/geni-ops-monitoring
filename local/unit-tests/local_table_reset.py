@@ -34,20 +34,16 @@ def main():
 
     db_type = "local"
     config_path = "../../config/"
-    debug = True    
-    tbl_mgr = table_manager.TableManager(db_type, config_path, debug)
+    tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
 
-    ocl = opsconfig_loader.OpsconfigLoader(config_path)
-    info_schema = ocl.get_info_schema()
-    data_schema = ocl.get_data_schema()
+    if not tbl_mgr.drop_all_tables():
+        sys.stderr.write("\nCould not drop all tables.\n")
+        sys.exit(-1)
 
-    table_str_arr = info_schema.keys() + data_schema.keys()
-    
-    tbl_mgr.drop_tables(table_str_arr)
-    tbl_mgr.establish_tables(table_str_arr)
-   
-    tbl_mgr.con.close()
+    if not tbl_mgr.establish_all_tables():
+        sys.stderr.write("\nCould not create all tables.\n")
+        sys.exit(-1)
 
 if __name__ == "__main__":
     main()

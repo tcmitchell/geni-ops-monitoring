@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #----------------------------------------------------------------------
 # Copyright (c) 2014 Raytheon BBN Technologies
 #
@@ -21,30 +23,44 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-#!/usr/bin/bash
+# Where are the schema files located
+local_schema_dir=$(dirname $0)
 
-old_date=20140131
-new_date=20140501
-schema_server="ekron.gpolab.bbn.com"
-base_path="/srv/www/monitoring/schema"
+# schema_date should be the date embedded in the $schema lines of the
+# schemas.  This script does not verify that the schemas have the
+# correct date in them.
+schema_date=20140828
 
-# Master ssh session
-#screen -d -m ssh -M -S ~/.ssh/%h%p%r%u $schema_server &
+# Web server hosting the schemas
+schema_server="www.gpolab.bbn.com"
 
-# Create directory if not exists
-ssh $schema_server "if [ ! -d $base_path/$new_date ]; then echo schema dir dne ; mkdir $base_path/$new_date  ;  fi;"
+# Directory on $schema_server to put the schemas in
+schema_dir="/srv/www/monitoring/schema/"$schema_date
+
+dest=$schema_server:$schema_dir
+mytmpdir=$(mktemp -dt $(basename $0).XXXXXX)
 
 
-for schema_file in $(ls *.schema)
+# Create directory on schema_server if it does not exist
+ssh $schema_server "if [ ! -d $schema_dir ]; then mkdir $schema_dir; fi;"
+
+# ekron has some ssh connection throttling that prevents us
+# from making too many connections in quick succession, so
+# we copy the files that we want in a temporary location 
+# with their expected names and we ship them all at once.
+
+for schema_file in $(ls ${local_schema_dir}/*.schema)
 do
-    echo "Editing $schema_file from $old_date to $new_date"
-    sed "s/$old_date/$new_date/" "$schema_file" > "$schema_file.tmp"
-    mv "$schema_file.tmp" "$schema_file"
-    schema_name=`echo $schema_file| cut -d'.' -f 1`
-    cp $schema_file $schema_name
-    echo "Copying file $schema_name to $schema_server"
-    scp $schema_name $schema_server:$base_path/$new_date
+    # strip off .schema suffix
+    schema_file_no_ext=$(basename $schema_file .schema)
+    cp -pv ${schema_file} ${mytmpdir}/${schema_file_no_ext}
+
 done
 
-# update permissions
-ssh $schema_server "chgrp -R gpo $base_path/$new_date ; chmod -R g+w $base_path/$new_date ;"
+scp ${mytmpdir}/* $dest/
+rm -rf ${mytmpdir}
+# Put all of the .jwc files there too for good measure
+scp ${local_schema_dir}/*.jwc $dest
+
+# update ownership and permissions
+ssh $schema_server "chgrp -R gpo $schema_dir ; chmod -R g+w $schema_dir ;"

@@ -1,45 +1,17 @@
-1. To test the local datastore as a unit test:
+To test the local datastore:
 
- As configured, Vagrant and Puppet will initialize the datastore To test if valid output of the local datastore, make sure your tools
- certificate is in this directory.  If you concatenate the private key
- used to make the certificate, you will not need to copy that file
- separately. Any files in this directory, are in a shared folder on
- the VM in the /vagrant directory.
+a. Follow the instructions "To use the VMs:" in ../README.
 
- vagrant up 
+b. Commands that must be run on the local datastore VM are prefixed with
+"local$".
 
- vagrant ssh
+c. Try fetching some monitoring info from the web server running on the VM.
+    vboxhost$ curl -k --cert ${TOOLCERT} https://192.168.33.10/info/aggregate/gpo-ig
+    vboxhost$ curl -k --cert ${TOOLCERT} https://192.168.33.10/info/node/instageni.gpolab.bbn.com_node_pc1
 
- curl -k --cert /vagrant/<tools-collector-cert-with-priv-key.pem>  https://localhost/info/aggregate/gpo-ig
+d. Try fetching some monitoring info using rest_call.py:
+    vboxhost$ cd ${TOP}/collector
+    vboxhost$ ./rest_call.py -c ${TOOLCERT} -i https://192.168.33.10/info/aggregate/gpo-ig
 
- curl -k --cert /vagrant/<tools-collector-cert-with-priv-key.pem>  https://localhost/info/node/instageni.gpolab.bbn.com
-
- If you do not have your private key concatenated with your
- certificate, you'll need to specify a key with the --key </key/path>
- argument.
-
- For testing all the API calls, go to the
- /usr/local/ops-monitoring/collector/unit-tests directory the script:
-
- single_rest_call.py https://localhost/info/aggregate/gpo-ig
-
- multi_rest_call.py https://localhost/info/aggregate/gpo-ig
-
-
-2. To test the local datastore with a collector on a different host:
-
- To test this with a collector vagrant vm, go to:
- /usr/local/ops-monitoring/local/unit-tests
-
-
- python local_restart_node_interface_stats.py -b https://192.168.1.10:8043
- where 192.168.1.10 is the ipaddress of the host machine (see ifconfig)
-
-
- For getting the ipaddress for en3 do the following (this can be later
- incorporated into the testing infrastructure)
-  /sbin/ifconfig en3 | grep 'inet ' | cut -d ' ' -f 2 | cut -d ' ' -f 2
-
- note that 127.0.0.1:8043 (or localhost) does not work because the url
- will not leave the VM.  This enables the collector to webcrawl the
- localstore with the right addresses in the local datastore's database.
+e. You can test the local datastore further by running the collector VM.
+See ${TOP}/test/vagrant/collector/README.

@@ -1,7 +1,7 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/data#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#",
   "id": "mem_active_kb:instageni.gpolab.bbn.com_node_pc1",
-  "subject": "https://datastore.instageni.gpolab.bbn.com/nodes/instageni.gpolab.bbn.com_node_pc1",
+  "subject": "https://datastore.instageni.gpolab.bbn.com/info/node/instageni.gpolab.bbn.com_node_pc1",
   "eventType": "ops_monitoring:mem_active_kb",
   "description": "Memory in active use",
   "units": "integer",

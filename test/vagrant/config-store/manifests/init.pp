@@ -56,6 +56,7 @@ class local {
   include "flask::server"
   include "local::server"
   include "${database_type}::server"
+  include "rsyslog::opsmon"
 
   # if you want to populate the fake data, you need psutil
   if $populate_data {

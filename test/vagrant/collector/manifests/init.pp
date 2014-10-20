@@ -58,5 +58,6 @@ class collector {
   include "requests::base"
   include "collector::server"
   include "${database_type}::server"
-
+  include "rsyslog::opsmon"
+  include "validictory::base"
 }

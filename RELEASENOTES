@@ -1,3 +1,91 @@
+Changes for Release 2.0
+August 28, 2014
+------------------------------
+
+* New Features
+  * A new program, collector/rest_call.py, replaces several others
+    for exercising the REST API and validating JSON responses.
+  * The datastore and collector implementations now use a python
+    logging package which is configured to syslog to /var/log/opsmon.log.
+  * There is some support for WiMAX monitoring.
+  * The schemas have several additions described below.
+
+* Bug Fixes
+  * A security vulnerability in local/rest_call_handler.py, part of the
+    local datastore implementation, is fixed.  Python's eval() was being
+    used on parts of URLs from external clients, enabling arbitrary
+    remote code execution.
+
+* Schema and REST changes
+  * The REST calls changed as follows:
+    * In the bulk data request (/data/?q={"filters"...), if the list
+      of object ids contains a "*", then data is returned for all
+      possible objects.
+    * The word "port" never appears as an object type in a REST call.
+      Use "interface" or "interfacevlan."
+
+  * The JSON schemas for the responses to REST calls changed as follows:
+    * There are two versions of each JSON schema and opsconfig.json.
+      One has a suffix .jwc (JSON With Comments) and contains //-style
+      comments describing the schema in more detail.  The other has
+      neither comments nor the .jwc suffix.  The uncommented version is
+      generated from the .jwc file and is used for validation, since a
+      pure JSON schema cannot contain such comments.
+    * In sliver.schema:
+      * The field creator_urn is renamed to creator because it might not
+	be a URN.
+      * The field resources is renamed to resource, which is now
+	required and can only contain one resource instead of a list.
+	resource has subfields resource_type, urn, and href.
+    * In aggregate.schema:
+      * New required fields: monitoring_version and
+	operational_status.
+      * New optional fields: populator_version, routable_ip_poolsize.
+      * In the list of resources, in addition to href and urn, there
+	is a new resource_type field indicating whether the resource
+	is a node or a link.
+    * In node.schema:
+      * New required field node_type.
+      * ops_monitoring:vm_server_type is renamed to virtualization_type.
+    * In interface.schema:
+      * This file was previouly called port.schema.
+      * New field addresses to hold the list of addresses for an
+	interface.  This replaces the address (singular) field.
+    * In interfacevlan.schema:
+      * This file was previouly called port-vlan.schema.
+      * The unused address field is removed.
+      * The field port is renamed to interface.
+
+  * The local datastore's database schema changed as follows:
+    * Many tables now have PRIMARY KEY, FOREIGN KEY, and UNIQUE
+      declarations.  Search for "constraints" in
+      config/opsconfig.json.jwc.  This should clarify how the tables
+      relate to each other.  You may have to reorder your table updates
+      to satisfy referential integrity.
+    * The ops_sliver table has new fields node_id and link_id
+      that need to be populated.
+    * The ops_sliver_resource table is gone.  Use the node_id or link_id 
+      fields in the ops_sliver table instead.
+    * The ops_aggregate table has new fields populator_version,
+      operational_status, and routable_ip_poolsize that need to
+      be populated.
+    * In the ops_node table:
+      * properties$vm_server_type is renamed to virtualization_type.
+      * New required field node_type.
+    * In the ops_interface table:
+      * Removed fields address_type and address_address.
+    * There is a new table ops_interface_addresses to hold the
+      addresses for an interface.
+    * ops_link table now has a layer column
+    * There is a new ops_link_relations to express parent/child relation between links.
+    * The ops_link_interfacevlan no longer has the urn and selfRef columns.
+    
+
+* Notes
+  * If your local datastore is listening on port 5001, we recommend
+    switching to port 4334 to avoid conflicting with iperf.
+
+
 Changes for Release 1.1_patch1
 June 4, 2014
 ------------------------------

@@ -56,14 +56,17 @@ node default {
 class local {
 
   include "apt::client"
+  include "emacs::base"
   include "curl::base"
   include "sslapache::server"
   include "flask::server"
   include "local::server"
+  include "rsyslog::opsmon"
   include "${database_type}::server"
 
   # if you want to populate the fake data, you need psutil
   if $populate_data {
     include "psutil::base"
   }
+  include "validictory::base"
 }

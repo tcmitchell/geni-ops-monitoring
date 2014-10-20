@@ -1,9 +1,9 @@
 {
-  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140501/externalcheck#",
+  "$schema": "http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#",
   "id": "gpo",
-  "selfRef": "https://datastore.instageni.gpolab.bbn.com/info/externalcheck/gpo",
+  "selfRef": "https://externalcheckstore.gpolab.bbn.com/info/externalcheck/gpo",
   "ts": 1391192685740849,
-  "measRef": "https://datastore.instageni.gpolab.bbn.com/data",
+  "measRef": "https://externalcheckstore.gpolab.bbn.com/data",
   "experiments": [
     {
       "href": "https://datastore.instageni.gpolab.bbn.com/info/experiment/missouri-ig_to_gpo-ig"

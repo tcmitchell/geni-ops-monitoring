@@ -37,6 +37,10 @@ node default {
   $populate_config_store = false
   $init_collector = false
 
+  # This address is configured via local/Vagrantfile:config.vm.network.
+  # If it changes there, it must be manually updated here.
+  $datastore_ip_addr = '192.168.33.13'
+
   $database_name = "local"
   $config_store_url = "file:///usr/local/ops-monitoring/config/opsconfig.json"
 
@@ -52,10 +56,11 @@ node default {
 class local {
 
   include "apt::client"
-  include "apache::server"
+  include "sslapache::server"
   include "flask::server"
   include "local::server"
   include "${database_type}::server"
+  include "rsyslog::opsmon"
 
   # if you want to populate the fake data, you need psutil
   if $populate_data {
