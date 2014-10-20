@@ -234,18 +234,23 @@ class SingleLocalDatastoreInfoCrawler:
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
+                    # counting on v2.0 schema improvements
+                    if res_i["resource_type"] and res_i["resource_type"] != "link":
+                        # we skip this resource
+                        continue
+                    # either v2.0 told us it's a link, or we'll have to check the schema
                     res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
                     if res_dict:
-                        if res_dict["$schema"].endswith("link#"):  # if a link
+                        if res_i["resource_type"] or res_dict["$schema"].endswith("link#"):  # if a link
                             # get each attribute out of response into list
                             link_info_list = self.get_link_attributes(res_dict, schema)
                             if not info_update(self.tbl_mgr, "ops_link", schema, link_info_list, \
                                                self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
                                 ok = False
-                        agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
-                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
-                            ok = False
+                            agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                            if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
+                                               self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
+                                ok = False
         return ok
 
 
@@ -279,6 +284,11 @@ class SingleLocalDatastoreInfoCrawler:
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 for res_i in self.am_dict["resources"]:
+                    # counting on v2.0 schema improvements
+                    if res_i["resource_type"] and res_i["resource_type"] != "node":
+                        # we skip this resource
+                        continue
+                    # either v2.0 told us it's a node, or we'll have to check the schema
                     res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
                     if res_dict:
                         if res_dict["$schema"].endswith("node#"):  # if a node
@@ -307,6 +317,12 @@ class SingleLocalDatastoreInfoCrawler:
                         ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
                         if ifacevlan_dict:
                             # before updating the ifvlan info we need to make sure the if info exists
+                            if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
+                                    or ifacevlan_dict["interface"]["href"] == "":
+                                self.logger.warn("Can not record interface vlan not linked to an interface.")
+                                self.logger.debug(json.dumps(ifacevlan_dict, indent=1))
+                                ok = False
+                                continue
                             if not self.check_exists("ops_interface", "selfRef", ifacevlan_dict["interface"]["href"]):
                                 interface_dict = handle_request(ifacevlan_dict["interface"]["href"], self.cert_path, self.logger)
                                 if not self.refresh_interface_info(interface_dict):
