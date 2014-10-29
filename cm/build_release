@@ -65,11 +65,7 @@ EXCLUDE_FILES="${prefix}.gitignore \
                ${prefix}doc \
                ${prefix}schema/update_schemas.sh \
                ${prefix}test \
-               ${prefix}local/coordinate_mesoscale_experiments.py \
-               ${prefix}local/extck_populator.py \
-               ${prefix}local/extck_store.py \
-               ${prefix}local/unit-tests/ips.conf \
-               ${prefix}local/unit-tests/pinger.py"
+               ${prefix}extck "
 
 tmp_exclude_file=$(mktemp exclude.XXXXXX)
 for pattern in ${EXCLUDE_FILES}; do
@@ -82,9 +78,6 @@ rm -f ${tmp_exclude_file}
 
 echo "Creating tarball ${TARBALL_GPOONLY}"
 
-tar cvzf ${TARBALL_GPOONLY} ${prefix}alerting ${prefix}test \
-    ${prefix}local/coordinate_mesoscale_experiments.py \
-    ${prefix}local/extck_populator.py ${prefix}local/extck_store.py \
-    ${prefix}local/unit-tests/ips.conf ${prefix}local/unit-tests/pinger.py
+tar cvzf ${TARBALL_GPOONLY} ${prefix}alerting ${prefix}test ${prefix}extck 
 ls -l ${TARBALL}
 ls -l ${TARBALL_GPOONLY}
