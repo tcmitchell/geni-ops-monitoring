@@ -367,8 +367,7 @@ def main():
 
     db_name = "local"
     config_path = "../config/"
-    debug = False
-    tbl_mgr = table_manager.TableManager(db_name, config_path, debug)
+    tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr, "")
     # Grab urns and urls for all agg stores
