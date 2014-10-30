@@ -616,8 +616,8 @@
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
-            ["UNIQUE (%s)", ["measRef"]]
+            ["UNIQUE (%s)", ["urn"]]
+//            ["UNIQUE (%s)", ["measRef"]]
         ],
         "dependencies" : []
     },
@@ -1008,8 +1008,7 @@
              ["selfRef", "varchar", true]
         ],
         "constraints": [
-            ["PRIMARY KEY (%s)", ["id"]],
-            ["UNIQUE (%s)", ["externalcheck_id"]],
+            ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_experiment", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["externalcheck_id", "ops_externalcheck", "id"]]
