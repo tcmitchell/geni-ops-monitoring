@@ -397,7 +397,6 @@ def main():
         ip.insert_externalcheck_monitoredaggregate(urn, shortName[urn])
         # Populate "ops_aggregate" table
         ip.insert_aggregate(urn, shortName[urn])
-    tbl_mgr.close_con();
 
 if __name__ == "__main__":
     main()
