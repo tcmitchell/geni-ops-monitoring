@@ -40,7 +40,10 @@ ocl = opsconfig_loader.OpsconfigLoader(config_path)
 
 experiment_event_types = ocl.get_event_types()["experiment"]
 
-ipConfigPath="/users/amcanary/ips.conf"
+ipConfigPathLocal = "/usr/local/ops-monitoring/extck/ips.conf"
+ipConfigPathRemote = "/users/amcanary/ips.conf"
+pingerLocal = "/usr/local/ops-monitoring/extck/pinger.py"
+pingerRemote = "/users/amcanary/pinger.py"
 outputFile = "raw_rows"
 outputFileLocal = "/home/amcanary/raw_rows"
 outputFileRemote="/users/amcanary/raw_rows"
@@ -55,10 +58,21 @@ srcPing={"gpo-ig":["amcanary@pc1.instageni.gpolab.bbn.com", "30266"],\
 
 for site in srcPing:
     port = srcPing[site][1]
+    # First make sure the src site have the latest ips.conf and pinger.py
+    # using rsync commands to avoid copying over & over the same files.
+    rsyncStr = "rsync -z -e \"ssh -i " + keyPath + " -p " + port + "\" " + ipConfigPathLocal + " " + srcPing[site][0] + ":" + ipConfigPathRemote
+    tbl_mgr.logger.debug("about to execute: " + rsyncStr)
+    os.system(rsyncStr)
+    rsyncStr = "rsync -z -e \"ssh -i " + keyPath + " -p " + port + "\" " + pingerLocal + " " + srcPing[site][0] + ":" + pingerRemote
+    tbl_mgr.logger.debug("about to execute: " + rsyncStr)
+    os.system(rsyncStr)
+    
     sshStr = "ssh -i " + keyPath + " " + srcPing[site][0] + " -p " + port +\
-               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile  + " -c " + ipConfigPath + " -s " + site + "\"" 
+               " \"rm -f " + outputFile + " && python pinger.py -o " + outputFile + " -c " + ipConfigPathRemote + " -s " + site + "\""
+    tbl_mgr.logger.debug("about to execute: " + sshStr)
     os.system(sshStr)
     scpStr="scp -i " + keyPath + " -P " + port + " " + srcPing[site][0]+ ":" + outputFileRemote + " /home/amcanary"
+    tbl_mgr.logger.debug("about to execute: " + scpStr)
     os.system(scpStr)
     file_handle = open(outputFileLocal, 'r')
     val_str = ""
