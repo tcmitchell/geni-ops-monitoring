@@ -48,7 +48,8 @@ common_path = "../common/"
 # inputFile=open('/home/amcanary/.bssw/geni/nickcache.json')
 # dic to store short name and corresponding url
 # Format: shortname [fqdn]=[aggShortName,amtype, state, timestamp]
-# shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema, state, timestamp]
+# shortName[urn]=[aggShortName, amType, fqdn, url, schema, aggregate_attributes]
+# then shorname[urn] is appended [state, timestamp]
 # where state is 0 for up and 1 for down
 shortName = {}
 
@@ -63,18 +64,19 @@ class SiteOF(AM):
     def __init__ (self, name, url=None):
         super(SiteOF, self).__init__(name, url, "amapiv2", "foam")
 
-def getOFState(context, site=None):
+def getOFState(logger, context, site=None):
+
     try:
         ad = site.listresources(context)  # Run listresources for a particular site
     except:
-        print "Control plane connection to", site.name, "for FOAM/FV Offline"
+        logger.warning("Control plane connection for FOAM/FV Aggregate Manager to " + site.name + " is Offline")
         return str(0)  # Can't reach the site via control path
 
     prtFlag = 0  # Check to see if dpids have ports.
                 #  No ports on all dpids for a given switch indicates possible FV issues.
     for switch in ad.datapaths:
         if len(switch.ports) == 0:
-            print "NO ports found on ", switch.dpid, ". FV may be hang or connection from dpid to FV is broken."
+            logger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
         else:  # If any dpid has ports listed, FV is working for that switch
             prtFlag = 1
             return str(prtFlag)
@@ -91,8 +93,8 @@ class InfoPopulator():
     def insert_agg_is_avail_datapoint(self, aggRow):
         # Insert into ops_externalcheck
         agg_id = aggRow[0]  # agg_id
-        ts = aggRow[8]  # str(int(time.time()*1000000))
-        v = aggRow[7]
+        ts = aggRow[6]  # str(int(time.time()*1000000))
+        v = aggRow[5]  # state
         datapoint = [agg_id, ts, v]
         db_insert(self.tbl_mgr, "ops_aggregate_is_available", datapoint)
         db_purge(self.tbl_mgr, "ops_aggregate_is_available")
@@ -136,6 +138,7 @@ def main():
     db_name = "local"
     config_path = "../config/"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
+    logger = tbl_mgr.logger
     tbl_mgr.poll_config_store()
     ip = InfoPopulator(tbl_mgr, "")
 
@@ -144,11 +147,11 @@ def main():
     for urn in shortName:
         siteName = shortName[urn][0]
         amtype = shortName[urn][1]
-        url = shortName[urn][4]
-        fqdn = shortName[urn][5]
+        fqdn = shortName[urn][2]
+        url = shortName[urn][3]
         if amtype == "foam":
             site = SiteOF(siteName, url)
-            state = getOFState(context, site)
+            state = getOFState(logger, context, site)
         elif amtype == "stitcher":  # Do something special
             state = getStitcherState()
         else:
