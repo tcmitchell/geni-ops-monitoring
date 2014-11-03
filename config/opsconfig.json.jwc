@@ -149,7 +149,8 @@
     {
        "urn": "urn:publicid:IDN+geni.case.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.geni.case.edu:5001/info/aggregate/cwru-ig"
+       "href": "https://www.geni.case.edu:5001/info/aggregate/cwru-ig",
+       "amurl": "https://geni.case.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
