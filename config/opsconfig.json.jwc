@@ -248,7 +248,8 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://uva-nl-hn.exogeni.net:4334/info/aggregate/uva-nlvmsite"
+       "href": "https://uva-nl-hn.exogeni.net:4334/info/aggregate/uva-nlvmsite",
+       "amurl": "https://uva-nl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
