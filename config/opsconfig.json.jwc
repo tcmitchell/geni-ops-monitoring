@@ -279,6 +279,12 @@
        "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
        "amurl": "https://umass-hn.exogeni.net:11443/orca/xmlrpc"
     },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
+       "amurl": "https://wsu-hn.exogeni.net:11443/orca/xmlrpc"
+    },
     // Open geni stores
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
@@ -361,6 +367,14 @@
 //       "amtype": "foam",
 //       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
 //       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2"
+//    },
+// Place holder for Wayne State University exogeni foam aggregate. 
+// Don't know the urn yet and AM API replies unspecified_AM_URN for now
+//    {
+//       "urn": "?",
+//       "amtype": "foam",
+//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
+//       "amurl": "https://wsu-hn.exogeni.net:3626/foam/gapi/2"
 //    },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
