@@ -207,10 +207,15 @@ class SingleLocalDatastoreObjectTypeFetcher:
         :param req_time: the upper bound of the time range.
         :return: the expected data query URL. 
         """
+        # Making sure we're querying a 3 months interval max.
+        _MAX_DIFF = 2592000000000  #  90 * 24 * 60 * 60 * 1000000
+        last_update = self.time_of_last_update
+        if (req_time - self.time_of_last_update) > _MAX_DIFF:
+            last_update = req_time - _MAX_DIFF
         q = {"filters":{"eventType":self.event_types,
                         "obj":{"type": self.obj_type,
                                "id": obj_ids},
-                        "ts": {"gt": self.time_of_last_update,
+                        "ts": {"gt": last_update,
                                "lt": req_time}
                         }
              }
@@ -405,18 +410,30 @@ def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug, logger):
     :param logger: an instance of the logger to use.
     :return: True if the insertion happened (or would have happened in debug mode) correctly, False otherwise.
     """
+    _CHUNK_SIZE = 10
     ok = True
     vals_str = ""
-    for tsdata_i in tsdata:
+    for i in range(len(tsdata)):
+        tsdata_i = tsdata[i]
         vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
+        if (i != 0) and (i % _CHUNK_SIZE == 0):
+            vals_str = vals_str[:-1]  # remove last ','
+            if debug:
+                logger.info("<print only> insert " + table_str + " values: " + vals_str)
+            else:
+                if not tbl_mgr.insert_stmt(table_str, vals_str):
+                    ok = False
+            vals_str = ""
 
-    vals_str = vals_str[:-1]  # remove last ','
+    if vals_str != "":
+        vals_str = vals_str[:-1]  # remove last ','
+        if debug:
+            logger.info("<print only> insert " + table_str + " values: " + vals_str)
+        else:
+            if not tbl_mgr.insert_stmt(table_str, vals_str):
+                ok = False
 
-    if debug:
-        logger.info("<print only> insert " + table_str + " values: " + vals_str)
-    else:
-        if not tbl_mgr.insert_stmt(table_str, vals_str):
-            ok = False
+
     return ok
 
 
@@ -431,6 +448,8 @@ def main(argv):
     # If in debug mode, make sure to overwrite the logging configuration to print out what we want,
     if debug:
         logger.configure_logger_for_debug_info(config_path)
+
+    logger.get_logger(config_path).info("Starting object data fetching")
 
     tbl_mgr = table_manager.TableManager(db_type, config_path)
     tbl_mgr.poll_config_store()
@@ -448,21 +467,27 @@ def main(argv):
     # pprint(all_event_types)
 
     if object_type_param == 'n':
+        logger.get_logger(config_path).debug("Fetching node events")
         event_types = node_event_types
         object_type = "node"
     elif object_type_param == 'i':
+        logger.get_logger(config_path).debug("Fetching interface events")
         event_types = interface_event_types
         object_type = "interface"
     elif object_type_param == 'v':
+        logger.get_logger(config_path).debug("Fetching interfacevlan events")
         event_types = interface_vlan_event_types
         object_type = "interfacevlan"
     elif object_type_param == 'a':
+        logger.get_logger(config_path).debug("Fetching aggregate events")
         event_types = aggregate_event_types
         object_type = "aggregate"
     elif object_type_param == 'x':
+        logger.get_logger(config_path).debug("Fetching experiements events")
         event_types = experiment_event_types
         object_type = "experiment"
     else:
+        logger.get_logger(config_path).critical("invalid object type arg %s\n" % object_type_param)
         sys.stderr.write("invalid object type arg %s\n" % object_type_param)
         sys.exit(1)
 
