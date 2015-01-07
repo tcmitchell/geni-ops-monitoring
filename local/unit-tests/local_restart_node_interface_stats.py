@@ -128,7 +128,7 @@ def main(argv):
     interface_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interface_id, num_ins, per_sec, interface_event_str_arr)
 
     obj_type = "interfacevlan"
-    interfacevlan_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interfacevlan_id, num_ins, per_sec, interface_event_str_arr)
+    interfacevlan_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interfacevlan_id, num_ins, per_sec, interfacevlan_event_str_arr)
 
     obj_type = "aggregate"
     aggregate_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, aggregate_id, num_ins, per_sec, aggregate_event_str_arr)
