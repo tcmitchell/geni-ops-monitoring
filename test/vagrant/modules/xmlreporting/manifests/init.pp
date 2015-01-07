@@ -21,14 +21,15 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-class requests::base {
+class xmlreporting::base {
+
   include python::pip
   include python::dev
 
   exec {
-    "requests_install":
-      command => "/usr/bin/pip install requests",
-      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c requests) -eq 0",
+    "xmlreporting_install":
+      command => "/usr/bin/pip install unittest-xml-reporting",
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c unittest-xml-reporting) -eq 0",
       require => [Package["python-pip"], Package["python-dev"]];
   }
 }

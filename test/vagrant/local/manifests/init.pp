@@ -69,4 +69,7 @@ class local {
     include "psutil::base"
   }
   include "validictory::base"
+  # needed for the automated unit tests
+  include "requests::base"
+  include "xmlreporting::base"
 }

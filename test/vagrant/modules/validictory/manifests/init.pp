@@ -22,9 +22,12 @@
 #----------------------------------------------------------------------
 
 class validictory::base {
+  include python::pip
+
   exec {
     "validictory_install":
       command => "/usr/bin/pip install validictory",
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c validictory) -eq 0",
       require => Package["python-pip"];
   }
 }

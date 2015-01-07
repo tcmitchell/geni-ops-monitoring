@@ -49,4 +49,9 @@ class local::server {
       content => template("local/local_datastore_operator.conf.erb"),
       require => Exec["local_update_code"];
   }
+
+  exec {
+    "save_ip_address":
+    command => "/bin/echo ${datastore_ip_addr} > /tmp/ip.conf";
+  }
 }

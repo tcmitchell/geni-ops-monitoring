@@ -22,15 +22,14 @@
 #----------------------------------------------------------------------
 
 class psutil::base {
-  package {
-    "python-dev": ensure => installed;
-    "python-pip": ensure => installed;
-  }
+  include python::pip
+  include python::dev
 
   exec {
     "psutil_install":
       command => "/usr/bin/pip install psutil",
-      require => Package["python-pip"],
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c psutil) -eq 0",
+      require => [Package["python-pip"], Package["python-dev"]],
       notify => Exec["local_setup"];
   }
 }
