@@ -220,6 +220,14 @@ class StatsPopulator(threading.Thread):
             return random.randint(0, 10)
         elif event_type == "ping_rtt_ms":
             return random.uniform(10, 100)
+        elif event_type == "routable_ip_available":
+            return random.uniform(3.0, 80.0)
+        elif event_type == "tx_power":
+            return random.randint(0, 100)
+        elif event_type == "tx_frequency":
+            return random.uniform(900.0, 5400.0)
+        elif event_type == "wmx_noc":
+            return random.randint(0, 50)
         else:  # TODO add more
             return None
 
