@@ -30,65 +30,147 @@ common_path = "../common/"
 sys.path.append(common_path)
 import table_manager
 
-class InfoPopulator():
 
-    AGGREGATE_ID = "gpo-ig"
-    AGGREGATE_URN = "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm"
-    NODE_IDS = ["instageni.gpolab.bbn.com_node_pc1",
-                "instageni.gpolab.bbn.com_node_pc2",
-                "instageni.gpolab.bbn.com_node_interconnect"
-                ]
+# Using these classes for constants because we can't reference a constant to declare another constant in the same class :(
+# i.e. LINK_RELATION = ( (InfoPopulator.LINK_IDS[0], InfoPopulator.LINK_IDS[1]) ) fails with NameError: name 'InfoPopulator' is not defined
+# because the class has not been fully parsed to be used.
 
-    NODE_URNS = ["urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
-                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2",
-                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+interconnect"
-                 ]
-
-    SLIVER_IDS = ["instageni.gpolab.bbn.com_sliver_26947",
-                  "instageni.gpolab.bbn.com_sliver_26950",
-                  "instageni.gpolab.bbn.com_sliver_26951",
-                  "instageni.gpolab.bbn.com_sliver_26999"
-                  ]
-    SLIVER_URNS = ["urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947",
-                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950",
-                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26951",
-                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26999"
-                   ]
-
-    SLIVER_UUIDS = ["30752b06-8ea8-11e3-8d30-000000000000",
-                    "30752b06-8ea8-11e3-8d30-000005000000",
-                    "30752b06-8ea8-11e3-8d30-000005000001",
-                    "30752b06-8ea8-11e3-8d30-000006000000"
-                    ]
-
-    LINK_IDS = ["arbitrary_link_id_001",
+class _HackLink():
+    LINK_IDS = ("arbitrary_link_id_001",
                 "arbitrary_link_id_002",
                 "arbitrary_link_id_003",
                 "link_id_egress01"
-                ]
-    LINK_URNS = ["urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001",
-                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_002",
-                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_003",
-                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_egress01"
-                 ]
+                )
 
-    IF_IDS = ["instageni.gpolab.bbn.com_interface_pc1:eth1",
+class _HackVlan():
+    VLAN_ID = 1750
+
+class _HackIf():
+    IF_IDS = ("instageni.gpolab.bbn.com_interface_pc1:eth1",
               "instageni.gpolab.bbn.com_interface_pc2:eth1",
               "instageni.gpolab.bbn.com_interface_interconnect:port0",
               "instageni.gpolab.bbn.com_interface_newy.ion.internet2.edu:ae0"
-              ]
-    IF_URNS = ["urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
+              )
+
+    IF_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
                "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1",
                "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+interconnect:port0",
                "urn:publicid:IDN+ion.internet2.edu+interface+rtr.newy:ae0"
-               ]
+               )
 
-    VLAN_IDS = [ 1750 ]
-    IFVLAN_IDS = ["instageni.gpolab.bbn.com_interface_pc1:eth1:1750",
-                  "instageni.gpolab.bbn.com_interface_pc2:eth1:1750",
-                  "instageni.gpolab.bbn.com_interface_interconnect:port0:1750",
-                  "instageni.gpolab.bbn.com_interface_newy.ion.internet2.edu:ae0:1750"
-                  ]
+class _HackIfvlan():
+    IFVLAN_IDS = (_HackIf.IF_IDS[0] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_IDS[1] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_IDS[2] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_IDS[3] + ":" + str(_HackVlan.VLAN_ID),
+                   )
+
+
+class InfoPopulator():
+
+
+
+
+    AGGREGATE_ID = "gpo-ig"
+    AGGREGATE_URN = "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm"
+    NODE_IDS = ("instageni.gpolab.bbn.com_node_pc1",
+                "instageni.gpolab.bbn.com_node_pc2",
+                "instageni.gpolab.bbn.com_node_interconnect"
+                )
+
+    NODE_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+interconnect"
+                 )
+
+    LINK_IDS = _HackLink.LINK_IDS
+
+    LINK_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_002",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_003",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_egress01"
+                 )
+
+    IF_IDS = _HackIf.IF_IDS
+
+    IF_URNS = _HackIf.IF_URNS
+
+    # tuples of addrtype, scope, address
+    IF_ADDRESSES = (("IPv4", "public", "public"),
+                     ("802.3", None, "ab:cd:ef:01:23")
+                    )
+
+    # tuple of IF IDs, address record idx
+    IF_ADDRESS_RELATIONS = ((_HackIf.IF_IDS[0], 0),
+                             (_HackIf.IF_IDS[0], 1)
+                            )
+
+    VLAN_ID = _HackVlan.VLAN_ID
+
+    IFVLAN_IDS = _HackIfvlan.IFVLAN_IDS
+
+
+    IFVLAN_URNS = (_HackIf.IF_URNS[0] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_URNS[1] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_URNS[2] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_URNS[3] + ":" + str(_HackVlan.VLAN_ID),
+                   )
+
+    LINK_VLAN_RELATIONS = ((_HackIfvlan.IFVLAN_IDS[0], _HackLink.LINK_IDS[0]),
+                           (_HackIfvlan.IFVLAN_IDS[1], _HackLink.LINK_IDS[0]),
+                           (_HackIfvlan.IFVLAN_IDS[0], _HackLink.LINK_IDS[1]),
+                           (_HackIfvlan.IFVLAN_IDS[2], _HackLink.LINK_IDS[1]),
+                           (_HackIfvlan.IFVLAN_IDS[2], _HackLink.LINK_IDS[2]),
+                           (_HackIfvlan.IFVLAN_IDS[1], _HackLink.LINK_IDS[2]),
+                           (_HackIfvlan.IFVLAN_IDS[2], _HackLink.LINK_IDS[3]),
+                           (_HackIfvlan.IFVLAN_IDS[3], _HackLink.LINK_IDS[3])
+                           )
+
+    # first parent, second child
+    LINK_PARENT_CHILD_RELATION = ((_HackLink.LINK_IDS[0], _HackLink.LINK_IDS[1]),
+                                  (_HackLink.LINK_IDS[0], _HackLink.LINK_IDS[2])
+                                  )
+
+    SLIVER_IDS = ("instageni.gpolab.bbn.com_sliver_26947",
+                  "instageni.gpolab.bbn.com_sliver_26950",
+                  "instageni.gpolab.bbn.com_sliver_26951",
+                  "instageni.gpolab.bbn.com_sliver_26999"
+                  )
+    SLIVER_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26947",
+                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26950",
+                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26951",
+                   "urn:publicid:IDN+instageni.gpolab.bbn.com+sliver+26999"
+                   )
+
+    SLIVER_UUIDS = ("30752b06-8ea8-11e3-8d30-000000000000",
+                    "30752b06-8ea8-11e3-8d30-000005000000",
+                    "30752b06-8ea8-11e3-8d30-000005000001",
+                    "30752b06-8ea8-11e3-8d30-000006000000"
+                    )
+
+    SLICE_URNS = ("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive",
+                  "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2"
+                  )
+    SLICE_UUIDS = ("8c6b97fa-493b-400f-95ee-19accfaf4ae8",
+                   "8c6b97fa-493b-400f-95ee-19accfaf4ae9"
+                  )
+    # at sliver idx you have slice idx
+    SLIVER_SCLICE_IDX = (0, 1, 1, 0)
+
+    USER_URNS = ("urn:publicid:IDN+ch.geni.net+user+tupty",
+                 "urn:publicid:IDN+ch.geni.net+user+sblais"
+                 )
+
+    # at sliver idx you have user idx
+    SLIVER_USER_IDX = (0, 1, 0, 1)
+
+    # at sliver idx, you get resource type, and idx in the corresponding resource array
+    SLIVER_RESOURCE_RELATION = (("node", 0),
+                                ("node", 1),
+                                ("node", 2),
+                                ("link", 0)
+                                )
+
     def __init__(self, tbl_mgr, url_base):
 
         self.tbl_mgr = tbl_mgr
@@ -96,6 +178,17 @@ class InfoPopulator():
         # steal config path from table_manager
         self.config_path = tbl_mgr.config_path
 
+
+    def append_sliver_resource_info(self, sliver_info_list, sliver_idx):
+        if InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0] == "node":
+            sliver_info_list.append(InfoPopulator.NODE_IDS[InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][1]])  # node_id
+            sliver_info_list.append(None)  # link_id
+        elif InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0] == "link":
+            sliver_info_list.append(None)  # node_id
+            sliver_info_list.append(InfoPopulator.LINK_IDS[InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][1]])  # link_id
+        else:
+            raise Exception("unidentified resource type %s" % InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0])
+    
     def insert_fake_info(self):
         ok = True
 
@@ -167,13 +260,12 @@ class InfoPopulator():
         sliver1.append(str(int(time.time() * 1000000)))  # current ts
         sliver1.append(agg1[3])  # agg_urn
         sliver1.append(agg1[2])  # agg_href
-        sliver1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")  # slice_urn
-        sliver1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver1.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
+        sliver1.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice_urn
+        sliver1.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice uuid
+        sliver1.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[0]])  # creator
         sliver1.append(str(int(1391626683000000)))  # created
         sliver1.append(str(int(1391708989000000)))  # expires
-        sliver1.append(node1[1])  # node_id
-        sliver1.append(None)  # link_id
+        self.append_sliver_resource_info(sliver1, 0)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver1):
             ok = False
@@ -188,13 +280,12 @@ class InfoPopulator():
         sliver2.append(str(int(time.time() * 1000000)))  # current ts
         sliver2.append(agg1[3])  # agg_urn
         sliver2.append(agg1[2])  # agg_href
-        sliver2.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2")  # slice_urn
-        sliver2.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver2.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
+        sliver2.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice_urn
+        sliver2.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice uuid
+        sliver2.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[1]])  # creator
         sliver2.append(str(int(1391626683000000)))  # created
         sliver2.append(str(int(1391708989000000)))  # expires
-        sliver2.append(node2[1])  # node_id
-        sliver2.append(None)  # link_id
+        self.append_sliver_resource_info(sliver2, 1)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver2):
             ok = False
@@ -209,13 +300,12 @@ class InfoPopulator():
         sliver3.append(str(int(time.time() * 1000000)))  # current ts
         sliver3.append(agg1[3])  # agg_urn
         sliver3.append(agg1[2])  # agg_href
-        sliver3.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive2")  # slice_urn
-        sliver3.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver3.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
+        sliver3.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice_urn
+        sliver3.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice uuid
+        sliver3.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[2]])  # creator
         sliver3.append(str(int(1391626683000000)))  # created
         sliver3.append(str(int(1391708989000000)))  # expires
-        sliver3.append(switch1[1])  # node_id
-        sliver3.append(None)  # link_id
+        self.append_sliver_resource_info(sliver3, 2)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver3):
             ok = False
@@ -272,15 +362,14 @@ class InfoPopulator():
         sliver4.append(InfoPopulator.SLIVER_URNS[3])
         sliver4.append(InfoPopulator.SLIVER_UUIDS[3])  # uuid
         sliver4.append(str(int(time.time() * 1000000)))  # current ts
-        sliver4.append("urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm")  # agg_urn
-        sliver4.append(url_local_info + "aggregate/gpo-ig")  # agg_href
-        sliver4.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")  # slice_urn
-        sliver4.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")  # slice uuid
-        sliver4.append("urn:publicid:IDN+ch.geni.net+user+tupty")  # creator
+        sliver4.append(agg1[3])  # agg_urn
+        sliver4.append(agg1[2])  # agg_href
+        sliver4.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice_urn
+        sliver4.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice uuid
+        sliver4.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[3]])  # creator
         sliver4.append(str(int(1391626683000005)))  # created
         sliver4.append(str(int(1391708989000006)))  # expires
-        sliver4.append(None)  # node_id
-        sliver4.append(link1[1])  # link_id
+        self.append_sliver_resource_info(sliver4, 3)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver4):
             ok = False
@@ -298,27 +387,6 @@ class InfoPopulator():
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
             ok = False
-
-
-        interfaceaddr1 = []
-        interfaceaddr1.append(interface1[1])  # interface_id
-        interfaceaddr1.append("IPv4")  # addrtype
-        interfaceaddr1.append("public")  # scope
-        interfaceaddr1.append("12.34.56.78")  # address
-
-        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr1):
-            ok = False
-
-
-        interfaceaddr2 = []
-        interfaceaddr2.append(interface1[1])  # interface_id
-        interfaceaddr2.append("802.3")  # addrtype
-        interfaceaddr2.append(None)  # scope
-        interfaceaddr2.append("ab:cd:ef:01:23")  # address
-
-        if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr2):
-            ok = False
-
 
         interface2 = []
         interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
@@ -359,13 +427,26 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_interface", remoteinterface1):
             ok = False
 
-        vlan1 = InfoPopulator.VLAN_IDS[0]
+        for i in range(len(InfoPopulator.IF_IDS)):
+            for j in range(len(InfoPopulator.IF_ADDRESS_RELATIONS)):
+                if InfoPopulator.IF_IDS[i] == InfoPopulator.IF_ADDRESS_RELATIONS[j][0]:
+                    addr_idx = InfoPopulator.IF_ADDRESS_RELATIONS[j][1]
+                    interfaceaddr = []
+                    interfaceaddr.append(InfoPopulator.IF_IDS[i])  # interface_id
+                    interfaceaddr.append(InfoPopulator.IF_ADDRESSES[addr_idx][0])  # addrtype
+                    interfaceaddr.append(InfoPopulator.IF_ADDRESSES[addr_idx][1])  # scope
+                    interfaceaddr.append(InfoPopulator.IF_ADDRESSES[addr_idx][2])  # address
+                    if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr):
+                        ok = False
+
+
+        vlan1 = InfoPopulator.VLAN_ID
 
         interfacevlan1 = []
         interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan1.append(InfoPopulator.IFVLAN_IDS[0])
         interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
-        interfacevlan1.append(interface1[3] + ":" + str(vlan1))
+        interfacevlan1.append(InfoPopulator.IFVLAN_URNS[0])
         interfacevlan1.append(str(int(time.time() * 1000000)))
         interfacevlan1.append(str(vlan1))  # tag type
         interfacevlan1.append(interface1[3])  # interface urn
@@ -379,7 +460,7 @@ class InfoPopulator():
         interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan2.append(InfoPopulator.IFVLAN_IDS[1])
         interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
-        interfacevlan2.append(interface2[3] + ":" + str(vlan1))
+        interfacevlan2.append(InfoPopulator.IFVLAN_URNS[1])
         interfacevlan2.append(str(int(time.time() * 1000000)))
         interfacevlan2.append(str(vlan1))  # tag type
         interfacevlan2.append(interface2[3])  # interface urn
@@ -391,7 +472,7 @@ class InfoPopulator():
         interfacevlan3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         interfacevlan3.append(InfoPopulator.IFVLAN_IDS[2])
         interfacevlan3.append(url_local_info + "interfacevlan/" + interfacevlan3[1])
-        interfacevlan3.append(interface3[3] + ":" + str(vlan1))
+        interfacevlan3.append(InfoPopulator.IFVLAN_URNS[2])
         interfacevlan3.append(str(int(time.time() * 1000000)))
         interfacevlan3.append(str(vlan1))  # tag type
         interfacevlan3.append(interface3[3])  # interface urn
@@ -404,7 +485,7 @@ class InfoPopulator():
         remoteinterfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
         remoteinterfacevlan1.append(InfoPopulator.IFVLAN_IDS[3])
         remoteinterfacevlan1.append(url_local_info + "interfacevlan/" + remoteinterfacevlan1[1])
-        remoteinterfacevlan1.append(remoteinterface1[3] + ":" + str(vlan1))
+        remoteinterfacevlan1.append(InfoPopulator.IFVLAN_URNS[3])
         remoteinterfacevlan1.append(str(int(time.time() * 1000000)))
         remoteinterfacevlan1.append(str(vlan1))  # tag type
         remoteinterfacevlan1.append(remoteinterface1[3])  # interface urn
@@ -594,91 +675,21 @@ class InfoPopulator():
             ok = False
 
 
-        link1ifacevlan1 = []
-        link1ifacevlan1.append(interfacevlan1[1])  # id
-        link1ifacevlan1.append(link1[1])  # link_id
-#         link1ifacevlan1.append(interfacevlan1[3])  # urn
-#         link1ifacevlan1.append(interfacevlan1[2])  # href
+        for i in range(len(InfoPopulator.LINK_VLAN_RELATIONS)):
+            link1ifacevlan = []
+            link1ifacevlan.append(InfoPopulator.LINK_VLAN_RELATIONS[i][0])  # id
+            link1ifacevlan.append(InfoPopulator.LINK_VLAN_RELATIONS[i][1])  # link_id
 
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link1ifacevlan1):
-            ok = False
-
-
-        link1ifacevlan2 = []
-        link1ifacevlan2.append(interfacevlan2[1])
-        link1ifacevlan2.append(link1[1])
-#         link1ifacevlan2.append(interfacevlan2[3])
-#         link1ifacevlan2.append(interfacevlan2[2])
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link1ifacevlan2):
-            ok = False
-
-        link2ifacevlan1 = []
-        link2ifacevlan1.append(interfacevlan1[1])  # id
-        link2ifacevlan1.append(sublink1[1])  # link_id
-#         link2ifacevlan1.append(interfacevlan1[3])  # urn
-#         link2ifacevlan1.append(interfacevlan1[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link2ifacevlan1):
-            ok = False
+            if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link1ifacevlan):
+                ok = False
 
 
-        link2ifacevlan2 = []
-        link2ifacevlan2.append(interfacevlan3[1])
-        link2ifacevlan2.append(sublink1[1])
-#         link2ifacevlan2.append(interfacevlan3[3])
-#         link2ifacevlan2.append(interfacevlan3[2])
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link2ifacevlan2):
-            ok = False
-
-        link3ifacevlan1 = []
-        link3ifacevlan1.append(interfacevlan3[1])  # id
-        link3ifacevlan1.append(sublink2[1])  # link_id
-#         link3ifacevlan1.append(interfacevlan3[3])  # urn
-#         link3ifacevlan1.append(interfacevlan3[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link3ifacevlan1):
-            ok = False
-
-
-        link3ifacevlan2 = []
-        link3ifacevlan2.append(interfacevlan2[1])
-        link3ifacevlan2.append(sublink2[1])
-#         link3ifacevlan2.append(interfacevlan2[3])
-#         link3ifacevlan2.append(interfacevlan2[2])
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link3ifacevlan2):
-            ok = False
-
-
-        egresslink1ifacevlan1 = []
-        egresslink1ifacevlan1.append(interfacevlan3[1])  # id
-        egresslink1ifacevlan1.append(egress_link[1])  # link_id
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", egresslink1ifacevlan1):
-            ok = False
-
-
-        egresslink1ifacevlan2 = []
-        egresslink1ifacevlan2.append(remoteinterfacevlan1[1])  # id
-        egresslink1ifacevlan2.append(egress_link[1])  # link_id
-
-        if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", egresslink1ifacevlan2):
-            ok = False
-
-
-        link_rel1 = []
-        link_rel1.append(link1[1])  # parent id
-        link_rel1.append(sublink1[1])  # child id
-        if not info_insert(self.tbl_mgr, "ops_link_relations", link_rel1):
-            ok = False
-
-        link_rel2 = []
-        link_rel2.append(link1[1])  # parent id
-        link_rel2.append(sublink2[1])  # child id
-        if not info_insert(self.tbl_mgr, "ops_link_relations", link_rel2):
-            ok = False
+        for i in range(len(InfoPopulator.LINK_PARENT_CHILD_RELATION)):
+            link_rel = []
+            link_rel.append(InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0])  # parent id
+            link_rel.append(InfoPopulator.LINK_PARENT_CHILD_RELATION[i][1])  # child id
+            if not info_insert(self.tbl_mgr, "ops_link_relations", link_rel):
+                ok = False
 
 
         sliceuser1 = []
@@ -756,7 +767,7 @@ class InfoPopulator():
         mon_agg = []
         mon_agg.append(InfoPopulator.AGGREGATE_ID)
         mon_agg.append(extck_id)
-        mon_agg.append(self.url_base + "/info/aggregate/gpo-ig")
+        mon_agg.append(self.url_base + "/info/aggregate/" + InfoPopulator.AGGREGATE_ID)
         if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
             ok = False
 
