@@ -24,14 +24,7 @@
 ROOT_MK := $(firstword $(realpath root.mk ../root.mk ../../root.mk ../../../root.mk ../../../../root.mk ../../../../../root.mk ../../../../../../root.mk))
 include $(ROOT_MK)
 
-SUBDIRS = schema config test
-
-all:: VERSION
-VERSION::
-	git describe --tags > VERSION
-
-clean::
-	rm -f VERSION
+SUBDIRS = local
 
 # Put the following line of boilerplate at the end of every Makefile.
 include $(MAKEFRAGDIR)/epilog.mk

@@ -24,7 +24,7 @@
 # make targets based on the definitions given in the body of the makefile.
 
 # Let make know that these are not real files.
-.PHONY: all clean
+.PHONY: all clean unittests
 
 # Handle SUBDIRS definition from the makefile body.
 # This is a list of subdirectories (of the directory
@@ -34,6 +34,8 @@ ifdef SUBDIRS
 all:: $(SUBDIRS)
 
 clean:: $(SUBDIRS)
+
+unittests:: $(SUBDIRS)
 
 # Here is where the recursive make happens.  $@ is one of the subdirs,
 # and MAKECMDGOALS is the make target(s) that the user gave to the
@@ -86,8 +88,23 @@ all:: $(JSON_FILES)
 $(eval $(foreach file,$(JWC_FILES),\
                  $(call remove-comments-from-json-file,$(file),\
                         $(call remove-jwc-suffix,$(file)))))
+unittests:: $(JSON_FILES)
 
 clean::
 	$(RM) $(JSON_FILES)
 
 endif # JWC_FILES
+
+ifdef UNITTEST_REPORTDIR
+
+unittests:: $(UNITTEST_REPORTDIR)
+
+$(UNITTEST_REPORTDIR):
+	@mkdir -p $(UNITTEST_REPORTDIR)
+
+clean::
+	$(RM) -rf $(UNITTEST_REPORTDIR)
+
+
+
+endif # UNITTEST_PY
