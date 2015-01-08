@@ -35,6 +35,7 @@ unittests:: start_vm $(COPY_KEY)
 	echo "running $(UTPY)"; \
 	vagrant ssh -- /usr/local/ops-monitoring/local/unit-tests/$(UTPY) -c /vagrant/$(COPY_KEY) --xml /vagrant/$(UNITTEST_REPORTDIR); \
 	)
+	vagrant suspend
 	 
 
 start_vm: $(UNITTEST_REPORTDIR)
