@@ -500,6 +500,12 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of"
     },
     {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cwru-ig-of",
+       "amurl": "https://foam.geni.case.edu:3626/foam/gapi/2"
+    },
+    {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of",
