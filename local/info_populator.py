@@ -724,6 +724,24 @@ class InfoPopulator():
 
         return ok
 
+    def update_ts_in_record(self, ts, tablename, obj_id):
+        self.tbl_mgr.execute_sql("UPDATE " + tablename + " SET ts=" + str(ts) + " WHERE id='" + obj_id + "'")
+
+
+    def update_fake_info(self):
+        update_time = int(time.time() * 1000000)
+        self.update_ts_in_record(update_time, "ops_aggregate", InfoPopulator.AGGREGATE_ID)
+        for node_id in InfoPopulator.NODE_IDS:
+            self.update_ts_in_record(update_time, "ops_node", node_id)
+        for link_id in InfoPopulator.LINK_IDS:
+            self.update_ts_in_record(update_time, "ops_link", link_id)
+        for if_id in InfoPopulator.IF_IDS:
+            self.update_ts_in_record(update_time, "ops_interface", if_id)
+        for ifvlan_id in InfoPopulator.IFVLAN_IDS:
+            self.update_ts_in_record(update_time, "ops_interfacevlan", ifvlan_id)
+        for sliver_id in InfoPopulator.SLIVER_IDS:
+            self.update_ts_in_record(update_time, "ops_sliver", sliver_id)
+
     # Dummy information to test the external check store
     def insert_externalcheck_store(self):
         return self.insert_externalcheck_store_info()
