@@ -94,7 +94,7 @@ def handle_ts_data_query(tm, filters):
                     resp_i["tsdata"] = ts_arr
                     resp_arr.append(resp_i)
         else:
-            opslog.warning("event ", event_type, "not recognized", "missing namespace 'ops_monitoring:' ?")
+            opslog.warning("event " + event_type + " not recognized: missing namespace 'ops_monitoring:' ?")
 
     return json.dumps(resp_arr)
 
