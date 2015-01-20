@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------
-# Copyright (c) 2014 Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
@@ -22,14 +22,13 @@
 #----------------------------------------------------------------------
 
 class requests::base {
-  package {
-    "python-dev": ensure => installed;
-    "python-pip": ensure => installed;
-  }
+  include python::pip
+  include python::dev
 
   exec {
     "requests_install":
       command => "/usr/bin/pip install requests",
-      require => Package["python-pip"];
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c requests) -eq 0",
+      require => [Package["python-pip"], Package["python-dev"]];
   }
 }

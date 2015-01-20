@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------
 # Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -19,31 +18,36 @@
 # WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS
 # IN THE WORK.
-#----------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
-import sys
-import json
+# Put the following two lines of boilerplate at the top of every Makefile.
+ROOT_MK := $(firstword $(realpath root.mk ../root.mk ../../root.mk ../../../root.mk ../../../../root.mk ../../../../../root.mk ../../../../../../root.mk))
+include $(ROOT_MK)
 
-common_path = "../../common/"
+UNITTEST_REPORTDIR = test-reports
+UNITTEST_PY = UT_local_response.py
+COLLECTOR_KEY = col-gpo.pem
+COPY_KEY = col-gpo.pem
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
+.PHONY: start_vm 
+unittests:: start_vm $(COPY_KEY)
+	@- $(foreach UTPY, $(UNITTEST_PY), \
+	echo "running $(UTPY)"; \
+	vagrant ssh -- /usr/local/ops-monitoring/local/unit-tests/$(UTPY) -c /vagrant/$(COPY_KEY) --xml /vagrant/$(UNITTEST_REPORTDIR); \
+	)
+	vagrant suspend
+	 
 
-def main():
+start_vm: $(UNITTEST_REPORTDIR)
+	../start-vagrant-vm.sh
+	
+$(COPY_KEY): $(COLLECTOR_KEY)
+	cp -v $(COLLECTOR_KEY) $(COPY_KEY)
 
-    db_type = "collector"
-    config_path = "../../config/"
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
+ifneq "$(COPY_KEY)" "$(COLLECTOR_KEY)"
+clean::
+	rm -f $(COPY_KEY)
+endif
 
-    if not tbl_mgr.drop_all_tables():
-        sys.stderr.write("\nCould not drop all tables.\n")
-        sys.exit(-1)
-
-    if not tbl_mgr.establish_all_tables():
-        sys.stderr.write("\nCould not create all tables.\n")
-        sys.exit(-1)
-   
-if __name__ == "__main__":
-    main()
+# Put the following line of boilerplate at the end of every Makefile.
+include $(MAKEFRAGDIR)/epilog.mk

@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------
-# Copyright (c) 2014 Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
@@ -48,5 +48,10 @@ class local::server {
     "/usr/local/ops-monitoring/config/local_datastore_operator.conf":
       content => template("local/local_datastore_operator.conf.erb"),
       require => Exec["local_update_code"];
+  }
+
+  exec {
+    "save_ip_address":
+    command => "/bin/echo ${datastore_ip_addr} > /tmp/ip.conf";
   }
 }

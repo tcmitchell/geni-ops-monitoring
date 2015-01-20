@@ -1,3 +1,5 @@
+#!/bin/sh
+
 #----------------------------------------------------------------------
 # Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
@@ -21,29 +23,12 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import sys
-import json
-
-common_path = "../../common/"
-
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
-
-def main():
-
-    db_type = "collector"
-    config_path = "../../config/"
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    if not tbl_mgr.drop_all_tables():
-        sys.stderr.write("\nCould not drop all tables.\n")
-        sys.exit(-1)
-
-    if not tbl_mgr.establish_all_tables():
-        sys.stderr.write("\nCould not create all tables.\n")
-        sys.exit(-1)
-   
-if __name__ == "__main__":
-    main()
+# bring up the VM only if it's not up
+ status=$(vagrant status | grep -A 3 "Current machine states:" | grep default | sed 's/default *//')
+ if [ "${status}" != "running (virtualbox)" ]
+ then
+    vagrant up
+ fi
+ 
+ # Always re-provision the VM with the latest code.
+ vagrant provision

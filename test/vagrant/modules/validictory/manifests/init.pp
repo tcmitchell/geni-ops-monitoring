@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------
-# Copyright (c) 2014 Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
@@ -22,9 +22,12 @@
 #----------------------------------------------------------------------
 
 class validictory::base {
+  include python::pip
+
   exec {
     "validictory_install":
       command => "/usr/bin/pip install validictory",
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c validictory) -eq 0",
       require => Package["python-pip"];
   }
 }

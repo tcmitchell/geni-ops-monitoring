@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #----------------------------------------------------------------------
-# Copyright (c) 2014 Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
@@ -220,6 +220,14 @@ class StatsPopulator(threading.Thread):
             return random.randint(0, 10)
         elif event_type == "ping_rtt_ms":
             return random.uniform(10, 100)
+        elif event_type == "routable_ip_available":
+            return random.uniform(3.0, 80.0)
+        elif event_type == "tx_power":
+            return random.randint(0, 100)
+        elif event_type == "tx_frequency":
+            return random.uniform(900.0, 5400.0)
+        elif event_type == "wmx_noc":
+            return random.randint(0, 50)
         else:  # TODO add more
             return None
 

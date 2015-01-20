@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------
-# Copyright (c) 2014 Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
@@ -128,7 +128,7 @@ def main(argv):
     interface_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interface_id, num_ins, per_sec, interface_event_str_arr)
 
     obj_type = "interfacevlan"
-    interfacevlan_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interfacevlan_id, num_ins, per_sec, interface_event_str_arr)
+    interfacevlan_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, interfacevlan_id, num_ins, per_sec, interfacevlan_event_str_arr)
 
     obj_type = "aggregate"
     aggregate_sp = stats_populator.StatsPopulator(tbl_mgr, obj_type, aggregate_id, num_ins, per_sec, aggregate_event_str_arr)

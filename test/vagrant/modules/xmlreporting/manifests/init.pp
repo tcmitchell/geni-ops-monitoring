@@ -21,29 +21,15 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import sys
-import json
+class xmlreporting::base {
 
-common_path = "../../common/"
+  include python::pip
+  include python::dev
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
-
-def main():
-
-    db_type = "collector"
-    config_path = "../../config/"
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    if not tbl_mgr.drop_all_tables():
-        sys.stderr.write("\nCould not drop all tables.\n")
-        sys.exit(-1)
-
-    if not tbl_mgr.establish_all_tables():
-        sys.stderr.write("\nCould not create all tables.\n")
-        sys.exit(-1)
-   
-if __name__ == "__main__":
-    main()
+  exec {
+    "xmlreporting_install":
+      command => "/usr/bin/pip install unittest-xml-reporting",
+      onlyif => "/usr/bin/test $(/usr/bin/pip freeze | grep -c unittest-xml-reporting) -eq 0",
+      require => [Package["python-pip"], Package["python-dev"]];
+  }
+}

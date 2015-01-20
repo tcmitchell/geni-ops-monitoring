@@ -21,29 +21,16 @@
 # IN THE WORK.
 #----------------------------------------------------------------------
 
-import sys
-import json
+class python::pip {
+  package {
+    "python-pip": ensure => installed;
+  }
 
-common_path = "../../common/"
+}
 
-sys.path.append(common_path)
-import table_manager
-import opsconfig_loader
+class python::dev {
+  package {
+    "python-dev": ensure => installed;
+  }
 
-def main():
-
-    db_type = "collector"
-    config_path = "../../config/"
-    tbl_mgr = table_manager.TableManager(db_type, config_path)
-    tbl_mgr.poll_config_store()
-
-    if not tbl_mgr.drop_all_tables():
-        sys.stderr.write("\nCould not drop all tables.\n")
-        sys.exit(-1)
-
-    if not tbl_mgr.establish_all_tables():
-        sys.stderr.write("\nCould not create all tables.\n")
-        sys.exit(-1)
-   
-if __name__ == "__main__":
-    main()
+}
