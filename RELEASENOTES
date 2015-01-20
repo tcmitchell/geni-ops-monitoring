@@ -1,3 +1,17 @@
+Changes for Release 2.0.1
+January 20, 2015
+------------------------------
+The main reason for this release is to capture the changes to the external
+check code that was based off the version 2.0 release.
+
+* New Features
+ * External check store populator code is now based on the version 2.0 release.
+
+* Bug Fixes
+ * When receiving an info query for a non-existent object the local data store
+   would throw an exception.
+ * Various collector code improvements to deal with authority queries
+
 Changes for Release 2.0
 August 28, 2014
 ------------------------------
