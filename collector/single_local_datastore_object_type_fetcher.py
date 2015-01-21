@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #----------------------------------------------------------------------
-# Copyright (c) 2014test/vagrant/local/GNUmakefile Raytheon BBN Technologies
+# Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and/or hardware specification (the "Work") to
