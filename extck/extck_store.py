@@ -293,6 +293,8 @@ def getShortName(tbl_mgr, aggStores, cert_path):
             urn = aggDetails['urn']
             if aggregate['amtype'] == "opengeni":
                 amType = aggregate['amtype']
+            elif aggregate['amtype'] == "exogeni":
+                amType = "orca"
             else:
                 amType = "protogeni"
             aggShortName = aggDetails['id']
