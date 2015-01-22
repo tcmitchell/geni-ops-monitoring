@@ -155,7 +155,12 @@ def main():
         elif amtype == "stitcher":  # Do something special
             state = getStitcherState()
         else:
-            p = subprocess.Popen(["/usr/local/bin/wrap_am_api_test", "genich", fqdn, amtype, "GetVersion"], stdout=subprocess.PIPE)
+            args = ["/usr/local/bin/wrap_am_api_test", "genich", fqdn, amtype, "ListResources"]
+            logstr = "About to execute:"
+            for arg in args:
+                logstr = logstr + " " + arg
+            logger.debug(logstr)
+            p = subprocess.Popen(args, stdout=subprocess.PIPE)
             output, _err = p.communicate()
             state = getAMState(output)
         shortName[urn].append(state)
