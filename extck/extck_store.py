@@ -404,35 +404,35 @@ def getNickCache():
             aggShortName = formatShortName(aggShortName)  # Grab shortname and convert to current format
             cols1 = cols[1].strip().split(',')
             urn = cols1[0]
-            url = cols1[1]
-            nickCache[urn] = [aggShortName, url]
+            if urn not in nickCache.keys():
+                url = cols1[1]
+                nickCache[urn] = [aggShortName, url]
     return nickCache
 
 def formatShortName(shortName):
     #  if len(shortName)>3:# Aggregate with 2 chars: ignore
     shortName = shortName.translate(None, digits)  # Remove all #s froms shortName
+    newFormat = shortName
     oldFormat = shortName.strip().split('-')
-    suffix = ['ig', 'eg', 'of', 'pg', 'og']
-    if len(oldFormat) == 1:  # For cases like "ion"
-        return shortName
-    for suffix_id in suffix:
-        if oldFormat[0] == suffix_id and len(oldFormat) == 2:  # For cases like gpo-ig
-            newFormat = oldFormat[1] + "-" + suffix_id
-            break
-        elif oldFormat[1] == suffix_id and len(oldFormat) == 2:  # For cases like ig-gpo
-            newFormat = shortName
-            break
-        elif oldFormat[0] == suffix_id and len(oldFormat) == 3:  # For cases like ig-of-gpo
-            newFormat = oldFormat[2] + '-' + suffix_id + '-' + oldFormat[1]
-            break
-        elif oldFormat[1] == suffix_id and len(oldFormat) == 3:  # For cases like gpo-ig-of
-            newFormat = shortName
-            break
+    suffix = ['ig', 'eg', 'of', 'pg', 'og', 'clab']
+    if len(oldFormat) != 1:  # For cases not like "ion"
+        for suffix_id in suffix:
+            if oldFormat[0] == suffix_id and len(oldFormat) == 2:  # For cases like ig-gpo
+                newFormat = oldFormat[1] + "-" + suffix_id
+                break
+            elif oldFormat[1] == suffix_id and len(oldFormat) == 2:  # For cases like gpo-ig
+                newFormat = shortName
+                break
+            elif oldFormat[0] == suffix_id and len(oldFormat) == 3:  # For cases like ig-of-gpo
+                newFormat = oldFormat[2] + '-' + suffix_id + '-' + oldFormat[1]
+                break
+            elif oldFormat[1] == suffix_id and len(oldFormat) == 3:  # For cases like gpo-ig-of
+                newFormat = shortName
+                break
 
     if newFormat == "i-of":  # For i2-of case
-        return "i2-of"
-    else:
-        return newFormat
+        newFormat = "i2-of"
+    return newFormat
 
 def getSlices():
     slices = {'sitemon':['urn:publicid:IDN+ch.geni.net:gpoamcanary+slice+sitemon', 'f42d1c94-506a-4247-a8af-40f5760d7750'], 'gpoI15': ['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI15', '35e195e0-430a-488e-a0a7-8314326346f4'], 'gpoI16':['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI16', 'e85a5108-9ea3-4e01-87b6-b3bc027aeb8f']}
