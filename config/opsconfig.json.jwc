@@ -17,9 +17,9 @@
     },
     // AL2S data store
     {
-      "urn": "urn:publicid:IDN+al2s.net.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+al2s.internet2.edu+authority+cm",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.net.internet2.edu"
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.internet2.edu"
     },
     // Mesoscale data store
     {
