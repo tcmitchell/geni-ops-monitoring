@@ -26,113 +26,154 @@ import time
 import getopt
 import json
 import ConfigParser
+import os
 # import subprocess
 import requests
-from string import digits
-# from extck.coordinate_mesoscale_experiments import tbl_mgr
-# from pprint import pprint as pprint
+# from string import digits
 
-common_path = "../common/"
+
+extck_path = os.path.abspath(os.path.dirname(__file__))
+top_path = os.path.dirname(extck_path)
+common_path = os.path.join(top_path, "common")
+config_path = os.path.join(top_path, "config")
 sys.path.append(common_path)
+sys.path.append(extck_path)
+
 # import opsconfig_loader
 import table_manager
+import extck_config
 
-config_path = "/home/amcanary/"
 # input file with short-names and Urls aggregates
 # Need this file for sites like EG that aren't in prod but url is not in opsconfig
 # inputFileBackup=open('/home/amcanary/src/gcf/agg_nick_cache.base')
 
-inputFile = open('/home/amcanary/.bssw/geni/nickcache.json')
+# inputFile = open('/home/amcanary/.bssw/geni/nickcache.json')
 
 # Dic to store short name and corresponding url
 # Format: shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
 
-shortName = {}
+# shortName = {}
 
-# Store cache of nickNames in here
-# nickCache[urn]=[shortName, url]
-nickCache = {}
 
-# Dic to store slice info for campus and core
-# monitoring slices.
-#
-slices = {}
 
 class InfoPopulator():
-    def __init__(self, tbl_mgr, url_base):
+    PING_CAMPUS = object()
+    PING_CORE = object()
 
+    def __init__(self, tbl_mgr, config, nickCache):
+        """
+        Constructor for InfoPopulator object
+        :param tbl_mgr: the instance of table manager used to access the database.
+        :param config: the ExtckConfigLoader instance used to get the configuration of the external check store.
+        :param nickCache:the AggregateNickCache instance used to get urns from site nicknames.
+        """
         self.tbl_mgr = tbl_mgr
-        self.url_base = url_base
-        # steal config path from table_manager
-        self.config_path = tbl_mgr.config_path
-        config = ConfigParser.ConfigParser()
-        config.read("./ips.conf")
-        self.ip_campus = dict(config.items("campus"))
-        self.ip_core = dict(config.items("core"))
+        self._config = config
+        self._nickCache = nickCache
+        self._extckStoreBaseUrl = self._config.get_extck_store_base_url()
+        self._extckStoreSite = self._config.get_extck_store_id()
 
-    def populateInfoTables(self, shortName, slices, srcPing, ipList):
-        dataStoreBaseUrl = "https://extckdatastore.gpolab.bbn.com"
-        dataStoreSite = "gpo"
+        ipsconfig = ConfigParser.ConfigParser()
+        ipsconfig.read(os.path.join(extck_path, "ips.conf"))
+        self._ip_campus = dict(ipsconfig.items("campus"))
+        self._ip_core = dict(ipsconfig.items("core"))
+
+    def _getSiteInfo(self, srcSiteName, aggStores):
+        am_urn = self._nickCache.get_am_urn(srcSiteName)
+        am_url = ""
+        # First let's try from the cache.
+        if am_urn is not None:
+            for store in aggStores:
+                if store["urn"] == am_urn:
+                    am_url = store["href"]
+                    break;
+        else:
+            # then let's try from the opsconfig
+            am_urn = ""
+            for store in aggStores:
+                if store.has_key("am_nickname") and store["am_nickname"] == srcSiteName:
+                    am_urn = store["urn"]
+                    am_url = store["href"]
+                    break;
+        return (am_urn, am_url)
+
+    def populateInfoTables(self, aggStores):
+        slices = self._config.get_experiment_slices_info()
+        srcPingCampus = self._config.get_experiment_source_ping_campus()
+        srcPingCore = self._config.get_experiment_source_ping_core()
+        # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
+        self._populateInfoTables(slices, srcPingCampus, InfoPopulator.PING_CAMPUS, aggStores)
+        self._populateInfoTables(slices, srcPingCore, InfoPopulator.PING_CORE, aggStores)
+
+    def _populateInfoTables(self, slices, srcPing, ping_type, aggStores):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
+        if ping_type == InfoPopulator.PING_CAMPUS:
+            ipList = self._ip_campus
+        elif ping_type == InfoPopulator.PING_CORE:
+            ipList = self._ip_core
+        else:
+            self.tbl_mgr.logger.warning("Unrecoginzed ping type")
+            return
+
         for srcSite in srcPing:
             for dstSite in ipList:
-                passFlag = 0
-                if srcSite != dstSite:  # A site must not ping itself
+                if srcSite == dstSite:
+                    # A site must not ping itself
+                    continue
+
+                slice_name = self._config.get_experiment_source_ping_slice_name(srcSite)
+                sliceUrn = slices[slice_name][0]
+                sliceUuid = slices[slice_name][1]
+
+                if ping_type == InfoPopulator.PING_CAMPUS:
+                    exp_id = srcSite + "_to_" + dstSite + "_campus"
+                    srcSiteName = srcSite
+                    dstSiteName = dstSite
+                else:
+                    # ip_core then
+                    srcSiteFlag = srcSite.strip().split('-')
+                    network = srcSiteFlag[-1:][0]  # last element
+                    # getting the suffix of the destination
                     dstSiteFlag = dstSite.strip().split('-')
+                    if network != dstSiteFlag[-1:][0]:
+                        # Can't ping between hosts in different networks
+                        continue
+                    exp_id = srcSite + "_to_" + dstSite
+                    srcSiteName = srcSite[:-len(network) - 1]
+                    dstSiteName = dstSite[:-len(network) - 1]
 
-                    if len(dstSiteFlag) == 2:
-                        exp_id = srcSite + "_to_" + dstSite + "_campus"
-                        sliceUrn = slices["sitemon"][0]
-                        sliceUuid = slices["sitemon"][1]
-                    else:
-                        exp_id = srcSite + "_to_" + dstSite
-                        srcSiteFlag = srcSite.strip().split('-')
-                        if srcSiteFlag[2] != dstSiteFlag[2]:
-                            passFlag = 1
-                            pass  # Can't ping between hosts in different networks
-                        else:
-                            if dstSiteFlag[2] == "3715_core":  # Get slice info for core VLAN 3715
-                                sliceUrn = slices["gpoI15"][0]
-                                sliceUuid = slices["gpoI15"][1]
-                            else:
-                                sliceUrn = slices["gpoI16"][0]  # Get slice info for core VLAN 3716
-                                sliceUuid = slices["gpoI16"][1]
-
-                    if passFlag == 1:
-                        pass
-                    else:
-                        # Routine for "ops_externalcheck_experiment" Table
-
-                        urnHrefs = getSiteInfo(srcSite, dstSite, shortName)  # [srcUrn, srcHref, dstUrn, dstHref]
-                        if urnHrefs[0] == '' or urnHrefs[1] == '' or urnHrefs[2] == '' or urnHrefs[3] == '':
-                            continue
-                        else:
-                            ts = str(int(time.time() * 1000000))
-                            exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
-                                   exp_id,
-                                   dataStoreBaseUrl + "/info/experiment/" + exp_id,
-                                   ts,
-                                   sliceUrn,
-                                   sliceUuid,
-                                   urnHrefs[0],
-                                   urnHrefs[1],
-                                   urnHrefs[2],
-                                   urnHrefs[3]]
-                            self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
-                            extck_exp = [exp_id, dataStoreSite, dataStoreBaseUrl + "/info/experiment/" + exp_id]
-                            self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
-                                                (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
-                                                 self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+                (srcAmUrn, srcAmHref) = self._getSiteInfo(srcSiteName, aggStores)
+                (dstAmUrn, dstAmHref) = self._getSiteInfo(dstSiteName, aggStores)
+                if srcAmUrn == '' or srcAmHref == '' or dstAmUrn == '' or dstAmHref == '':
+                    self.tbl_mgr.logger.warning("Error when getting info from source %s and dest %s, got src urn %s, src href %s, dst urn %s, dst href %s"
+                                                % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
+                    continue
+                else:
+                    ts = str(int(time.time() * 1000000))
+                    exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
+                           exp_id,
+                           self._extckStoreBaseUrl + "/info/experiment/" + exp_id,
+                           ts,
+                           sliceUrn,
+                           sliceUuid,
+                           srcAmUrn,
+                           srcAmHref,
+                           dstAmUrn,
+                           dstAmHref
+                           ]
+                    self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
+                    extck_exp = [exp_id, self._extckStoreSite, self._extckStoreBaseUrl + "/info/experiment/" + exp_id]
+                    self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
+                                        (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
+                                         self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
 
     def insert_externalcheck_monitoredaggregate(self, urn, aggRow):
-        extck_id = aggRow[1]  # agg_id
-        dataStoreSite = "gpo"
-#         ts = str(int(time.time() * 1000000))
+        aggregate_id = aggRow[1]  # agg_id
         dataStoreHref = aggRow[2]
-        mon_agg = [extck_id, dataStoreSite, dataStoreHref]
+        mon_agg = [aggregate_id, self._extckStoreSite, dataStoreHref]
         ext_monagg_tablename = "ops_externalcheck_monitoredaggregate"
         ext_monagg_schema = self.tbl_mgr.schema_dict[ext_monagg_tablename]
 
@@ -148,52 +189,72 @@ class InfoPopulator():
         self.tbl_mgr.upsert(agg_tablename, agg_schema, aggRow,
                     self.tbl_mgr.get_column_from_schema(agg_schema, "id"))
 
+    def insert_aggregate_url(self, aggregate_id, aggregate_manager_url):
+        agg_amurl_tablename = "extck_aggregate_amurl"
+        agg_amurl_schema = self.tbl_mgr.schema_dict[agg_amurl_tablename]
+        index_agg = self.tbl_mgr.get_column_from_schema(agg_amurl_schema, "aggregate_id")
+        index_amurl = self.tbl_mgr.get_column_from_schema(agg_amurl_schema, "amurl")
+        if index_agg < index_amurl:
+            row = (aggregate_id, aggregate_manager_url)
+        else:
+            row = (aggregate_manager_url, aggregate_id)
+        self.tbl_mgr.upsert(agg_amurl_tablename, agg_amurl_schema, row, (index_agg, index_amurl))
 
-    def insert_externalcheck(self):  # This function assumes the existence of only 1 external check datastore
-        dataStoreSite = "gpo"
-        dataStore_url_base = "https://extckdatastore.gpolab.bbn.com"
+    def insert_aggregate_type(self, aggregate_id, aggregate_type):
+        agg_tablename = "extck_aggregate"
+        agg_schema = self.tbl_mgr.schema_dict[agg_tablename]
+        index_agg = self.tbl_mgr.get_column_from_schema(agg_schema, "aggregate_id")
+        index_type = self.tbl_mgr.get_column_from_schema(agg_schema, "type")
+        if index_agg < index_type:
+            row = (aggregate_id, aggregate_type)
+        else:
+            row = (aggregate_type, aggregate_id)
+        self.tbl_mgr.upsert(agg_tablename, agg_schema, row, index_agg)
+
+    def insert_externalcheck(self):
         ts = str(int(time.time() * 1000000))
         extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#",
-                 dataStoreSite,
-                 dataStore_url_base + "/info/externalcheck/" + dataStoreSite,
+                 self._extckStoreSite,
+                 self._extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
                  ts,
-                 dataStore_url_base + "/data/"]
+                 self._extckStoreBaseUrl + "/data/"]
         table_str = "ops_externalcheck"
         extck_schema = self.tbl_mgr.schema_dict[table_str]
         self.tbl_mgr.upsert(table_str, extck_schema, extck, self.tbl_mgr.get_column_from_schema(extck_schema, "id"))
 
+    def cleanUpObsoleteAggregates(self, aggStores):
+        """
+        Method to clean up existing aggregate manager entries that no longer exists 
+        in the opsconfig data store.
+        :param aggStores: a json dictionary object corresponding to the "aggregatestores" 
+          entry of the opsconfig json.
+        """
+        registeredAggs = self.tbl_mgr.query("select urn, id from ops_aggregate");
+        if registeredAggs is None:
+            return
+        currentUrnList = []
+        for store in aggStores:
+            currentUrnList.append(store["urn"])
+        for agg_details in registeredAggs:
+            if agg_details[0] not in currentUrnList:
+                # Looks like we had an old aggregate registered
+                self.tbl_mgr.logger.info("Aggregate %s (%s) is obsolete: deleting corresponding records" % (agg_details[1], agg_details[0]))
+                self.tbl_mgr.execute_sql("delete from ops_aggregate_is_available where id='%s'" % agg_details[1])
+                self.tbl_mgr.execute_sql("delete from ops_externalcheck_monitoredaggregate where id='%s'" % agg_details[1])
+                self.tbl_mgr.execute_sql("delete from extck_aggregate where aggregate_id='%s'" % agg_details[1])
+                self.tbl_mgr.execute_sql("delete from extck_aggregate_amurl where aggregate_id='%s'" % agg_details[1])
+                self.tbl_mgr.execute_sql("delete from ops_aggregate where id='%s'" % agg_details[1])
 
-def getSiteInfo(srcSite, dstSite, shortName):
-    if srcSite == "gpo-ig-3715_core" or srcSite == "gpo-ig-3716_core": srcSite = "gpo-ig"
-    if dstSite == "gpo-ig-3715_core" or dstSite == "gpo-ig-3716_core": dstSite = "gpo-ig"
-    if srcSite == "wisconsin-ig-3715_core": srcSite = "wisconsin-ig"
-    if srcSite == "uh-eg-3716_core": srcSite = "uh-eg"
-    if srcSite == "missouri-ig-3716_core": srcSite = "missouri-ig"
-    if dstSite == "wisconsin-ig-3715_core": dstSite = "wisconsin-ig"
-    if dstSite == "uh-eg-3716_core": dstSite = "uh-eg"
-    if dstSite == "missouri-ig-3716_core": dstSite = "missouri-ig"
 
-    srcUrn = srcHref = dstUrn = dstHref = ''
-    for key in shortName:
-        if shortName[key][0] == srcSite:
-            srcUrn = key
-            srcHref = shortName[key][2]
-        elif shortName[key][0] == dstSite:
-            dstUrn = key
-            dstHref = shortName[key][2]
-
-    return [srcUrn, srcHref, dstUrn, dstHref]
-
-
-def db_insert(tbl_mgr, table_str, row_arr):
-    val_str = "('"
-
-    for val in row_arr:
-        val_str += val + "','"  # join won't do this
-
-    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
-
-    tbl_mgr.insert_stmt(table_str, val_str)
+# def db_insert(tbl_mgr, table_str, row_arr):
+#     val_str = "('"
+#
+#     for val in row_arr:
+#         val_str += val + "','"  # join won't do this
+#
+#     val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
+#
+#     tbl_mgr.insert_stmt(table_str, val_str)
 
 def get_default_attribute_for_type(vartype):
     val = "";
@@ -258,86 +319,112 @@ def extract_row_from_json_dict(logger, db_table_schema, object_dict, object_desc
                 object_attribute_list.append(None)
     return object_attribute_list
 
+class AggregateNickCache:
 
-def getShortName(tbl_mgr, aggStores, cert_path):
+    __NICKNAMES_SECTION = "aggregate_nicknames"
+
+    def __init__(self, nickfile):
+        """
+        :param nickfile: the name of the aggregate nickname cache configuration file.
+        """
+        self._nickfile = nickfile
+        self._nickconfig = ConfigParser.ConfigParser()
+        self._has_read = False
+
+    def parseNickCache(self):
+        """
+        method to parse an omni-type  aggregate nickname cache configuration file.
+        :return: a map that has aggregate managers as keys and sets of AM API URLs 
+        as values.
+        """
+        urn_to_urls_map = dict()
+        if not self._has_read:
+            if self._nickfile in self._nickconfig.read(self._nickfile):
+                self._has_read = True
+
+        # Going over the whole section
+        nicknames = self._nickconfig.items(AggregateNickCache.__NICKNAMES_SECTION)
+        for _key, urn_url in nicknames:
+            [urn, url] = urn_url.split(",")
+            urn = urn.strip()
+            url = url.strip()
+            if urn != "":
+                if not urn_to_urls_map.has_key(urn):
+                    urn_to_urls_map[urn] = set()
+                urn_to_urls_map[urn].add(url)
+        return urn_to_urls_map
+
+    def updateCache(self, urn_to_urls_map, aggStores):
+        """
+        method to update the map of urns to AM API URLS for the Aggregate Managers, per 
+        the ops config information, which may contain the AM API URL, for AM that are not 
+        in production yet.
+        :param urn_to_urls_map: the map of urns to AM API URLS for the Aggregate Managers.
+        :param aggStores: a json dictionary object corresponding to the "aggregatestores" 
+          entry of the opsconfig json.
+        """
+        for aggregate in aggStores:
+            if aggregate.has_key('amurl'):
+                url = aggregate['amurl']
+                urn = aggregate['urn']
+                if not urn_to_urls_map.has_key(urn):
+                    urn_to_urls_map[urn] = set()
+                urn_to_urls_map[urn].add(url)
+
+    def get_am_urn(self, am_nickname):
+        """
+        Method to get the AM URN given its nickname.
+        :param am_nickname: the nickname of the AM
+        :return: Returns the AM URN or None if the nickname wasn't found.
+        """
+        try:
+            valstr = self._nickconfig.get(AggregateNickCache.__NICKNAMES_SECTION, am_nickname)
+        except:
+            return None
+
+        vals = valstr.split(',')
+        return vals[0].strip()
+
+def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
     """
-    Function to get the aggregate information from a list of aggregates.
-    :param tbl_mgr: the TableManager object instance used by this script. It is used to 
-        access the logger field to log statements, and the schema_dict field to get the DB schema 
-        for certain tables.
-    :param aggStores: the list of aggregate stores, as a json dictionary in the format of the
-        opsconfig aggregatestores array. 
-    :param cert_path: the path to the certificate.
-    :return: a dictionary ordered by the aggregate URN. Each dictinary entry is a list that contains:
-        the aggregate id
-        the aggregate type as recognized by the /usr/local/bin/wrap_am_api_test script.
-        the fully qualified domain name for the aggregate manager
-        the URL of the AM API server
-        the aggregate attributes in the format of a row of values to be inserted in the ops_aggregate table.
+    Function to register aggregates in the database.
+    :param aggStores: a json dictionary object corresponding to the "aggregatestores" 
+      entry of the opsconfig json.
+    :param cert_path: the path to the collector certificate used to retrieve the 
+      aggregate manager characteristics from the aggregate data store.
+    :param urn_to_urls_map: Map of aggregate manager URN to AM API URLs.
+    :param ip: instance of the InfoPopulator object used to populate the DB
     """
-    shortName = {}
-    ops_agg_schema = tbl_mgr.schema_dict["ops_aggregate"]
+    ops_agg_schema = ip.tbl_mgr.schema_dict["ops_aggregate"]
+    # TODO parameterize these
     agg_schema_str = "http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#"
     extck_measRef = "https://extckdatastore.gpolab.bbn.com/data/"
-    nickCache = getNickCache()
     for aggregate in aggStores:
-
-        if aggregate['amtype'] == 'instageni' or \
-                aggregate['amtype'] == 'protogeni' or \
-                aggregate['amtype'] == "exogeni" or \
-                aggregate['amtype'] == "opengeni":
-            aggDetails = handle_request(tbl_mgr.logger, cert_path, aggregate['href'])  # Use url for site's store to query site
+        amtype = aggregate['amtype']
+        urn = aggregate['urn']
+        if amtype == 'instageni' or \
+                amtype == 'protogeni' or \
+                amtype == "exogeni" or \
+                amtype == "opengeni" or \
+                amtype == "network-aggregate":
+            if not urn_to_urls_map.has_key(urn):
+                ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
+                continue
+            aggDetails = handle_request(ip.tbl_mgr.logger, cert_path, aggregate['href'])  # Use url for site's store to query site
             if aggDetails == None:
                 continue
-            agg_attributes = extract_row_from_json_dict(tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
-            urn = aggDetails['urn']
-            if aggregate['amtype'] == "opengeni":
-                amType = aggregate['amtype']
-            elif aggregate['amtype'] == "exogeni":
-                amType = "orca"
-            else:
-                amType = "protogeni"
-            aggShortName = aggDetails['id']
-            if aggregate.has_key('amurl'):  # For non-prod aggregates
-                url = aggregate['amurl']
-            else:
-                if nickCache.has_key(urn):
-                    url = nickCache[urn][1]
-                else:
-                    # No point grabbing data for site without AM URL
-                    tbl_mgr.logger.warning("Missing URL for " + aggShortName)
-                    continue
+            agg_attributes = extract_row_from_json_dict(ip.tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
 
-            cols = url.strip().split('/')
-            cols1 = cols[2].strip().split(':')
-            fqdn = cols1[0]
-            shortName[urn] = [aggShortName, amType, fqdn, url, agg_attributes]
 
-        elif aggregate['amtype'] == "network-aggregate":  # Case for ion
-            if nickCache.has_key(aggregate['urn']):
-                aggDetails = handle_request(tbl_mgr.logger, cert_path, aggregate['href'])
-                if aggDetails == None:
-                    continue
-                agg_attributes = extract_row_from_json_dict(tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
-                urn = aggDetails['urn'];
-                amType = 'myplc';
-                aggShortName = aggDetails['id'];
-                url = nickCache[urn][1]
-                cols = url.strip().split('/');
-                cols1 = cols[2].strip().split(':');
-                fqdn = cols1[0]
-                shortName[urn] = [aggShortName, amType, fqdn, url, agg_attributes]
-        elif aggregate['amtype'] == "stitcher":  # Special case
-            selfRef = aggregate['href']; 
-            urn = aggregate['urn']
-            amType = aggregate['amtype']
+        elif amtype == "stitcher":  # Special case
+            # TODO find stitcher AM in config file.
+            selfRef = aggregate['href'];
             url = "http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
-            fqdn = '';
-            aggShortName = "scs"
+            aggId = "scs"
             ts = str(int(time.time() * 1000000))
             ops_status = "development"
             agg_attributes = (agg_schema_str,  # schema
-                              aggShortName,  # id
+                              aggId,  # id
                               selfRef,  # selfref
                               urn,  # urn
                               ts,  # time stamp
@@ -346,35 +433,26 @@ def getShortName(tbl_mgr, aggStores, cert_path):
                               ops_status,  # operational status
                               None  # routable IP poolsize
                               )
-            shortName[urn] = [aggShortName, amType, fqdn, url, agg_attributes]
-        elif aggregate['amtype'] == "foam" :
-            # FOAM and OG
+        elif amtype == "foam" :
+            # FOAM
+            if not urn_to_urls_map.has_key(urn):
+                ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
+                continue
+
             selfRef = aggregate['href']
-            urn = aggregate['urn']
-            amType = aggregate['amtype']
 
             if aggregate.has_key('amurl'):  # For non-prod foam aggregates
-                url = aggregate['amurl']
                 ops_status = "development"
             else:
-                if nickCache.has_key(urn):
-                    url = nickCache[urn][1]
-                    ops_status = "production"
-                else:
-                    tbl_mgr.logger.warning("Missing URL for " + urn)
-                    continue
+                ops_status = "production"
 
-            # Get aggShortName
+            # Get aggregate id
             cols = selfRef.strip().split('/')
-            aggShortName = cols[len(cols) - 1]  # Grab last component in cols
+            aggId = cols[len(cols) - 1]  # Grab last component in cols
 
-            # Get fqdn
-            cols = url.strip().split('/')
-            cols1 = cols[2].strip().split(':')
-            fqdn = cols1[0]
             ts = str(int(time.time() * 1000000))
             agg_attributes = (agg_schema_str,  # schema
-                              aggShortName,  # id
+                              aggId,  # id
                               selfRef,  # selfref
                               urn,  # urn
                               ts,  # time stamp
@@ -383,75 +461,36 @@ def getShortName(tbl_mgr, aggStores, cert_path):
                               ops_status,  # operational status
                               None  # routable IP poolsize
                               )
-            shortName[urn] = [aggShortName, amType, fqdn, url, agg_attributes]
-        elif aggregate['amtype'] == "wimax":
+        elif amtype == "wimax":
             # wimax are not really aggregates...
             # So no AM API can't be queried for their availability
+            ip.tbl_mgr.logger.info("Wimax aggregate won't be monitored (%s)" % urn)
             continue
         else:
-            tbl_mgr.logger.warning("Unrecognized AM type: " + aggregate['amtype'])
+            ip.tbl_mgr.logger.warning("Unrecognized AM type: " + amtype)
+            continue
 
-    return shortName
-
-def getNickCache():
-    for line in inputFile:  # Read in line
-        if line[0] != '#' and line[0] != '[' and line[0] != '\n':  # Don't read comments/junk
-            cols = line.strip().split('=')
-            aggShortName = cols[0]
-            if aggShortName == "plcv3" or aggShortName == "plc3":  # Only grab fqdn for aggShortName=plc
-                continue
-            # print "agg", aggShortName
-            aggShortName = formatShortName(aggShortName)  # Grab shortname and convert to current format
-            cols1 = cols[1].strip().split(',')
-            urn = cols1[0]
-            if urn not in nickCache.keys():
-                url = cols1[1]
-                nickCache[urn] = [aggShortName, url]
-    return nickCache
-
-def formatShortName(shortName):
-    #  if len(shortName)>3:# Aggregate with 2 chars: ignore
-    shortName = shortName.translate(None, digits)  # Remove all #s froms shortName
-    newFormat = shortName
-    oldFormat = shortName.strip().split('-')
-    suffix = ['ig', 'eg', 'of', 'pg', 'og', 'clab']
-    if len(oldFormat) != 1:  # For cases not like "ion"
-        for suffix_id in suffix:
-            if oldFormat[0] == suffix_id and len(oldFormat) == 2:  # For cases like ig-gpo
-                newFormat = oldFormat[1] + "-" + suffix_id
-                break
-            elif oldFormat[1] == suffix_id and len(oldFormat) == 2:  # For cases like gpo-ig
-                newFormat = shortName
-                break
-            elif oldFormat[0] == suffix_id and len(oldFormat) == 3:  # For cases like ig-of-gpo
-                newFormat = oldFormat[2] + '-' + suffix_id + '-' + oldFormat[1]
-                break
-            elif oldFormat[1] == suffix_id and len(oldFormat) == 3:  # For cases like gpo-ig-of
-                newFormat = shortName
-                break
-
-    if newFormat == "i-of":  # For i2-of case
-        newFormat = "i2-of"
-    return newFormat
-
-def getSlices():
-    slices = {'sitemon':['urn:publicid:IDN+ch.geni.net:gpoamcanary+slice+sitemon', 'f42d1c94-506a-4247-a8af-40f5760d7750'], 'gpoI15': ['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI15', '35e195e0-430a-488e-a0a7-8314326346f4'], 'gpoI16':['urn:publicid:IDN+ch.geni.net:gpo-infra+slice+gpoI16', 'e85a5108-9ea3-4e01-87b6-b3bc027aeb8f']}
-    return slices
+        # Populate "ops_aggregate" table
+        ip.insert_aggregate(urn, agg_attributes)
+        # Populate "ops_externalcheck_monitoredaggregate" table
+        ip.insert_externalcheck_monitoredaggregate(urn, agg_attributes)
+        ip.insert_aggregate_type(agg_attributes[1], amtype)
+        if amtype != "stitcher":
+            am_urls = urn_to_urls_map[urn]
+            for am_url in am_urls:
+                ip.insert_aggregate_url(agg_attributes[1], am_url)
 
 
-def handle_request(logger, cert_path, url=None):
 
-    if url == None:
-        # Production url
-        url = 'https://opsconfigdatastore.gpolab.bbn.com/info/opsconfig/geni-prod'
-        # Dev url
-        # url='https://tamassos.gpolab.bbn.com/info/opsconfig/geni-prod'
+
+
+def handle_request(logger, cert_path, url):
 
     resp = None
     try:
         resp = requests.get(url, verify=False, cert=cert_path)
     except Exception, e:
-        logger.warning("No response from local datastore at: " + url)
+        logger.warning("No response from datastore at: " + url)
         logger.warning(e)
         return None
 
@@ -507,38 +546,42 @@ def main(argv):
 
     [cert_path] = parse_args(argv)
     db_name = "local"
-    config_path = "../config/"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
-    ip = InfoPopulator(tbl_mgr, "")
+    config = extck_config.ExtckConfigLoader(tbl_mgr.logger)
+    extck_tables_schemas = config.get_extck_table_schemas()
+    extck_tables_constraints = config.get_extck_table_constraints()
+    for table_name in extck_tables_schemas.keys():
+        tbl_mgr.add_table_schema(table_name, extck_tables_schemas[table_name])
+        tbl_mgr.add_table_constraints(table_name, extck_tables_constraints[table_name])
+        tbl_mgr.establish_table(table_name)
+
+
+    nickCache = AggregateNickCache(config.get_nickname_cache_file_location())
+
+    ip = InfoPopulator(tbl_mgr, config, nickCache)
+    # Populate "ops_externalCheck" table
     ip.insert_externalcheck()
+
     # Grab urns and urls for all agg stores
-    # url="https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig"
-    # https://www.geni.case.edu:5001/info/aggregate/cwru-ig
-    # https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig
-    aggRequest = handle_request(tbl_mgr.logger, cert_path)
-    # print aggRequest
-    # return
+    opsconfig_url = config.get_opsconfigstore_url()
+    aggRequest = handle_request(tbl_mgr.logger, cert_path, opsconfig_url)
+
     if aggRequest == None:
         tbl_mgr.logger.warning("Could not not contact opsconfigdatastore!")
         return
     aggStores = aggRequest['aggregatestores']
-    # read list of urls (or short-names)
-    shortName = getShortName(tbl_mgr, aggStores, cert_path)
-    # Save the results in a file that will be used by extck_populator.py
-    json.dump(shortName, open("/home/amcanary/shortName", 'w'))
-    slices = getSlices()
-    srcPingCampus = ['gpo-ig', 'utah-ig']
-    srcPingCore = ['gpo-ig-3715_core', 'gpo-ig-3716_core']
+
+
+    urn_map = nickCache.parseNickCache()
+    nickCache.updateCache(urn_map, aggStores)
+
+    ip.cleanUpObsoleteAggregates(aggStores)
+
+    registerAggregates(aggStores, cert_path, urn_map, ip)
+
     # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-    ip.populateInfoTables(shortName, slices, srcPingCampus, ip.ip_campus)
-    ip.populateInfoTables(shortName, slices, srcPingCore, ip.ip_core)
-    # Populate "ops_externalCheck" table
-    for urn in shortName:
-        # Populate "ops_aggregate" table
-        ip.insert_aggregate(urn, shortName[urn][4])
-        # Populate "ops_externalcheck_monitoredaggregate" table
-        ip.insert_externalcheck_monitoredaggregate(urn, shortName[urn][4])
+    ip.populateInfoTables(aggStores)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
