@@ -434,6 +434,37 @@ class TableManager:
 
         return dependencies_dict
 
+    def add_table_schema(self, table_name, table_schema):
+        """
+        Adds a table schema to the dictionary of known table schemas. Dictionary key is the table name
+        @param table_name: the name of the table, which will become the key to the table schemas dictionary.
+        @param table_schema: the schema of the table in its usual form, i.e. a list of tuples containing 
+        the name of a table column, the type of that column, and whether a value for that column is required.
+        @return: True if the addition was successful, False if the schema for such a table name was already 
+        existing
+        """
+        if self.schema_dict.has_key(table_name):
+            return False
+        # TODO validate that table_schema fits the expected format
+        self.schema_dict[table_name] = table_schema
+        return True
+
+    def add_table_constraints(self, table_name, table_constraints):
+        """
+        Adds constraints for a table to the dictionary of known table constraints. Dictionary key is the table name
+        @param table_name: the name of the table, which will become the key to the table schemas dictionary.
+        @param table_constraints: the constraints of the table in its usual form, i.e. a list of tuples, each containing 
+        the constraint string in the form of a string format and a list of columns or tables names to 
+        be inserted in the constraint string with the python operator %.
+        @return: True if the addition was successful, False if the constraints for such a table name was already 
+        existing
+        """
+        if self.contraints_dict.has_key(table_name):
+            return False
+        # TODO validate that table_constraints fits the expected format
+        self.contraints_dict[table_name] = table_constraints
+        return True
+
     def __create_ordered_table_list__(self, dependencies_dict):
         """
         Creates a list of DB table names ordered by their dependencies, in the 
@@ -665,7 +696,7 @@ class TableManager:
         for table_str in table_str_arr:
             # Ensures table_str is in ops_ namespace
             if table_str.startswith("ops_"):
-                if not self.__establish_table__(table_str):
+                if not self.establish_table(table_str):
                     ok = False
         return ok
 
@@ -680,7 +711,7 @@ class TableManager:
         pass  # TODO fill in
 
 
-    def __establish_table__(self, table_str):
+    def establish_table(self, table_str):
         """
         Creates a specific table
         :param table_str: the name of the table to create.
@@ -930,14 +961,14 @@ class TableManager:
 
         return res
 
-    def upsert(self, table_name, table_schema, row, id_column):
-        # TODO: consider the case where several columns form the key
+    def upsert(self, table_name, table_schema, row, id_columns):
         """
         Method to insert or update (aka merge or upsert) a row of data into a table.
         :param table_name: the name of the table to modify
         :param table_schema:the schema of the table
         :param row: the row to insert or update (i.e. a list of values)
-        :param id_column: the position of the column in the table that can act as a key.
+        :param id_columns: the position of the column in the table that can act as a key 
+           or a list of positions of the columns that act as a key.
         :return: True if the insert or update happened successfully, False otherwise.
         :note: With a postgres engine, this method only works for tables which have 
             primary keys defined.
@@ -947,7 +978,7 @@ class TableManager:
                                 (table_name, len(table_schema), len(row), str(table_schema), str(row)))
             return False
         ok = True
-        statements = self.dbmanager.get_upsert_statements(table_name, table_schema, row, id_column)
+        statements = self.dbmanager.get_upsert_statements(table_name, table_schema, row, id_columns)
         if not self.execute_sql(statements):
             ok = False
         return ok
