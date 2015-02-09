@@ -178,7 +178,8 @@
        "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig",
-       "amurl": "https://instageni.umkc.edu:12369/protogeni/xmlrpc/am"
+       "amurl": "https://instageni.umkc.edu:12369/protogeni/xmlrpc/am",
+       "am_nickname": "umkc-ig"
     },
     {
        "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
@@ -207,7 +208,8 @@
        "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig",
-       "amurl": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am"
+       "amurl": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am",
+       "am_nickname": "colorado-ig"
     },
     // EXOgeni stores
     {
@@ -261,7 +263,8 @@
        "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
-       "amurl": "https://ucd-hn.exogeni.net:11443/orca/xmlrpc"
+       "amurl": "https://ucd-hn.exogeni.net:11443/orca/xmlrpc",
+       "am_nickname": "ucd-eg"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
