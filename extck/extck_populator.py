@@ -23,104 +23,129 @@
 #----------------------------------------------------------------------
 import sys
 import time
-import json
-# import ConfigParser
 import subprocess
-# from string import digits
+import shlex
 import os
 # import requests
 
+extck_path = os.path.abspath(os.path.dirname(__file__))
+top_path = os.path.dirname(extck_path)
+common_path = os.path.join(top_path, "common")
+config_path = os.path.join(top_path, "config")
+sys.path.append(common_path)
+sys.path.append(extck_path)
+import extck_config
+import logger
+import table_manager
+opslogger = logger.get_logger(config_path)
+config = extck_config.ExtckConfigLoader(opslogger)
+
+
+
 ##################################################
 # geni-lib config for FOAM/FV listresources test #
-geniLibConfigPath = "/usr/local/geni-lib/samples"  #
-geniLibPath = "/usr/local/geni-lib"  #
-sys.path.append(geniLibConfigPath)  #
-sys.path.append(geniLibPath)  #
+sys.path.append(config.get_geni_lib_config_path())  #
+sys.path.append(config.get_geni_lib_path())  #
 
 import amcanary_config  #
 context = amcanary_config.buildContext()  #
 from geni.aggregate.core import AM  #
 ##################################################
 
-common_path = "../common/"
-# input file with short-names and Urls aggregates
-# inputFile=open('/home/amcanary/src/gcf/agg_nick_cache.base')
-# inputFile=open('/home/amcanary/.bssw/geni/nickcache.json')
-# dic to store short name and corresponding url
-# Format: shortname [fqdn]=[aggShortName,amtype, state, timestamp]
-# shortName[urn]=[aggShortName, amType, fqdn, url, schema, aggregate_attributes]
-# then shorname[urn] is appended [state, timestamp]
-# where state is 0 for up and 1 for down
-shortName = {}
-
-shortNamePath = "/home/amcanary/shortName"
-sys.path.append(common_path)
 
 
-import table_manager
+
 
 
 class SiteOF(AM):
-    def __init__ (self, name, url=None):
-        super(SiteOF, self).__init__(name, url, "amapiv2", "foam")
+    def __init__ (self, name, url, apiversion):
+        if apiversion == 0:
+            apiversionstr = "amapiv2"
+        else:
+            apiversionstr = "amapiv" + str(apiversion)
+        super(SiteOF, self).__init__(name, url, apiversionstr, "foam")
+        self.apiversion = apiversion
 
-def getOFState(logger, context, site=None):
+def getOFState(context, site=None):
 
     try:
         ad = site.listresources(context)  # Run listresources for a particular site
-    except:
-        logger.warning("Control plane connection for FOAM/FV Aggregate Manager to " + site.name + " is Offline")
-        return str(0)  # Can't reach the site via control path
+    except Exception, e:
+        opslogger.warning(str(e))
+        opslogger.warning("Control plane connection for FOAM/FV Aggregate Manager to %s is Offline via API version %s" % (site.name, str(site.apiversion)))
+        return 0  # Can't reach the site via control pat
 
-    prtFlag = 0  # Check to see if dpids have ports.
-                #  No ports on all dpids for a given switch indicates possible FV issues.
+    # Check to see if dpids have ports.
+    #  No ports on all dpids for a given switch indicates possible FV issues.
     for switch in ad.datapaths:
         if len(switch.ports) == 0:
-            logger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
+            opslogger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
         else:  # If any dpid has ports listed, FV is working for that switch
-            prtFlag = 1
-            return str(prtFlag)
-    return str(0)  # All dpids on that switch had no ports. FV is down.
+            return 1
 
-class InfoPopulator():
-    def __init__(self, tbl_mgr, url_base):
+    opslogger.warning("NO ports found on any switch. FV may be hang or connection from dpid to FV is broken.")
+    return 0  # All dpids on that switch had no ports. FV is down.
 
+class DataPopulator():
+
+    __IS_AVAILABLE_TBLNAME = "ops_aggregate_is_available"
+
+    def __init__(self, tbl_mgr):
         self.tbl_mgr = tbl_mgr
-        self.url_base = url_base
-        # steal config path from table_manager
-        self.config_path = tbl_mgr.config_path
 
-    def insert_agg_is_avail_datapoint(self, aggRow):
-        # Insert into ops_externalcheck
-        agg_id = aggRow[0]  # agg_id
-        ts = aggRow[6]  # str(int(time.time()*1000000))
-        v = aggRow[5]  # state
-        datapoint = [agg_id, ts, v]
-        db_insert(self.tbl_mgr, "ops_aggregate_is_available", datapoint)
-        db_purge(self.tbl_mgr, "ops_aggregate_is_available")
+    def insert_agg_is_avail_datapoint(self, agg_id, ts, state):
+
+        datapoint = (agg_id, ts, state)
+        self.__db_insert(DataPopulator.__IS_AVAILABLE_TBLNAME, datapoint)
+
+    def __db_purge(self, table_str):
+        old_ts = int((time.time() - 168 * 60 * 60) * 1000000)  # Purge data older than 1 week (168 hours)
+        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
 
 
-def db_purge(tbl_mgr, table_str):
-    old_ts = int((time.time() - 168 * 60 * 60) * 1000000)  # Purge data older than 1 week (168 hours)
-    tbl_mgr.purge_old_tsdata(table_str, old_ts)
+    def __db_insert(self, table_str, row_arr):
+        val_str = "('"
+        first = True
+        for val in row_arr:
+            if first:
+                first = False
+            else:
+                val_str += "', '"
+            val_str += str(val)
+        val_str += "')"
+        self.tbl_mgr.insert_stmt(table_str, val_str)
+
+    def db_purge_agg_is_available(self):
+        self.__db_purge(DataPopulator.__IS_AVAILABLE_TBLNAME)
 
 
-def db_insert(tbl_mgr, table_str, row_arr):
-    val_str = "('"
-    for val in row_arr:
-        val_str += val + "','"  # join won't do this
-    val_str = val_str[:-2] + ")"  # remove last 2 of 3 chars: ',' and add )
-    tbl_mgr.insert_stmt(table_str, val_str)
+def getAMStateForURL(agg_id, am_url, amtype, config):
+    cmd_str = config.get_am_full_test_command(am_url, amtype)
+    args = shlex.split(cmd_str)
+    opslogger.debug("About to execute: " + cmd_str)
+    # Searching for the name of the test being executed
+    for arg in args:
+        if arg.startswith("Test.test_"):
+            test = arg[10:]  # the ending of that argument.
+            break
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    output, _err = p.communicate()
+    state = 0
+    retcode = 1  # Assuming we've got an error
+    for line in output.split('\n'):
+        words = line.split()
+        if len(words) == 3 \
+            and words[0] == 'MONITORING' \
+            and words[1] == ('test_%s' % test):
+            retcode = int(words[2])
+            break;
+    qualifier = "NOT "
+    if retcode == 0:
+        state = 1
+        qualifier = ""
 
-def getAMState(output):
-    cols = output.strip().split(':')
-    if cols[2] == " Timed out after 60 seconds":  # Occurs if subprocess hangs
-        result = "0"
-    elif cols[3] == " 0":  # check for "returned: 0" output
-        result = "1"  # Good result
-    else:
-        result = "0"  # Bad result
-    return result
+    opslogger.info("aggregate %s is %sreachable at %s" % (agg_id, qualifier, am_url))
+    return state
 
 def getStitcherState():
     cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
@@ -136,36 +161,71 @@ def getStitcherState():
 def main():
 
     db_name = "local"
-    config_path = "../config/"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
-    logger = tbl_mgr.logger
     tbl_mgr.poll_config_store()
-    ip = InfoPopulator(tbl_mgr, "")
+    dp = DataPopulator(tbl_mgr)
 
-    # Grab shortName dic outputed by extck_store.py
-    shortName = json.load(open(shortNamePath))
-    for urn in shortName:
-        siteName = shortName[urn][0]
-        amtype = shortName[urn][1]
-        fqdn = shortName[urn][2]
-        url = shortName[urn][3]
+    extck_id = config.get_extck_store_id()
+
+
+    # get all monitored aggregates
+
+    monitored_aggregates = tbl_mgr.query("SELECT id FROM ops_externalcheck_monitoredaggregate WHERE externalcheck_id = '%s'" % extck_id)
+    if monitored_aggregates is None:
+        opslogger.warning("Could not find any monitored aggregate. Has extck_store been executed?")
+        return
+
+    for monitored_aggregate_tuple in monitored_aggregates:
+        monitored_aggregate_id = monitored_aggregate_tuple[0]
+        opslogger.info("Checking availability of AM: %s", monitored_aggregate_id)
+        amtype = tbl_mgr.query("SELECT type FROM extck_aggregate WHERE aggregate_id = '%s'" % monitored_aggregate_id)
+        if amtype is None:
+            opslogger.warning("Error trying to determine type of aggregate: %s" % monitored_aggregate_id)
+            continue
+        amtype = amtype[0][0]  # first value of first tuple...
+        am_urls = tbl_mgr.query("SELECT amurl FROM extck_aggregate_amurl WHERE aggregate_id = '%s'" % monitored_aggregate_id)
+        if am_urls is None:
+            opslogger.warning("Did not find any registered AM URL for aggregate: %s" % monitored_aggregate_id)
+            continue
+        overall_state = 0  # unavailable until confirmed available.
         if amtype == "foam":
-            site = SiteOF(siteName, url)
-            state = getOFState(logger, context, site)
-        elif amtype == "stitcher":  # Do something special
-            state = getStitcherState()
-        else:
-            args = ["/usr/local/bin/wrap_am_api_test", "genich", fqdn, amtype, "ListResources"]
-            logstr = "About to execute:"
-            for arg in args:
-                logstr = logstr + " " + arg
-            logger.debug(logstr)
-            p = subprocess.Popen(args, stdout=subprocess.PIPE)
-            output, _err = p.communicate()
-            state = getAMState(output)
-        shortName[urn].append(state)
-        shortName[urn].append(str(int(time.time() * 1000000)))
-        ip.insert_agg_is_avail_datapoint(shortName[urn])
+            first = True
+            for url_tuple in am_urls:
+                url = url_tuple[0]
+                version = config.get_apiversion_from_am_url(url, amtype)
+                site = SiteOF(monitored_aggregate_id, url, version)  # may be not working anymore for exogeni...
+                state = getOFState(context, site)
+                if first:
+                    overall_state = state
+                    first = False
+                else:
+                    if (overall_state != 0):
+                        if state == 0:
+                            overall_state = 0
+
+            pass
+        elif amtype == "protogeni" or \
+            amtype == "instageni" or \
+            amtype == "exogeni" or \
+            amtype == "protogeni" or \
+            amtype == "network-aggregate":
+            first = True
+            for url_tuple in am_urls:
+                url = url_tuple[0]
+                state = getAMStateForURL(monitored_aggregate_id, url, amtype, config)
+                if first:
+                    overall_state = state
+                    first = False
+                else:
+                    if (overall_state != 0):
+                        if state == 0:
+                            overall_state = 0
+        elif amtype == "stitcher":
+            continue
+        ts = int(time.time() * 1000000)
+        dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, ts, overall_state)
+
+    dp.db_purge_agg_is_available()
 
 if __name__ == "__main__":
     main()
