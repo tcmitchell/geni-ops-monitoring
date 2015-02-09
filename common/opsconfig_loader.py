@@ -24,6 +24,7 @@ import json
 import ConfigParser
 import requests
 import logger
+import os
 
 class OpsconfigLoader:
 
@@ -41,7 +42,7 @@ class OpsconfigLoader:
 
         try:
             resp = requests.get(self.config_store_url, verify=False, cert=self.cert_path)
-            self.config_json= json.loads(resp.content)
+            self.config_json = json.loads(resp.content)
 
         except Exception, e:
             self.logger.warning("Cannot reach the config local datastore at ", self.config_store_url)
@@ -49,14 +50,14 @@ class OpsconfigLoader:
             self.load_from_local_config()
 
 
-    def load_from_local_config(self):       
-        self.config_json = json.load(open(self.config_path + "opsconfig.json"))
+    def load_from_local_config(self):
+        self.config_json = json.load(open(os.path.join(self.config_path, "opsconfig.json")))
 
 
     def get_event_types(self):
-        
+
         opsconfig = self.config_json
-        
+
         event_types = {}
         event_types["node"] = []
         event_types["interface"] = []
@@ -100,28 +101,28 @@ class OpsconfigLoader:
         opsconfig = self.config_json
         data_schema = {}
 
-        # node event types 
+        # node event types
         # add ops_ to avoid namespace collision with database (i.e.,
         # user not allowed)
         for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_node_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            data_schema["ops_node_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
 
         # interface event types
         for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_interface_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
+            data_schema["ops_interface_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
 
         # interfacevlan event types
         for ev_i in opsconfig["events"]["interfacevlan"]:
-            data_schema["ops_interfacevlan_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-        
+            data_schema["ops_interfacevlan_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
+
         # experiment event types
         for ev_i in opsconfig["events"]["experiment"]:
-            data_schema["ops_experiment_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-        
+            data_schema["ops_experiment_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
+
         # aggregate event types
         for ev_i in opsconfig["events"]["aggregate"]:
-            data_schema["ops_aggregate_"+ev_i["name"]] = [["id",ev_i["id"]],["ts",ev_i["ts"]],["v",ev_i["v"]],["units",ev_i["units"]]]
-        
+            data_schema["ops_aggregate_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
+
         return data_schema
 
 
@@ -140,7 +141,7 @@ class OpsconfigLoader:
         # add ops_ to avoid namespace collision with database (i.e.,
         # user not allowed)
         for info_i in opsconfig["info"]:
-            info_schema["ops_"+info_i["name"]] = info_i["db_schema"]
+            info_schema["ops_" + info_i["name"]] = info_i["db_schema"]
 
         return info_schema
 
