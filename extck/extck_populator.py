@@ -41,6 +41,11 @@ opslogger = logger.get_logger(config_path)
 config = extck_config.ExtckConfigLoader(opslogger)
 
 
+##################################################
+# gcf path for stitch/scs.py script
+sys.path.append(os.path.join(config.get_gcf_path(), "src"))
+import gcf.oscript
+import gcf.omnilib.stitch.scs
 
 ##################################################
 # geni-lib config for FOAM/FV listresources test #
@@ -147,16 +152,58 @@ def getAMStateForURL(agg_id, am_url, amtype, config):
     opslogger.info("aggregate %s is %sreachable at %s" % (agg_id, qualifier, am_url))
     return state
 
-def getStitcherState():
-    cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
-    echoCmd = "echo $?"
-    os.popen(cmd)
-    out = os.popen(echoCmd)
-    result = int(out.read())
-    if result == 0:
-        return "1"
-    else:
-        return "0"
+def getOmniCredentials():
+    argv = []
+    [_fram, config, _args, _opts] = gcf.oscript.initialize(argv)
+    key = config['selected_framework']['key']
+    cert = config['selected_framework']['cert']
+    return key, cert
+
+
+def getStitcherState(scs_id, scs_url, config):
+#     cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
+#     echoCmd = "echo $?"
+#     os.popen(cmd)
+#     out = os.popen(echoCmd)
+#     result = int(out.read())
+#     if result == 0:
+#         return "1"
+#     else:
+#         return "0"
+    state = 0
+    qualifier = "NOT "
+    secure = False
+    if scs_url.startswith("https"):
+        secure = True
+        # Get key and cert from omni file.
+        [keyfile, certfile] = getOmniCredentials()
+    try:
+        if secure:
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile)
+        else:
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url)
+        result = scsI.ListAggregates(False)
+        retval = 1
+        try:
+            verStruct = result
+#             if verStruct and verStruct.has_key("value") and verStruct["value"].has_key("code_tag"):
+#                 tag = verStruct["value"]["code_tag"]
+            if verStruct and verStruct.has_key("code") and verStruct["code"].has_key("geni_code"):
+                retval = verStruct["code"]["geni_code"]
+            # TODO: Should do something with the list of aggregates...
+
+        except:
+            opslogger.warning("ERROR: SCS return not parsable")
+            raise
+        if retval == 0:
+            state = 1
+            qualifier = ""
+    except Exception:
+        pass
+
+    opslogger.info("SCS %s is %sreachable at %s" % (scs_id, qualifier, scs_url))
+    return state
+
 
 def main():
 
@@ -193,7 +240,7 @@ def main():
             for url_tuple in am_urls:
                 url = url_tuple[0]
                 version = config.get_apiversion_from_am_url(url, amtype)
-                site = SiteOF(monitored_aggregate_id, url, version)  # may be not working anymore for exogeni...
+                site = SiteOF(monitored_aggregate_id, url, version)
                 state = getOFState(context, site)
                 if first:
                     overall_state = state
@@ -221,7 +268,17 @@ def main():
                         if state == 0:
                             overall_state = 0
         elif amtype == "stitcher":
-            continue
+            first = True
+            for url_tuple in am_urls:
+                url = url_tuple[0]
+                state = getStitcherState(monitored_aggregate_id, url, config)
+                if first:
+                    overall_state = state
+                    first = False
+                else:
+                    if (overall_state != 0):
+                        if state == 0:
+                            overall_state = 0
         ts = int(time.time() * 1000000)
         dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, ts, overall_state)
 
