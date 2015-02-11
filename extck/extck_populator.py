@@ -254,7 +254,7 @@ def main():
         elif amtype == "protogeni" or \
             amtype == "instageni" or \
             amtype == "exogeni" or \
-            amtype == "protogeni" or \
+            amtype == "opengeni" or \
             amtype == "network-aggregate":
             first = True
             for url_tuple in am_urls:
