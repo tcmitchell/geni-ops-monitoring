@@ -42,6 +42,7 @@ class ExtckConfigLoader:
     __EXTCK_STORE_BASE_URL = "extck_base_url"
     __GENI_LIB_PATH = "geni_lib_path"
     __GENI_LIB_CONFIG_PATH = "geni_lib_config_path"
+    __GCF_DIR = "gcf_dir"
     __EXPERIMENT_SECTION = "experiment"
     __SRC_PING_CAMPUS = "src_ping_campus"
     __SRC_PING_CORE = "src_ping_core"
@@ -169,6 +170,9 @@ class ExtckConfigLoader:
             cmd_str += self.__get_am_test_version_arg(matched_version)
                 
         return cmd_str
+
+    def get_gcf_path(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GCF_DIR)
 
     def get_geni_lib_path(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GENI_LIB_PATH)
