@@ -70,7 +70,7 @@ class InfoPopulator():
         self.tbl_mgr = tbl_mgr
         self._config = config
         self._nickCache = nickCache
-        self._extckStoreBaseUrl = self._config.get_extck_store_base_url()
+        self.extckStoreBaseUrl = self._config.get_extck_store_base_url()
         self._extckStoreSite = self._config.get_extck_store_id()
 
         ipsconfig = ConfigParser.ConfigParser()
@@ -155,7 +155,7 @@ class InfoPopulator():
                     ts = str(int(time.time() * 1000000))
                     exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
                            exp_id,
-                           self._extckStoreBaseUrl + "/info/experiment/" + exp_id,
+                           self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
                            ts,
                            sliceUrn,
                            sliceUuid,
@@ -165,7 +165,7 @@ class InfoPopulator():
                            dstAmHref
                            ]
                     self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
-                    extck_exp = [exp_id, self._extckStoreSite, self._extckStoreBaseUrl + "/info/experiment/" + exp_id]
+                    extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
                     self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
                                         (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
                                          self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
@@ -215,9 +215,9 @@ class InfoPopulator():
         ts = str(int(time.time() * 1000000))
         extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#",
                  self._extckStoreSite,
-                 self._extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
+                 self.extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
                  ts,
-                 self._extckStoreBaseUrl + "/data/"]
+                 self.extckStoreBaseUrl + "/data/"]
         table_str = "ops_externalcheck"
         extck_schema = self.tbl_mgr.schema_dict[table_str]
         self.tbl_mgr.upsert(table_str, extck_schema, extck, self.tbl_mgr.get_column_from_schema(extck_schema, "id"))
@@ -365,11 +365,13 @@ class AggregateNickCache:
         """
         for aggregate in aggStores:
             if aggregate.has_key('amurl'):
-                url = aggregate['amurl']
                 urn = aggregate['urn']
                 if not urn_to_urls_map.has_key(urn):
                     urn_to_urls_map[urn] = set()
-                urn_to_urls_map[urn].add(url)
+                for agg_key in aggregate.keys():
+                    # Add url for all keys starting with amurl
+                    if agg_key[:5] == "amurl":
+                        urn_to_urls_map[urn].add(aggregate[agg_key])
 
     def get_am_urn(self, am_nickname):
         """
@@ -398,7 +400,17 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
     ops_agg_schema = ip.tbl_mgr.schema_dict["ops_aggregate"]
     # TODO parameterize these
     agg_schema_str = "http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#"
-    extck_measRef = "https://extckdatastore.gpolab.bbn.com/data/"
+    version_filename = top_path + "/VERSION"
+    try:
+        version_file = open(version_filename)
+        monitoring_version = version_file.readline().strip()
+        version_file.close()
+    except Exception, e:
+        ip.tbl_mgr.logger.warning("Could not read monitoring version from file %s: %s" % (
+                version_filename, str(e)))
+        monitoring_version = "unknown"
+
+    extck_measRef = ip.extckStoreBaseUrl + "/data/"
     for aggregate in aggStores:
         amtype = aggregate['amtype']
         urn = aggregate['urn']
@@ -417,19 +429,23 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
 
 
         elif amtype == "stitcher":  # Special case
-            # TODO find stitcher AM in config file.
             selfRef = aggregate['href'];
-            url = "http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
-            aggId = "scs"
+            if not aggregate.has_key('am_nickname'):
+                ip.tbl_mgr.logger.warning("stitcher AM has missing nickname for %s\n Will NOT monitor" % selfRef)
+                continue
+            if not aggregate.has_key('am_status'):
+                ip.tbl_mgr.logger.warning("stitcher AM has missing status for %s\n Will NOT monitor" % selfRef)
+                continue
+            aggId = aggregate['am_nickname']
             ts = str(int(time.time() * 1000000))
-            ops_status = "development"
+            ops_status = aggregate['am_status']
             agg_attributes = (agg_schema_str,  # schema
                               aggId,  # id
                               selfRef,  # selfref
                               urn,  # urn
                               ts,  # time stamp
                               extck_measRef,  # meas Ref
-                              None,  # # populator version
+                              monitoring_version,  # # populator version
                               ops_status,  # operational status
                               None  # routable IP poolsize
                               )
@@ -457,7 +473,7 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
                               urn,  # urn
                               ts,  # time stamp
                               extck_measRef,  # meas Ref
-                              None,  # # populator version
+                              monitoring_version,  # # populator version
                               ops_status,  # operational status
                               None  # routable IP poolsize
                               )
@@ -475,10 +491,10 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
         # Populate "ops_externalcheck_monitoredaggregate" table
         ip.insert_externalcheck_monitoredaggregate(urn, agg_attributes)
         ip.insert_aggregate_type(agg_attributes[1], amtype)
-        if amtype != "stitcher":
-            am_urls = urn_to_urls_map[urn]
-            for am_url in am_urls:
-                ip.insert_aggregate_url(agg_attributes[1], am_url)
+
+        am_urls = urn_to_urls_map[urn]
+        for am_url in am_urls:
+            ip.insert_aggregate_url(agg_attributes[1], am_url)
 
 
 
