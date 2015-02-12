@@ -24,6 +24,8 @@
 import sys
 import os
 import time
+import tempfile
+
 extck_path = os.path.abspath(os.path.dirname(__file__))
 top_path = os.path.dirname(extck_path)
 common_path = os.path.join(top_path, "common")
@@ -76,9 +78,6 @@ def main(argv):
     ipConfigPathRemote = ext_config.get_ips_file_remote_location()
     pingerLocal = os.path.join(extck_path, "pinger.py")
     pingerRemote = ext_config.get_pinger_file_remote_location()
-    outputFile = ext_config.get_output_filename()
-    outputFileLocal = os.path.join(ext_config.get_local_output_dir(), outputFile)
-    outputFileRemote = os.path.join(ext_config.get_remote_output_dir(), outputFile)
     keyPath = ext_config.get_ssh_key_file_location()
 
 
@@ -101,16 +100,29 @@ def main(argv):
         sync_up_files(ipConfigPathLocal, ipConfigPathRemote, addr, port, keyPath, tbl_mgr.logger)
         sync_up_files(pingerLocal, pingerRemote, addr, port, keyPath, tbl_mgr.logger)
 
+        if site in campus_sources:
+            ping_type = 'campus'
+        else:
+            ping_type = 'core'
+        (fh, outputFileLocal) = tempfile.mkstemp(suffix=".pings", prefix="extck_tmp_", dir=ext_config.get_local_output_dir())
+        os.close(fh)  # closing tmp file that was just created.
+        filename = os.path.basename(outputFileLocal)
+        outputFileRemote = os.path.join(ext_config.get_remote_output_dir(), filename)
         sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
                    " \"rm -f " + outputFileRemote + \
-                   " && python pinger.py -o " + outputFileRemote + " -c " + ipConfigPathRemote + " -s " + site + "\""
+                   " && python pinger.py -o " + outputFileRemote + " -c " + ipConfigPathRemote + " -s " + site + " -t " + ping_type + "\""
         execute_cmd(sshStr, tbl_mgr.logger)
 
         scpStr = "scp -i " + keyPath + " -P " + port + " " + addr + ":" + outputFileRemote + " " + outputFileLocal
         execute_cmd(scpStr, tbl_mgr.logger)
+        sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
+                   " \"rm -f " + outputFileRemote + "\""
+        execute_cmd(sshStr, tbl_mgr.logger)
 
         table_str = "ops_experiment_" + experiment_event_types[0]
         insert_ping_times(outputFileLocal, tbl_mgr, table_str)
+        # Delete tmp file
+        os.remove(outputFileLocal)
 
     # Purge data older than 168 hours (1 wk)
     old_ts = int((time.time() - 168 * 60 * 60) * 1000000)
