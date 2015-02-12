@@ -37,7 +37,7 @@ def parse_args(argv):
     config_path = ""
     source_name = ""
     try:
-        opts, _args = getopt.getopt(argv, "o:c:s:", ["outfile=", "configpath=", "sourcename="])
+        opts, _args = getopt.getopt(argv, "o:c:s:t:", ["outfile=", "configpath=", "sourcename=", "type="])
     except getopt.GetoptError:
         usage()
 
@@ -49,68 +49,84 @@ def parse_args(argv):
             config_path = arg
         elif opt in ("-s", "--sourcename"):
             source_name = arg
+        elif opt in ("-t", "--type"):
+            ping_type = arg
         else:
             usage()
 
-    return [out_file, config_path, source_name]
+    return [out_file, config_path, source_name, ping_type]
 
 class Pinger:
 
-    def __init__(self, out_file, config_path, source_name):
+    def __init__(self, out_file, config_path, source_name, ping_type):
 
         self.file_handle = open(out_file, 'w')
         self.srcSite = source_name
+        self.ping_type = ping_type
         config = ConfigParser.ConfigParser()
         config.read(config_path)
-        self.ip_campus = dict(config.items("campus"))
-        self.ip_core = dict(config.items("core"))
-        ipListFlag = self.srcSite.strip().split('-')
-        if len(ipListFlag) == 2:
-            self.run_pings(self.ip_campus)
-        else:
-            self.run_pings(self.ip_core)
+        self.ip_list = dict(config.items(ping_type))
+        self.run_pings(self.ip_list)
         self.file_handle.close()
 
+
+    def _ping(self, dst_addr):
+        """
+        """
+        wrote_output = False
+        try:
+            output = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
+            delay_ms = (output.split("="))[1]
+        except Exception, _e:
+            try:
+                output = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
+                delay_ms = (output.split("="))[1]
+            except Exception, _e:
+                delay_ms = -1
+                sys.stdout.write("a")
+                wrote_output = True
+        return delay_ms, wrote_output
 
     def run_pings(self, ipList):
         output = False
         for dstSite in ipList:
-            if self.srcSite != dstSite:  # No "self" pinging
-                passFlag = 0
+            if self.srcSite == dstSite:
+                # No "self" pinging
+                continue
+
+            experiment_id = self.srcSite + "_to_" + dstSite
+            if self.ping_type == 'campus':
+                experiment_id = experiment_id + "_campus"
+            else:
                 dstSiteFlag = dstSite.strip().split('-')
-                if len(dstSiteFlag) == 2:
-                    dstString = dstSite + "_campus"
-                else:
-                    dstString = dstSite
-                    srcSiteFlag = self.srcSite.strip().split('-')
-                    if srcSiteFlag[2] != dstSiteFlag[2]:
-                        passFlag = 1
-                        pass  # Can't ping between hosts in different networks
-                if passFlag == 1:
-                    pass
-                else:
-                    dst_addr = ipList[dstSite]
-                    delay_ms = None
-                    try:
-                        delay_ms = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
-                        delay_ms = (delay_ms.split("="))[1]
-                    except Exception, _e:
-                        try:
-                            delay_ms = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
-                            delay_ms = (delay_ms.split("="))[1]
-                        except Exception, _e:
-                            delay_ms = -1
-                            sys.stdout.write("a")
-                            output = True
-                    ts = str(int(time.time() * 1000000))
-                    self.file_handle.write("('" + self.srcSite + "_to_" + dstString + "'," + ts + "," + str(delay_ms) + ")" + "\n")
+                srcSiteFlag = self.srcSite.strip().split('-')
+                if srcSiteFlag[2] != dstSiteFlag[2]:
+                    # Can't ping between hosts in different networks
+                    continue
+
+            # TODO build argument list for process pool
+            dst_addr = ipList[dstSite]
+            (_, tmp_output) = self._ping(dst_addr)
+            if tmp_output: output = True
+            # Running a second set of pings so that we eliminate the possible
+            # delays seen when the first set of pings is affected by the flows
+            # being set up on the OpenFlow switches.
+            (delay_ms, tmp_output) = self._ping(dst_addr)
+            if tmp_output: output = True
+            ts = str(int(time.time() * 1000000))
+            # Use a lock when writing to the result file.
+            self.file_handle.write("('" + experiment_id + "'," + ts + "," + str(delay_ms) + ")" + "\n")
+
+
+        # TODO create process pool - use the map() method with the argument list built above
+
         if output:
             print
 
 def main(argv):
 
-    [out_file, config_path, source_name] = parse_args(argv)
-    _pinger = Pinger(out_file, config_path, source_name)
+    [out_file, config_path, source_name, ping_type] = parse_args(argv)
+    _pinger = Pinger(out_file, config_path, source_name, ping_type)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
