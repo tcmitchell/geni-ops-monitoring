@@ -53,7 +53,6 @@ class ExtckConfigLoader:
     __PING_NETWORK = "network"
     __IPS_FILE_REMOTE_LOCATION = "ips_file_remote_location"
     __PINGER_FILE_REMOTE_LOCATION = "pinger_file_remote_location"
-    __OUTPUT_FILENAME = "output_filename"
     __LOCAL_OUTPUT_DIR = "local_output_dir"
     __REMOTE_OUTPUT_DIR = "remote_output_dir"
     __SSH_KEY_FILE = "ssh_key_file"
@@ -220,9 +219,6 @@ class ExtckConfigLoader:
 
     def get_pinger_file_remote_location(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PINGER_FILE_REMOTE_LOCATION)
-
-    def get_output_filename(self):
-        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__OUTPUT_FILENAME)
 
     def get_local_output_dir(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__LOCAL_OUTPUT_DIR)
