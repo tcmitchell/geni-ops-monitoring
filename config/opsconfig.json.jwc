@@ -209,7 +209,30 @@
        "amtype": "instageni",
        "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig",
        "amurl": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/3.0",
        "am_nickname": "colorado-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.washington.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.washington.edu:5001/info/aggregate/uwashington-ig",
+       "amurl": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "uwashington-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.utc.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.utc.edu:5001/info/aggregate/utc-ig",
+       "amurl": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "utc-ig"
     },
     // EXOgeni stores
     {
