@@ -27,9 +27,32 @@ import ConfigParser
 import sys
 import getopt
 import time
+import multiprocessing.pool
+import exceptions
 
 def usage():
-    print "pinger --outfile filename --configpath pathWithoutFile"
+    print "pinger options"
+    print "   -o filename"
+    print "   --outfile=filename"
+    print "     location of the output file containing the ping rtt results"
+    print "   -c configurationFile"
+    print "   --configpath=configurationFile"
+    print "     location of the configuration file containing the ping destination site names and IP addresses"
+    print "   -s pingSource"
+    print "   --sourcename=pingSource"
+    print "     site name of the source (a.k.a nickname of the site running the pings)"
+    print "   -t pingType"
+    print "   --type=pingType"
+    print "     type of pings (campus or core), which is also the section to look up in the configuration file."
+    print "   -p size"
+    print "   --poolsize=size"
+    print "     size of the process pool that will be used (if the host support python multiprocessing module)"
+    print "   -i initialPingCount"
+    print "   --inipingcount=initialPingCount"
+    print "     ping count to use when \"priming\" the openFlow flows)"
+    print "   -m measurePingCount"
+    print "   --measpingcount=measurePingCount"
+    print "     ping count to use when measuring the ping rtt)"
     sys.exit(0)
 
 def parse_args(argv):
@@ -37,7 +60,8 @@ def parse_args(argv):
     config_path = ""
     source_name = ""
     try:
-        opts, _args = getopt.getopt(argv, "o:c:s:t:", ["outfile=", "configpath=", "sourcename=", "type="])
+        opts, _args = getopt.getopt(argv, "o:c:s:t:p:i:m:",
+                                    ["outfile=", "configpath=", "sourcename=", "type=", "poolsize=", "inipingcount=", "measpingcount="])
     except getopt.GetoptError:
         usage()
 
@@ -51,44 +75,68 @@ def parse_args(argv):
             source_name = arg
         elif opt in ("-t", "--type"):
             ping_type = arg
+        elif opt in ("-p", "--poolsize"):
+            pool_size = int(arg)
+        elif opt in ("-i", "--inipingcount"):
+            ini_ping_count = int(arg)
+        elif opt in ("-m", "--measpingcount"):
+            meas_ping_count = int(arg)
         else:
             usage()
 
-    return [out_file, config_path, source_name, ping_type]
+    return [out_file, config_path, source_name, ping_type, pool_size, ini_ping_count, meas_ping_count]
+
+
+def ping(dst_addr, count):
+    """
+    """
+    wrote_output = False
+    try:
+        output = (subprocess.Popen(["ping", "-c", str(count), dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
+        delay_ms = (output.split("="))[1]
+    except Exception, _e:
+        try:
+            output = (subprocess.Popen(["ping", "-c", str(count), dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
+            delay_ms = (output.split("="))[1]
+        except Exception, _e:
+            delay_ms = -1
+            sys.stdout.write("a")
+            wrote_output = True
+    return delay_ms, wrote_output
+
+def run_ping_in_process((dst_addr, experiment_id, ini_ping, meas_ping)):
+    output = False
+    (_, tmp_output) = ping(dst_addr, ini_ping)
+    if tmp_output: output = True
+    # Running a second set of pings so that we eliminate the possible
+    # delays seen when the first set of pings is affected by the flows
+    # being set up on the OpenFlow switches.
+    (delay_ms, tmp_output) = ping(dst_addr, meas_ping)
+    if tmp_output: output = True
+    ts = str(int(time.time() * 1000000))
+    # Assembling the result string for this ping set
+    strres = "('" + experiment_id + "'," + ts + "," + str(delay_ms) + ")" + "\n"
+    return output, strres
 
 class Pinger:
 
-    def __init__(self, out_file, config_path, source_name, ping_type):
+    def __init__(self, out_file, config_path, source_name, ping_type, pool_size, ini_ping_count, meas_ping_count):
 
-        self.file_handle = open(out_file, 'w')
+        self.out_file = out_file
         self.srcSite = source_name
         self.ping_type = ping_type
+        self.pool_size = pool_size
+        self.ini_ping_count = ini_ping_count
+        self.meas_ping_count = meas_ping_count
         config = ConfigParser.ConfigParser()
         config.read(config_path)
         self.ip_list = dict(config.items(ping_type))
         self.run_pings(self.ip_list)
-        self.file_handle.close()
 
-
-    def _ping(self, dst_addr):
-        """
-        """
-        wrote_output = False
-        try:
-            output = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
-            delay_ms = (output.split("="))[1]
-        except Exception, _e:
-            try:
-                output = (subprocess.Popen(["ping", "-c 6", dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
-                delay_ms = (output.split("="))[1]
-            except Exception, _e:
-                delay_ms = -1
-                sys.stdout.write("a")
-                wrote_output = True
-        return delay_ms, wrote_output
 
     def run_pings(self, ipList):
         output = False
+        argListArray = []
         for dstSite in ipList:
             if self.srcSite == dstSite:
                 # No "self" pinging
@@ -104,29 +152,42 @@ class Pinger:
                     # Can't ping between hosts in different networks
                     continue
 
-            # TODO build argument list for process pool
             dst_addr = ipList[dstSite]
-            (_, tmp_output) = self._ping(dst_addr)
-            if tmp_output: output = True
-            # Running a second set of pings so that we eliminate the possible
-            # delays seen when the first set of pings is affected by the flows
-            # being set up on the OpenFlow switches.
-            (delay_ms, tmp_output) = self._ping(dst_addr)
-            if tmp_output: output = True
-            ts = str(int(time.time() * 1000000))
-            # Use a lock when writing to the result file.
-            self.file_handle.write("('" + experiment_id + "'," + ts + "," + str(delay_ms) + ")" + "\n")
+            # build argument list for process pool
+            argList = [dst_addr, experiment_id, self.ini_ping_count, self.meas_ping_count]
+            argListArray.append(argList)
 
 
-        # TODO create process pool - use the map() method with the argument list built above
+        # create process pool - use the map() method with the argument list built above
+        try :
+            pool = multiprocessing.pool.ThreadPool(processes=self.pool_size)
+            parallel = True
+        except exceptions.OSError:
+            parallel = False
+        if parallel:
+            resArray = pool.map(run_ping_in_process, argListArray)
+        else:
+            # We'll run sequentially then...
+            resArray = []
+            for argList in argListArray:
+                tuple_result = run_ping_in_process(tuple(argList))
+                resArray.append(tuple_result)
 
+        file_handle = open(self.out_file, 'w')
+        for (thread_output, res_str) in resArray:
+            if thread_output:
+                output = True
+            file_handle.write(res_str)
+
+        file_handle.close()
         if output:
             print
 
 def main(argv):
+#     multiprocessing.util.log_to_stderr(multiprocessing.util.DEBUG)
+    [out_file, config_path, source_name, ping_type, pool_size, ini_ping_count, meas_ping_count] = parse_args(argv)
+    _pinger = Pinger(out_file, config_path, source_name, ping_type, pool_size, ini_ping_count, meas_ping_count)
 
-    [out_file, config_path, source_name, ping_type] = parse_args(argv)
-    _pinger = Pinger(out_file, config_path, source_name, ping_type)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
