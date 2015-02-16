@@ -152,7 +152,7 @@ def main(argv):
                          poolSize, initialPingCount, measurementPingCount,
                          table_str, myLock, tbl_mgr)
         argsList.append(args)
-    pool = multiprocessing.pool.ThreadPool(processes=4)
+    pool = multiprocessing.pool.ThreadPool(processes=int(ext_config.get_experiment_coordination_thread_pool_size()))
     pool.map(run_remote_pings, argsList)
     # Purge data older than 168 hours (1 wk)
     old_ts = int((time.time() - 168 * 60 * 60) * 1000000)
