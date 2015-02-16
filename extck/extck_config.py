@@ -214,7 +214,7 @@ class ExtckConfigLoader:
         return slices_dict
 
     def get_experiment_coordination_thread_pool_size(self):
-        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__COORDINATION_POOL_SIZEE)
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__COORDINATION_POOL_SIZE)
 
     def get_experiment_source_ping_slice_name(self, srcping):
         return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__PING_SLICE)
