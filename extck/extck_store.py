@@ -27,9 +27,9 @@ import getopt
 import json
 import ConfigParser
 import os
-# import subprocess
 import requests
-# from string import digits
+import multiprocessing
+import multiprocessing.pool
 
 
 extck_path = os.path.abspath(os.path.dirname(__file__))
@@ -97,15 +97,15 @@ class InfoPopulator():
                     break;
         return (am_urn, am_url)
 
-    def populateInfoTables(self, aggStores):
+    def populateExperimentInfoTables(self, aggStores):
         slices = self._config.get_experiment_slices_info()
         srcPingCampus = self._config.get_experiment_source_ping_campus()
         srcPingCore = self._config.get_experiment_source_ping_core()
         # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-        self._populateInfoTables(slices, srcPingCampus, InfoPopulator.PING_CAMPUS, aggStores)
-        self._populateInfoTables(slices, srcPingCore, InfoPopulator.PING_CORE, aggStores)
+        self._populateExperimentInfoTables(slices, srcPingCampus, InfoPopulator.PING_CAMPUS, aggStores)
+        self._populateExperimentInfoTables(slices, srcPingCore, InfoPopulator.PING_CORE, aggStores)
 
-    def _populateInfoTables(self, slices, srcPing, ping_type, aggStores):
+    def _populateExperimentInfoTables(self, slices, srcPing, ping_type, aggStores):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
@@ -387,7 +387,104 @@ class AggregateNickCache:
         vals = valstr.split(',')
         return vals[0].strip()
 
-def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
+def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
+                         ops_agg_schema, agg_schema_str, monitoring_version,
+                         extck_measRef, aggregate, lock)):
+    if amtype == 'instageni' or \
+            amtype == 'protogeni' or \
+            amtype == "exogeni" or \
+            amtype == "opengeni" or \
+            amtype == "network-aggregate":
+        if not urn_to_urls_map.has_key(urn):
+            lock.acquire()
+            ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
+            lock.release()
+            return
+        aggDetails = handle_request(ip.tbl_mgr.logger, cert_path, aggregate['href'])  # Use url for site's store to query site
+        if aggDetails == None:
+            return
+        agg_attributes = extract_row_from_json_dict(ip.tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
+    elif amtype == "stitcher":  # Special case
+        selfRef = aggregate['href'];
+        if not aggregate.has_key('am_nickname'):
+            lock.acquire()
+            ip.tbl_mgr.logger.warning("stitcher AM has missing nickname for %s\n Will NOT monitor" % selfRef)
+            lock.release()
+            return
+        if not aggregate.has_key('am_status'):
+            lock.acquire()
+            ip.tbl_mgr.logger.warning("stitcher AM has missing status for %s\n Will NOT monitor" % selfRef)
+            lock.release()
+            return
+        aggId = aggregate['am_nickname']
+        ts = str(int(time.time() * 1000000))
+        ops_status = aggregate['am_status']
+        agg_attributes = (agg_schema_str,  # schema
+                          aggId,  # id
+                          selfRef,  # selfref
+                          urn,  # urn
+                          ts,  # time stamp
+                          extck_measRef,  # meas Ref
+                          monitoring_version,  # # populator version
+                          ops_status,  # operational status
+                          None  # routable IP poolsize
+                          )
+    elif amtype == "foam" :
+        # FOAM
+        if not urn_to_urls_map.has_key(urn):
+            lock.acquire()
+            ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
+            lock.release()
+            return
+
+        selfRef = aggregate['href']
+
+        if aggregate.has_key('amurl'):  # For non-prod foam aggregates
+            ops_status = "development"
+        else:
+            ops_status = "production"
+
+        # Get aggregate id
+        cols = selfRef.strip().split('/')
+        aggId = cols[len(cols) - 1]  # Grab last component in cols
+
+        ts = str(int(time.time() * 1000000))
+        agg_attributes = (agg_schema_str,  # schema
+                          aggId,  # id
+                          selfRef,  # selfref
+                          urn,  # urn
+                          ts,  # time stamp
+                          extck_measRef,  # meas Ref
+                          monitoring_version,  # # populator version
+                          ops_status,  # operational status
+                          None  # routable IP poolsize
+                          )
+    elif amtype == "wimax":
+        # wimax are not really aggregates...
+        # So no AM API can't be queried for their availability
+        lock.acquire()
+        ip.tbl_mgr.logger.info("Wimax aggregate won't be monitored (%s)" % urn)
+        lock.release()
+        return
+    else:
+        lock.acquire()
+        ip.tbl_mgr.logger.warning("Unrecognized AM type: " + amtype)
+        lock.release()
+        return
+
+    lock.acquire()
+    # Populate "ops_aggregate" table
+    ip.insert_aggregate(urn, agg_attributes)
+    # Populate "ops_externalcheck_monitoredaggregate" table
+    ip.insert_externalcheck_monitoredaggregate(urn, agg_attributes)
+    ip.insert_aggregate_type(agg_attributes[1], amtype)
+
+    am_urls = urn_to_urls_map[urn]
+    for am_url in am_urls:
+        ip.insert_aggregate_url(agg_attributes[1], am_url)
+    lock.release()
+
+def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip, config):
     """
     Function to register aggregates in the database.
     :param aggStores: a json dictionary object corresponding to the "aggregatestores" 
@@ -411,94 +508,20 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip):
         monitoring_version = "unknown"
 
     extck_measRef = ip.extckStoreBaseUrl + "/data/"
+
+    myLock = multiprocessing.Lock()
+    argsList = []
     for aggregate in aggStores:
         amtype = aggregate['amtype']
         urn = aggregate['urn']
-        if amtype == 'instageni' or \
-                amtype == 'protogeni' or \
-                amtype == "exogeni" or \
-                amtype == "opengeni" or \
-                amtype == "network-aggregate":
-            if not urn_to_urls_map.has_key(urn):
-                ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
-                continue
-            aggDetails = handle_request(ip.tbl_mgr.logger, cert_path, aggregate['href'])  # Use url for site's store to query site
-            if aggDetails == None:
-                continue
-            agg_attributes = extract_row_from_json_dict(ip.tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
+        args = (cert_path, urn_to_urls_map, ip, amtype, urn,
+                ops_agg_schema, agg_schema_str, monitoring_version,
+                extck_measRef, aggregate, myLock)
+        argsList.append(args)
 
 
-        elif amtype == "stitcher":  # Special case
-            selfRef = aggregate['href'];
-            if not aggregate.has_key('am_nickname'):
-                ip.tbl_mgr.logger.warning("stitcher AM has missing nickname for %s\n Will NOT monitor" % selfRef)
-                continue
-            if not aggregate.has_key('am_status'):
-                ip.tbl_mgr.logger.warning("stitcher AM has missing status for %s\n Will NOT monitor" % selfRef)
-                continue
-            aggId = aggregate['am_nickname']
-            ts = str(int(time.time() * 1000000))
-            ops_status = aggregate['am_status']
-            agg_attributes = (agg_schema_str,  # schema
-                              aggId,  # id
-                              selfRef,  # selfref
-                              urn,  # urn
-                              ts,  # time stamp
-                              extck_measRef,  # meas Ref
-                              monitoring_version,  # # populator version
-                              ops_status,  # operational status
-                              None  # routable IP poolsize
-                              )
-        elif amtype == "foam" :
-            # FOAM
-            if not urn_to_urls_map.has_key(urn):
-                ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
-                continue
-
-            selfRef = aggregate['href']
-
-            if aggregate.has_key('amurl'):  # For non-prod foam aggregates
-                ops_status = "development"
-            else:
-                ops_status = "production"
-
-            # Get aggregate id
-            cols = selfRef.strip().split('/')
-            aggId = cols[len(cols) - 1]  # Grab last component in cols
-
-            ts = str(int(time.time() * 1000000))
-            agg_attributes = (agg_schema_str,  # schema
-                              aggId,  # id
-                              selfRef,  # selfref
-                              urn,  # urn
-                              ts,  # time stamp
-                              extck_measRef,  # meas Ref
-                              monitoring_version,  # # populator version
-                              ops_status,  # operational status
-                              None  # routable IP poolsize
-                              )
-        elif amtype == "wimax":
-            # wimax are not really aggregates...
-            # So no AM API can't be queried for their availability
-            ip.tbl_mgr.logger.info("Wimax aggregate won't be monitored (%s)" % urn)
-            continue
-        else:
-            ip.tbl_mgr.logger.warning("Unrecognized AM type: " + amtype)
-            continue
-
-        # Populate "ops_aggregate" table
-        ip.insert_aggregate(urn, agg_attributes)
-        # Populate "ops_externalcheck_monitoredaggregate" table
-        ip.insert_externalcheck_monitoredaggregate(urn, agg_attributes)
-        ip.insert_aggregate_type(agg_attributes[1], amtype)
-
-        am_urls = urn_to_urls_map[urn]
-        for am_url in am_urls:
-            ip.insert_aggregate_url(agg_attributes[1], am_url)
-
-
-
-
+    pool = multiprocessing.pool.ThreadPool(processes=int(config.get_populator_pool_size()))
+    pool.map(registerOneAggregate, argsList)
 
 def handle_request(logger, cert_path, url):
 
@@ -594,10 +617,10 @@ def main(argv):
 
     ip.cleanUpObsoleteAggregates(aggStores)
 
-    registerAggregates(aggStores, cert_path, urn_map, ip)
+    registerAggregates(aggStores, cert_path, urn_map, ip, config)
 
     # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-    ip.populateInfoTables(aggStores)
+    ip.populateExperimentInfoTables(aggStores)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
