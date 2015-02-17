@@ -43,17 +43,21 @@ class ExtckConfigLoader:
     __GENI_LIB_PATH = "geni_lib_path"
     __GENI_LIB_CONFIG_PATH = "geni_lib_config_path"
     __GCF_DIR = "gcf_dir"
+    __POPULATOR_POOL_SIZE = "populator_pool_size"
     __EXPERIMENT_SECTION = "experiment"
     __SRC_PING_CAMPUS = "src_ping_campus"
     __SRC_PING_CORE = "src_ping_core"
     __SLICENAMES = "slicenames"
+    __COORDINATION_POOL_SIZE = "coordination_pool_size"
+    __PING_THREAD_POOL_SIZE = "ping_thread_pool_size"
+    __PING_INITIAL_COUNT = "ping_initial_count"
+    __PING_MEASURMENT_COUNT = "ping_measurement_count"
     __SLICE_URN = "urn"
     __SLICE_UUID = "uuid"
     __PING_SLICE = "slicename"
     __PING_NETWORK = "network"
     __IPS_FILE_REMOTE_LOCATION = "ips_file_remote_location"
     __PINGER_FILE_REMOTE_LOCATION = "pinger_file_remote_location"
-    __OUTPUT_FILENAME = "output_filename"
     __LOCAL_OUTPUT_DIR = "local_output_dir"
     __REMOTE_OUTPUT_DIR = "remote_output_dir"
     __SSH_KEY_FILE = "ssh_key_file"
@@ -168,11 +172,14 @@ class ExtckConfigLoader:
         if matched_version != 0:
             cmd_str += " "
             cmd_str += self.__get_am_test_version_arg(matched_version)
-                
+
         return cmd_str
 
     def get_gcf_path(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GCF_DIR)
+
+    def get_populator_pool_size(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__POPULATOR_POOL_SIZE)
 
     def get_geni_lib_path(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GENI_LIB_PATH)
@@ -205,9 +212,21 @@ class ExtckConfigLoader:
             uuid = self._extck_config.get(section_name, ExtckConfigLoader.__SLICE_UUID)
             slices_dict[slice_name] = (urn, uuid)
         return slices_dict
-    
+
+    def get_experiment_coordination_thread_pool_size(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__COORDINATION_POOL_SIZE)
+
     def get_experiment_source_ping_slice_name(self, srcping):
         return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__PING_SLICE)
+
+    def get_experiment_ping_thread_pool_size(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_THREAD_POOL_SIZE)
+
+    def get_experiment_ping_initial_count(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_INITIAL_COUNT)
+
+    def get_experiment_ping_measurmentl_count(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_MEASURMENT_COUNT)
 
     def get_experiment_source_ping_vm_address(self, srcping):
         return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__VM_ADDRESS)
@@ -220,9 +239,6 @@ class ExtckConfigLoader:
 
     def get_pinger_file_remote_location(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PINGER_FILE_REMOTE_LOCATION)
-
-    def get_output_filename(self):
-        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__OUTPUT_FILENAME)
 
     def get_local_output_dir(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__LOCAL_OUTPUT_DIR)
