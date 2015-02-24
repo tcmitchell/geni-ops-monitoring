@@ -84,6 +84,10 @@ def getOFState(context, site, lock):
         lock.release()
         return 0  # Can't reach the site via control pat
 
+    if len(ad.datapaths) == 0:
+        # Basically the site has no resources configured yet.
+        # The consensus is that we declare it available still.
+        return 1
     # Check to see if dpids have ports.
     #  No ports on all dpids for a given switch indicates possible FV issues.
     for switch in ad.datapaths:
