@@ -26,10 +26,16 @@ import json
 import sys
 import requests
 import getopt
-# from pprint import pprint
+import multiprocessing
+import multiprocessing.pool
+import os
 
-common_path = "../common/"
+collector_path = os.path.abspath(os.path.dirname(__file__))
+top_path = os.path.dirname(collector_path)
+common_path = os.path.join(top_path, "common")
+config_path = os.path.join(top_path, "config")
 sys.path.append(common_path)
+
 import table_manager
 import logger
 
@@ -108,7 +114,24 @@ def parse_args(argv):
 
     return [base_url, aggregate_id, extck_id, object_types, cert_path, debug]
 
+def refresh_one_links_information((crawler, link_ref_object, link_schema, resource_schema)):
+    return crawler.refresh_one_link_info(link_ref_object, link_schema, resource_schema)
+
+def refresh_one_sliver_information((crawler, sliver_ref_object, sliver_schema, agg_sliver_schema)):
+    return crawler.refresh_one_sliver_info(sliver_ref_object, sliver_schema, agg_sliver_schema)
+
+def refresh_one_node_information((crawler, resource_object, schema, res_schema)):
+    return crawler.refresh_one_node_info(resource_object, schema, res_schema)
+
+def refresh_interface_information_for_one_node((crawler, node_url, nodeif_schema, ifaddr_schema)):
+    return crawler.refresh_interface_info_for_one_node(node_url, nodeif_schema, ifaddr_schema)
+
+def refresh_interfacevlans_info_for_one_link((crawler, link_url, ifvlan_schema, link_ifvlan_schema)):
+    return crawler.refresh_interfacevlans_info_for_one_link(link_url, ifvlan_schema, link_ifvlan_schema)
+
 class SingleLocalDatastoreInfoCrawler:
+
+    __THREAD_POOL_SIZE = 6
 
     def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path):
         self.tbl_mgr = tbl_mgr
@@ -130,10 +153,14 @@ class SingleLocalDatastoreInfoCrawler:
 
         self.am_dict = None
         self.extck_dict = None
+        self.lock = multiprocessing.Lock()
+        self.pool = multiprocessing.pool.ThreadPool(processes=SingleLocalDatastoreInfoCrawler.__THREAD_POOL_SIZE)
 
     # Updates head aggregate information
     def refresh_aggregate_info(self):
-        self.am_dict = handle_request(self.info_url + '/aggregate/' + self.aggregate_id, self.cert_path, self.logger)
+        am_url = self.info_url + '/aggregate/' + self.aggregate_id
+        self.logger.info("Refreshing aggregate %s info from %s" % (self.aggregate_id, am_url))
+        self.am_dict = handle_request(am_url, self.cert_path, self.logger)
         return self.refresh_specific_aggregate_info(self.am_dict)
 
     def refresh_specific_aggregate_info(self, agg_dict):
@@ -225,147 +252,218 @@ class SingleLocalDatastoreInfoCrawler:
                             ok = False
         return ok
 
-    # Updates all nodes information
+    def refresh_one_link_info(self, resource_object, link_schema, resource_schema):
+        ok = True
+        # counting on v2.0 schema improvements
+        if resource_object["resource_type"] and resource_object["resource_type"] != "link":
+            # we skip this resource
+            return ok
+        # either v2.0 told us it's a link, or we'll have to check the schema
+        res_dict = handle_request(resource_object["href"], self.cert_path, self.logger)
+        if res_dict:
+            if resource_object["resource_type"] or res_dict["$schema"].endswith("link#"):  # if a link
+                # get each attribute out of response into list
+                link_info_list = self.get_link_attributes(res_dict, link_schema)
+                if not info_update(self.tbl_mgr, "ops_link", link_schema, link_info_list, \
+                                   self.tbl_mgr.get_column_from_schema(link_schema, "id"), self.debug, self.logger):
+                    ok = False
+                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+                if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
+                                   self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
+                    ok = False
+        return ok
+
     def refresh_all_links_info(self):
+        self.logger.info("Refreshing all links information for aggregate %s " % (self.aggregate_id,))
         ok = True
         if self.am_dict:
-            schema = self.tbl_mgr.schema_dict["ops_link"]
-            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
+            link_schema = self.tbl_mgr.schema_dict["ops_link"]
+            resource_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
+                argsArray = []
                 for res_i in self.am_dict["resources"]:
-                    # counting on v2.0 schema improvements
-                    if res_i["resource_type"] and res_i["resource_type"] != "link":
-                        # we skip this resource
-                        continue
-                    # either v2.0 told us it's a link, or we'll have to check the schema
-                    res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
-                    if res_dict:
-                        if res_i["resource_type"] or res_dict["$schema"].endswith("link#"):  # if a link
-                            # get each attribute out of response into list
-                            link_info_list = self.get_link_attributes(res_dict, schema)
-                            if not info_update(self.tbl_mgr, "ops_link", schema, link_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
-                                ok = False
-                            agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                            if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
-                                ok = False
+                    args = (self, res_i, link_schema, resource_schema)
+                    argsArray.append(args)
+                results = self.pool.map(refresh_one_links_information, argsArray)
+                for tmp_ok in results:
+                    if not tmp_ok:
+                        ok = False
         return ok
 
+    def refresh_one_sliver_info(self, sliver_ref_object, sliver_schema, agg_sliver_schema):
+        ok = True
+        slv_dict = handle_request(sliver_ref_object["href"], self.cert_path, self.logger)
+        if slv_dict:
+            # get each attribute out of response into list
+            slv_info_list = self.get_sliver_attributes(slv_dict, sliver_schema)
+            if not info_update(self.tbl_mgr, "ops_sliver", sliver_schema, slv_info_list, \
+                               self.tbl_mgr.get_column_from_schema(sliver_schema, "id"), self.debug, self.logger):
+                ok = False
+            agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
+            if not info_update(self.tbl_mgr, "ops_aggregate_sliver", agg_sliver_schema, agg_slv_info_list, \
+                               self.tbl_mgr.get_column_from_schema(agg_sliver_schema, "id"), self.debug, self.logger):
+                ok = False
+        return ok
 
     def refresh_all_slivers_info(self):
+        self.logger.info("Refreshing all slivers information for aggregate %s " % (self.aggregate_id,))
         ok = True
         if self.am_dict:
-            schema = self.tbl_mgr.schema_dict["ops_sliver"]
-            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_sliver"]
+            sliver_schema = self.tbl_mgr.schema_dict["ops_sliver"]
+            agg_sliver_schema = self.tbl_mgr.schema_dict["ops_aggregate_sliver"]
             # Need to check because "slivers" is optional
             if "slivers" in self.am_dict:
+                argsArray = []
                 for slv_i in self.am_dict["slivers"]:
-                    slv_dict = handle_request(slv_i["href"], self.cert_path, self.logger)
-                    if slv_dict:
-                        # get each attribute out of response into list
-                        slv_info_list = self.get_sliver_attributes(slv_dict, schema)
-                        if not info_update(self.tbl_mgr, "ops_sliver", schema, slv_info_list, \
-                                           self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
-                            ok = False
-                        agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-                        if not info_update(self.tbl_mgr, "ops_aggregate_sliver", res_schema, agg_slv_info_list, \
-                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
-                            ok = False
+                    args = (self, slv_i, sliver_schema, agg_sliver_schema)
+                    argsArray.append(args)
+                results = self.pool.map(refresh_one_sliver_information, argsArray)
+                for tmp_ok in results:
+                    if not tmp_ok:
+                        ok = False
         return ok
 
+    def refresh_one_node_info(self, resource_object, node_schema, resource_schema):
+        ok = True
+        # counting on v2.0 schema improvements
+        if resource_object["resource_type"] and resource_object["resource_type"] != "node":
+            # we skip this resource
+            return ok
+        # either v2.0 told us it's a node, or we'll have to check the schema
+        res_dict = handle_request(resource_object["href"], self.cert_path, self.logger)
+        if res_dict:
+            if res_dict["$schema"].endswith("node#"):  # if a node
+                # get each attribute out of response into list
+                node_info_list = self.get_node_attributes(res_dict, node_schema)
+                self.lock.acquire()
+                if not info_update(self.tbl_mgr, "ops_node", node_schema, node_info_list, \
+                                   self.tbl_mgr.get_column_from_schema(node_schema, "id"), self.debug, self.logger):
+                    ok = False
+                self.lock.release()
+            agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
+            self.lock.acquire()
+            if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
+                               self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
+                ok = False
+            self.lock.release()
+        return ok
 
     def refresh_all_nodes_info(self):
+        self.logger.info("Refreshing all nodes information for aggregate %s " % (self.aggregate_id,))
         ok = True
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
             res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
+                argsArray = []
                 for res_i in self.am_dict["resources"]:
-                    # counting on v2.0 schema improvements
-                    if res_i["resource_type"] and res_i["resource_type"] != "node":
-                        # we skip this resource
-                        continue
-                    # either v2.0 told us it's a node, or we'll have to check the schema
-                    res_dict = handle_request(res_i["href"], self.cert_path, self.logger)
-                    if res_dict:
-                        if res_dict["$schema"].endswith("node#"):  # if a node
-                            # get each attribute out of response into list
-                            node_info_list = self.get_node_attributes(res_dict, schema)
-                            if not info_update(self.tbl_mgr, "ops_node", schema, node_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
-                                ok = False
-                        agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                        if not info_update(self.tbl_mgr, "ops_aggregate_resource", res_schema, agg_res_info_list, \
-                                           self.tbl_mgr.get_column_from_schema(res_schema, "id"), self.debug, self.logger):
-                            ok = False
+                    args = (self, res_i, schema, res_schema)
+                    argsArray.append(args)
+                results = self.pool.map(refresh_one_node_information, argsArray)
+                for tmp_ok in results:
+                    if not tmp_ok:
+                        ok = False
+
         return ok
 
+    def refresh_interfacevlans_info_for_one_link(self, link_url, ifvlan_schema, link_ifvlan_schema):
+        ok = True
+        link_dict = handle_request(link_url, self.cert_path, self.logger)
+        if link_dict:
+            if "endpoints" in link_dict:
+                for endpt in link_dict["endpoints"]:
+                    ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
+                    if ifacevlan_dict:
+                        # before updating the ifvlan info we need to make sure the if info exists
+                        if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
+                                or ifacevlan_dict["interface"]["href"] == "":
+                            self.lock.acquire()
+                            self.logger.warn("Can not record interface vlan not linked to an interface.")
+                            self.logger.debug(json.dumps(ifacevlan_dict, indent=1))
+                            self.lock.release()
+                            ok = False
+                            continue
+                        if not self.check_exists("ops_interface", "selfRef", ifacevlan_dict["interface"]["href"]):
+                            interface_dict = handle_request(ifacevlan_dict["interface"]["href"], self.cert_path, self.logger)
+                            if not self.refresh_interface_info(interface_dict):
+                                ok = False
+                        ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, ifvlan_schema)
+                        self.lock.acquire()
+                        if not info_update(self.tbl_mgr, "ops_interfacevlan", ifvlan_schema, ifacevlan_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(ifvlan_schema, "id"), self.debug, self.logger):
+                            ok = False
+                        self.lock.release()
+                        link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"]]
+                        self.lock.acquire()
+                        if not info_update(self.tbl_mgr, "ops_link_interfacevlan", link_ifvlan_schema, link_ifacevlan_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(link_ifvlan_schema, "id"), self.debug, self.logger):
+                            ok = False
+                        self.lock.release()
+        return ok
 
     def refresh_all_interfacevlans_info(self):
+        self.logger.info("Refreshing all interface vlans information for aggregate %s " % (self.aggregate_id,))
         ok = True
         link_urls = self.get_all_links_of_aggregate()
-        schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
+        ifvlan_schema = self.tbl_mgr.schema_dict["ops_interfacevlan"]
         link_ifvlan_schema = self.tbl_mgr.schema_dict["ops_link_interfacevlan"]
+        argsArray = []
         for link_url in link_urls:
-            link_dict = handle_request(link_url, self.cert_path, self.logger)
-            if link_dict:
-                if "endpoints" in link_dict:
-                    for endpt in link_dict["endpoints"]:
-                        ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
-                        if ifacevlan_dict:
-                            # before updating the ifvlan info we need to make sure the if info exists
-                            if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
-                                    or ifacevlan_dict["interface"]["href"] == "":
-                                self.logger.warn("Can not record interface vlan not linked to an interface.")
-                                self.logger.debug(json.dumps(ifacevlan_dict, indent=1))
-                                ok = False
-                                continue
-                            if not self.check_exists("ops_interface", "selfRef", ifacevlan_dict["interface"]["href"]):
-                                interface_dict = handle_request(ifacevlan_dict["interface"]["href"], self.cert_path, self.logger)
-                                if not self.refresh_interface_info(interface_dict):
-                                    ok = False
-                            ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, schema)
-                            if not info_update(self.tbl_mgr, "ops_interfacevlan", schema, ifacevlan_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
-                                ok = False
-                            link_ifacevlan_info_list = [ifacevlan_dict["id"], link_dict["id"]]
-                            if not info_update(self.tbl_mgr, "ops_link_interfacevlan", link_ifvlan_schema, link_ifacevlan_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(link_ifvlan_schema, "id"), self.debug, self.logger):
-                                ok = False
+            args = (self, link_url, ifvlan_schema, link_ifvlan_schema)
+            argsArray.append(args)
+        results = self.pool.map(refresh_interfacevlans_info_for_one_link, argsArray)
+        for tmp_ok in results:
+            if not tmp_ok:
+                ok = False
         return ok
 
+
+    def refresh_interface_info_for_one_node(self, node_url, nodeif_schema, ifaddr_schema):
+        ok = True
+        node_dict = handle_request(node_url, self.cert_path, self.logger)
+        if node_dict:
+            if "interfaces" in node_dict:
+                for interface in node_dict["interfaces"]:
+                    interface_dict = handle_request(interface["href"], self.cert_path, self.logger)
+                    if interface_dict:
+                        if not self.refresh_interface_info(interface_dict):
+                            ok = False
+                        node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
+                        self.lock.acquire()
+                        if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
+                                           self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
+                            ok = False
+                        self.lock.release()
+                        interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
+                        primary_key_columns = [self.tbl_mgr.get_column_from_schema(ifaddr_schema, "interface_id"),
+                                               self.tbl_mgr.get_column_from_schema(ifaddr_schema, "address")]
+                        for address in interface_address_list:
+                            self.lock.acquire()
+                            if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address,
+                                               primary_key_columns, self.debug, self.logger):
+                                ok = False
+                            self.lock.release()
+        return ok
 
     # Updates all interfaces information
     # First queries all nodes at aggregate and looks for their interfaces
     # Then, loops through each interface in the node_dict
     def refresh_all_interfaces_info(self):
+        self.logger.info("Refreshing all interfaces information for aggregate %s " % (self.aggregate_id,))
         ok = True
         node_urls = self.get_all_nodes_of_aggregate()
         nodeif_schema = self.tbl_mgr.schema_dict["ops_node_interface"]
+        ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
+        argsArray = []
         for node_url in node_urls:
-            node_dict = handle_request(node_url, self.cert_path, self.logger)
-            if node_dict:
-                if "interfaces" in node_dict:
-                    for interface in node_dict["interfaces"]:
-                        interface_dict = handle_request(interface["href"], self.cert_path, self.logger)
-                        if interface_dict:
-                            if not self.refresh_interface_info(interface_dict):
-                                ok = False
-                            node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                            if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
-                                               self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
-                                ok = False
-                            ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
-                            interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
-                            primary_key_columns = [self.tbl_mgr.get_column_from_schema(ifaddr_schema, "interface_id"),
-                                                   self.tbl_mgr.get_column_from_schema(ifaddr_schema, "address")]
-                            for address in interface_address_list:
-                                if not info_update(self.tbl_mgr, "ops_interface_addresses", ifaddr_schema, address,
-                                                   primary_key_columns, self.debug, self.logger):
-                                    ok = False
+            args = (self, node_url, nodeif_schema, ifaddr_schema)
+            argsArray.append(args)
+        results = self.pool.map(refresh_interface_information_for_one_node, argsArray)
+        for tmp_ok in results:
+            if not tmp_ok:
+                ok = False
         return ok
 
     def refresh_interface_info(self, interface_dict):
@@ -377,9 +475,11 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         schema = self.tbl_mgr.schema_dict["ops_interface"]
         interface_info_list = self.get_interface_attributes(interface_dict, schema)
+        self.lock.acquire()
         if not info_update(self.tbl_mgr, "ops_interface", schema, interface_info_list, \
                            self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
             ok = False
+        self.lock.release()
         return ok
 
     def get_default_attribute_for_type(self, vartype):
@@ -742,7 +842,6 @@ def main(argv):
         usage()
 
     db_type = "collector"
-    config_path = "../config/"
     # If in debug mode, make sure to overwrite the logging configuration to print out what we want,
     if debug:
         logger.configure_logger_for_debug_info(config_path)
