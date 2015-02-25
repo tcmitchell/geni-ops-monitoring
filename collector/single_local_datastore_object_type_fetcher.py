@@ -28,8 +28,15 @@ import sys
 import getopt
 import requests
 import pprint
+import os
+import multiprocessing
+import multiprocessing.pool
 
-sys.path.append("../common/")
+collector_path = os.path.abspath(os.path.dirname(__file__))
+top_path = os.path.dirname(collector_path)
+common_path = os.path.join(top_path, "common")
+config_path = os.path.join(top_path, "config")
+sys.path.append(common_path)
 import table_manager
 import opsconfig_loader
 import logger
@@ -72,7 +79,15 @@ def parse_args(argv):
     return [aggregate_id, extck_id, object_type, cert_path, debug]
 
 
+def fetch_content((fetcher, url)):
+    return fetcher.fetch_content(url)
+
+def tsdata_insert((fetcher, datastore_id, obj_id, table_str, tsdata)):
+    return fetcher.tsdata_insert(datastore_id, obj_id, table_str, tsdata)
+
 class SingleLocalDatastoreObjectTypeFetcher:
+
+    __THREAD_POOL_SIZE = 6
 
     def __init__(self, tbl_mgr, aggregate_id, extck_id, obj_type, event_types, cert_path, debug, config_path):
 
@@ -109,6 +124,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
             self.meas_ref = self.get_meas_ref("ops_externalcheck", self.extck_id)
 
         self.obj_ids = self.get_object_ids(obj_type)
+        self.lock = multiprocessing.Lock()
+        self.pool = multiprocessing.pool.ThreadPool(processes=SingleLocalDatastoreObjectTypeFetcher.__THREAD_POOL_SIZE)
 
 
     def fetch_and_insert(self):
@@ -125,6 +142,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         onlyErr = True
 
         # there should be at least one answer unless we had issues retrieving it
+        argsArray = []
         for json_text in json_texts:
             data = None
             try:
@@ -158,8 +176,14 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
                         tsdata = result["tsdata"]
                         if len(tsdata) > 0:
-                            if not tsdata_insert(self.tbl_mgr, datastore_id, obj_id, table_str, tsdata, self.debug, self.logger):
-                                ok = False
+                            argsArray.append((self, datastore_id, obj_id, table_str, tsdata))
+#                             if not self.tsdata_insert(datastore_id, obj_id, table_str, tsdata):
+#                                 ok = False
+        if len(argsArray) > 0:
+            results = self.pool.map(tsdata_insert, argsArray)
+            for tmp_ok in results:
+                if not tmp_ok:
+                    ok = False
 
         if onlyErr:
             ok = False
@@ -224,6 +248,30 @@ class SingleLocalDatastoreObjectTypeFetcher:
         url = url.replace(' ', '')
         return url;
 
+    def fetch_content(self, url):
+        self.lock.acquire()
+        self.logger.debug(url)
+        self.logger.debug("URL length = " + str(len(url)))
+        self.lock.release()
+
+        resp = None
+        try:
+            resp = requests.get(url, verify=False, cert=self.cert_path)
+        except requests.exceptions.RequestException, e:
+            self.lock.acquire()
+            self.logger.warning("No response from local datastore at: " + url)
+            self.logger.warning(e)
+            self.lock.release()
+
+        if resp is not None:
+            if (resp.status_code == requests.codes.ok):
+                return resp.content
+            else:
+                self.lock.acquire()
+                self.logger.warning("Response from " + url + " is invalid, code = " + str(resp.status_code))
+                self.lock.release()
+        return None
+
     def poll_datastore(self):
         _MAX_URL_LEN = 2000
         # current time for lt filter and record keeping
@@ -267,23 +315,13 @@ class SingleLocalDatastoreObjectTypeFetcher:
             urls = [url]
 
         contents = []
+        argsArray = []
         for url in urls:
-            self.logger.debug(url)
-            self.logger.debug("URL length = " + str(len(url)))
-
-            resp = None
-            try:
-                resp = requests.get(url, verify=False, cert=self.cert_path)
-            except requests.exceptions.RequestException, e:
-                self.logger.warning("No response from local datastore at: " + url)
-                self.logger.warning(e)
-
-            if resp is not None:
-                if (resp.status_code == requests.codes.ok):
-                    self.time_of_last_update = req_time
-                    contents.append(resp.content)
-                else:
-                    self.logger.warning("Response from " + url + " is invalid, code = " + str(resp.status_code))
+            argsArray.append((self, url))
+        results = self.pool.map(fetch_content, argsArray)
+        for cont in results:
+            if cont is not None:
+                contents.append(cont)
 
         return contents
 
@@ -395,46 +433,40 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         return meas_ref
 
+    def tsdata_insert(self, agg_id, obj_id, table_str, tsdata):
+        """
+        Method to insert time series data into a given table about a given object.
+        :param agg_id: the id of the aggregate that reported the data
+        :param obj_id: the id of the object that the data is pertaining to.
+        :param table_str: the name of the table
+        :param tsdata: the list of time series data in dictionary format
+        :return: True if the insertion happened (or would have happened in debug mode) correctly, False otherwise.
+        """
+        _CHUNK_SIZE = 10
+        ok = True
+        vals_str = ""
+        for i in range(len(tsdata)):
+            tsdata_i = tsdata[i]
+            vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
+            if (i != 0) and (i % _CHUNK_SIZE == 0):
+                vals_str = vals_str[:-1]  # remove last ','
+                if self.debug:
+                    self.logger.info("<print only> insert " + table_str + " values: " + vals_str)
+                else:
+                    if not self.tbl_mgr.insert_stmt(table_str, vals_str):
+                        ok = False
+                vals_str = ""
 
-# Builds the multi-row insert value string
-def tsdata_insert(tbl_mgr, agg_id, obj_id, table_str, tsdata, debug, logger):
-    """
-    Function to insert time series data into a given table about a given object.
-    :param tbl_mgr: an instance of TableManager to use to execute the SQL statements
-    :param agg_id: the id of the aggregate that reported the data
-    :param obj_id: the id of the object that the data is pertaining to.
-    :param table_str: the name of the table
-    :param tsdata: the list of time series data in dictionary format
-    :param debug: a boolean saying whether to actually perform the insertion (False) or 
-        just print what would happen.
-    :param logger: an instance of the logger to use.
-    :return: True if the insertion happened (or would have happened in debug mode) correctly, False otherwise.
-    """
-    _CHUNK_SIZE = 10
-    ok = True
-    vals_str = ""
-    for i in range(len(tsdata)):
-        tsdata_i = tsdata[i]
-        vals_str += "('" + str(agg_id) + "','" + str(obj_id) + "','" + str(tsdata_i["ts"]) + "','" + str(tsdata_i["v"]) + "'),"
-        if (i != 0) and (i % _CHUNK_SIZE == 0):
+        if vals_str != "":
             vals_str = vals_str[:-1]  # remove last ','
-            if debug:
-                logger.info("<print only> insert " + table_str + " values: " + vals_str)
+            if self.debug:
+                self.logger.info("<print only> insert " + table_str + " values: " + vals_str)
             else:
-                if not tbl_mgr.insert_stmt(table_str, vals_str):
+                if not self.tbl_mgr.insert_stmt(table_str, vals_str):
                     ok = False
-            vals_str = ""
-
-    if vals_str != "":
-        vals_str = vals_str[:-1]  # remove last ','
-        if debug:
-            logger.info("<print only> insert " + table_str + " values: " + vals_str)
-        else:
-            if not tbl_mgr.insert_stmt(table_str, vals_str):
-                ok = False
 
 
-    return ok
+        return ok
 
 
 def main(argv):
@@ -444,7 +476,6 @@ def main(argv):
         usage()
 
     db_type = "collector"
-    config_path = "../config/"
     # If in debug mode, make sure to overwrite the logging configuration to print out what we want,
     if debug:
         logger.configure_logger_for_debug_info(config_path)

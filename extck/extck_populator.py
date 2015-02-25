@@ -84,19 +84,24 @@ def getOFState(context, site, lock):
         lock.release()
         return 0  # Can't reach the site via control pat
 
-    if len(ad.datapaths) == 0:
-        # Basically the site has no resources configured yet.
-        # The consensus is that we declare it available still.
-        return 1
     # Check to see if dpids have ports.
     #  No ports on all dpids for a given switch indicates possible FV issues.
+    switch_nb = 0
     for switch in ad.datapaths:
+        switch_nb += 1
         if len(switch.ports) == 0:
             lock.acquire()
             opslogger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
             lock.release()
         else:  # If any dpid has ports listed, FV is working for that switch
             return 1
+    if switch_nb == 0:
+        # Basically the site has no resources configured yet.
+        # The consensus is that we declare it available still.
+        lock.acquire()
+        opslogger.info("No switches listed for %s." % site.name)
+        lock.release()
+        return 1
 
     lock.acquire()
     opslogger.warning("NO ports found on any switch. FV may be hang or connection from dpid to FV is broken. Declaring foam aggregate %s (%s) unavailable" % (site.name, site.url))
@@ -189,15 +194,17 @@ def getStitcherState(scs_id, scs_url, config, lock):
     state = 0
     qualifier = "NOT "
     secure = False
+    timeo = int(config.get_scs_timeout())
+
     if scs_url.startswith("https"):
         secure = True
         # Get key and cert from omni file.
         [keyfile, certfile] = getOmniCredentials()
     try:
         if secure:
-            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile)
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile, timeout=timeo)
         else:
-            scsI = gcf.omnilib.stitch.scs.Service(scs_url)
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url, timeout=timeo)
         result = scsI.ListAggregates(False)
         retval = 1
         try:
