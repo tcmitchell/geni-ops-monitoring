@@ -44,6 +44,8 @@ class ExtckConfigLoader:
     __GENI_LIB_CONFIG_PATH = "geni_lib_config_path"
     __GCF_DIR = "gcf_dir"
     __POPULATOR_POOL_SIZE = "populator_pool_size"
+    __SCS_TIMEOUT = "scs_timeout"
+
     __EXPERIMENT_SECTION = "experiment"
     __SRC_PING_CAMPUS = "src_ping_campus"
     __SRC_PING_CORE = "src_ping_core"
@@ -186,6 +188,9 @@ class ExtckConfigLoader:
 
     def get_geni_lib_config_path(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GENI_LIB_CONFIG_PATH)
+
+    def get_scs_timeout(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__SCS_TIMEOUT)
 
     def __get_value_set_from_comma_separated_string(self, valstr):
         vals = valstr.split(',')
