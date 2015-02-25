@@ -194,15 +194,17 @@ def getStitcherState(scs_id, scs_url, config, lock):
     state = 0
     qualifier = "NOT "
     secure = False
+    timeo = int(config.get_scs_timeout())
+
     if scs_url.startswith("https"):
         secure = True
         # Get key and cert from omni file.
         [keyfile, certfile] = getOmniCredentials()
     try:
         if secure:
-            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile)
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile, timeout=timeo)
         else:
-            scsI = gcf.omnilib.stitch.scs.Service(scs_url)
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url, timeout=timeo)
         result = scsI.ListAggregates(False)
         retval = 1
         try:
