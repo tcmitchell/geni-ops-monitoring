@@ -65,6 +65,8 @@ class ExtckConfigLoader:
     __SSH_KEY_FILE = "ssh_key_file"
     __VM_ADDRESS = "vm_address"
     __VM_PORT = "vm_port"
+    __SCS_AGGREGATES_SECTION_PREFIX = "scs_aggregates_"
+    __SOURCE_PING_SECTION_PREFIX = "ping_"
 
 
 
@@ -192,6 +194,15 @@ class ExtckConfigLoader:
     def get_scs_timeout(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__SCS_TIMEOUT)
 
+    def get_expected_aggregates_for_scs(self, scs_id):
+        section_name = ExtckConfigLoader.__SCS_AGGREGATES_SECTION_PREFIX + scs_id
+        results = dict()
+        if self._extck_config.has_section(section_name):
+            aggregates = self._extck_config.items(section_name)
+            for nickname, am_urn in aggregates:
+                results[nickname] = am_urn
+        return results
+
     def __get_value_set_from_comma_separated_string(self, valstr):
         vals = valstr.split(',')
         srcs = set()
@@ -222,7 +233,7 @@ class ExtckConfigLoader:
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__COORDINATION_POOL_SIZE)
 
     def get_experiment_source_ping_slice_name(self, srcping):
-        return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__PING_SLICE)
+        return self._extck_config.get(ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + srcping, ExtckConfigLoader.__PING_SLICE)
 
     def get_experiment_ping_thread_pool_size(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_THREAD_POOL_SIZE)
@@ -234,10 +245,10 @@ class ExtckConfigLoader:
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_MEASURMENT_COUNT)
 
     def get_experiment_source_ping_vm_address(self, srcping):
-        return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__VM_ADDRESS)
+        return self._extck_config.get(ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + srcping, ExtckConfigLoader.__VM_ADDRESS)
 
     def get_experiment_source_ping_vm_port(self, srcping):
-        return self._extck_config.get("ping_" + srcping, ExtckConfigLoader.__VM_PORT)
+        return self._extck_config.get(ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + srcping, ExtckConfigLoader.__VM_PORT)
 
     def get_ips_file_remote_location(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__IPS_FILE_REMOTE_LOCATION)
