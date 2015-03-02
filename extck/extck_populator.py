@@ -28,6 +28,7 @@ import shlex
 import os
 import multiprocessing
 import multiprocessing.pool
+import threading
 # import requests
 
 extck_path = os.path.abspath(os.path.dirname(__file__))
@@ -75,6 +76,9 @@ class SiteOF(AM):
 
 def getOFState(context, site, lock):
 
+    lock.acquire()
+    opslogger.debug("Listing resources for FOAM/FV Aggregate Manager %s at %s." % (site.name, site.url))
+    lock.release()
     try:
         ad = site.listresources(context)  # Run listresources for a particular site
     except Exception, e:
@@ -94,6 +98,9 @@ def getOFState(context, site, lock):
             opslogger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
             lock.release()
         else:  # If any dpid has ports listed, FV is working for that switch
+            lock.acquire()
+            opslogger.info("FOAM/FV Aggregate Manager %s is available at %s." % (site.name, site.url))
+            lock.release()
             return 1
     if switch_nb == 0:
         # Basically the site has no resources configured yet.
@@ -180,6 +187,17 @@ def getOmniCredentials():
     cert = config['selected_framework']['cert']
     return key, cert
 
+class ListAggregateThread(threading.Thread):
+    def __init__(self, scsInstance):
+        super(ListAggregateThread, self).__init__()
+        self.scsInstance = scsInstance
+        self.daemon = True
+
+    def run(self):
+        self.result = listScsAggregate(self.scsInstance)
+
+def listScsAggregate(scsInstance):
+    return scsInstance.ListAggregates(False)
 
 def getStitcherState(scs_id, scs_url, config, lock):
 #     cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
@@ -205,7 +223,19 @@ def getStitcherState(scs_id, scs_url, config, lock):
             scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile, timeout=timeo)
         else:
             scsI = gcf.omnilib.stitch.scs.Service(scs_url, timeout=timeo)
-        result = scsI.ListAggregates(False)
+        if secure:
+            result = listScsAggregate(scsI)
+        else:
+            # launch a daemon thread to list the aggregate and join for timeout
+            t = ListAggregateThread(scsI)
+            t.start()
+            t.join(timeout=timeo)
+            if t.is_alive():
+                lock.acquire()
+                opslogger.warning("ERROR: SCS checking at %s timed out" % scs_url)
+                lock.release()
+                raise Exception()
+            result = t.result
         retval = 1
         try:
             verStruct = result
@@ -213,24 +243,75 @@ def getStitcherState(scs_id, scs_url, config, lock):
 #                 tag = verStruct["value"]["code_tag"]
             if verStruct and verStruct.has_key("code") and verStruct["code"].has_key("geni_code"):
                 retval = verStruct["code"]["geni_code"]
-            # TODO: Should do something with the list of aggregates...
-
+            if retval == 0:
+                mandatory_aggregates = config.get_expected_aggregates_for_scs(scs_id)
+                if len(mandatory_aggregates) == 0:
+                    # Nothing to check so we're good
+                    lock.acquire()
+                    opslogger.debug("list of mandatory aggregates for SCS %s is empty. No check will be performed on the returned list" % scs_id)
+                    lock.release()
+                    state = 1
+                    qualifier = ""
+                else:
+                    if verStruct.has_key("value") and verStruct["value"].has_key("geni_aggregate_list"):
+                        # This is a dictionary. Keys are "AM" names. Values are dictionary objects with url and urn entries.
+                        listed_aggregates = verStruct["value"]["geni_aggregate_list"]
+                        for am_urn in mandatory_aggregates.values():
+                            for entry in listed_aggregates.values():
+                                if entry.has_key('urn') and am_urn == entry['urn']:
+                                    break
+                            else:
+                                # we did not find a match exiting the outer loop
+                                lock.acquire()
+                                opslogger.warning("ERROR: list of aggregates returned by SCS %s does not contain a mandatory URN (%s)" % (scs_id, am_urn))
+                                lock.release()
+                                break
+                        else:
+                            # we never exited this loop via a break, so we matched all mandatory URNs
+                            lock.acquire()
+                            opslogger.debug("All %d mandatory aggregates are present in the list of aggregates returned by SCS %s" % (len(mandatory_aggregates), scs_id))
+                            lock.release()
+                            state = 1
+                            qualifier = ""
         except:
             lock.acquire()
             opslogger.warning("ERROR: SCS return not parsable")
             lock.release()
-            raise
-        if retval == 0:
-            state = 1
-            qualifier = ""
     except Exception:
         pass
 
     lock.acquire()
-    opslogger.info("SCS %s is %sreachable at %s" % (scs_id, qualifier, scs_url))
+    opslogger.info("SCS %s is %savailable at %s" % (scs_id, qualifier, scs_url))
     lock.release()
     return state
 
+
+def check_aggregate_state_for_one_url((monitored_aggregate_id, amtype, am_url, lock)):
+#     print "Checking %s at %s" % (monitored_aggregate_id, am_url)
+    if amtype == "foam":
+        version = config.get_apiversion_from_am_url(am_url, amtype)
+        site = SiteOF(monitored_aggregate_id, am_url, version)
+        state = getOFState(context, site, lock)
+    elif amtype == "protogeni" or \
+        amtype == "instageni" or \
+        amtype == "exogeni" or \
+        amtype == "opengeni" or \
+        amtype == "network-aggregate":
+        state = getAMStateForURL(monitored_aggregate_id, am_url, amtype, config, lock)
+    elif amtype == "stitcher":
+        state = getStitcherState(monitored_aggregate_id, am_url, config, lock)
+    ts = int(time.time() * 1000000)
+    return (monitored_aggregate_id, ts, state)
+
+def insert_aggregate_result(monitored_aggregate_id, results, dp):
+    overall_state = 1  # let's be optimistic
+    sum_ts = 0
+    for (ts, state) in results:
+        sum_ts += ts
+        if state == 0:
+            overall_state = 0
+    avg_ts = int(sum_ts / len(results))
+    dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, avg_ts, overall_state)
 
 def check_aggregate_state((monitored_aggregate_id, amtype, am_urls, dp, lock)):
     overall_state = 0  # unavailable until confirmed available.
@@ -312,11 +393,24 @@ def main():
         if am_urls is None:
             opslogger.warning("Did not find any registered AM URL for aggregate: %s" % monitored_aggregate_id)
             continue
-        args = (monitored_aggregate_id, amtype, am_urls, dp, myLock)
-        argsList.append(args)
+#         args = (monitored_aggregate_id, amtype, am_urls, dp, myLock)
+        for url_tuple in am_urls:
+            url = url_tuple[0]
+            args = (monitored_aggregate_id, amtype, url, myLock)
+            argsList.append(args)
+#         argsList.append(args)
 
     pool = multiprocessing.pool.ThreadPool(processes=int(config.get_populator_pool_size()))
-    pool.map(check_aggregate_state, argsList)
+    results = pool.map(check_aggregate_state_for_one_url, argsList)
+    # Building the results
+    # regroup results by aggregate_id
+    agg_results = dict()
+    for (monitored_aggregate_id, ts, state) in results:
+        if not monitored_aggregate_id in agg_results:
+            agg_results[monitored_aggregate_id] = list()
+        agg_results[monitored_aggregate_id].append((ts, state))
+    for monitored_aggregate_id in agg_results.keys():
+        insert_aggregate_result(monitored_aggregate_id, agg_results[monitored_aggregate_id], dp)
     dp.db_purge_agg_is_available()
 
 if __name__ == "__main__":

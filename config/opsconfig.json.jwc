@@ -17,13 +17,13 @@
     },
     // AL2S data store
     {
-      "urn": "urn:publicid:IDN+al2s.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+al2s.internet2.edu+authority+am",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.internet2.edu"
     },
     // Mesoscale data store
     {
-      "urn": "urn:publicid:IDN+of.internet2.edu+authority+cm",
+      "urn": "urn:publicid:IDN+of.internet2.edu+authority+am",
       "amtype": "network-aggregate",
       "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/of.internet2.edu"
     },
