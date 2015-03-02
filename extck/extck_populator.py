@@ -244,9 +244,35 @@ def getStitcherState(scs_id, scs_url, config, lock):
             if verStruct and verStruct.has_key("code") and verStruct["code"].has_key("geni_code"):
                 retval = verStruct["code"]["geni_code"]
             if retval == 0:
-                # TODO: Should do something with the list of aggregates...
-                state = 1
-                qualifier = ""
+                mandatory_aggregates = config.get_expected_aggregates_for_scs(scs_id)
+                if len(mandatory_aggregates) == 0:
+                    # Nothing to check so we're good
+                    lock.acquire()
+                    opslogger.debug("list of mandatory aggregates for SCS %s is empty. No check will be performed on the returned list" % scs_id)
+                    lock.release()
+                    state = 1
+                    qualifier = ""
+                else:
+                    if verStruct.has_key("value") and verStruct["value"].has_key("geni_aggregate_list"):
+                        # This is a dictionary. Keys are "AM" names. Values are dictionary objects with url and urn entries.
+                        listed_aggregates = verStruct["value"]["geni_aggregate_list"]
+                        for am_urn in mandatory_aggregates.values():
+                            for entry in listed_aggregates.values():
+                                if entry.has_key('urn') and am_urn == entry['urn']:
+                                    break
+                            else:
+                                # we did not find a match exiting the outer loop
+                                lock.acquire()
+                                opslogger.warning("ERROR: list of aggregates returned by SCS %s does not contain a mandatory URN (%s)" % (scs_id, am_urn))
+                                lock.release()
+                                break
+                        else:
+                            # we never exited this loop via a break, so we matched all mandatory URNs
+                            lock.acquire()
+                            opslogger.debug("All %d mandatory aggregates are present in the list of aggregates returned by SCS %s" % (len(mandatory_aggregates), scs_id))
+                            lock.release()
+                            state = 1
+                            qualifier = ""
         except:
             lock.acquire()
             opslogger.warning("ERROR: SCS return not parsable")
@@ -255,7 +281,7 @@ def getStitcherState(scs_id, scs_url, config, lock):
         pass
 
     lock.acquire()
-    opslogger.info("SCS %s is %sreachable at %s" % (scs_id, qualifier, scs_url))
+    opslogger.info("SCS %s is %savailable at %s" % (scs_id, qualifier, scs_url))
     lock.release()
     return state
 
