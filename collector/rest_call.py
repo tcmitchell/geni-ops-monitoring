@@ -40,12 +40,23 @@ import re
 import os
 from optparse import OptionParser
 import datetime
+import threading
 
 # XXX this program must be run with the current directory set to
 # collector/ (the directory containing this file) OR with said
 # directory added to the PYTHONPATH environment variable so that it
 # can find the response_validatory module.
 import response_validator
+
+
+# URLs to be visited
+unvisited_urls = list()
+
+# URLs being visited
+visiting = list()
+
+# URLs for which we have attempted to fetch a response
+visited_urls = set()  # empty set to begin
 
 
 def visit_url(url, cert_path, http_headers):
@@ -199,10 +210,12 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
         if (choice < 0) or (choice >= len(unvisited_urls)):
             return None
         else:
-            return unvisited_urls[choice]
+#             url = unvisited_urls[choice]
+#             unvisited_urls.remove(url)
+            return unvisited_urls.pop(choice)
     else:
         # non-interactive: always return the first URL in the list
-        return unvisited_urls[0]
+        return unvisited_urls.pop(0)
 
 
 def get_max_keylen(d):
@@ -236,6 +249,86 @@ def print_schema_stats(schema_stats_dict):
             max_url_len, url, stats["seen"], stats["valid"])
 
 
+class UrlVisitingThread(threading.Thread):
+    def __init__(self, condition, options, http_headers, http_status_dict, schema_stats_dict):
+        threading.Thread.__init__(self)
+        self.condition = condition
+        self.options = options
+        self.http_headers = http_headers
+        self.http_status_dict = http_status_dict
+        self.schema_stats_dict = schema_stats_dict
+        self.num_valid_urls = 0
+        self._still_running = False
+
+    def start(self):
+        self._still_running = True
+        threading.Thread.start(self)
+
+    def stop(self):
+        self._still_running = False
+        self.condition.acquire()
+        self.condition.notifyAll()
+        self.condition.release()
+
+    def run(self):
+
+        while self._still_running:
+
+            self.condition.acquire()
+            if unvisited_urls:
+                url = choose_url_to_visit(unvisited_urls, len(visited_urls), False)
+                visiting.append(url)
+                self.condition.release()
+
+                output = 79 * "-" + "\n%s Visiting %s returns:\n" % (str(datetime.datetime.now()), url)
+
+                json_dict, status_string = visit_url(url, self.options.cert_path, self.http_headers)
+
+
+                    # print the response
+
+                output += str(datetime.datetime.now()) + " " + status_string + "\n"
+                output += json.dumps(json_dict, indent=4, sort_keys=True) + "\n"
+
+
+
+                if not self.options.skip_validation:
+                    valid = validate_response(json_dict, self.options, self.schema_stats_dict)
+                    output += "Response from %s is " % (url,)
+                    if valid:
+                        output += "valid\n"
+                        self.num_valid_urls += 1
+                    else:
+                        output += "NOT valid\n"
+
+                # maybe "crawl"; harvest other URLs from the response
+
+
+                self.condition.acquire()
+                # now that we've visited it, move this url to visited
+                visiting.remove(url)
+                visited_urls.add(url)
+                if self.options.follow_urls:
+                    # Find the URLs embedded in this response.  Any that we
+                    # have not already visited go into unvisited_urls if not
+                    # already there.
+                    embedded_urls = find_embedded_urls(json_dict)
+                    for embedded_url in embedded_urls:
+                        if (not (embedded_url in visited_urls) and not (embedded_url in unvisited_urls)):
+#                             output += "Adding %s to unvisited_urls\n" % embedded_url
+                            unvisited_urls.append(embedded_url)
+                print output
+                # keep track of how many times this status was seen
+                try:
+                    self.http_status_dict[status_string] += 1
+                except KeyError:
+                    self.http_status_dict[status_string] = 1
+                self.condition.notifyAll()
+                self.condition.release()
+            else:
+                self.condition.wait()
+                self.condition.release()
+        
 def main(argv):
 
     # Set up command-line options
@@ -304,10 +397,11 @@ def main(argv):
     # Options look good.  Let's get to work.
 
     # URLs that haven't been fetched yet
-    unvisited_urls = list(url_args)  # make a copy of url_args
+    unvisited_urls.extend(url_args)  # make a copy of url_args
 
-    # URLs for which we have attempted to fetch a response
-    visited_urls = set()  # empty set to begin
+    # threading Condition to use lock / unlocking / waiting
+    condition = threading.Condition()
+
 
     # Number of URLs visited that returned valid JSON according to their schema
     num_valid_urls = 0
@@ -328,57 +422,72 @@ def main(argv):
 
     # main loop
 
-    while unvisited_urls:
-        url = choose_url_to_visit(unvisited_urls, len(visited_urls),
-                                  options.interactive)
-        if not url:  # chose to exit
-            break
+    if (options.interactive):
+        while unvisited_urls:
+            url = choose_url_to_visit(unvisited_urls, len(visited_urls), True)
+            if not url:  # chose to exit
+                break
 
-        print 79 * "-", "\n%s Visiting %s returns:" % (
-            str(datetime.datetime.now()), url)
+            print 79 * "-", "\n%s Visiting %s returns:" % (
+                str(datetime.datetime.now()), url)
 
-        json_dict, status_string = visit_url(url, options.cert_path,
-                                             http_headers)
+            json_dict, status_string = visit_url(url, options.cert_path,
+                                                 http_headers)
 
-        # now that we've visited it, move this url from unvisited to visited
-        unvisited_urls.remove(url)
-        visited_urls.add(url)
+            # now that we've visited it, move this url to visited
+            visited_urls.add(url)
 
-        # print the response
+            # print the response
 
-        print str(datetime.datetime.now()) + " " + status_string
-        print json.dumps(json_dict, indent=4, sort_keys=True)
+            print str(datetime.datetime.now()) + " " + status_string
+            print json.dumps(json_dict, indent=4, sort_keys=True)
 
-        # keep track of how many times this status was seen
+            # keep track of how many times this status was seen
 
-        try:
-            http_status_dict[status_string] += 1
-        except KeyError:
-            http_status_dict[status_string] = 1
+            try:
+                http_status_dict[status_string] += 1
+            except KeyError:
+                http_status_dict[status_string] = 1
 
-        # maybe validate the response
+            # maybe validate the response
 
-        if not options.skip_validation:
-            valid = validate_response(json_dict, options, schema_stats_dict)
-            print "Response from %s is" % (url),
-            if valid:
-                print "valid"
-                num_valid_urls += 1
-            else:
-                print "NOT valid"
+            if not options.skip_validation:
+                valid = validate_response(json_dict, options, schema_stats_dict)
+                print "Response from %s is" % (url),
+                if valid:
+                    print "valid"
+                    num_valid_urls += 1
+                else:
+                    print "NOT valid"
 
-        # maybe "crawl"; harvest other URLs from the response
+            # maybe "crawl"; harvest other URLs from the response
 
-        if options.follow_urls:
-            # Find the URLs embedded in this response.  Any that we
-            # have not already visited go into unvisited_urls if not
-            # already there.
-            embedded_urls = find_embedded_urls(json_dict)
-            for embedded_url in embedded_urls:
-                if (not (embedded_url in visited_urls) and
-                        not (embedded_url in unvisited_urls)):
-                    unvisited_urls.append(embedded_url)
+            if options.follow_urls:
+                # Find the URLs embedded in this response.  Any that we
+                # have not already visited go into unvisited_urls if not
+                # already there.
+                embedded_urls = find_embedded_urls(json_dict)
+                for embedded_url in embedded_urls:
+                    if (not (embedded_url in visited_urls) and
+                            not (embedded_url in unvisited_urls)):
+                        unvisited_urls.append(embedded_url)
 
+    else:
+        total_threads = 5
+        thread_list = list()
+        for _i in range(total_threads):
+            t = UrlVisitingThread(condition, options, http_headers, http_status_dict, schema_stats_dict)
+            thread_list.append(t)
+            t.start()
+        done = False
+        while not done:
+            condition.acquire()
+            if not visiting and not unvisited_urls:
+                done = True
+            condition.release()
+        for t in thread_list:
+            t.stop()
+            num_valid_urls += t.num_valid_urls
     # print a summary of this run
 
     print "%d URLs visited" % (len(visited_urls)),
