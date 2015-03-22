@@ -143,14 +143,14 @@ class Pinger:
                 continue
 
             experiment_id = self.srcSite + "_to_" + dstSite
-            if self.ping_type == 'campus':
-                experiment_id = experiment_id + "_campus"
-            else:
+            if self.ping_type == 'core':
                 dstSiteFlag = dstSite.strip().split('-')
                 srcSiteFlag = self.srcSite.strip().split('-')
                 if srcSiteFlag[2] != dstSiteFlag[2]:
                     # Can't ping between hosts in different networks
                     continue
+            else:
+                experiment_id += "_" + self.ping_type
 
             dst_addr = ipList[dstSite]
             # build argument list for process pool

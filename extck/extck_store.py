@@ -73,10 +73,10 @@ class InfoPopulator():
         self.extckStoreBaseUrl = self._config.get_extck_store_base_url()
         self._extckStoreSite = self._config.get_extck_store_id()
 
-        ipsconfig = ConfigParser.ConfigParser()
-        ipsconfig.read(os.path.join(extck_path, "ips.conf"))
-        self._ip_campus = dict(ipsconfig.items("campus"))
-        self._ip_core = dict(ipsconfig.items("core"))
+        self._ipsconfig = ConfigParser.ConfigParser()
+        self._ipsconfig.read(os.path.join(extck_path, "ips.conf"))
+
+
 
     def _getSiteInfo(self, srcSiteName, aggStores):
         am_urn = self._nickCache.get_am_urn(srcSiteName)
@@ -99,24 +99,19 @@ class InfoPopulator():
 
     def populateExperimentInfoTables(self, aggStores):
         slices = self._config.get_experiment_slices_info()
-        srcPingCampus = self._config.get_experiment_source_ping_campus()
-        srcPingCore = self._config.get_experiment_source_ping_core()
-        # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-        self._populateExperimentInfoTables(slices, srcPingCampus, InfoPopulator.PING_CAMPUS, aggStores)
-        self._populateExperimentInfoTables(slices, srcPingCore, InfoPopulator.PING_CORE, aggStores)
+        ping_sets = self._config.get_experiment_ping_set()
 
-    def _populateExperimentInfoTables(self, slices, srcPing, ping_type, aggStores):
+        for ping_set in ping_sets:
+            srcPing = self._config.get_experiment_source_ping_for_set(ping_set)
+            # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
+            self._populateExperimentInfoTables(slices, srcPing, ping_set, aggStores)
+
+    def _populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
-        if ping_type == InfoPopulator.PING_CAMPUS:
-            ipList = self._ip_campus
-        elif ping_type == InfoPopulator.PING_CORE:
-            ipList = self._ip_core
-        else:
-            self.tbl_mgr.logger.warning("Unrecoginzed ping type")
-            return
+        ipList = dict(self._ipsconfig.items(ping_set))
 
         for srcSite in srcPing:
             for dstSite in ipList:
@@ -124,16 +119,12 @@ class InfoPopulator():
                     # A site must not ping itself
                     continue
 
-                slice_name = self._config.get_experiment_source_ping_slice_name(srcSite)
+                slice_name = self._config.get_experiment_source_ping_slice_name(ping_set, srcSite)
                 sliceUrn = slices[slice_name][0]
                 sliceUuid = slices[slice_name][1]
 
-                if ping_type == InfoPopulator.PING_CAMPUS:
-                    exp_id = srcSite + "_to_" + dstSite + "_campus"
-                    srcSiteName = srcSite
-                    dstSiteName = dstSite
-                else:
-                    # ip_core then
+                exp_id = srcSite + "_to_" + dstSite
+                if ping_set == "core":
                     srcSiteFlag = srcSite.strip().split('-')
                     network = srcSiteFlag[-1:][0]  # last element
                     # getting the suffix of the destination
@@ -141,9 +132,13 @@ class InfoPopulator():
                     if network != dstSiteFlag[-1:][0]:
                         # Can't ping between hosts in different networks
                         continue
-                    exp_id = srcSite + "_to_" + dstSite
                     srcSiteName = srcSite[:-len(network) - 1]
                     dstSiteName = dstSite[:-len(network) - 1]
+                else:
+                    exp_id += "_" + ping_set
+                    srcSiteName = srcSite
+                    dstSiteName = dstSite
+                    # ip_core then
 
                 (srcAmUrn, srcAmHref) = self._getSiteInfo(srcSiteName, aggStores)
                 (dstAmUrn, dstAmHref) = self._getSiteInfo(dstSiteName, aggStores)
