@@ -215,6 +215,7 @@ def choose_url_to_visit(unvisited_urls, num_visited_urls, interactive):
             return unvisited_urls.pop(choice)
     else:
         # non-interactive: always return the first URL in the list
+#         print "unvisited_urls length = ", len(unvisited_urls)
         return unvisited_urls.pop(0)
 
 
@@ -277,6 +278,7 @@ class UrlVisitingThread(threading.Thread):
             self.condition.acquire()
             if unvisited_urls:
                 url = choose_url_to_visit(unvisited_urls, len(visited_urls), False)
+#                 print "choose URL = ", url
                 visiting.append(url)
                 self.condition.release()
 
@@ -314,7 +316,7 @@ class UrlVisitingThread(threading.Thread):
                     # already there.
                     embedded_urls = find_embedded_urls(json_dict)
                     for embedded_url in embedded_urls:
-                        if (not (embedded_url in visited_urls) and not (embedded_url in unvisited_urls)):
+                        if (not (embedded_url in visited_urls) and not (embedded_url in unvisited_urls)) and not (embedded_url in visiting):
 #                             output += "Adding %s to unvisited_urls\n" % embedded_url
                             unvisited_urls.append(embedded_url)
                 print output
