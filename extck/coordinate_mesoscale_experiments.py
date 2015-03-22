@@ -68,12 +68,12 @@ def insert_ping_times(outputfile, tbl_mgr, table_str, lock):
     tbl_mgr.insert_stmt(table_str, val_str)
     lock.release()
 
-def run_remote_pings((ext_config, site, campus_sources, ipConfigPathLocal,
+def run_remote_pings((ext_config, site, ping_set, ipConfigPathLocal,
                      ipConfigPathRemote, keyPath, pingerLocal, pingerRemote,
                      poolSize, initialPingCount, measurementPingCount, table_str,
                      lock, table_mgr)):
-    addr = ext_config.get_experiment_source_ping_vm_address(site)
-    port = ext_config.get_experiment_source_ping_vm_port(site)
+    addr = ext_config.get_experiment_source_ping_vm_address(ping_set, site)
+    port = ext_config.get_experiment_source_ping_vm_port(ping_set, site)
     # First make sure the src site have the latest ips.conf and pinger.py
     # using rsync commands to avoid copying over & over the same files.
     sync_up_files(ipConfigPathLocal, ipConfigPathRemote, addr, port, keyPath, table_mgr.logger, lock)
@@ -88,10 +88,10 @@ def run_remote_pings((ext_config, site, campus_sources, ipConfigPathLocal,
                " \"find " + remote_output_dir + " -mmin +60 -name '" + pref + "*" + suff + "' | xargs rm -vrf" + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
-    if site in campus_sources:
-        ping_type = 'campus'
-    else:
-        ping_type = 'core'
+#     if site in campus_sources:
+#         ping_type = 'campus'
+#     else:
+#         ping_type = 'core'
 
     (fh, outputFileLocal) = tempfile.mkstemp(suffix=suff, prefix=pref, dir=ext_config.get_local_output_dir())
     os.close(fh)  # closing tmp file that was just created.
@@ -99,7 +99,7 @@ def run_remote_pings((ext_config, site, campus_sources, ipConfigPathLocal,
     outputFileRemote = os.path.join(remote_output_dir, filename)
     sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
                " \"rm -f " + outputFileRemote + \
-               " && python pinger.py -o " + outputFileRemote + " -c " + ipConfigPathRemote + " -s " + site + " -t " + ping_type + \
+               " && python pinger.py -o " + outputFileRemote + " -c " + ipConfigPathRemote + " -s " + site + " -t " + ping_set + \
                " -p " + poolSize + " -i " + initialPingCount + " -m " + measurementPingCount + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
@@ -136,22 +136,20 @@ def main(argv):
     initialPingCount = ext_config.get_experiment_ping_initial_count()
     measurementPingCount = ext_config.get_experiment_ping_measurmentl_count()
 
-
-    campus_sources = ext_config.get_experiment_source_ping_campus()
-    core_sources = ext_config.get_experiment_source_ping_core()
-
-    all_sources = campus_sources.union(core_sources)
     table_str = "ops_experiment_" + experiment_event_types[0]
     myLock = multiprocessing.Lock()
 
     argsList = []
-    for site in all_sources:
-        args = (ext_config, site, campus_sources,
-                         ipConfigPathLocal, ipConfigPathRemote, keyPath,
-                         pingerLocal, pingerRemote,
-                         poolSize, initialPingCount, measurementPingCount,
-                         table_str, myLock, tbl_mgr)
-        argsList.append(args)
+    ping_sets = ext_config.get_experiment_ping_set()
+    for ping_set in ping_sets:
+        sources = ext_config.get_experiment_source_ping_for_set(ping_set)
+        for site in sources:
+            args = (ext_config, site, ping_set,
+                             ipConfigPathLocal, ipConfigPathRemote, keyPath,
+                             pingerLocal, pingerRemote,
+                             poolSize, initialPingCount, measurementPingCount,
+                             table_str, myLock, tbl_mgr)
+            argsList.append(args)
     pool = multiprocessing.pool.ThreadPool(processes=int(ext_config.get_experiment_coordination_thread_pool_size()))
     pool.map(run_remote_pings, argsList)
     # Purge data older than 168 hours (1 wk)
