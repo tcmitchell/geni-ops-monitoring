@@ -28,12 +28,16 @@ import requests
 import json
 import sys
 import os
+import subprocess
+import time
 from optparse import OptionParser
+from compiler.ast import Node
 
 ut_path = os.path.abspath(os.path.dirname(__file__))
 local_path = os.path.dirname(ut_path)
 top_path = os.path.dirname(local_path)
 common_path = os.path.join(top_path, "common")
+config_path = os.path.join(top_path, "config/")
 sys.path.append(local_path)
 sys.path.append(common_path)
 sys.path.append(ut_path)
@@ -52,10 +56,12 @@ class TestLocalResponses(unittest.TestCase):
     CERT_PATH = "/vagrant/collector-gpo-withnpkey2.pem"
     IP_ADDR_FILE = "/tmp/ip.conf"
 
+    NEW_PURGE_TIMEOUT = 15
+    NEW_PURGE_PERIOD = 5
+
     def __init__(self, methodName):
         super(TestLocalResponses, self).__init__(methodName)
         db_type = "local"
-        config_path = os.path.join(top_path, "config/")
         self.tbl_mgr = table_manager.TableManager(db_type, config_path)
         self.tbl_mgr.poll_config_store()
 
@@ -72,6 +78,8 @@ class TestLocalResponses(unittest.TestCase):
         print "Cleaning up DB tables"
         if not self.tbl_mgr.drop_all_tables():
             self.fail("Could not clean up tables");
+        if not self.tbl_mgr.establish_all_tables():
+            self.fail("Could not establish all tables");
 
     def populate_info(self):
         ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
@@ -79,27 +87,34 @@ class TestLocalResponses(unittest.TestCase):
             self.fail("Could not insert test info data into tables");
 
     def populate_measurements(self):
+        threads = []
 
         obj_type = "node"
-        node_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                 info_populator.InfoPopulator.NODE_IDS[0],
-                                                 TestLocalResponses.NUM_INS,
-                                                 TestLocalResponses.PER_SEC,
-                                                 self.event_types[obj_type])
+        for node_id in info_populator.InfoPopulator.NODE_IDS:
+            node_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                     node_id,
+                                                     TestLocalResponses.NUM_INS,
+                                                     TestLocalResponses.PER_SEC,
+                                                     self.event_types[obj_type])
+            threads.append(node_sp)
 
         obj_type = "interface"
-        interface_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                      info_populator.InfoPopulator.IF_IDS[0],
-                                                      TestLocalResponses.NUM_INS,
-                                                      TestLocalResponses.PER_SEC,
-                                                      self.event_types[obj_type])
-
-        obj_type = "interfacevlan"
-        interfacevlan_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                          info_populator.InfoPopulator.IFVLAN_IDS[0],
+        for if_id in info_populator.InfoPopulator.IF_IDS:
+            interface_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                          if_id,
                                                           TestLocalResponses.NUM_INS,
                                                           TestLocalResponses.PER_SEC,
                                                           self.event_types[obj_type])
+            threads.append(interface_sp)
+
+        obj_type = "interfacevlan"
+        for ifvlan_id in info_populator.InfoPopulator.IFVLAN_IDS:
+            interfacevlan_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                              ifvlan_id,
+                                                              TestLocalResponses.NUM_INS,
+                                                              TestLocalResponses.PER_SEC,
+                                                              self.event_types[obj_type])
+            threads.append(interfacevlan_sp)
 
         obj_type = "aggregate"
         aggregate_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
@@ -107,18 +122,11 @@ class TestLocalResponses(unittest.TestCase):
                                                       TestLocalResponses.NUM_INS,
                                                       TestLocalResponses.PER_SEC,
                                                       self.event_types[obj_type])
+        threads.append(aggregate_sp)
 
         # start threads
-        node_sp.start()
-        interface_sp.start()
-        interfacevlan_sp.start()
-        aggregate_sp.start()
-
-        threads = []
-        threads.append(node_sp)
-        threads.append(interface_sp)
-        threads.append(interfacevlan_sp)
-        threads.append(aggregate_sp)
+        for t in threads:
+            t.start()
 
         ok = True
         # join all threads
@@ -130,24 +138,43 @@ class TestLocalResponses(unittest.TestCase):
         if not ok:
             self.fail("Error while inserting measurement data into tables");
 
+    def restart_apache(self):
+        # this works on Ubuntu.
+        subprocess.call(["sudo", "/usr/sbin/service", "apache2", "restart"])
+
+    def modify_purging_values(self, timeout, period):
+        local_config_file = os.path.join(config_path, "local_datastore_operator.conf")
+        subprocess.call(["sed", "-i", "s/^aging_timeout:.*/aging_timeout: %s/" % str(timeout), local_config_file])
+        subprocess.call(["sed", "-i", "s/^purge_period:.*/purge_period: %s/" % str(period), local_config_file])
+
     def setUp(self):
         super(TestLocalResponses, self).setUp()
         # dropping existing tables
-        self.db_cleanup()  # Recreating tables
 
-        if not self.tbl_mgr.establish_all_tables():
-            self.fail("Could not establish tables");
+        self.startTime = int(time.time() * 1000000)
+        self.db_cleanup()
+        if "purge" in self.id():
+            self.saved_timeout = self.tbl_mgr.conf_loader.get_aging_timeout()
+            self.saved_period = self.tbl_mgr.conf_loader.get_purge_period()
+            self.modify_purging_values(TestLocalResponses.NEW_PURGE_TIMEOUT, TestLocalResponses.NEW_PURGE_PERIOD)
+            self.restart_apache()
+
 
         self.populate_info()
-#         self.populate_measurements()
 
+        if ("stats" in self.id()) or ("purge" in self.id()):
+            self.populate_measurements()
 
         print
         print "Done with setUp()"
+        self.endOfSetUp = int(time.time() * 1000000)
 
 
     def tearDown(self):
         self.db_cleanup()
+        if "purge" in self.id():
+            self.modify_purging_values(self.saved_timeout, self.saved_period)
+            self.restart_apache()
         super(TestLocalResponses, self).tearDown()
 
     def request_url(self, url, cert_path):
@@ -507,6 +534,148 @@ class TestLocalResponses(unittest.TestCase):
     def test_get_wrong_sliver_info(self):
         url = self.base_url + "/info/sliver/" + info_populator.InfoPopulator.SLIVER_IDS[0] + "_WRONG"
         self.check_error_response(url, "sliver not found")
+
+
+    def translate_event_types(self, ev_types):
+        evs = []
+        for ev in ev_types:
+            evs.append("ops_monitoring:" + ev)
+        return tuple(evs)
+
+    def construct_stats_query(self, obj_type, obj_ids, req_time, event_types):
+        evs = self.translate_event_types(event_types)
+
+        q = {"filters":{"eventType": evs,
+                        "obj":{"type": obj_type,
+                               "id": obj_ids},
+                        "ts": {"gt": self.startTime,
+                               "lt": req_time}
+                        }
+             }
+        jsonquery = json.dumps(q)
+        jsonquery = jsonquery.replace(" ", "")
+        return jsonquery
+
+    def get_units(self, obj_type, event_type):
+        return self.tbl_mgr.schema_dict["units"]["ops_" + obj_type + "_" + event_type]
+
+    def get_data_dictionary(self, obj_type, obj_ids, event_types, req_time):
+        # build URL query for objects.
+        jsonquery = self.construct_stats_query(obj_type, obj_ids, req_time, event_types)
+        url = self.base_url + "/data/?q=" + jsonquery
+        json_dict = self.get_json_dictionary(url)
+        self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+        return json_dict
+
+
+    def check_on_object_stats(self, obj_type, obj_ids, event_types):
+        req_time = int(time.time() * 1000000)
+        json_dict = self.get_data_dictionary(obj_type, obj_ids, event_types, req_time)
+        self.assertTrue(len(json_dict) > 0, "Got no stats back")
+
+        data_map = {};
+        # check that every object in the dictionary corresponds to the data schema.
+        desc = obj_type + " stats"
+        for json_obj in json_dict:
+            self.check_json_dictionary_for_field(json_obj, "$schema", TestLocalResponses.BASE_SCHEMA + "data#", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "description", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "tsdata", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "eventType", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "units", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "id", desc)
+            self.check_json_dictionary_for_field_presence(json_obj, "subject", desc)
+            data_map[json_obj["id"]] = json_obj
+            self.assertEqual(TestLocalResponses.NUM_INS, len(json_obj["tsdata"]), "Number of stats does not match what was expected")
+            for tsdata in json_obj["tsdata"]:
+                self.check_json_dictionary_for_field_presence(tsdata, "ts", "time and value")
+                self.check_json_dictionary_for_field_presence(tsdata, "v", "time and value")
+                self.assertTrue(tsdata["ts"] >= self.startTime, "time stamp is not after the start of the test")
+                self.assertTrue(tsdata["ts"] <= req_time, "time stamp is not before the time of the query")
+
+        # check that we have NUM_INS for each node and events
+        for obj in obj_ids:
+            for event in event_types:
+                desc = "stat " + event + " for " + obj_type + " " + obj
+                id_str = event + ":" + obj
+                self.assertTrue(id_str in data_map.keys(), "Did not find time series for %s %s and event %s" % (obj_type, obj, event))
+                data_dict = data_map[id_str]
+                self.check_json_dictionary_for_field(data_dict, "eventType", "ops_monitoring:" + event, desc)
+                self.check_json_dictionary_for_field(data_dict, "units", self.get_units(obj_type, event), desc)
+
+        self.assertEqual(len(obj_ids) * len(event_types),
+                         len(json_dict),
+                         "did not get the expected number of statistics objects")
+
+    def test_get_aggregate_stats(self):
+        self.check_on_object_stats("aggregate", (info_populator.InfoPopulator.AGGREGATE_ID,), self.event_types["aggregate"])
+
+    def test_get_nodes_stats(self):
+        # check for all nodes
+        self.check_on_object_stats("node", info_populator.InfoPopulator.NODE_IDS, self.event_types["node"])
+        # check for one node and all events
+        self.check_on_object_stats("node",
+                                   (info_populator.InfoPopulator.NODE_IDS[0],),
+                                   self.event_types["node"])
+        # check for one node and one event
+        self.check_on_object_stats("node",
+                                   (info_populator.InfoPopulator.NODE_IDS[0],),
+                                   (self.event_types["node"][0],))
+
+
+    def test_get_interfaces_stats(self):
+        self.check_on_object_stats("interface", info_populator.InfoPopulator.IF_IDS, self.event_types["interface"])
+        # check for one interface and all events
+        self.check_on_object_stats("interface",
+                                   (info_populator.InfoPopulator.IF_IDS[0],),
+                                   self.event_types["interface"])
+        # check for one interface and one event
+        self.check_on_object_stats("interface",
+                                   (info_populator.InfoPopulator.IF_IDS[0],),
+                                   (self.event_types["interface"][0],))
+
+    def test_get_interfacevlans_stats(self):
+        self.check_on_object_stats("interfacevlan", info_populator.InfoPopulator.IFVLAN_IDS, self.event_types["interfacevlan"])
+        # check for one interfacevlan and all events
+        self.check_on_object_stats("interfacevlan",
+                                   (info_populator.InfoPopulator.IFVLAN_IDS[0],),
+                                   self.event_types["interfacevlan"])
+        # check for one interfacevlan and one event
+        self.check_on_object_stats("interfacevlan",
+                                   (info_populator.InfoPopulator.IFVLAN_IDS[0],),
+                                   (self.event_types["interfacevlan"][0],))
+
+
+    def test_purge_statistics(self):
+        # short aging timeout is set up in setUp()
+
+        # Get the initial data and make sure it's what we populated
+        self.test_get_aggregate_stats()
+        self.test_get_nodes_stats()
+        self.test_get_interfaces_stats()
+        self.test_get_interfacevlans_stats()
+
+        # Wait more than the timeout + purging period, all teh while refreshing the timestamps in info tables.
+        current_time = int(time.time() * 1000000)
+        time_purged = self.endOfSetUp + (TestLocalResponses.NEW_PURGE_TIMEOUT + TestLocalResponses.NEW_PURGE_PERIOD) * 1000000
+        ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
+        while current_time < time_purged:
+            time.sleep(2)
+            ip.update_fake_info()
+            current_time = int(time.time() * 1000000)
+
+        # make sure no data is returned.
+        json_dict = self.get_data_dictionary("aggregate", (info_populator.InfoPopulator.AGGREGATE_ID,), self.event_types["aggregate"], current_time)
+        print json.dumps(json_dict, indent=2)
+        self.assertEqual(len(json_dict), 0, "Got some stats back")
+        json_dict = self.get_data_dictionary("node", info_populator.InfoPopulator.NODE_IDS, self.event_types["node"], current_time)
+        print json.dumps(json_dict, indent=2)
+        self.assertEqual(len(json_dict), 0, "Got some stats back")
+        json_dict = self.get_data_dictionary("interface", info_populator.InfoPopulator.IF_IDS, self.event_types["interface"], current_time)
+        print json.dumps(json_dict, indent=2)
+        self.assertEqual(len(json_dict), 0, "Got some stats back")
+        json_dict = self.get_data_dictionary("interfacevlan", info_populator.InfoPopulator.IFVLAN_IDS, self.event_types["interfacevlan"], current_time)
+        print json.dumps(json_dict, indent=2)
+        self.assertEqual(len(json_dict), 0, "Got some stats back")
 
 
 def main(argv):
