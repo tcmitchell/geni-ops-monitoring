@@ -56,8 +56,8 @@ class TestLocalResponses(unittest.TestCase):
     CERT_PATH = "/vagrant/collector-gpo-withnpkey2.pem"
     IP_ADDR_FILE = "/tmp/ip.conf"
 
-    NEW_PURGE_TIMEOUT = 15
-    NEW_PURGE_PERIOD = 5
+    NEW_PURGE_TIMEOUT = 100
+    NEW_PURGE_PERIOD = 15
 
     def __init__(self, methodName):
         super(TestLocalResponses, self).__init__(methodName)
