@@ -262,20 +262,30 @@ class UrlVisitingThread(threading.Thread):
         self._still_running = False
 
     def start(self):
+#         print "starting UrlVisitingThread ", self
         self._still_running = True
         threading.Thread.start(self)
 
     def stop(self):
+#         print "stopping UrlVisitingThread ", self
         self._still_running = False
         self.condition.acquire()
         self.condition.notifyAll()
         self.condition.release()
+#         print "UrlVisitingThread ", self, " stopped"
 
     def run(self):
 
         while self._still_running:
 
             self.condition.acquire()
+            # Need to check one more time if the thread is still running.
+            # Given the stopping logic the thread could have been waiting on acquiring the lock for a while
+            # and the _still_running variable could have changed state during that time.
+            if not self._still_running:
+                # need to bail out
+                self.condition.release()
+                continue
             if unvisited_urls:
                 url = choose_url_to_visit(unvisited_urls, len(visited_urls), False)
 #                 print "choose URL = ", url
@@ -328,6 +338,7 @@ class UrlVisitingThread(threading.Thread):
                 self.condition.notifyAll()
                 self.condition.release()
             else:
+#                 print "UrlVisitingThread ", self, " waiting to visit URL or be stopped"
                 self.condition.wait()
                 self.condition.release()
         
