@@ -372,10 +372,16 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         link_dict = handle_request(link_url, self.cert_path, self.logger)
         if link_dict:
+            self.lock.acquire()
+            self.logger.debug("refreshing vlans endpoints for link with id: %s" % (link_dict["id"],))
+            self.lock.release()
             if "endpoints" in link_dict:
                 for endpt in link_dict["endpoints"]:
                     ifacevlan_dict = handle_request(endpt["href"], self.cert_path, self.logger)
                     if ifacevlan_dict:
+                        self.lock.acquire()
+                        self.logger.debug("refreshing vlans endpoint with id: %s" % (ifacevlan_dict["id"],))
+                        self.lock.release()
                         # before updating the ifvlan info we need to make sure the if info exists
                         if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
                                 or ifacevlan_dict["interface"]["href"] == "":
