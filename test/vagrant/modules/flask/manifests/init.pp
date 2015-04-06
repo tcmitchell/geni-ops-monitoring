@@ -24,6 +24,5 @@
 class flask::server {
   package {
     "python-flask": ensure => installed;
-    "python-requests": ensure => installed;
   }
 }
