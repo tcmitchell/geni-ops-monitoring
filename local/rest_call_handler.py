@@ -166,32 +166,30 @@ def handle_sliver_info_query(tm, sliver_id):
     sliver_info = get_object_info(tm, table_str, sliver_id)
 
     if sliver_info is not None:
-        resource_type = None
-        resource_ref = None
 
-        # See if the sliver resource is a node
-        resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
-                                                            "node_id")]
-        if resource_id != None:
-            node_ref = get_refs(tm, "ops_node", resource_id)
-            if len(node_ref) > 0:
-                resource_type = "node"
-                resource_ref = node_ref
-        else:
-            # Resource is not a node; see if it's a link
-            resource_id = sliver_info[tm.get_column_from_schema(sliver_schema,
-                                                                "link_id")]
-            if resource_id != None:
-                link_ref = get_refs(tm, "ops_link", resource_id)
-                if len(link_ref) > 0:
-                    resource_type = "link"
-                    resource_ref = link_ref
+        # find sliver resources
+        resource_refs = list()
+        node_ids = get_related_objects(tm, "ops_sliver_node", "sliver_id", sliver_id)
+        for node_id in node_ids:
+            node_ref = get_refs(tm, "ops_node", node_id)
+            res_ref = dict()
+            res_ref['resource_type'] = "node"
+            res_ref["href"] = node_ref[0]
+            res_ref["urn"] = node_ref[1]
+            resource_refs.append(res_ref)
+        link_ids = get_related_objects(tm, "ops_sliver_link", "sliver_id", sliver_id)
+        for link_id in link_ids:
+            link_ref = get_refs(tm, "ops_link", link_id)
+            res_ref = dict()
+            res_ref['resource_type'] = "link"
+            res_ref["href"] = link_ref[0]
+            res_ref["urn"] = link_ref[1]
+            resource_refs.append(res_ref)
 
-        if not resource_type or not resource_ref:
+        if len(resource_refs) == 0:
             opslog.warning("Failed to find resource for sliver %s" % (sliver_id))
 
-        return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info,
-                                               resource_type, resource_ref))
+        return json.dumps(get_sliver_info_dict(sliver_schema, sliver_info, resource_refs))
     else:
         opslog.debug("sliver not found: " + sliver_id)
         return "sliver not found"
@@ -569,7 +567,7 @@ def get_node_info_dict(schema, info_row, interface_refs):
 
 
 # Forms sliver info dictionary (to be made to JSON)
-def get_sliver_info_dict(schema, info_row, resource_type, resource_ref):
+def get_sliver_info_dict(schema, info_row, resource_refs):
 
     json_dict = {}
 
@@ -580,9 +578,9 @@ def get_sliver_info_dict(schema, info_row, resource_type, resource_ref):
                 agg_urn = info_row[col_i]
             elif schema[col_i][0] == "aggregate_href":
                 agg_href = info_row[col_i]
-            elif (schema[col_i][0] == "node_id" or
-                  schema[col_i][0] == "link_id"):
-                pass # caller has dealt with these fields
+#             elif (schema[col_i][0] == "node_id" or
+#                   schema[col_i][0] == "link_id"):
+#                 pass # caller has dealt with these fields
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -597,12 +595,8 @@ def get_sliver_info_dict(schema, info_row, resource_type, resource_ref):
 #   json_dict["resource"] = {"resource_type": resource_type,
 #                            "urn":  resource_urn,
 #                            "href": resource_href }
-    json_dict["resource"] = {}
-    if resource_type:
-        json_dict["resource"]["resource_type"] = resource_type
-    if resource_ref:
-        json_dict["resource"]["href"] = resource_ref[0]
-        json_dict["resource"]["urn"]  = resource_ref[1]
+    json_dict["resources"] = resource_refs
+
 
     return json_dict
 
