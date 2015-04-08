@@ -164,11 +164,11 @@ class InfoPopulator():
     # at sliver idx you have user idx
     SLIVER_USER_IDX = (0, 1, 0, 1)
 
-    # at sliver idx, you get resource type, and idx in the corresponding resource array
-    SLIVER_RESOURCE_RELATION = (("node", 0),
-                                ("node", 1),
-                                ("node", 2),
-                                ("link", 0)
+    # at sliver idx, you get pairs of (resource type, and idx in the corresponding resource array).
+    SLIVER_RESOURCE_RELATION = ((("node", 0),),
+                                (("node", 1),),
+                                (("node", 2),),
+                                (("link", 0), ("link", 1)),
                                 )
 
     def __init__(self, tbl_mgr, url_base):
@@ -179,15 +179,21 @@ class InfoPopulator():
         self.config_path = tbl_mgr.config_path
 
 
-    def append_sliver_resource_info(self, sliver_info_list, sliver_idx):
-        if InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0] == "node":
-            sliver_info_list.append(InfoPopulator.NODE_IDS[InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][1]])  # node_id
-            sliver_info_list.append(None)  # link_id
-        elif InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0] == "link":
-            sliver_info_list.append(None)  # node_id
-            sliver_info_list.append(InfoPopulator.LINK_IDS[InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][1]])  # link_id
-        else:
-            raise Exception("unidentified resource type %s" % InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx][0])
+    def insert_sliver_resources_relations(self, sliver_id, sliver_idx):
+        ok = True
+        for resource_relation in InfoPopulator.SLIVER_RESOURCE_RELATION[sliver_idx]:
+            if resource_relation[0] == "node":
+                table_relation = "ops_sliver_node"
+                obj_id = InfoPopulator.NODE_IDS[resource_relation[1]]  # node_id
+            elif resource_relation[0] == "link":
+                table_relation = "ops_sliver_link"
+                obj_id = InfoPopulator.LINK_IDS[resource_relation[1]]  # link_id
+            else:
+                raise Exception("unidentified resource type %s" % resource_relation[0])
+            record = (obj_id, sliver_id)
+            if not info_insert(self.tbl_mgr, table_relation, record):
+                ok = False
+        return ok
     
     def insert_fake_info(self):
         ok = True
@@ -265,9 +271,11 @@ class InfoPopulator():
         sliver1.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[0]])  # creator
         sliver1.append(str(int(1391626683000000)))  # created
         sliver1.append(str(int(1391708989000000)))  # expires
-        self.append_sliver_resource_info(sliver1, 0)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver1):
+            ok = False
+
+        if not self.insert_sliver_resources_relations(sliver1[1], 0):
             ok = False
 
 
@@ -285,9 +293,11 @@ class InfoPopulator():
         sliver2.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[1]])  # creator
         sliver2.append(str(int(1391626683000000)))  # created
         sliver2.append(str(int(1391708989000000)))  # expires
-        self.append_sliver_resource_info(sliver2, 1)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver2):
+            ok = False
+
+        if not self.insert_sliver_resources_relations(sliver2[1], 1):
             ok = False
 
 
@@ -305,9 +315,11 @@ class InfoPopulator():
         sliver3.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[2]])  # creator
         sliver3.append(str(int(1391626683000000)))  # created
         sliver3.append(str(int(1391708989000000)))  # expires
-        self.append_sliver_resource_info(sliver3, 2)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver3):
+            ok = False
+
+        if not self.insert_sliver_resources_relations(sliver3[1], 2):
             ok = False
 
 
@@ -369,11 +381,12 @@ class InfoPopulator():
         sliver4.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[3]])  # creator
         sliver4.append(str(int(1391626683000005)))  # created
         sliver4.append(str(int(1391708989000006)))  # expires
-        self.append_sliver_resource_info(sliver4, 3)
 
         if not info_insert(self.tbl_mgr, "ops_sliver", sliver4):
             ok = False
 
+        if not self.insert_sliver_resources_relations(sliver4[1], 3):
+            ok = False
 
         interface1 = []
         interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
