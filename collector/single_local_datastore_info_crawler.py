@@ -294,16 +294,66 @@ class SingleLocalDatastoreInfoCrawler:
     def refresh_one_sliver_info(self, sliver_ref_object, sliver_schema, agg_sliver_schema):
         ok = True
         slv_dict = handle_request(sliver_ref_object["href"], self.cert_path, self.logger)
-        if slv_dict:
-            # get each attribute out of response into list
-            slv_info_list = self.get_sliver_attributes(slv_dict, sliver_schema)
-            if not info_update(self.tbl_mgr, "ops_sliver", sliver_schema, slv_info_list, \
-                               self.tbl_mgr.get_column_from_schema(sliver_schema, "id"), self.debug, self.logger):
+        if not slv_dict:
+            ok = False
+            
+        node_schema = self.tbl_mgr.schema_dict["ops_node"]
+        res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
+        link_schema = self.tbl_mgr.schema_dict["ops_link"]
+        node_sliver_schema = self.tbl_mgr.schema_dict["ops_sliver_node"]
+        link_sliver_schema = self.tbl_mgr.schema_dict["ops_sliver_link"]
+        # get each attribute out of response into list
+        slv_info_list = self.get_sliver_attributes(slv_dict, sliver_schema)
+        self.lock.acquire()
+        if not info_update(self.tbl_mgr, "ops_sliver", sliver_schema, slv_info_list, \
+                           self.tbl_mgr.get_column_from_schema(sliver_schema, "id"), self.debug, self.logger):
+            ok = False
+        agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
+        if not info_update(self.tbl_mgr, "ops_aggregate_sliver", agg_sliver_schema, agg_slv_info_list, \
+                           self.tbl_mgr.get_column_from_schema(agg_sliver_schema, "id"), self.debug, self.logger):
+            ok = False
+        self.lock.release()
+        # Deal with resources
+        # Have to deal with old and new schema
+
+        if slv_dict.has_key('resource'):
+            # single resource per sliver - old schema
+            res_array = (slv_dict['resource'],)
+        elif slv_dict.has_key('resources'):
+            res_array = slv_dict['resources']
+        else:
+            self.logger.warn("Found a sliver with no resource associated");
+            res_array = ()
+
+        for res in res_array:
+            if not res.has_key('resource_type') or not res.has_key('urn') or not res.has_key('href'):
+                self.logger.warn("Incorrectly formed sliver resource: %s" % str(res));
+                continue
+            if res['resource_type'] == 'node':
+                if not self.check_exists("ops_node", "selfRef", res["href"]):
+                    if not self.refresh_one_node_info(res, node_schema, res_schema):
+                        ok = False
+                node_id = self.get_id_from_urn("ops_node", res['urn'])
+                sliver_res_record = (node_id, slv_dict['id'])
+                res_sliver_table = "ops_sliver_node"
+                res_sliver_schema = node_sliver_schema
+            elif res['resource_type'] == 'link':
+                if not self.check_exists("ops_link", "selfRef", res["href"]):
+                    if not self.refresh_one_link_info(res, link_schema, res_schema):
+                        ok = False
+                link_id = self.get_id_from_urn("ops_link", res['urn'])
+                sliver_res_record = (link_id, slv_dict['id'])
+                res_sliver_table = "ops_sliver_link"
+                res_sliver_schema = link_sliver_schema
+            else:
+                self.logger.warn("Unrecognized sliver resource type: %s" % res['resource_type']);
+                continue
+            if not info_update(self.tbl_mgr, res_sliver_table, res_sliver_schema, sliver_res_record, \
+                               (self.tbl_mgr.get_column_from_schema(res_sliver_schema, "id"), \
+                                    self.tbl_mgr.get_column_from_schema(res_sliver_schema, "sliver_id")), \
+                               self.debug, self.logger):
                 ok = False
-            agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-            if not info_update(self.tbl_mgr, "ops_aggregate_sliver", agg_sliver_schema, agg_slv_info_list, \
-                               self.tbl_mgr.get_column_from_schema(agg_sliver_schema, "id"), self.debug, self.logger):
-                ok = False
+                
         return ok
 
     def refresh_all_slivers_info(self):
@@ -532,31 +582,11 @@ class SingleLocalDatastoreInfoCrawler:
         mapping = {}
         mapping["aggregate_href"] = ("aggregate", "href")
         mapping["aggregate_urn"] = ("aggregate", "urn")
-        # circumvoluted way of using the standard extraction method.
-        # the resource urn will be put in the node_id column
-        # the resource type will be put in the link_id column
-        mapping["node_id"] = ("resource", "urn")
-        mapping["link_id"] = ("resource", "resource_type")
+
+
 
         slv_info_list = self.extract_row_from_json_dict(db_table_schema, slv_dict, "sliver", mapping)
 
-        # now let's reestablish the proper node id or link id
-        node_id_idx = self.tbl_mgr.get_column_from_schema(db_table_schema, "node_id")
-        link_id_idx = self.tbl_mgr.get_column_from_schema(db_table_schema, "link_id")
-        res_urn = slv_info_list[node_id_idx]
-        res_type = slv_info_list[link_id_idx]
-        if (res_type == "node") and (res_urn is not None):
-            node_id = self.get_id_from_urn("ops_node", res_urn)
-            slv_info_list[node_id_idx] = node_id
-            slv_info_list[link_id_idx] = None
-        elif (res_type == "link") and (res_urn is not None):
-            link_id = self.get_id_from_urn("ops_link", res_urn)
-            slv_info_list[node_id_idx] = None
-            slv_info_list[link_id_idx] = link_id
-        else:
-            self.logger.warn("Found a sliver with no resource associated");
-            slv_info_list[node_id_idx] = None
-            slv_info_list[link_id_idx] = None
 
         return slv_info_list
 
