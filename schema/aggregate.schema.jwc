@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/aggregate/<aggregate-id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150312/aggregate#",
   "description": "GENI aggregate",
   "name": "Aggregate",
   "type": "object",
