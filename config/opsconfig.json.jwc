@@ -745,12 +745,7 @@
              ["slice_uuid", "varchar", false],
              ["creator", "varchar", false],
              ["created", "int8", true],
-             ["expires", "int8", true],
-             // One of node_id or link_id must be set, but not both.
-             // These get translated into the "resource" property in
-             // sliver.schema.
-             ["node_id", "varchar", false],
-             ["link_id", "varchar", false]
+             ["expires", "int8", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
@@ -942,6 +937,30 @@
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
         ],
         "dependencies" : ["ops_sliver", "ops_aggregate"]
+    },
+    {   "name":"sliver_node",
+        "db_schema" : [
+             ["id", "varchar", true],
+             ["sliver_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "sliver_id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_node", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["sliver_id", "ops_sliver", "id"]]
+        ],
+        "dependencies" : ["ops_sliver", "ops_node"]
+    },
+    {   "name":"sliver_link",
+        "db_schema" : [
+             ["id", "varchar", true],
+             ["sliver_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "sliver_id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_link", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["sliver_id", "ops_sliver", "id"]]
+        ],
+        "dependencies" : ["ops_sliver", "ops_link"]
     },
     {   "name":"link_relations",
         "db_schema" : [

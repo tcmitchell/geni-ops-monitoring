@@ -514,22 +514,33 @@ class TestLocalResponses(unittest.TestCase):
                                                         info_populator.InfoPopulator.AGGREGATE_URN,
                                                         self.base_url + "/info/aggregate/" + info_populator.InfoPopulator.AGGREGATE_ID,
                                                         "aggregate")
-            self.check_json_dictionary_for_field_presence(json_dict, "resource", desc)
-            res_obj = json_dict["resource"]
-            self.check_json_dictionary_for_field(res_obj, "resource_type",
-                                                 info_populator.InfoPopulator.SLIVER_RESOURCE_RELATION[i][0],
-                                                 desc)
-            idx = info_populator.InfoPopulator.SLIVER_RESOURCE_RELATION[i][1]
-            if info_populator.InfoPopulator.SLIVER_RESOURCE_RELATION[i][0] == "node":
-                urn = info_populator.InfoPopulator.NODE_URNS[idx]
-                url = self.base_url + "/info/node/" + info_populator.InfoPopulator.NODE_IDS[idx]
-            elif info_populator.InfoPopulator.SLIVER_RESOURCE_RELATION[i][0] == "link":
-                urn = info_populator.InfoPopulator.LINK_URNS[idx]
-                url = self.base_url + "/info/link/" + info_populator.InfoPopulator.LINK_IDS[idx]
-            else:
-                self.fail("unrecognized resource type for sliver %s" % info_populator.InfoPopulator.SLIVER_IDS[i])
-            res_array = (res_obj,)
-            self.find_urn_and_href_object_in_json_array(res_array, urn, url, "resource")
+            self.check_json_dictionary_for_field_presence(json_dict, "resources", desc)
+            sliver_resources = json_dict["resources"]
+            sliver_resources_relations = info_populator.InfoPopulator.SLIVER_RESOURCE_RELATION[i]
+            self.assertEqual(len(sliver_resources_relations), len(sliver_resources), "unexpected number of resources associated with sliver")
+            for res_obj in sliver_resources:
+                self.check_json_dictionary_for_field_presence(res_obj, "resource_type", desc)
+                self.check_json_dictionary_for_field_presence(res_obj, "urn", desc)
+                self.check_json_dictionary_for_field_presence(res_obj, "href", desc)
+                for sliver_resource_relation in sliver_resources_relations:
+                    type = sliver_resource_relation[0]
+                    idx = sliver_resource_relation[1]
+                    if (res_obj['resource_type'] == type):
+                        if type == "node":
+                            urn = info_populator.InfoPopulator.NODE_URNS[idx]
+                            url = self.base_url + "/info/node/" + info_populator.InfoPopulator.NODE_IDS[idx]
+                        elif type == "link":
+                            urn = info_populator.InfoPopulator.LINK_URNS[idx]
+                            url = self.base_url + "/info/link/" + info_populator.InfoPopulator.LINK_IDS[idx]
+                        else:
+                            self.fail("unrecognized resource type for sliver %s" % info_populator.InfoPopulator.SLIVER_IDS[i])
+                        if (res_obj['urn'] == urn) and (res_obj['href'] == url):
+                            break
+                else:
+                    # no break in loop, so not found
+                    self.fail("unexpected resource (%s, %s) for sliver %s" % (res_obj['urn'], res_obj['href'],
+                                                                              info_populator.InfoPopulator.SLIVER_IDS[i]))
+
 
     def test_get_wrong_sliver_info(self):
         url = self.base_url + "/info/sliver/" + info_populator.InfoPopulator.SLIVER_IDS[0] + "_WRONG"
