@@ -362,6 +362,14 @@ def check_aggregate_state((monitored_aggregate_id, amtype, am_urls, dp, lock)):
     dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, ts, overall_state)
     lock.release()
 
+def refresh_user_credentials():
+    refresh_cred_cmd_str = config.get_refresh_user_credential_command()
+    args = shlex.split(refresh_cred_cmd_str)
+    opslogger.debug("About to execute: " + refresh_cred_cmd_str)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    _output, _err = p.communicate()
+
+
 def main():
 
     db_name = "local"
@@ -378,6 +386,8 @@ def main():
     if monitored_aggregates is None:
         opslogger.warning("Could not find any monitored aggregate. Has extck_store been executed?")
         return
+
+    refresh_user_credentials()
 
     myLock = multiprocessing.Lock()
     argsList = []
