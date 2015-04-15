@@ -27,6 +27,7 @@ import time
 import tempfile
 import multiprocessing
 import multiprocessing.pool
+import pinger
 
 extck_path = os.path.abspath(os.path.dirname(__file__))
 top_path = os.path.dirname(extck_path)
@@ -50,7 +51,10 @@ def sync_up_files(local_path, remote_path, remote_addr, remote_port, ssh_key_fil
     rsyncStr = "rsync -z -e \"ssh -i " + ssh_key_file + " -p " + remote_port + "\" " + local_path + " " + remote_addr + ":" + remote_path
     execute_cmd(rsyncStr, opslogger, lock)
 
-def insert_ping_times(outputfile, tbl_mgr, table_str, lock):
+PING_FAILURE_STR = str(pinger.PING_FAILURE_VALUE) + ")"
+LEN_PING_FAILURE_STR = len(PING_FAILURE_STR)
+
+def insert_ping_times(outputfile, tbl_mgr, table_str, lock, publish_negative_value):
     file_handle = open(outputfile, 'r')
     val_str = ""
 
@@ -58,12 +62,13 @@ def insert_ping_times(outputfile, tbl_mgr, table_str, lock):
     for line in file_handle:
         # if the ping failed (delay set to -1 in pinger.py) we're not inserting the value.
         line = line.strip()
-        if line[-3:] != "-1)":
-            if first:
-                first = False
-            else:
-                val_str += ","
-            val_str += line
+        if not publish_negative_value and (line[-LEN_PING_FAILURE_STR:] == PING_FAILURE_STR):
+            continue
+        if first:
+            first = False
+        else:
+            val_str += ","
+        val_str += line
     lock.acquire()
     tbl_mgr.insert_stmt(table_str, val_str)
     lock.release()
@@ -88,10 +93,7 @@ def run_remote_pings((ext_config, site, ping_set, ipConfigPathLocal,
                " \"find " + remote_output_dir + " -mmin +60 -name '" + pref + "*" + suff + "' | xargs rm -vrf" + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
-#     if site in campus_sources:
-#         ping_type = 'campus'
-#     else:
-#         ping_type = 'core'
+    publish_neg = extck_config.get_publish_negative_value_for_failed_ping()
 
     (fh, outputFileLocal) = tempfile.mkstemp(suffix=suff, prefix=pref, dir=ext_config.get_local_output_dir())
     os.close(fh)  # closing tmp file that was just created.
@@ -109,7 +111,7 @@ def run_remote_pings((ext_config, site, ping_set, ipConfigPathLocal,
                " \"rm -f " + outputFileRemote + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
-    insert_ping_times(outputFileLocal, table_mgr, table_str, lock)
+    insert_ping_times(outputFileLocal, table_mgr, table_str, lock, publish_neg)
     # Delete tmp file
     os.remove(outputFileLocal)
 
