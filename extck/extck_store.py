@@ -42,7 +42,7 @@ sys.path.append(extck_path)
 # import opsconfig_loader
 import table_manager
 import extck_config
-
+import pinger
 # input file with short-names and Urls aggregates
 # Need this file for sites like EG that aren't in prod but url is not in opsconfig
 # inputFileBackup=open('/home/amcanary/src/gcf/agg_nick_cache.base')
@@ -101,12 +101,16 @@ class InfoPopulator():
         slices = self._config.get_experiment_slices_info()
         ping_sets = self._config.get_experiment_ping_set()
 
+        experiment_names = set()
+
         for ping_set in ping_sets:
             srcPing = self._config.get_experiment_source_ping_for_set(ping_set)
             # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-            self._populateExperimentInfoTables(slices, srcPing, ping_set, aggStores)
+            self._populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
 
-    def _populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores):
+        self._cleanUpObsoleteExperiments(experiment_names)
+
+    def _populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
@@ -123,22 +127,10 @@ class InfoPopulator():
                 sliceUrn = slices[slice_name][0]
                 sliceUuid = slices[slice_name][1]
 
-                exp_id = srcSite + "_to_" + dstSite
-                if ping_set == "core":
-                    srcSiteFlag = srcSite.strip().split('-')
-                    network = srcSiteFlag[-1:][0]  # last element
-                    # getting the suffix of the destination
-                    dstSiteFlag = dstSite.strip().split('-')
-                    if network != dstSiteFlag[-1:][0]:
-                        # Can't ping between hosts in different networks
-                        continue
-                    srcSiteName = srcSite[:-len(network) - 1]
-                    dstSiteName = dstSite[:-len(network) - 1]
-                else:
-                    exp_id += "_" + ping_set
-                    srcSiteName = srcSite
-                    dstSiteName = dstSite
-                    # ip_core then
+                (exp_id, srcSiteName, dstSiteName) = pinger.get_ping_experiment_name(ping_set, srcSite, dstSite)
+
+                if exp_id is None:
+                    continue
 
                 (srcAmUrn, srcAmHref) = self._getSiteInfo(srcSiteName, aggStores)
                 (dstAmUrn, dstAmHref) = self._getSiteInfo(dstSiteName, aggStores)
@@ -164,6 +156,19 @@ class InfoPopulator():
                     self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
                                         (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
                                          self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+                    experiment_names.add(exp_id)
+                    
+    def _cleanUpObsoleteExperiments(self, experiment_names):
+        registeredExperiments = self.tbl_mgr.query("select id from ops_experiment");
+        if registeredExperiments is None:
+            return
+        for experiment in registeredExperiments:
+            if experiment[0] not in experiment_names:
+                # Looks like we had an old experiment registered
+                self.tbl_mgr.logger.info("Experiment %s is obsolete: deleting corresponding records" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_externalcheck_experiment where id='%s'" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_experiment_ping_rtt_ms where id='%s'" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_experiment where id='%s'" % experiment[0])
 
     def insert_externalcheck_monitoredaggregate(self, urn, aggRow):
         aggregate_id = aggRow[1]  # agg_id

@@ -31,6 +31,7 @@ extck_path = os.path.abspath(os.path.dirname(__file__))
 
 class ExtckConfigLoader:
     __EXTCK_SECTION = "extck"
+    __REFRESH_USER_CRED_CMD = "refresh_user_cred_cmd"
     __AM_TEST_CMD = "am_test_cmd"
     __AM_URL_STR = "AM_URL"
     __AM_TEST_VERSION_ARG = "am_test_version_arg"
@@ -170,6 +171,9 @@ class ExtckConfigLoader:
                 if found:
                     break
         return matched_version
+
+    def get_refresh_user_credential_command(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__REFRESH_USER_CRED_CMD)
 
     def get_am_full_test_command(self, am_url, am_type):
         cmd_str = self.__get_am_test_command(am_url)
