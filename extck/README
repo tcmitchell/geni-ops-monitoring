@@ -1,0 +1,99 @@
+External Check Data Store README
+
+Table of Contents:
+
+1. Local data store configuration
+2. gcf / omni installation and configuration
+3. geni-lib installation and configuration
+4. amcanary user configuration
+5. Configuration variations
+
+
+1. Local data store configuration
+    The external check data store relies on the base implementation of a local data store.
+    Follow the configuration steps described in ../local/README.
+
+
+2. gcf / omni installation and configuration
+    (a) Download the gcf software from http://www.gpolab.bbn.com/local-sw/
+        At the time of this write up, the version is gcf 2.8 (gcf-2.8.tar.gz)
+    (b) Extract the content:
+        cd /opt
+        sudo tar xvzf <path-to-gcf-download>/gcf-2.8.tar.gz
+        ln -s gcf-2.8 gcf
+    (c) Configure python path and shell aliases:
+        Edit the /etc/bash.bashrc file and add the following lines:
+        
+        GCF_DIR=/opt/gcf
+
+        if [ -d "${GCF_DIR}/src" ] ; then
+            export PATH="${GCF_DIR}/src:${GCF_DIR}/examples:$PATH"
+            export PYTHONPATH="${GCF_DIR}/src:$PYTHONPATH"
+        fi
+        
+        
+        
+        alias omni='omni.py'
+        alias omni-configure='omni-configure.py'
+        alias readyToLogin='readyToLogin.py'
+        alias clear-passphrases='clear-passphrases.py'
+        alias stitcher='stitcher.py'
+        alias remote-execute='remote-execute.py'
+        alias addMemberToSliceAndSlivers='addMemberToSliceAndSlivers.py'
+
+
+3. geni-lib installation and configuration
+    (a) Make sure mercurial is installed on the system:
+        sudo apt-get install mercurial 
+    (b) Install geni-lib dependencies:
+        sudo apt-get install python-lxml m2crypto
+    (c) Download geni-lib:
+        cd /usr/local
+        sudo hg clone https://bitbucket.org/barnstorm/geni-lib
+
+
+4. amcanary user configuration:
+    (a) TODO. Research and explain this better.
+        The amcanary user was set up via puppet. The external check store machine is made a puppet client
+        in the GPO lab. However this involved a bit of trial and fail. Ultimately amcanary is set up, but
+        the current puppet config is not enforcing this.
+    (b) configure geni-lib credential for amcanary:
+        - cd /usr/local/geni-lib/samples
+        - sudo cp example_config.py amcanary_config.py
+        - vi amcanary_config.py
+        After customization the amcanary_config.py should look like this:
+
+        def buildContext ():
+          portal = FrameworkRegistry.get("portal")()
+          portal.cert = "/home/amcanary/.ssl/ch.geni.net.pem"
+          portal.key = "/home/amcanary/.ssl/ch.geni.net.pem"
+        
+          amcanary = User()
+          amcanary.name = "amcanary"
+          amcanary.urn = "urn:publicid:IDN+ch.geni.net+user+amcanary"
+          amcanary.addKey("/home/amcanary/.ssh/id_amcanary_geni.pub")
+        
+          context = Context()
+          context.addUser(amcanary, default = True)
+          context.cf = portal
+          context.project = "extCheck"
+        
+          return context
+    (c) Configure the omni credentials for amcanary.
+        - Look up amcanary geni portal credential in the KeePassX DB
+        - Log into the geni portal
+        - download the omni.bundle credential file
+        - run omni-configure as the amcanary user
+        You should have ~amcanary/.gcf/omni_config set up.
+        run 'omni -a gpo-ig getversion' as amcanary to make sure everything works
+        as expected.
+
+
+5. Configuration variations
+    If you chose different paths for geni-lib or the gcf software, you can edit
+    /usr/local/ops-monitoring/extck/extck.conf
+    and change the values of 
+    - gcf_dir
+    - geni_lib_path
+    - geni_lib_config_path
+    accordingly.
