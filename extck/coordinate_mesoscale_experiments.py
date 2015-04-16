@@ -48,7 +48,7 @@ def execute_cmd(cmdStr, opslogger, lock):
     os.system(cmdStr)
 
 def sync_up_files(local_path, remote_path, remote_addr, remote_port, ssh_key_file, opslogger, lock):
-    rsyncStr = "rsync -z -e \"ssh -i " + ssh_key_file + " -p " + remote_port + "\" " + local_path + " " + remote_addr + ":" + remote_path
+    rsyncStr = "rsync -z -e \"ssh -o PasswordAuthentication=no -i " + ssh_key_file + " -p " + remote_port + "\" " + local_path + " " + remote_addr + ":" + remote_path
     execute_cmd(rsyncStr, opslogger, lock)
 
 PING_FAILURE_STR = str(pinger.PING_FAILURE_VALUE) + ")"
@@ -89,25 +89,25 @@ def run_remote_pings((ext_config, site, ping_set, ipConfigPathLocal,
     suff = ".pings"
     # clean up old tmp file in case some process was interrupted...
     # delete files older than 60 minutes, matching what we output.
-    sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
+    sshStr = "ssh -o PasswordAuthentication=no -i " + keyPath + " " + addr + " -p " + port + \
                " \"find " + remote_output_dir + " -mmin +60 -name '" + pref + "*" + suff + "' | xargs rm -vrf" + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
-    publish_neg = extck_config.get_publish_negative_value_for_failed_ping()
+    publish_neg = ext_config.get_publish_negative_value_for_failed_ping()
 
     (fh, outputFileLocal) = tempfile.mkstemp(suffix=suff, prefix=pref, dir=ext_config.get_local_output_dir())
     os.close(fh)  # closing tmp file that was just created.
     filename = os.path.basename(outputFileLocal)
     outputFileRemote = os.path.join(remote_output_dir, filename)
-    sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
+    sshStr = "ssh -o PasswordAuthentication=no -i " + keyPath + " " + addr + " -p " + port + \
                " \"rm -f " + outputFileRemote + \
                " && python pinger.py -o " + outputFileRemote + " -c " + ipConfigPathRemote + " -s " + site + " -t " + ping_set + \
                " -p " + poolSize + " -i " + initialPingCount + " -m " + measurementPingCount + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
-    scpStr = "scp -i " + keyPath + " -P " + port + " " + addr + ":" + outputFileRemote + " " + outputFileLocal
+    scpStr = "scp -o PasswordAuthentication=no -i " + keyPath + " -P " + port + " " + addr + ":" + outputFileRemote + " " + outputFileLocal
     execute_cmd(scpStr, table_mgr.logger, lock)
-    sshStr = "ssh -i " + keyPath + " " + addr + " -p " + port + \
+    sshStr = "ssh -o PasswordAuthentication=no -i " + keyPath + " " + addr + " -p " + port + \
                " \"rm -f " + outputFileRemote + "\""
     execute_cmd(sshStr, table_mgr.logger, lock)
 
