@@ -48,6 +48,7 @@ class ExtckConfigLoader:
     __SCS_TIMEOUT = "scs_timeout"
 
     __EXPERIMENT_SECTION = "experiment"
+    __PUBLISH_NEGATIVE_VALUE_FOR_FAILED_PING = "publish_negative_value_for_failed_ping"
     __PING_SET = "ping_sets"
     __SRC_PING_PREFIX = "src_ping_"
     __SLICENAMES = "slicenames"
@@ -207,6 +208,13 @@ class ExtckConfigLoader:
             for nickname, am_urn in aggregates:
                 results[nickname] = am_urn
         return results
+
+    def __parse_boolean(self, bool_str):
+        return bool_str.lower() in ('true', '1', 'yes')
+        
+    def get_publish_negative_value_for_failed_ping(self):
+        valstr = self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PUBLISH_NEGATIVE_VALUE_FOR_FAILED_PING)
+        return self.__parse_boolean(valstr)
 
     def __get_value_set_from_comma_separated_string(self, valstr):
         vals = valstr.split(',')

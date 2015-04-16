@@ -30,6 +30,8 @@ import time
 import multiprocessing.pool
 import exceptions
 
+PING_FAILURE_VALUE = -30
+
 def usage():
     print "pinger options"
     print "   -o filename"
@@ -99,7 +101,7 @@ def ping(dst_addr, count):
             output = (subprocess.Popen(["ping", "-c", str(count), dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
             delay_ms = (output.split("="))[1]
         except Exception, _e:
-            delay_ms = -1
+            delay_ms = PING_FAILURE_VALUE
             sys.stdout.write("a")
             wrote_output = True
     return delay_ms, wrote_output
