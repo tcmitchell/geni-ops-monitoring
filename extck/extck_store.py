@@ -43,17 +43,7 @@ sys.path.append(extck_path)
 import table_manager
 import extck_config
 import pinger
-# input file with short-names and Urls aggregates
-# Need this file for sites like EG that aren't in prod but url is not in opsconfig
-# inputFileBackup=open('/home/amcanary/src/gcf/agg_nick_cache.base')
-
-# inputFile = open('/home/amcanary/.bssw/geni/nickcache.json')
-
-# Dic to store short name and corresponding url
-# Format: shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
-
-# shortName = {}
-
+import extck_populate_stiching_experiment
 
 
 class InfoPopulator():
@@ -78,7 +68,7 @@ class InfoPopulator():
 
 
 
-    def _getSiteInfo(self, srcSiteName, aggStores):
+    def __getSiteInfo(self, srcSiteName, aggStores):
         am_urn = self._nickCache.get_am_urn(srcSiteName)
         am_url = ""
         # First let's try from the cache.
@@ -106,15 +96,35 @@ class InfoPopulator():
         for ping_set in ping_sets:
             srcPing = self._config.get_experiment_source_ping_for_set(ping_set)
             # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-            self._populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
+            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
 
-        self._cleanUpObsoleteExperiments(experiment_names)
-
-    def _populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
+        self.__cleanUpObsoleteExperiments(experiment_names)
+    
+    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
+        ts = str(int(time.time() * 1000000))
+        exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
+               exp_id,
+               self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
+               ts,
+               sliceUrn,
+               sliceUuid,
+               srcAmUrn,
+               srcAmHref,
+               dstAmUrn,
+               dstAmHref
+               ]
+        self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
+        extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
+        self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
+                            (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
+                             self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+        experiment_names.add(exp_id)
+
+    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
         ipList = dict(self._ipsconfig.items(ping_set))
 
         for srcSite in srcPing:
@@ -132,33 +142,28 @@ class InfoPopulator():
                 if exp_id is None:
                     continue
 
-                (srcAmUrn, srcAmHref) = self._getSiteInfo(srcSiteName, aggStores)
-                (dstAmUrn, dstAmHref) = self._getSiteInfo(dstSiteName, aggStores)
+                (srcAmUrn, srcAmHref) = self.__getSiteInfo(srcSiteName, aggStores)
+                (dstAmUrn, dstAmHref) = self.__getSiteInfo(dstSiteName, aggStores)
                 if srcAmUrn == '' or srcAmHref == '' or dstAmUrn == '' or dstAmHref == '':
                     self.tbl_mgr.logger.warning("Error when getting info from source %s and dest %s, got src urn %s, src href %s, dst urn %s, dst href %s"
                                                 % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
                     continue
                 else:
-                    ts = str(int(time.time() * 1000000))
-                    exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
-                           exp_id,
-                           self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
-                           ts,
-                           sliceUrn,
-                           sliceUuid,
-                           srcAmUrn,
-                           srcAmHref,
-                           dstAmUrn,
-                           dstAmHref
-                           ]
-                    self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
-                    extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
-                    self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
-                                        (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
-                                         self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
-                    experiment_names.add(exp_id)
-                    
-    def _cleanUpObsoleteExperiments(self, experiment_names):
+                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names)
+
+        stitch_site_info = extck_populate_stiching_experiment.get_stitch_sites_details(self.tbl_mgr)
+        stitch_slicename = self._config.get_stitch_experiment_slicename()
+        sliceUrn = slices[stitch_slicename][0]
+        sliceUuid = slices[stitch_slicename][1]
+        
+        for idx1 in range(len(stitch_site_info)):
+            site1 = stitch_site_info[idx1]
+            for idx2 in range(idx1 + 1, len(stitch_site_info)):
+                site2 = stitch_site_info[idx2]
+                exp_id = extck_populate_stiching_experiment.name_stitch_path_experiment(site1[0], site2[0])
+                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names)
+
+    def __cleanUpObsoleteExperiments(self, experiment_names):
         registeredExperiments = self.tbl_mgr.query("select id from ops_experiment");
         if registeredExperiments is None:
             return
