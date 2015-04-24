@@ -138,7 +138,7 @@ def main(argv):
     initialPingCount = ext_config.get_experiment_ping_initial_count()
     measurementPingCount = ext_config.get_experiment_ping_measurmentl_count()
 
-    table_str = "ops_experiment_" + experiment_event_types[0]
+    table_str = "ops_experiment_ping_rtt_ms"
     myLock = multiprocessing.Lock()
 
     argsList = []

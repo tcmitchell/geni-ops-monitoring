@@ -1321,6 +1321,12 @@
                 "ts": "int8",
                 "v":"float4",
                 "units":"milliseconds"
+            },
+            {   "name": "is_stitch_path_available",
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int2",
+                "units":"boolean"
             }
         ]
     }
