@@ -102,12 +102,10 @@ class ExtckConfigLoader:
 
     def __propagate_global_values(self):
         values = self._extck_config.items(ExtckConfigLoader.__GLOBAL_SECTION)
-        allsections = self._extck_config.sections()
-        for section in allsections:
-            if section == ExtckConfigLoader.__GLOBAL_SECTION:
-                continue
-            for option, value in values:
-                self._extck_config.set(section, option, value)
+
+        for option, value in values:
+            self._extck_config.set(ExtckConfigLoader.__EXTCK_SECTION, option, value)
+            self._extck_config.set(ExtckConfigLoader.__EXPERIMENT_SECTION, option, value)
 
     def __parse_table_schemas(self):
         table_defs = self._table_json["tables"]
