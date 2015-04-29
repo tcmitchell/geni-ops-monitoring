@@ -139,9 +139,8 @@ def get_ping_experiment_name(ping_type, src, dst):
         if network != dstSiteFlag[-1:][0]:
             # Can't ping between hosts in different networks
             experiment_id = None
-        else:
-            srcSiteName = src[:-len(network) - 1]
-            dstSiteName = dst[:-len(network) - 1]
+        srcSiteName = src[:-len(network) - 1]
+        dstSiteName = dst[:-len(network) - 1]
     else:
         experiment_id += "_" + ping_type
     return (experiment_id, srcSiteName, dstSiteName)
