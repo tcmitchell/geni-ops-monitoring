@@ -290,7 +290,6 @@
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite",
-       "amurl": "https://osf-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
@@ -376,7 +375,6 @@
        "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.net+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of",
-       "amurl": "https://osf-hn.exogeni.net:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.net+authority+am",
