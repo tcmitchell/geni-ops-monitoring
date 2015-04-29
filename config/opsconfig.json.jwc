@@ -314,6 +314,12 @@
        "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
        "amurl": "https://wsu-hn.exogeni.net:11443/orca/xmlrpc"
     },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:tamuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://tamu-hn.exogeni.net:4334/info/aggregate/tamuvmsite",
+       "amurl": "https://tamu-hn.exogeni.net:11443/orca/xmlrpc"
+    },
     // Open geni stores
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
@@ -405,6 +411,11 @@
 //       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
 //       "amurl": "https://wsu-hn.exogeni.net:3626/foam/gapi/2"
 //    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:tamu-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/tamu-eg-of",
+    },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
        "amtype": "foam",
