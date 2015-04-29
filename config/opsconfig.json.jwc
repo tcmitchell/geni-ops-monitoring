@@ -176,8 +176,6 @@
        "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig",
-       "amurl": "https://instageni.umkc.edu:12369/protogeni/xmlrpc/am",
-       "am_nickname": "umkc-ig"
     },
     {
        "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
@@ -574,7 +572,6 @@
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of",
-       "amurl": "https://foam.instageni.umkc.edu:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
