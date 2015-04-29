@@ -313,8 +313,7 @@
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
        "amtype": "opengeni",
-       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og",
-       "amurl": "https://clemson-clemson-control-1.clemson.edu:5002"
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og"
     },
     {
        "urn": "urn:publicid:IDN+bbn-cam-ctrl-1.gpolab.bbn.com+authority+am",
