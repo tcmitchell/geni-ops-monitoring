@@ -275,7 +275,6 @@
        "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
        "amtype": "exogeni",
        "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite",
-       "amurl": "https://ufl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
@@ -370,7 +369,6 @@
        "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.net+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
-       "amurl": "https://ufl-hn.exogeni.net:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
