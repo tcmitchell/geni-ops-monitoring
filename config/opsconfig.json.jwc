@@ -318,8 +318,7 @@
     {
        "urn": "urn:publicid:IDN+bbn-cam-ctrl-1.gpolab.bbn.com+authority+am",
        "amtype": "opengeni",
-       "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og",
-       "amurl": "https://bbn-cam-ctrl-1.gpolab.bbn.com:5002"
+       "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og"
     },
     // FOAM aggregate manager stores
     // For now, the GPO external check store is the "authoritave" store about these aggregate
