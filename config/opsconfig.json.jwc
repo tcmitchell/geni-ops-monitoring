@@ -181,7 +181,6 @@
        "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig",
-       "amurl": "https://geni.uchicago.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
