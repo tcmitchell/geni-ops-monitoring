@@ -200,12 +200,7 @@
     {
        "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig",
-       "amurl": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "colorado-ig"
+       "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.washington.edu+authority+cm",
@@ -577,8 +572,7 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.colorado.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of",
-       "amurl": "https://foam.instageni.colorado.edu:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.washington.edu+authority+am",
