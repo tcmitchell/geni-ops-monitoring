@@ -155,7 +155,6 @@
        "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig",
-       "amurl": "https://instageni.iu.edu:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
@@ -543,7 +542,6 @@
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of",
-       "amurl": "https://foam.instageni.iu.edu:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
