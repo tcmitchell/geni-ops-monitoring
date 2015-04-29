@@ -30,6 +30,10 @@ extck_path = os.path.abspath(os.path.dirname(__file__))
 
 class ExtckConfigLoader:
     __GLOBAL_SECTION = "global"
+    __USERNAME = "username"
+    __USER_DIR = "user_dir"
+    __GCF_DIR = "gcf_dir"
+    __USER_CRED_FILE = "user_cred_file"
 
     __EXTCK_SECTION = "extck"
     __REFRESH_USER_CRED_CMD = "refresh_user_cred_cmd"
@@ -44,10 +48,8 @@ class ExtckConfigLoader:
     __EXTCK_STORE_BASE_URL = "extck_base_url"
     __GENI_LIB_PATH = "geni_lib_path"
     __GENI_LIB_CONFIG_PATH = "geni_lib_config_path"
-    __GCF_DIR = "gcf_dir"
     __POPULATOR_POOL_SIZE = "populator_pool_size"
     __SCS_TIMEOUT = "scs_timeout"
-    __USER_DIR = "user_dir"
 
     __EXPERIMENT_SECTION = "experiment"
     __PUBLISH_NEGATIVE_VALUE_FOR_FAILED_PING = "publish_negative_value_for_failed_ping"
@@ -98,6 +100,7 @@ class ExtckConfigLoader:
 
         self.__parse_table_schemas()
         self.__parse_table_constraints()
+        self.__parse_table_dependencies()
         self.__get_api_versions_regular_expressions()
 
     def __propagate_global_values(self):
@@ -125,6 +128,16 @@ class ExtckConfigLoader:
 
         self._table_constraints = table_constraints
 
+    def __parse_table_dependencies(self):
+        table_defs = self._table_json["tables"]
+        table_dependencies = dict()
+        for table in table_defs:
+            table_name = table["name"]
+            if table.has_key('dependencies'):
+                table_dependencies[table_name] = table['dependencies']
+
+        self._table_dependencies = table_dependencies
+
     def __get_api_versions_regular_expressions(self):
         am_types = self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__AM_KNOWN_TYPES)
         types = am_types.split(",")
@@ -150,17 +163,26 @@ class ExtckConfigLoader:
                 pass
         return version_dict
 
-    def get_extck_table_schemas(self):
-        return self._table_schemas
+    def configure_extck_tables(self, tbl_mgr):
+        for table_name in self._table_schemas.keys():
+            deps = None
+            if self._table_dependencies.has_key(table_name):
+                deps = self._table_dependencies[table_name]
+            tbl_mgr.add_table(table_name, self._table_schemas[table_name], self._table_constraints[table_name], deps)
 
-    def get_extck_table_constraints(self):
-        return self._table_constraints
+        tbl_mgr.establish_all_tables()
+
+    def get_username(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USERNAME)
 
     def get_gcf_path(self):
         return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__GCF_DIR)
 
     def get_user_path(self):
         return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USER_DIR)
+
+    def get_user_credential_file(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USER_CRED_FILE)
 
     def __get_am_test_command(self, am_url):
         cmd_str = self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__AM_TEST_CMD)
