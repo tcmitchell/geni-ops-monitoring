@@ -186,7 +186,6 @@
        "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig",
-       "amurl": "https://instageni.metrodatacenter.com:12369/protogeni/xmlrpc/am"
     },
     {
        "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
@@ -544,7 +543,6 @@
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
        "amtype": "foam",
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of",
-       "amurl": "https://foam.instageni.metrodatacenter.com:3626/foam/gapi/2"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
