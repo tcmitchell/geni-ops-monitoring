@@ -396,21 +396,18 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of",
        "amurl": "https://sl-hn.exogeni.net:3626/foam/gapi/2"
     },
-// Place holder for umass exogeni foam aggregate. Don't know the urn yet and AM API replies unspecified_AM_URN for now
-//    {
-//       "urn": "?",
-//       "amtype": "foam",
-//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
-//       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2"
-//    },
-// Place holder for Wayne State University exogeni foam aggregate. 
-// Don't know the urn yet and AM API replies unspecified_AM_URN for now
-//    {
-//       "urn": "?",
-//       "amtype": "foam",
-//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
-//       "amurl": "https://wsu-hn.exogeni.net:3626/foam/gapi/2"
-//    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:umass-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
+       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2"
+       "amurl2": "https://umass-hn.exogeni.net:3626/foam/gapi/1"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:wsu-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
+    },
     {
        "urn": "urn:publicid:IDN+openflow:foam:tamu-hn.exogeni.net+authority+am",
        "amtype": "foam",
