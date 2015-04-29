@@ -195,8 +195,7 @@
     {
        "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
        "amtype": "instageni",
-       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
-       "amurl": "https://instageni.cenic.net:12369/protogeni/xmlrpc/am"
+       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
@@ -573,8 +572,7 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of",
-       "amurl": "https://foam.instageni.cenic.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.colorado.edu+authority+am",
