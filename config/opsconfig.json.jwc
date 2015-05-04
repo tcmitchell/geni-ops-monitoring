@@ -222,6 +222,16 @@
        "amurl3": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/3.0",
        "am_nickname": "utc-ig"
     },
+    {
+       "urn": "urn:publicid:IDN+instageni.arc.vt.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.arc.vt.edu:5001/info/aggregate/vt-ig",
+       "amurl": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "vt-ig"
+    },
     // EXOgeni stores
     {
        "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
@@ -587,6 +597,13 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utc-ig-of",
        "amurl": "https://foam.instageni.utc.edu:3626/foam/gapi/2",
        "amurl2": "https://foam.instageni.utc.edu:3626/foam/gapi/1"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.arc.vt.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/vt-ig-of",
+       "amurl": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/2",
+       "amurl2": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/1"
     },
     // Stiching Computation Service "aggregate" store.
     // Though SCS isn't an aggregate we're representing it as such for now
