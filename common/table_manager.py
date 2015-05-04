@@ -459,7 +459,9 @@ class TableManager:
             return False
         # TODO validate that table_constraints fits the expected format
         self.contraints_dict[table_name] = table_constraints
-        if table_dependencies is not None:
+        if table_dependencies is None:
+            self.tables.append(table_name)
+        else:
             if self._all_dependencies_dict.has_key(table_name):
                 self.logger.warning("dependencies for table '%s' already exists" % table_name)
                 return False
@@ -729,10 +731,8 @@ class TableManager:
         """
         ok = True
         for table_str in table_str_arr:
-            # Ensures table_str is in ops_ namespace
-            if table_str.startswith("ops_"):
-                if not self.establish_table(table_str):
-                    ok = False
+            if not self.establish_table(table_str):
+                ok = False
         return ok
 
     def establish_all_tables(self):
