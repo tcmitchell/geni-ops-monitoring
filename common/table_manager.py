@@ -371,22 +371,22 @@ class TableManager:
                 # The rest of the data are coming from aggregate stores.
                 if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
                     constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["externalcheck_id", "id", "ts"]],
-                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
                                             ]
                 else:
                     constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["aggregate_id", "id", "ts"]],
-                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
                                             ]
             if ds_k.startswith("ops_node"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_node", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_node", "id"]])
             elif ds_k.startswith("ops_interfacevlan"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_interfacevlan", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interfacevlan", "id"]])
             elif ds_k.startswith("ops_interface"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_interface", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interface", "id"]])
             elif ds_k.startswith("ops_aggregate"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_aggregate", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_aggregate", "id"]])
             elif ds_k.startswith("ops_experiment"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_experiment", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_experiment", "id"]])
 
         for ic_k in info_constraints.keys():
             constraints_dict[ic_k] = info_constraints[ic_k]
