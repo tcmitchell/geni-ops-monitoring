@@ -42,19 +42,33 @@ sys.path.append(extck_path)
 # import opsconfig_loader
 import table_manager
 import extck_config
+import pinger
+import extck_populate_stiching_experiment
+import opsconfig_loader
 
-# input file with short-names and Urls aggregates
-# Need this file for sites like EG that aren't in prod but url is not in opsconfig
-# inputFileBackup=open('/home/amcanary/src/gcf/agg_nick_cache.base')
+def getSiteInfo(nickCache, srcSiteName, aggStores):
+        am_urn = nickCache.get_am_urn(srcSiteName)
+        am_url = nickCache.get_am_url(srcSiteName)
+        datastore_url = ""
+        # First let's try from the cache.
+        if am_urn is not None:
 
-# inputFile = open('/home/amcanary/.bssw/geni/nickcache.json')
-
-# Dic to store short name and corresponding url
-# Format: shortName[urn]=[aggShortName, amType, selfRef, measRef, url, fqdn, schema]
-
-# shortName = {}
-
-
+            for store in aggStores:
+                if store["urn"] == am_urn:
+                    datastore_url = store["href"]
+                    break;
+        else:
+            # if am_urn is None then so is am_url
+            # then let's try from the opsconfig
+            am_urn = ""
+            for store in aggStores:
+                if store.has_key("am_nickname") and store["am_nickname"] == srcSiteName:
+                    am_urn = store["urn"]
+                    datastore_url = store["href"]
+                    if store.has_key('am_url'):
+                        am_url = store['am_url']
+                    break;
+        return (am_urn, datastore_url, am_url)
 
 class InfoPopulator():
     PING_CAMPUS = object()
@@ -78,39 +92,47 @@ class InfoPopulator():
 
 
 
-    def _getSiteInfo(self, srcSiteName, aggStores):
-        am_urn = self._nickCache.get_am_urn(srcSiteName)
-        am_url = ""
-        # First let's try from the cache.
-        if am_urn is not None:
-            for store in aggStores:
-                if store["urn"] == am_urn:
-                    am_url = store["href"]
-                    break;
-        else:
-            # then let's try from the opsconfig
-            am_urn = ""
-            for store in aggStores:
-                if store.has_key("am_nickname") and store["am_nickname"] == srcSiteName:
-                    am_urn = store["urn"]
-                    am_url = store["href"]
-                    break;
-        return (am_urn, am_url)
+    def __getSiteInfo(self, srcSiteName, aggStores):
+        return getSiteInfo(self._nickCache, srcSiteName, aggStores)
 
     def populateExperimentInfoTables(self, aggStores):
         slices = self._config.get_experiment_slices_info()
         ping_sets = self._config.get_experiment_ping_set()
 
+        experiment_names = set()
+
         for ping_set in ping_sets:
             srcPing = self._config.get_experiment_source_ping_for_set(ping_set)
             # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-            self._populateExperimentInfoTables(slices, srcPing, ping_set, aggStores)
+            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
 
-    def _populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores):
+        self.__cleanUpObsoleteExperiments(experiment_names)
+    
+    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
         ext_exp_tablename = "ops_externalcheck_experiment"
         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
+        ts = str(int(time.time() * 1000000))
+        exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
+               exp_id,
+               self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
+               ts,
+               sliceUrn,
+               sliceUuid,
+               srcAmUrn,
+               srcAmHref,
+               dstAmUrn,
+               dstAmHref
+               ]
+        self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
+        extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
+        self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
+                            (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
+                             self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+        experiment_names.add(exp_id)
+
+    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
         ipList = dict(self._ipsconfig.items(ping_set))
 
         for srcSite in srcPing:
@@ -123,47 +145,43 @@ class InfoPopulator():
                 sliceUrn = slices[slice_name][0]
                 sliceUuid = slices[slice_name][1]
 
-                exp_id = srcSite + "_to_" + dstSite
-                if ping_set == "core":
-                    srcSiteFlag = srcSite.strip().split('-')
-                    network = srcSiteFlag[-1:][0]  # last element
-                    # getting the suffix of the destination
-                    dstSiteFlag = dstSite.strip().split('-')
-                    if network != dstSiteFlag[-1:][0]:
-                        # Can't ping between hosts in different networks
-                        continue
-                    srcSiteName = srcSite[:-len(network) - 1]
-                    dstSiteName = dstSite[:-len(network) - 1]
-                else:
-                    exp_id += "_" + ping_set
-                    srcSiteName = srcSite
-                    dstSiteName = dstSite
-                    # ip_core then
+                (exp_id, srcSiteName, dstSiteName) = pinger.get_ping_experiment_name(ping_set, srcSite, dstSite)
 
-                (srcAmUrn, srcAmHref) = self._getSiteInfo(srcSiteName, aggStores)
-                (dstAmUrn, dstAmHref) = self._getSiteInfo(dstSiteName, aggStores)
+                if exp_id is None:
+                    continue
+
+                (srcAmUrn, srcAmHref, _) = self.__getSiteInfo(srcSiteName, aggStores)
+                (dstAmUrn, dstAmHref, _) = self.__getSiteInfo(dstSiteName, aggStores)
                 if srcAmUrn == '' or srcAmHref == '' or dstAmUrn == '' or dstAmHref == '':
                     self.tbl_mgr.logger.warning("Error when getting info from source %s and dest %s, got src urn %s, src href %s, dst urn %s, dst href %s"
                                                 % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
                     continue
                 else:
-                    ts = str(int(time.time() * 1000000))
-                    exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
-                           exp_id,
-                           self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
-                           ts,
-                           sliceUrn,
-                           sliceUuid,
-                           srcAmUrn,
-                           srcAmHref,
-                           dstAmUrn,
-                           dstAmHref
-                           ]
-                    self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
-                    extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
-                    self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
-                                        (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
-                                         self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names)
+
+        stitch_site_info = extck_populate_stiching_experiment.get_stitch_sites_details(self.tbl_mgr)
+        stitch_slicename = self._config.get_stitch_experiment_slicename()
+        sliceUrn = slices[stitch_slicename][0]
+        sliceUuid = slices[stitch_slicename][1]
+        
+        for idx1 in range(len(stitch_site_info)):
+            site1 = stitch_site_info[idx1]
+            for idx2 in range(idx1 + 1, len(stitch_site_info)):
+                site2 = stitch_site_info[idx2]
+                exp_id = extck_populate_stiching_experiment.name_stitch_path_experiment(site1[0], site2[0])
+                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names)
+
+    def __cleanUpObsoleteExperiments(self, experiment_names):
+        registeredExperiments = self.tbl_mgr.query("select id from ops_experiment");
+        if registeredExperiments is None:
+            return
+        for experiment in registeredExperiments:
+            if experiment[0] not in experiment_names:
+                # Looks like we had an old experiment registered
+                self.tbl_mgr.logger.info("Experiment %s is obsolete: deleting corresponding records" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_externalcheck_experiment where id='%s'" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_experiment_ping_rtt_ms where id='%s'" % experiment[0])
+                self.tbl_mgr.execute_sql("delete from ops_experiment where id='%s'" % experiment[0])
 
     def insert_externalcheck_monitoredaggregate(self, urn, aggRow):
         aggregate_id = aggRow[1]  # agg_id
@@ -382,6 +400,20 @@ class AggregateNickCache:
         vals = valstr.split(',')
         return vals[0].strip()
 
+    def get_am_url(self, am_nickname):
+        """
+        Method to get the AM URL given its nickname.
+        :param am_nickname: the nickname of the AM
+        :return: Returns the AM URL or None if the nickname wasn't found.
+        """
+        try:
+            valstr = self._nickconfig.get(AggregateNickCache.__NICKNAMES_SECTION, am_nickname)
+        except:
+            return None
+
+        vals = valstr.split(',')
+        return vals[1].strip()
+
 def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
                          ops_agg_schema, agg_schema_str, monitoring_version,
                          extck_measRef, aggregate, lock)):
@@ -582,13 +614,11 @@ def main(argv):
     db_name = "local"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
+    opsConfigLoader = opsconfig_loader.OpsconfigLoader(config_path)
     config = extck_config.ExtckConfigLoader(tbl_mgr.logger)
-    extck_tables_schemas = config.get_extck_table_schemas()
-    extck_tables_constraints = config.get_extck_table_constraints()
-    for table_name in extck_tables_schemas.keys():
-        tbl_mgr.add_table_schema(table_name, extck_tables_schemas[table_name])
-        tbl_mgr.add_table_constraints(table_name, extck_tables_constraints[table_name])
-        tbl_mgr.establish_table(table_name)
+
+    # Set up info about extra extck tables and establish them.
+    config.configure_extck_tables(tbl_mgr)
 
 
     nickCache = AggregateNickCache(config.get_nickname_cache_file_location())
@@ -598,7 +628,8 @@ def main(argv):
     ip.insert_externalcheck()
 
     # Grab urns and urls for all agg stores
-    opsconfig_url = config.get_opsconfigstore_url()
+    opsconfig_url = opsConfigLoader.config_json['selfRef']
+
     aggRequest = handle_request(tbl_mgr.logger, cert_path, opsconfig_url)
 
     if aggRequest == None:

@@ -72,6 +72,7 @@ def handle_ts_data_query(tm, filters):
 
             # Construct the name of the database table.
             table_str = "ops_" + obj_type + "_" + event_type
+            object_table_name = "ops_" + obj_type
 
             # If wildcarding the objects, get all possible object ids
             # from this table.
@@ -82,12 +83,17 @@ def handle_ts_data_query(tm, filters):
                 resp_i = {}
 
                 ts_arr = get_tsdata(tm, event_type, obj_type, obj_id, ts_where_str)
-                obj_schema = get_object_schema(tm, obj_type, obj_id)
+                obj_href = None
+                obj_href_res = get_refs(tm, object_table_name, obj_id, ("selfRef",))
+                if obj_href_res is None:
+                    tm.logger.warning("Could not find URL for object %s with ID '%s'" % (obj_type, obj_id))
+                else:
+                    obj_href = obj_href_res[0]
 
                 if (ts_arr != None):
                     resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#"
                     resp_i["id"] = event_type + ":" + obj_id
-                    resp_i["subject"] = {"href":obj_schema}
+                    resp_i["subject"] = obj_href
                     resp_i["eventType"] = "ops_monitoring:" + event_type
                     resp_i["description"] = "ops_monitoring:" + event_type + " for " + obj_id + " of type " + obj_type
                     resp_i["units"] = schema_dict["units"][table_str]

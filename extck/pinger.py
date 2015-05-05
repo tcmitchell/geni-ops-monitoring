@@ -30,6 +30,8 @@ import time
 import multiprocessing.pool
 import exceptions
 
+PING_FAILURE_VALUE = -30
+
 def usage():
     print "pinger options"
     print "   -o filename"
@@ -99,7 +101,7 @@ def ping(dst_addr, count):
             output = (subprocess.Popen(["ping", "-c", str(count), dst_addr], stdout=subprocess.PIPE).stdout.read().split('/')[3])
             delay_ms = (output.split("="))[1]
         except Exception, _e:
-            delay_ms = -1
+            delay_ms = PING_FAILURE_VALUE
             sys.stdout.write("a")
             wrote_output = True
     return delay_ms, wrote_output
@@ -117,6 +119,31 @@ def run_ping_in_process((dst_addr, experiment_id, ini_ping, meas_ping)):
     # Assembling the result string for this ping set
     strres = "('" + experiment_id + "'," + ts + "," + str(delay_ms) + ")" + "\n"
     return output, strres
+
+def get_ping_experiment_name(ping_type, src, dst):
+    """
+    Method to come up with the name of the ping experiment and the "real" site name, given the ping type (set), 
+    the source and the destination.
+    :param ping_type: the type or set of pings
+    :param src: the source of the ping
+    :param dst: the destination of the ping
+    :return: a tuple with (the name of the associated experiment, the source site, the destination site)
+    """
+    experiment_id = src + "_to_" + dst
+    srcSiteName = src
+    dstSiteName = dst
+    if ping_type == 'core':
+        dstSiteFlag = dst.strip().split('-')
+        srcSiteFlag = src.strip().split('-')
+        network = srcSiteFlag[-1:][0]  # last element
+        if network != dstSiteFlag[-1:][0]:
+            # Can't ping between hosts in different networks
+            experiment_id = None
+        srcSiteName = src[:-len(network) - 1]
+        dstSiteName = dst[:-len(network) - 1]
+    else:
+        experiment_id += "_" + ping_type
+    return (experiment_id, srcSiteName, dstSiteName)
 
 class Pinger:
 
@@ -142,15 +169,9 @@ class Pinger:
                 # No "self" pinging
                 continue
 
-            experiment_id = self.srcSite + "_to_" + dstSite
-            if self.ping_type == 'core':
-                dstSiteFlag = dstSite.strip().split('-')
-                srcSiteFlag = self.srcSite.strip().split('-')
-                if srcSiteFlag[2] != dstSiteFlag[2]:
-                    # Can't ping between hosts in different networks
+            (experiment_id, _, _) = get_ping_experiment_name(self.ping_type, self.srcSite, dstSite)
+            if experiment_id is None:
                     continue
-            else:
-                experiment_id += "_" + self.ping_type
 
             dst_addr = ipList[dstSite]
             # build argument list for process pool

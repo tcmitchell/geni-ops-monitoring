@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #----------------------------------------------------------------------
 # Copyright (c) 2014-2015 Raytheon BBN Technologies
 #
@@ -30,7 +29,14 @@ import re
 extck_path = os.path.abspath(os.path.dirname(__file__))
 
 class ExtckConfigLoader:
+    __GLOBAL_SECTION = "global"
+    __USERNAME = "username"
+    __USER_DIR = "user_dir"
+    __GCF_DIR = "gcf_dir"
+    __USER_CRED_FILE = "user_cred_file"
+
     __EXTCK_SECTION = "extck"
+    __REFRESH_USER_CRED_CMD = "refresh_user_cred_cmd"
     __AM_TEST_CMD = "am_test_cmd"
     __AM_URL_STR = "AM_URL"
     __AM_TEST_VERSION_ARG = "am_test_version_arg"
@@ -42,11 +48,11 @@ class ExtckConfigLoader:
     __EXTCK_STORE_BASE_URL = "extck_base_url"
     __GENI_LIB_PATH = "geni_lib_path"
     __GENI_LIB_CONFIG_PATH = "geni_lib_config_path"
-    __GCF_DIR = "gcf_dir"
     __POPULATOR_POOL_SIZE = "populator_pool_size"
     __SCS_TIMEOUT = "scs_timeout"
 
     __EXPERIMENT_SECTION = "experiment"
+    __PUBLISH_NEGATIVE_VALUE_FOR_FAILED_PING = "publish_negative_value_for_failed_ping"
     __PING_SET = "ping_sets"
     __SRC_PING_PREFIX = "src_ping_"
     __SLICENAMES = "slicenames"
@@ -56,6 +62,7 @@ class ExtckConfigLoader:
     __PING_MEASURMENT_COUNT = "ping_measurement_count"
     __SLICE_URN = "urn"
     __SLICE_UUID = "uuid"
+    __SLICE_PROJECT = "project"
     __PING_SLICE = "slicename"
     __PING_NETWORK = "network"
     __IPS_FILE_REMOTE_LOCATION = "ips_file_remote_location"
@@ -69,6 +76,16 @@ class ExtckConfigLoader:
     __SOURCE_PING_SECTION_PREFIX = "ping_"
     __SLICE_SECTION_PREFIX = "slice_"
 
+    __STITCHER_RSPEC_TEMPLATE = "stitcher_rspec_template_filename"
+    __STITCH_EXPERIMENT_SLICENAME = "stitch_experiement_slicename"
+    __STITCH_SITES_SECTION = "stitch_sites_section"
+    __STITCH_PATH_AVAILABLE_CMD = "sticher_path_available_command"
+    __OUTPUT_FILENAME_STR = "OUTPUT_FILENAME"
+    __PROJECTNAME_STR = "PROJECTNAME"
+    __SLICENAME_STR = "SLICENAME"
+    __RSPEC_FILENAME_STR = "RSPEC_FILENAME"
+
+
 
 
     def __init__(self, logger):
@@ -79,13 +96,21 @@ class ExtckConfigLoader:
         if configfile not in self._extck_config.read(configfile):
             self._logger.critical("Could not read external check configuration file: %s" % configfile)
             sys.exit(-1)
+        self.__propagate_global_values()
 
-        self._parse_table_schemas()
-        self._parse_table_constraints()
+        self.__parse_table_schemas()
+        self.__parse_table_constraints()
+        self.__parse_table_dependencies()
         self.__get_api_versions_regular_expressions()
 
+    def __propagate_global_values(self):
+        values = self._extck_config.items(ExtckConfigLoader.__GLOBAL_SECTION)
 
-    def _parse_table_schemas(self):
+        for option, value in values:
+            self._extck_config.set(ExtckConfigLoader.__EXTCK_SECTION, option, value)
+            self._extck_config.set(ExtckConfigLoader.__EXPERIMENT_SECTION, option, value)
+
+    def __parse_table_schemas(self):
         table_defs = self._table_json["tables"]
         table_schemas = dict()
         for table in table_defs:
@@ -94,7 +119,7 @@ class ExtckConfigLoader:
 
         self._table_schemas = table_schemas
 
-    def _parse_table_constraints(self):
+    def __parse_table_constraints(self):
         table_defs = self._table_json["tables"]
         table_constraints = dict()
         for table in table_defs:
@@ -103,6 +128,15 @@ class ExtckConfigLoader:
 
         self._table_constraints = table_constraints
 
+    def __parse_table_dependencies(self):
+        table_defs = self._table_json["tables"]
+        table_dependencies = dict()
+        for table in table_defs:
+            table_name = table["name"]
+            if table.has_key('dependencies'):
+                table_dependencies[table_name] = table['dependencies']
+
+        self._table_dependencies = table_dependencies
 
     def __get_api_versions_regular_expressions(self):
         am_types = self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__AM_KNOWN_TYPES)
@@ -129,11 +163,26 @@ class ExtckConfigLoader:
                 pass
         return version_dict
 
-    def get_extck_table_schemas(self):
-        return self._table_schemas
+    def configure_extck_tables(self, tbl_mgr):
+        for table_name in self._table_schemas.keys():
+            deps = None
+            if self._table_dependencies.has_key(table_name):
+                deps = self._table_dependencies[table_name]
+            tbl_mgr.add_table(table_name, self._table_schemas[table_name], self._table_constraints[table_name], deps)
 
-    def get_extck_table_constraints(self):
-        return self._table_constraints
+        tbl_mgr.establish_all_tables()
+
+    def get_username(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USERNAME)
+
+    def get_gcf_path(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__GCF_DIR)
+
+    def get_user_path(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USER_DIR)
+
+    def get_user_credential_file(self):
+        return self._extck_config.get(ExtckConfigLoader.__GLOBAL_SECTION, ExtckConfigLoader.__USER_CRED_FILE)
 
     def __get_am_test_command(self, am_url):
         cmd_str = self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__AM_TEST_CMD)
@@ -171,6 +220,9 @@ class ExtckConfigLoader:
                     break
         return matched_version
 
+    def get_refresh_user_credential_command(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__REFRESH_USER_CRED_CMD)
+
     def get_am_full_test_command(self, am_url, am_type):
         cmd_str = self.__get_am_test_command(am_url)
         matched_version = self.get_apiversion_from_am_url(am_url, am_type)
@@ -179,9 +231,6 @@ class ExtckConfigLoader:
             cmd_str += self.__get_am_test_version_arg(matched_version)
 
         return cmd_str
-
-    def get_gcf_path(self):
-        return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__GCF_DIR)
 
     def get_populator_pool_size(self):
         return self._extck_config.get(ExtckConfigLoader.__EXTCK_SECTION, ExtckConfigLoader.__POPULATOR_POOL_SIZE)
@@ -203,6 +252,13 @@ class ExtckConfigLoader:
             for nickname, am_urn in aggregates:
                 results[nickname] = am_urn
         return results
+
+    def __parse_boolean(self, bool_str):
+        return bool_str.lower() in ('true', '1', 'yes')
+        
+    def get_publish_negative_value_for_failed_ping(self):
+        valstr = self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PUBLISH_NEGATIVE_VALUE_FOR_FAILED_PING)
+        return self.__parse_boolean(valstr)
 
     def __get_value_set_from_comma_separated_string(self, valstr):
         vals = valstr.split(',')
@@ -228,7 +284,8 @@ class ExtckConfigLoader:
             section_name = ExtckConfigLoader.__SLICE_SECTION_PREFIX + slice_name
             urn = self._extck_config.get(section_name, ExtckConfigLoader.__SLICE_URN)
             uuid = self._extck_config.get(section_name, ExtckConfigLoader.__SLICE_UUID)
-            slices_dict[slice_name] = (urn, uuid)
+            project = self._extck_config.get(section_name, ExtckConfigLoader.__SLICE_PROJECT)
+            slices_dict[slice_name] = (urn, uuid, project)
         return slices_dict
 
     def get_experiment_coordination_thread_pool_size(self):
@@ -270,4 +327,26 @@ class ExtckConfigLoader:
     def get_ssh_key_file_location(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__SSH_KEY_FILE)
 
+    def get_stitcher_rspec_template_filename(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCHER_RSPEC_TEMPLATE)
+
+    def get_stitch_experiment_slicename(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCH_EXPERIMENT_SLICENAME)
+
+    def get_stitch_sites_urns(self):
+        site_section = self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCH_SITES_SECTION)
+        results = list()
+        if self._extck_config.has_section(site_section):
+            aggregates = self._extck_config.items(site_section)
+            for _nickname, am_urn in aggregates:
+                results.append(am_urn)
+        return results
+
+    def get_stitch_path_available_cmd(self, project_name, slice_name, rspec_filename, output_filename):
+        cmd_str = self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCH_PATH_AVAILABLE_CMD)
+        cmd_str = cmd_str.replace(ExtckConfigLoader.__PROJECTNAME_STR, project_name)
+        cmd_str = cmd_str.replace(ExtckConfigLoader.__SLICENAME_STR, slice_name)
+        cmd_str = cmd_str.replace(ExtckConfigLoader.__RSPEC_FILENAME_STR, rspec_filename)
+        cmd_str = cmd_str.replace(ExtckConfigLoader.__OUTPUT_FILENAME_STR, output_filename)
+        return cmd_str
 

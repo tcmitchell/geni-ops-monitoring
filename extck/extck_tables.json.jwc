@@ -8,7 +8,8 @@
        "constraints": [
             ["PRIMARY KEY (%s)", ["aggregate_id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
-       ]
+       ],
+       "dependencies" : ["ops_aggregate"]
     },
     {  "name": "extck_aggregate_amurl",
        "db_schema": [
@@ -19,6 +20,20 @@
             ["PRIMARY KEY (%s, %s)", ["aggregate_id", "amurl"]],
             ["UNIQUE (%s)", ["amurl"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+       ],
+       "dependencies" : ["ops_aggregate"]
+    },
+    {  "name": "extck_ping_login_info",
+       "db_schema": [
+        ["project", "varchar", true],
+        ["slice", "varchar", true],
+        ["username", "varchar", true],
+        ["site", "varchar", true],
+        ["hostname", "varchar", true],
+        ["port", "varchar", true]
+       ],
+       "constraints": [
+            ["PRIMARY KEY (%s, %s, %s, %s)", ["project", "slice", "username", "site"]]
        ]
     }
   ]
