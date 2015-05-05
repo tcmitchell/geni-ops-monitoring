@@ -109,9 +109,16 @@ class SingleLocalDatastoreObjectTypeFetcher:
         if not self.tbl_mgr.establish_all_tables():
             self.logger.critical("Could not establish all the tables. Exiting")
             sys.exit(-1)
-        self.db_event_tables = ["ops_" + obj_type + "_" + ev_str for ev_str in event_types]
 
-        self.event_types = ["ops_monitoring:" + ev_str for ev_str in event_types]
+        self.db_event_tables = list()
+        self.event_types = list()
+
+        for ev_str in event_types:
+            event_table_name = "ops_" + obj_type + "_" + ev_str
+            event_type = "ops_monitoring:" + ev_str
+            if self.__is_event_supported(event_table_name):
+                self.db_event_tables.append(event_table_name)
+                self.event_types.append(event_type)
 
         # Set parameter to avoid query for all history since epoch = 0
         self.time_of_last_update = self.get_latest_ts()
@@ -127,6 +134,26 @@ class SingleLocalDatastoreObjectTypeFetcher:
         self.lock = multiprocessing.Lock()
         self.pool = multiprocessing.pool.ThreadPool(processes=SingleLocalDatastoreObjectTypeFetcher.__THREAD_POOL_SIZE)
 
+    def __is_event_supported(self, event_table_name):
+        """
+        Method to determine if the event type represented by the event_table_name is
+        actually supported for the type of data store being queried (aggregate or external check)
+        This method is necessary because, for example, some aggregate events are supported exclusively by 
+        aggregate data stores, while others are supported exclusively by external check data stores.
+        :param event_table_name: the name of the event table
+        :return: True if the event is support false otherwise.
+        """
+        table_schema = self.tbl_mgr.schema_dict[event_table_name]
+        if self.aggregate_id != "":
+            # Looking if the column 'aggregate_id' is part of the DB table schema
+            if self.tbl_mgr.get_column_from_schema(table_schema, 'aggregate_id') is not None:
+                return True
+        else:
+            # We're dealing with an external check store then.
+            # Looking if the column 'externalcheck_id' is part of the DB table schema
+            if self.tbl_mgr.get_column_from_schema(table_schema, 'externalcheck_id') is not None:
+                return True
+        return False
 
     def fetch_and_insert(self):
         """

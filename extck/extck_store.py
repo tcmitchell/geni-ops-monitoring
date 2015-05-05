@@ -44,7 +44,31 @@ import table_manager
 import extck_config
 import pinger
 import extck_populate_stiching_experiment
+import opsconfig_loader
 
+def getSiteInfo(nickCache, srcSiteName, aggStores):
+        am_urn = nickCache.get_am_urn(srcSiteName)
+        am_url = nickCache.get_am_url(srcSiteName)
+        datastore_url = ""
+        # First let's try from the cache.
+        if am_urn is not None:
+
+            for store in aggStores:
+                if store["urn"] == am_urn:
+                    datastore_url = store["href"]
+                    break;
+        else:
+            # if am_urn is None then so is am_url
+            # then let's try from the opsconfig
+            am_urn = ""
+            for store in aggStores:
+                if store.has_key("am_nickname") and store["am_nickname"] == srcSiteName:
+                    am_urn = store["urn"]
+                    datastore_url = store["href"]
+                    if store.has_key('am_url'):
+                        am_url = store['am_url']
+                    break;
+        return (am_urn, datastore_url, am_url)
 
 class InfoPopulator():
     PING_CAMPUS = object()
@@ -69,23 +93,7 @@ class InfoPopulator():
 
 
     def __getSiteInfo(self, srcSiteName, aggStores):
-        am_urn = self._nickCache.get_am_urn(srcSiteName)
-        am_url = ""
-        # First let's try from the cache.
-        if am_urn is not None:
-            for store in aggStores:
-                if store["urn"] == am_urn:
-                    am_url = store["href"]
-                    break;
-        else:
-            # then let's try from the opsconfig
-            am_urn = ""
-            for store in aggStores:
-                if store.has_key("am_nickname") and store["am_nickname"] == srcSiteName:
-                    am_urn = store["urn"]
-                    am_url = store["href"]
-                    break;
-        return (am_urn, am_url)
+        return getSiteInfo(self._nickCache, srcSiteName, aggStores)
 
     def populateExperimentInfoTables(self, aggStores):
         slices = self._config.get_experiment_slices_info()
@@ -142,8 +150,8 @@ class InfoPopulator():
                 if exp_id is None:
                     continue
 
-                (srcAmUrn, srcAmHref) = self.__getSiteInfo(srcSiteName, aggStores)
-                (dstAmUrn, dstAmHref) = self.__getSiteInfo(dstSiteName, aggStores)
+                (srcAmUrn, srcAmHref, _) = self.__getSiteInfo(srcSiteName, aggStores)
+                (dstAmUrn, dstAmHref, _) = self.__getSiteInfo(dstSiteName, aggStores)
                 if srcAmUrn == '' or srcAmHref == '' or dstAmUrn == '' or dstAmHref == '':
                     self.tbl_mgr.logger.warning("Error when getting info from source %s and dest %s, got src urn %s, src href %s, dst urn %s, dst href %s"
                                                 % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
@@ -392,6 +400,20 @@ class AggregateNickCache:
         vals = valstr.split(',')
         return vals[0].strip()
 
+    def get_am_url(self, am_nickname):
+        """
+        Method to get the AM URL given its nickname.
+        :param am_nickname: the nickname of the AM
+        :return: Returns the AM URL or None if the nickname wasn't found.
+        """
+        try:
+            valstr = self._nickconfig.get(AggregateNickCache.__NICKNAMES_SECTION, am_nickname)
+        except:
+            return None
+
+        vals = valstr.split(',')
+        return vals[1].strip()
+
 def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
                          ops_agg_schema, agg_schema_str, monitoring_version,
                          extck_measRef, aggregate, lock)):
@@ -592,13 +614,11 @@ def main(argv):
     db_name = "local"
     tbl_mgr = table_manager.TableManager(db_name, config_path)
     tbl_mgr.poll_config_store()
+    opsConfigLoader = opsconfig_loader.OpsconfigLoader(config_path)
     config = extck_config.ExtckConfigLoader(tbl_mgr.logger)
-    extck_tables_schemas = config.get_extck_table_schemas()
-    extck_tables_constraints = config.get_extck_table_constraints()
-    for table_name in extck_tables_schemas.keys():
-        tbl_mgr.add_table_schema(table_name, extck_tables_schemas[table_name])
-        tbl_mgr.add_table_constraints(table_name, extck_tables_constraints[table_name])
-        tbl_mgr.establish_table(table_name)
+
+    # Set up info about extra extck tables and establish them.
+    config.configure_extck_tables(tbl_mgr)
 
 
     nickCache = AggregateNickCache(config.get_nickname_cache_file_location())
@@ -608,7 +628,8 @@ def main(argv):
     ip.insert_externalcheck()
 
     # Grab urns and urls for all agg stores
-    opsconfig_url = config.get_opsconfigstore_url()
+    opsconfig_url = opsConfigLoader.config_json['selfRef']
+
     aggRequest = handle_request(tbl_mgr.logger, cert_path, opsconfig_url)
 
     if aggRequest == None:

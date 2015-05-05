@@ -77,8 +77,7 @@
     {
        "urn": "urn:publicid:IDN+instageni.cs.princeton.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig",
-       "amurl": "https://instageni.cs.princeton.edu:12369/protogeni/xmlrpc/am"
+       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.clemson.edu+authority+cm",
@@ -155,8 +154,7 @@
     {
        "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig",
-       "amurl": "https://instageni.iu.edu:12369/protogeni/xmlrpc/am"
+       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
@@ -177,21 +175,17 @@
     {
        "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig",
-       "amurl": "https://instageni.umkc.edu:12369/protogeni/xmlrpc/am",
-       "am_nickname": "umkc-ig"
+       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig"
     },
     {
        "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig",
-       "amurl": "https://geni.uchicago.edu:12369/protogeni/xmlrpc/am"
+       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig",
-       "amurl": "https://instageni.metrodatacenter.com:12369/protogeni/xmlrpc/am"
+       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig"
     },
     {
        "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
@@ -201,18 +195,12 @@
     {
        "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
        "amtype": "instageni",
-       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
-       "amurl": "https://instageni.cenic.net:12369/protogeni/xmlrpc/am"
+       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
        "amtype": "instageni",
-       "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig",
-       "amurl": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://instageni.colorado.edu:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "colorado-ig"
+       "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig"
     },
     {
        "urn": "urn:publicid:IDN+instageni.washington.edu+authority+cm",
@@ -233,6 +221,16 @@
        "amurl2": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/2.0",
        "amurl3": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/3.0",
        "am_nickname": "utc-ig"
+    },
+    {
+       "urn": "urn:publicid:IDN+instageni.arc.vt.edu+authority+cm",
+       "amtype": "instageni",
+       "href": "https://www.instageni.arc.vt.edu:5001/info/aggregate/vt-ig",
+       "amurl": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "vt-ig"
     },
     // EXOgeni stores
     {
@@ -280,27 +278,22 @@
     {
        "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite",
-       "amurl": "https://ufl-hn.exogeni.net:11443/orca/xmlrpc"
+       "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
-       "amurl": "https://ucd-hn.exogeni.net:11443/orca/xmlrpc",
-       "am_nickname": "ucd-eg"
+       "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://sl-hn.exogeni.net:4334/info/aggregate/slvmsite",
-       "amurl": "https://sl-hn.exogeni.net:11443/orca/xmlrpc"
+       "href": "https://sl-hn.exogeni.net:4334/info/aggregate/slvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
        "amtype": "exogeni",
-       "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite",
-       "amurl": "https://osf-hn.exogeni.net:11443/orca/xmlrpc"
+       "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite"
     },
     {
        "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
@@ -314,18 +307,22 @@
        "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
        "amurl": "https://wsu-hn.exogeni.net:11443/orca/xmlrpc"
     },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:tamuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://tamu-hn.exogeni.net:4334/info/aggregate/tamuvmsite",
+       "amurl": "https://tamu-hn.exogeni.net:11443/orca/xmlrpc"
+    },
     // Open geni stores
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
        "amtype": "opengeni",
-       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og",
-       "amurl": "https://clemson-clemson-control-1.clemson.edu:5002"
+       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og"
     },
     {
        "urn": "urn:publicid:IDN+bbn-cam-ctrl-1.gpolab.bbn.com+authority+am",
        "amtype": "opengeni",
-       "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og",
-       "amurl": "https://bbn-cam-ctrl-1.gpolab.bbn.com:5002"
+       "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og"
     },
     // FOAM aggregate manager stores
     // For now, the GPO external check store is the "authoritave" store about these aggregate
@@ -369,42 +366,40 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
-       "amurl": "https://ufl-hn.exogeni.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucd-eg-of",
-       "amurl": "https://ucd-hn.exogeni.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucdavis-eg-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of",
-       "amurl": "https://osf-hn.exogeni.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of",
-       "amurl": "https://sl-hn.exogeni.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of"
     },
-// Place holder for umass exogeni foam aggregate. Don't know the urn yet and AM API replies unspecified_AM_URN for now
-//    {
-//       "urn": "?",
-//       "amtype": "foam",
-//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
-//       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2"
-//    },
-// Place holder for Wayne State University exogeni foam aggregate. 
-// Don't know the urn yet and AM API replies unspecified_AM_URN for now
-//    {
-//       "urn": "?",
-//       "amtype": "foam",
-//       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
-//       "amurl": "https://wsu-hn.exogeni.net:3626/foam/gapi/2"
-//    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:umass-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
+       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2",
+       "amurl2": "https://umass-hn.exogeni.net:3626/foam/gapi/1"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:wsu-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:tamu-hn.exogeni.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/tamu-eg-of"
+    },
     {
        "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
        "amtype": "foam",
@@ -535,20 +530,17 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of",
-       "amurl": "https://foam.instageni.iu.edu:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of",
-       "amurl": "https://foam.instageni.metrodatacenter.com:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of",
-       "amurl": "https://foam.instageni.cs.princeton.edu:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
@@ -569,8 +561,7 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of",
-       "amurl": "https://foam.instageni.umkc.edu:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
@@ -586,14 +577,12 @@
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of",
-       "amurl": "https://foam.instageni.cenic.net:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.colorado.edu+authority+am",
        "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of",
-       "amurl": "https://foam.instageni.colorado.edu:3626/foam/gapi/2"
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of"
     },
     {
        "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.washington.edu+authority+am",
@@ -608,6 +597,13 @@
        "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utc-ig-of",
        "amurl": "https://foam.instageni.utc.edu:3626/foam/gapi/2",
        "amurl2": "https://foam.instageni.utc.edu:3626/foam/gapi/1"
+    },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.arc.vt.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/vt-ig-of",
+       "amurl": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/2",
+       "amurl2": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/1"
     },
     // Stiching Computation Service "aggregate" store.
     // Though SCS isn't an aggregate we're representing it as such for now

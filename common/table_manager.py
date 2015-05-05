@@ -274,9 +274,9 @@ class TableManager:
         # hold the DB constraints in the constraints dictionary
         self.contraints_dict = self.__create_constraints_dict__(self.data_schema, info_constraints)
 
-        all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
+        self._all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
 
-        self.tables = self.__create_ordered_table_list__(all_dependencies_dict)
+        self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
 
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
 
@@ -434,36 +434,73 @@ class TableManager:
 
         return dependencies_dict
 
-    def add_table_schema(self, table_name, table_schema):
+    def add_table(self, table_name, table_schema, table_constraints, table_dependencies=None):
         """
         Adds a table schema to the dictionary of known table schemas. Dictionary key is the table name
         @param table_name: the name of the table, which will become the key to the table schemas dictionary.
         @param table_schema: the schema of the table in its usual form, i.e. a list of tuples containing 
         the name of a table column, the type of that column, and whether a value for that column is required.
-        @return: True if the addition was successful, False if the schema for such a table name was already 
-        existing
-        """
-        if self.schema_dict.has_key(table_name):
-            return False
-        # TODO validate that table_schema fits the expected format
-        self.schema_dict[table_name] = table_schema
-        return True
-
-    def add_table_constraints(self, table_name, table_constraints):
-        """
-        Adds constraints for a table to the dictionary of known table constraints. Dictionary key is the table name
-        @param table_name: the name of the table, which will become the key to the table schemas dictionary.
         @param table_constraints: the constraints of the table in its usual form, i.e. a list of tuples, each containing 
         the constraint string in the form of a string format and a list of columns or tables names to 
         be inserted in the constraint string with the python operator %.
-        @return: True if the addition was successful, False if the constraints for such a table name was already 
+        @param table_dependencies: the dependencies of the table in its usual form, i.e. a list of table names 
+        that the table being added depends upon.
+        @return: True if the addition was successful, False if the information for such a table name was already 
         existing
         """
+        if self.schema_dict.has_key(table_name):
+            self.logger.warning("schema for table '%s' already exists" % table_name)
+            return False
+        # TODO validate that table_schema fits the expected format
+        self.schema_dict[table_name] = table_schema
+
         if self.contraints_dict.has_key(table_name):
+            self.logger.warning("constraints for table '%s' already exists" % table_name)
             return False
         # TODO validate that table_constraints fits the expected format
         self.contraints_dict[table_name] = table_constraints
+        if table_dependencies is None:
+            self.tables.append(table_name)
+        else:
+            if self._all_dependencies_dict.has_key(table_name):
+                self.logger.warning("dependencies for table '%s' already exists" % table_name)
+                return False
+            self._all_dependencies_dict[table_name] = table_dependencies
+            # need to reorder the tables
+            self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
+
         return True
+
+#     def add_table_schema(self, table_name, table_schema):
+#         """
+#         Adds a table schema to the dictionary of known table schemas. Dictionary key is the table name
+#         @param table_name: the name of the table, which will become the key to the table schemas dictionary.
+#         @param table_schema: the schema of the table in its usual form, i.e. a list of tuples containing
+#         the name of a table column, the type of that column, and whether a value for that column is required.
+#         @return: True if the addition was successful, False if the schema for such a table name was already
+#         existing
+#         """
+#         if self.schema_dict.has_key(table_name):
+#             return False
+#         # TODO validate that table_schema fits the expected format
+#         self.schema_dict[table_name] = table_schema
+#         return True
+#
+#     def add_table_constraints(self, table_name, table_constraints):
+#         """
+#         Adds constraints for a table to the dictionary of known table constraints. Dictionary key is the table name
+#         @param table_name: the name of the table, which will become the key to the table schemas dictionary.
+#         @param table_constraints: the constraints of the table in its usual form, i.e. a list of tuples, each containing
+#         the constraint string in the form of a string format and a list of columns or tables names to
+#         be inserted in the constraint string with the python operator %.
+#         @return: True if the addition was successful, False if the constraints for such a table name was already
+#         existing
+#         """
+#         if self.contraints_dict.has_key(table_name):
+#             return False
+#         # TODO validate that table_constraints fits the expected format
+#         self.contraints_dict[table_name] = table_constraints
+#         return True
 
     def __create_ordered_table_list__(self, dependencies_dict):
         """
@@ -694,10 +731,8 @@ class TableManager:
         """
         ok = True
         for table_str in table_str_arr:
-            # Ensures table_str is in ops_ namespace
-            if table_str.startswith("ops_"):
-                if not self.establish_table(table_str):
-                    ok = False
+            if not self.establish_table(table_str):
+                ok = False
         return ok
 
     def establish_all_tables(self):
