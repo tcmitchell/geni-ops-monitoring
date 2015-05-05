@@ -748,16 +748,8 @@
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["UNIQUE (%s)", ["uuid"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["aggregate_urn", "ops_aggregate", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["aggregate_href", "ops_aggregate", "selfRef"]]
-            // Having these foreign keys doesn't work because if you try
-            // to insert NULL in one of these fields, you get an error like
-            // this: (1452, 'Cannot add or update a child row: a foreign key
-            // constraint fails (`local`.`ops_sliver`, CONSTRAINT `ops_sliver_ibfk_4`
-            // FOREIGN KEY (`link_id`) REFERENCES `ops_link` (`id`))')
-            // which is saying that NULL isn't a valid id in the ops_link table.
-            // ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["node_id", "ops_node", "id"]],
-            // ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["link_id", "ops_link", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_urn", "ops_aggregate", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_href", "ops_aggregate", "selfRef"]]
         ],
         "dependencies" : ["ops_aggregate"]
     },
@@ -794,8 +786,8 @@
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["interface_urn", "ops_interface", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["interface_href", "ops_interface", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_urn", "ops_interface", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_href", "ops_interface", "selfRef"]]
         ],
         "dependencies" : ["ops_interface"]
     },
@@ -832,8 +824,8 @@
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["UNIQUE (%s)", ["uuid"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_urn", "ops_authority", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_urn", "ops_authority", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
         ],
         "dependencies" : ["ops_authority"]
     },
@@ -853,8 +845,8 @@
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_urn", "ops_authority", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_urn", "ops_authority", "urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
         ],
         "dependencies" : ["ops_authority"]
     },
@@ -929,8 +921,8 @@
             ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_sliver", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_sliver", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
         ],
         "dependencies" : ["ops_sliver", "ops_aggregate"]
     },
@@ -965,8 +957,8 @@
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["parent_id", "child_id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["parent_id", "ops_link", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["child_id", "ops_link", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_id", "ops_link", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["child_id", "ops_link", "id"]]
         ],
         "dependencies" : ["ops_link"]
     },
@@ -977,8 +969,8 @@
          ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "link_id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_interfacevlan", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["link_id", "ops_link", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interfacevlan", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["link_id", "ops_link", "id"]]
         ],
         "dependencies" : ["ops_interfacevlan", "ops_link"]
     },
@@ -993,8 +985,8 @@
             ["PRIMARY KEY (%s, %s)", ["id", "node_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_interface", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["node_id", "ops_node", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interface", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]]
         ],
         "dependencies" : ["ops_interface", "ops_node"]
     },
@@ -1010,8 +1002,8 @@
             ["PRIMARY KEY (%s, %s)", ["id", "slice_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_user", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["slice_id", "ops_slice", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_user", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["slice_id", "ops_slice", "id"]]
         ],
         "dependencies" : ["ops_user", "ops_slice"]
     },
@@ -1026,8 +1018,8 @@
             ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_user", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_id", "ops_authority", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_user", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
         ],
         "dependencies" : ["ops_user", "ops_authority"]
     },
@@ -1042,8 +1034,8 @@
             ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_slice", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["authority_id", "ops_authority", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_slice", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
         ],
         "dependencies" : ["ops_slice", "ops_authority"]
     },
@@ -1101,8 +1093,8 @@
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_experiment", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_experiment", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
         "dependencies" : ["ops_experiment", "ops_externalcheck"]
     },
@@ -1115,8 +1107,8 @@
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["id", "ops_aggregate", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_aggregate", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
         "dependencies" : ["ops_aggregate", "ops_externalcheck"]
     },
@@ -1129,7 +1121,7 @@
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["interface_id", "address"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE", ["interface_id", "ops_interface", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_id", "ops_interface", "id"]]
         ],
         "dependencies" : ["ops_interface"]
     }
