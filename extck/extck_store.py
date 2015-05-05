@@ -200,7 +200,7 @@ class InfoPopulator():
         agg_schema = self.tbl_mgr.schema_dict[agg_tablename]
 
         self.tbl_mgr.upsert(agg_tablename, agg_schema, aggRow,
-                    self.tbl_mgr.get_column_from_schema(agg_schema, "id"))
+                    self.tbl_mgr.get_column_from_schema(agg_schema, "urn"))
 
     def insert_aggregate_url(self, aggregate_id, aggregate_manager_url):
         agg_amurl_tablename = "extck_aggregate_amurl"
