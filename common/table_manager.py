@@ -277,7 +277,7 @@ class TableManager:
 
         self._all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
 
-        self.tables = self.__create_ordered_table_list__(self.all_dependencies_dict)
+        self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
         
         self.ts_tables = self.__keep_only_tables_with_ts(self.tables, info_schema)
 
