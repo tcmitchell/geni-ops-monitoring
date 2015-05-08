@@ -74,7 +74,7 @@ class DBManager(object):
         provided by the DB driver module. 
         """
         raise NotImplementedError();
-    
+
     def get_table_schema_string(self, table_schema):
         """
         Method to get a schema string, i.e. "( col1Name, col2Name, .... , colnName)"
@@ -89,7 +89,7 @@ class DBManager(object):
             schema_str += self.get_column_name(table_schema[col][0])
         schema_str += ")"
         return schema_str
-    
+
     def get_table_values_string(self, row):
         """
         Method to get a string of value, i.e. "'value1', 'value2', ... , 'valuen'"
@@ -213,7 +213,7 @@ class PostgreSQLDBManager (DBManager):
 
         # Convert id_columns to a list if it is not one already.
         try:
-            _ = iter(id_columns) # attempt to access it as an iterable
+            _ = iter(id_columns)  # attempt to access it as an iterable
         except TypeError:
             id_columns = [id_columns]
 
@@ -278,7 +278,7 @@ class TableManager:
         self._all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
 
         self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
-        
+
         self.ts_tables = self.__keep_only_tables_with_ts(self.tables, info_schema)
 
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
@@ -470,6 +470,8 @@ class TableManager:
             # need to reorder the tables
             self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
 
+        self.ts_tables = self.__keep_only_tables_with_ts(self.tables, self.schema_dict)
+
         return True
 
 #     def add_table_schema(self, table_name, table_schema):
@@ -542,13 +544,13 @@ class TableManager:
                 sys.exit(-1)
 
         return tuple(table_list)
-    
+
     def __contain_ts_column__(self, table_schema_def):
         for col_def in table_schema_def:
             if col_def[0] == "ts":
                 return True
         return False
-    
+
     def __keep_only_tables_with_ts(self, table_list, info_schema):
         """
         """
