@@ -665,7 +665,7 @@ class TestLocalResponses(unittest.TestCase):
         self.test_get_interfaces_stats()
         self.test_get_interfacevlans_stats()
 
-        # Wait more than the timeout + purging period, all teh while refreshing the timestamps in info tables.
+        # Wait more than the timeout + purging period, all the while refreshing the time stamps in info tables.
         current_time = int(time.time() * 1000000)
         time_purged = self.endOfSetUp + (TestLocalResponses.NEW_PURGE_TIMEOUT + TestLocalResponses.NEW_PURGE_PERIOD) * 1000000
         ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
