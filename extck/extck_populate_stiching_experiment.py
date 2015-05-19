@@ -61,24 +61,34 @@ def get_am_details_from_urn(am_urn, tbl_mgr):
     am_type = None
     am_id = None
     am_url = None
-    res = tbl_mgr.query('select id, ' + tbl_mgr.get_column_name('selfRef') + ' from ops_aggregate where urn=\'' + am_urn + '\'')
+    real_am_urn = am_urn
+    if real_am_urn.count('exogeni.net') > 0 and real_am_urn.count('Net') > 0:
+        # stitcher exogeni AM urns contain a string like 'bbnNet' instead of 'bbnvmsite'...
+        real_am_urn = am_urn.replace('Net', 'vmsite')
+        opslogger.debug('Exogeni URN was changed from %s to %s' %(am_urn, real_am_urn))
+
+    res = tbl_mgr.query('select id, ' + tbl_mgr.get_column_name('selfRef') + ' from ops_aggregate where urn=\'' + real_am_urn + '\'')
     if res is not None:
         am_id = res[0][0]
         am_url = res[0][1]
         res = tbl_mgr.query('select type from extck_aggregate where aggregate_id=\'' + am_id + '\'')
         if res is not None:
             am_type = res[0][0]
+        else:
+            opslogger.warning("Could not find AM type for am '%s' ('%s')" % (am_id. real_am_urn))
+    else:
+        opslogger.warning("Could not find AM record for am  URN '%s'" % (real_am_urn,))
 
-    return (am_type, am_id, am_url)
+    return (am_type, am_id, real_am_urn, am_url)
 
 def get_stitch_sites_details(tbl_mgr):
     tmp_site_urns = config.get_stitch_sites_urns()
     # Only retain compute aggregates URNs
     site_info = list()
     for urn in tmp_site_urns:
-        (am_type, am_id, am_url) = get_am_details_from_urn(urn, tbl_mgr)
+        (am_type, am_id, am_urn, am_url) = get_am_details_from_urn(urn, tbl_mgr)
         if is_compute_aggregate(am_type):
-            site_info.append((am_id, urn, am_url))
+            site_info.append((am_id, am_urn, am_url))
     return site_info
 
 def is_compute_aggregate(am_type):

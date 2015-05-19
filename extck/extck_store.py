@@ -106,6 +106,18 @@ class InfoPopulator():
             # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
             self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
 
+        stitch_site_info = extck_populate_stiching_experiment.get_stitch_sites_details(self.tbl_mgr)
+        stitch_slicename = self._config.get_stitch_experiment_slicename()
+        sliceUrn = slices[stitch_slicename][0]
+        sliceUuid = slices[stitch_slicename][1]
+
+        for idx1 in range(len(stitch_site_info)):
+            site1 = stitch_site_info[idx1]
+            for idx2 in range(idx1 + 1, len(stitch_site_info)):
+                site2 = stitch_site_info[idx2]
+                exp_id = extck_populate_stiching_experiment.name_stitch_path_experiment(site1[0], site2[0])
+                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names)
+
         self.__cleanUpObsoleteExperiments(experiment_names)
     
     def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names):
@@ -159,17 +171,6 @@ class InfoPopulator():
                 else:
                     self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names)
 
-        stitch_site_info = extck_populate_stiching_experiment.get_stitch_sites_details(self.tbl_mgr)
-        stitch_slicename = self._config.get_stitch_experiment_slicename()
-        sliceUrn = slices[stitch_slicename][0]
-        sliceUuid = slices[stitch_slicename][1]
-        
-        for idx1 in range(len(stitch_site_info)):
-            site1 = stitch_site_info[idx1]
-            for idx2 in range(idx1 + 1, len(stitch_site_info)):
-                site2 = stitch_site_info[idx2]
-                exp_id = extck_populate_stiching_experiment.name_stitch_path_experiment(site1[0], site2[0])
-                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names)
 
     def __cleanUpObsoleteExperiments(self, experiment_names):
         registeredExperiments = self.tbl_mgr.query("select id from ops_experiment");
