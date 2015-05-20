@@ -290,6 +290,16 @@ class TestLocalResponses(unittest.TestCase):
         url = self.base_url + "/info/aggregate/" + info_populator.InfoPopulator.AGGREGATE_ID + "_WRONG"
         self.check_error_response(url, "aggregate not found")
 
+    def _get_node_interface(self, node_idx):
+        for node_if_idxes in info_populator.InfoPopulator.NODE_IF_RELATIONS:
+            if node_idx == node_if_idxes[0]:
+                return node_if_idxes[1]
+        return None
+
+    def _node_has_interface(self, node_idx):
+        if self._get_node_interface(node_idx) is None:
+            return False
+        return True
 
     def test_get_nodes_info(self):
         for i in range(len(info_populator.InfoPopulator.NODE_IDS)):
@@ -306,14 +316,28 @@ class TestLocalResponses(unittest.TestCase):
             if json_dict["node_type"] == "server" or json_dict["node_type"] == "vm":
                 self.check_json_dictionary_for_field_presence(json_dict, "virtualization_type", desc)
             self.check_json_dictionary_for_field_presence(json_dict, "ops_monitoring:mem_total_kb", desc)
-            self.check_json_dictionary_for_field_presence(json_dict, "interfaces", desc)
-            if_array = json_dict["interfaces"]
-            # expectation is that each node has 1 interface - same idx in constants arrays
-            self.find_urn_and_href_object_in_json_array(if_array,
-                                                        info_populator.InfoPopulator.IF_URNS[i],
-                                                        "%s/info/interface/%s" % (self.base_url, info_populator.InfoPopulator.IF_IDS[i]),
-                                                        "interface")
+            if self._node_has_interface(i):
+                self.check_json_dictionary_for_field_presence(json_dict, "interfaces", desc)
+                if_array = json_dict["interfaces"]
+                if_idx = self._get_node_interface(i)
+                self.find_urn_and_href_object_in_json_array(if_array,
+                                                            info_populator.InfoPopulator.IF_URNS[if_idx],
+                                                            "%s/info/interface/%s" % (self.base_url, info_populator.InfoPopulator.IF_IDS[if_idx]),
+                                                            "interface")
+            else:
+                self.check_json_dictionary_for_field_absence(json_dict, "interfaces", desc)
 
+            parent_idx = info_populator.InfoPopulator.get_parent_node_idx(i)
+            if parent_idx is None:
+                self.check_json_dictionary_for_field_absence(json_dict, "parent_node", desc)
+            else:
+                self.check_json_dictionary_for_field_presence(json_dict, "parent_node", desc)
+                parent_obj = json_dict["parent_node"]
+                tmp_array = [parent_obj]
+                self.find_urn_and_href_object_in_json_array(tmp_array,
+                                                            info_populator.InfoPopulator.NODE_URNS[parent_idx],
+                                                            "%s/info/node/%s" % (self.base_url, info_populator.InfoPopulator.NODE_IDS[parent_idx]),
+                                                            "parent node")
 
     def test_get_wrong_node_info(self):
         url = self.base_url + "/info/node/" + info_populator.InfoPopulator.NODE_IDS[0] + "_WRONG"
