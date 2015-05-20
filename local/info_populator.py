@@ -75,14 +75,25 @@ class InfoPopulator():
     AGGREGATE_URN = "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm"
     NODE_IDS = ("instageni.gpolab.bbn.com_node_pc1",
                 "instageni.gpolab.bbn.com_node_pc2",
+                "instageni.gpolab.bbn.com_node_pc1_vm1",
+                "instageni.gpolab.bbn.com_node_pc2_vm2",
+                "instageni.gpolab.bbn.com_node_pc1_vm3",
                 "instageni.gpolab.bbn.com_node_interconnect"
                 )
 
     NODE_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1",
                  "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1+vm1",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc2+vm2",
+                 "urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1+vm3",
                  "urn:publicid:IDN+instageni.gpolab.bbn.com+node+interconnect"
                  )
 
+    # list of Tuples = ( Node idx, Parent Node idx)
+    NODE_PARENT_NODE_RELATIONS = ((2, 0),
+                                  (3, 1),
+                                  (4, 0)
+                                 )
     LINK_IDS = _HackLink.LINK_IDS
 
     LINK_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+link_id_001",
@@ -104,6 +115,11 @@ class InfoPopulator():
     IF_ADDRESS_RELATIONS = ((_HackIf.IF_IDS[0], 0),
                              (_HackIf.IF_IDS[0], 1)
                             )
+    # list of Tuples = ( Node idx, IF idx)
+    NODE_IF_RELATIONS = ((0, 0),
+                         (1, 1),
+                         (5, 2)
+                        )
 
     VLAN_ID = _HackVlan.VLAN_ID
 
@@ -165,9 +181,9 @@ class InfoPopulator():
     SLIVER_USER_IDX = (0, 1, 0, 1)
 
     # at sliver idx, you get pairs of (resource type, and idx in the corresponding resource array).
-    SLIVER_RESOURCE_RELATION = ((("node", 0),),
-                                (("node", 1),),
-                                (("node", 2),),
+    SLIVER_RESOURCE_RELATION = ((("node", 2),),
+                                (("node", 3),),
+                                (("node", 4),),
                                 (("link", 0), ("link", 1)),
                                 )
 
@@ -194,7 +210,22 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, table_relation, record):
                 ok = False
         return ok
-    
+
+    @staticmethod
+    def get_parent_node_idx(node_idx):
+        for node_idces in InfoPopulator.NODE_PARENT_NODE_RELATIONS:
+            if node_idx == node_idces[0]:
+                return node_idces[1]
+        return None
+
+    @staticmethod
+    def get_parent_node_id(node_idx):
+        parent_idx = InfoPopulator.get_parent_node_idx(node_idx)
+        if parent_idx is not None:
+            return InfoPopulator.NODE_IDS[parent_idx]
+        else:
+            return None
+
     def insert_fake_info(self):
         ok = True
 
@@ -226,6 +257,7 @@ class InfoPopulator():
         node1.append("server")  # node_type
         node1.append(str(2 * 1000000))  # mem_total_kb
         node1.append("xen")  # virtualization_type
+        node1.append(InfoPopulator.get_parent_node_id(0))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_node", node1):
             ok = False
@@ -240,19 +272,63 @@ class InfoPopulator():
         node2.append("server")  # node_type
         node2.append(str(2 * 1000000))  # mem_total_kb
         node2.append("xen")  # virtualization_type
+        node2.append(InfoPopulator.get_parent_node_id(1))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_node", node2):
             ok = False
 
+        node3 = []
+        node3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
+        node3.append(InfoPopulator.NODE_IDS[2])
+        node3.append(url_local_info + "node/" + node3[1])
+        node3.append(InfoPopulator.NODE_URNS[2])
+        node3.append(str(int(time.time() * 1000000)))
+        node3.append("vm")  # node_type
+        node3.append(str(2 * 1000000))  # mem_total_kb
+        node3.append("xen")  # virtualization_type
+        node3.append(InfoPopulator.get_parent_node_id(2))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_node", node3):
+            ok = False
+
+        node4 = []
+        node4.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
+        node4.append(InfoPopulator.NODE_IDS[3])
+        node4.append(url_local_info + "node/" + node4[1])
+        node4.append(InfoPopulator.NODE_URNS[3])
+        node4.append(str(int(time.time() * 1000000)))
+        node4.append("vm")  # node_type
+        node4.append(str(2 * 1000000))  # mem_total_kb
+        node4.append("xen")  # virtualization_type
+        node4.append(InfoPopulator.get_parent_node_id(3))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_node", node4):
+            ok = False
+
+        node5 = []
+        node5.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
+        node5.append(InfoPopulator.NODE_IDS[4])
+        node5.append(url_local_info + "node/" + node5[1])
+        node5.append(InfoPopulator.NODE_URNS[4])
+        node5.append(str(int(time.time() * 1000000)))
+        node5.append("vm")  # node_type
+        node5.append(str(2 * 1000000))  # mem_total_kb
+        node5.append("xen")  # virtualization_type
+        node5.append(InfoPopulator.get_parent_node_id(4))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_node", node5):
+            ok = False
+
         switch1 = []
         switch1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        switch1.append(InfoPopulator.NODE_IDS[2])
+        switch1.append(InfoPopulator.NODE_IDS[5])
         switch1.append(url_local_info + "node/" + switch1[1])
-        switch1.append(InfoPopulator.NODE_URNS[2])
+        switch1.append(InfoPopulator.NODE_URNS[5])
         switch1.append(str(int(time.time() * 1000000)))
         switch1.append("switch")  # node_type
         switch1.append(str(2 * 1000000))  # mem_total_kb
         switch1.append(None)  # virtualization_type
+        switch1.append(InfoPopulator.get_parent_node_id(5))  # Parent id
         if not info_insert(self.tbl_mgr, "ops_node", switch1):
             ok = False
 
@@ -569,52 +645,82 @@ class InfoPopulator():
 
 
         aggres3 = []
-        aggres3.append(link1[1])
+        aggres3.append(node3[1])
         aggres3.append(agg1[1])
-        aggres3.append(link1[3])
-        aggres3.append(link1[2])
+        aggres3.append(node3[3])
+        aggres3.append(node3[2])
 
         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres3):
             ok = False
 
 
         aggres4 = []
-        aggres4.append(sublink1[1])
+        aggres4.append(node4[1])
         aggres4.append(agg1[1])
-        aggres4.append(sublink1[3])
-        aggres4.append(sublink1[2])
+        aggres4.append(node4[3])
+        aggres4.append(node4[2])
 
         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres4):
             ok = False
 
 
         aggres5 = []
-        aggres5.append(sublink2[1])
+        aggres5.append(node5[1])
         aggres5.append(agg1[1])
-        aggres5.append(sublink2[3])
-        aggres5.append(sublink2[2])
+        aggres5.append(node5[3])
+        aggres5.append(node5[2])
 
         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres5):
             ok = False
 
 
         aggres6 = []
-        aggres6.append(egress_link[1])
+        aggres6.append(link1[1])
         aggres6.append(agg1[1])
-        aggres6.append(egress_link[3])
-        aggres6.append(egress_link[2])
+        aggres6.append(link1[3])
+        aggres6.append(link1[2])
 
         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres6):
             ok = False
 
 
         aggres7 = []
-        aggres7.append(switch1[1])
+        aggres7.append(sublink1[1])
         aggres7.append(agg1[1])
-        aggres7.append(switch1[3])
-        aggres7.append(switch1[2])
+        aggres7.append(sublink1[3])
+        aggres7.append(sublink1[2])
 
         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres7):
+            ok = False
+
+
+        aggres8 = []
+        aggres8.append(sublink2[1])
+        aggres8.append(agg1[1])
+        aggres8.append(sublink2[3])
+        aggres8.append(sublink2[2])
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres8):
+            ok = False
+
+
+        aggres9 = []
+        aggres9.append(egress_link[1])
+        aggres9.append(agg1[1])
+        aggres9.append(egress_link[3])
+        aggres9.append(egress_link[2])
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres9):
+            ok = False
+
+
+        aggres10 = []
+        aggres10.append(switch1[1])
+        aggres10.append(agg1[1])
+        aggres10.append(switch1[3])
+        aggres10.append(switch1[2])
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres10):
             ok = False
 
 
@@ -657,35 +763,18 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv4):
             ok = False
 
+        for node_if_idxes in InfoPopulator.NODE_IF_RELATIONS:
+            node_idx = node_if_idxes[0]
+            if_idx = node_if_idxes[1]
+            nodeiface = []
+            nodeiface.append(InfoPopulator.IF_IDS[if_idx])
+            nodeiface.append(InfoPopulator.NODE_IDS[node_idx])
+            nodeiface.append(InfoPopulator.IF_URNS[if_idx])
+            if_url = url_local_info + "interface/" + InfoPopulator.IF_IDS[if_idx]
+            nodeiface.append(if_url)
 
-        nodeiface1 = []
-        nodeiface1.append(interface1[1])
-        nodeiface1.append(node1[1])
-        nodeiface1.append(interface1[3])
-        nodeiface1.append(interface1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface1):
-            ok = False
-
-
-        nodeiface2 = []
-        nodeiface2.append(interface2[1])
-        nodeiface2.append(node2[1])
-        nodeiface2.append(interface2[3])
-        nodeiface2.append(interface2[2])
-
-        if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface2):
-            ok = False
-
-
-        nodeiface3 = []
-        nodeiface3.append(interface3[1])
-        nodeiface3.append(switch1[1])
-        nodeiface3.append(interface3[3])
-        nodeiface3.append(interface3[2])
-
-        if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface3):
-            ok = False
+            if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface):
+                ok = False
 
 
         for i in range(len(InfoPopulator.LINK_VLAN_RELATIONS)):
