@@ -41,6 +41,7 @@
       "required": false,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
           "urn": {
             "type":"string",
@@ -52,6 +53,22 @@
           }
         }
       }
-    }    
+    },
+    "parent_node": {
+      "description": "Parent node of this node, if any",
+      "type": "object",
+      "required": false,
+      "additionalProperties": false,
+      "properties": {
+        "urn": {
+          "type":"string",
+          "required": true
+        },
+        "href": {
+          "type":"string",
+          "required": true
+        }
+      }
+    }
   } 
 }
