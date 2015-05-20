@@ -702,12 +702,14 @@
              ["ts", "int8", true],
              ["node_type", "varchar", false],
              ["properties$mem_total_kb", "int8", false],
-             ["virtualization_type", "varchar", false]
+             ["virtualization_type", "varchar", false],
+             ["parent_node_id", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_node_id", "ops_node", "id"]]
         ],
         "dependencies" : []
     },
