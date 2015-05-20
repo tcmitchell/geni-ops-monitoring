@@ -119,8 +119,13 @@ def handle_node_info_query(tm, node_id):
         ifaces = get_related_objects(tm, "ops_node_interface", "node_id", node_id)
         for iface_id in ifaces:
             iface_refs.append(get_refs(tm, "ops_interface", iface_id))
+        parent_idx = tm.get_column_from_schema(node_schema, "parent_node_id")
+        parent_node_ref = None
+        if node_info[parent_idx] is not None:
+            parent_node_ref = get_refs(tm, "ops_node", node_info[parent_idx])
 
-        return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs))
+
+        return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs, parent_node_ref))
 
     else:
         opslog.debug("node not found: " + node_id)
@@ -550,7 +555,7 @@ def get_user_info_dict(schema, info_row):
 
 
 # Forms node info dictionary (to be made to JSON)
-def get_node_info_dict(schema, info_row, interface_refs):
+def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref):
 
     json_dict = {}
 
@@ -568,6 +573,8 @@ def get_node_info_dict(schema, info_row, interface_refs):
         for interface_ref in interface_refs:
             if len(interface_ref) > 0:
                 json_dict["interfaces"].append({"href":interface_ref[0], "urn":interface_ref[1]})
+    if parent_node_ref:
+        json_dict["parent_node"] = {"href":parent_node_ref[0], "urn":parent_node_ref[1]}
 
     return json_dict
 
