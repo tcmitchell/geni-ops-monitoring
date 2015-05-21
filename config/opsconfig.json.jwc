@@ -9,12 +9,12 @@
   // so that ops-monitoring can be used for acceptance tests.
   // As soon as an aggregate is in production, we'll remove the amurl field.
   "aggregatestores": [
-    // ION data store
-    {
-      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
-      "amtype": "network-aggregate",
-      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
-    },
+    // ION data store is NOW DECOMMISSIONED.
+//    {
+//      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
+//      "amtype": "network-aggregate",
+//      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
+//    },
     // AL2S data store
     {
       "urn": "urn:publicid:IDN+al2s.internet2.edu+authority+am",

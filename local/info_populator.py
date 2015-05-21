@@ -68,7 +68,7 @@ class _HackIfvlan():
 
 class InfoPopulator():
 
-
+    __SCHEMA_BASE = 'http://www.gpolab.bbn.com/monitoring/schema/20140828/'
 
 
     AGGREGATE_ID = "gpo-ig"
@@ -226,17 +226,25 @@ class InfoPopulator():
         else:
             return None
 
+    @staticmethod
+    def __get_schema_url_for(objecttype):
+        return InfoPopulator.__SCHEMA_BASE + objecttype + '#'
+
+    def __get_selfRef_url_for(self, objecttype, objectid):
+        return self.url_base + "/info/" + objecttype + '/' + objectid
+
+    def __fill_in_list_with_schema_id_and_url(self, array, objecttype, objectid):
+        array.append(InfoPopulator.__get_schema_url_for(objecttype))
+        array.append(objectid)
+        array.append(self.__get_selfRef_url_for(objecttype, objectid))
+
     def insert_fake_info(self):
         ok = True
 
-        url_local_info = self.url_base + "/info/"
         url_local_data = self.url_base + "/data/"
-        url_opsconfig_local_info = self.url_base + "/info/"
 
         agg1 = []
-        agg1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#")
-        agg1.append(InfoPopulator.AGGREGATE_ID)
-        agg1.append(url_local_info + "aggregate/" + agg1[1])
+        self.__fill_in_list_with_schema_id_and_url(agg1, "aggregate", InfoPopulator.AGGREGATE_ID)
         agg1.append(InfoPopulator.AGGREGATE_URN)
         agg1.append(str(int(time.time() * 1000000)))
         agg1.append(url_local_data)  # measRef
@@ -249,9 +257,7 @@ class InfoPopulator():
 
 
         node1 = []
-        node1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        node1.append(InfoPopulator.NODE_IDS[0])
-        node1.append(url_local_info + "node/" + node1[1])
+        self.__fill_in_list_with_schema_id_and_url(node1, "node", InfoPopulator.NODE_IDS[0])
         node1.append(InfoPopulator.NODE_URNS[0])
         node1.append(str(int(time.time() * 1000000)))
         node1.append("server")  # node_type
@@ -264,9 +270,7 @@ class InfoPopulator():
 
 
         node2 = []
-        node2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        node2.append(InfoPopulator.NODE_IDS[1])
-        node2.append(url_local_info + "node/" + node2[1])
+        self.__fill_in_list_with_schema_id_and_url(node2, "node", InfoPopulator.NODE_IDS[1])
         node2.append(InfoPopulator.NODE_URNS[1])
         node2.append(str(int(time.time() * 1000000)))
         node2.append("server")  # node_type
@@ -278,9 +282,7 @@ class InfoPopulator():
             ok = False
 
         node3 = []
-        node3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        node3.append(InfoPopulator.NODE_IDS[2])
-        node3.append(url_local_info + "node/" + node3[1])
+        self.__fill_in_list_with_schema_id_and_url(node3, "node", InfoPopulator.NODE_IDS[2])
         node3.append(InfoPopulator.NODE_URNS[2])
         node3.append(str(int(time.time() * 1000000)))
         node3.append("vm")  # node_type
@@ -292,9 +294,7 @@ class InfoPopulator():
             ok = False
 
         node4 = []
-        node4.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        node4.append(InfoPopulator.NODE_IDS[3])
-        node4.append(url_local_info + "node/" + node4[1])
+        self.__fill_in_list_with_schema_id_and_url(node4, "node", InfoPopulator.NODE_IDS[3])
         node4.append(InfoPopulator.NODE_URNS[3])
         node4.append(str(int(time.time() * 1000000)))
         node4.append("vm")  # node_type
@@ -306,9 +306,7 @@ class InfoPopulator():
             ok = False
 
         node5 = []
-        node5.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        node5.append(InfoPopulator.NODE_IDS[4])
-        node5.append(url_local_info + "node/" + node5[1])
+        self.__fill_in_list_with_schema_id_and_url(node5, "node", InfoPopulator.NODE_IDS[4])
         node5.append(InfoPopulator.NODE_URNS[4])
         node5.append(str(int(time.time() * 1000000)))
         node5.append("vm")  # node_type
@@ -320,9 +318,7 @@ class InfoPopulator():
             ok = False
 
         switch1 = []
-        switch1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/node#")
-        switch1.append(InfoPopulator.NODE_IDS[5])
-        switch1.append(url_local_info + "node/" + switch1[1])
+        self.__fill_in_list_with_schema_id_and_url(switch1, "node", InfoPopulator.NODE_IDS[5])
         switch1.append(InfoPopulator.NODE_URNS[5])
         switch1.append(str(int(time.time() * 1000000)))
         switch1.append("switch")  # node_type
@@ -334,9 +330,7 @@ class InfoPopulator():
 
 
         sliver1 = []
-        sliver1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
-        sliver1.append(InfoPopulator.SLIVER_IDS[0])
-        sliver1.append(url_local_info + "sliver/" + sliver1[1])
+        self.__fill_in_list_with_schema_id_and_url(sliver1, "sliver", InfoPopulator.SLIVER_IDS[0])
         sliver1.append(InfoPopulator.SLIVER_URNS[0])
         sliver1.append(InfoPopulator.SLIVER_UUIDS[0])  # uuid
         sliver1.append(str(int(time.time() * 1000000)))  # current ts
@@ -356,9 +350,7 @@ class InfoPopulator():
 
 
         sliver2 = []
-        sliver2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
-        sliver2.append(InfoPopulator.SLIVER_IDS[1])
-        sliver2.append(url_local_info + "sliver/" + sliver2[1])
+        self.__fill_in_list_with_schema_id_and_url(sliver2, "sliver", InfoPopulator.SLIVER_IDS[1])
         sliver2.append(InfoPopulator.SLIVER_URNS[1])
         sliver2.append(InfoPopulator.SLIVER_UUIDS[1])  # uuid
         sliver2.append(str(int(time.time() * 1000000)))  # current ts
@@ -378,9 +370,7 @@ class InfoPopulator():
 
 
         sliver3 = []
-        sliver3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
-        sliver3.append(InfoPopulator.SLIVER_IDS[2])
-        sliver3.append(url_local_info + "sliver/" + sliver3[1])
+        self.__fill_in_list_with_schema_id_and_url(sliver3, "sliver", InfoPopulator.SLIVER_IDS[2])
         sliver3.append(InfoPopulator.SLIVER_URNS[2])
         sliver3.append(InfoPopulator.SLIVER_UUIDS[2])  # uuid
         sliver3.append(str(int(time.time() * 1000000)))  # current ts
@@ -400,9 +390,7 @@ class InfoPopulator():
 
 
         link1 = []
-        link1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
-        link1.append(InfoPopulator.LINK_IDS[0])
-        link1.append(url_local_info + "link/" + link1[1])
+        self.__fill_in_list_with_schema_id_and_url(link1, "link", InfoPopulator.LINK_IDS[0])
         link1.append(InfoPopulator.LINK_URNS[0])
         link1.append("layer2")
         link1.append(str(int(time.time() * 1000000)))
@@ -411,9 +399,7 @@ class InfoPopulator():
             ok = False
 
         sublink1 = []
-        sublink1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
-        sublink1.append(InfoPopulator.LINK_IDS[1])
-        sublink1.append(url_local_info + "link/" + sublink1[1])
+        self.__fill_in_list_with_schema_id_and_url(sublink1, "link", InfoPopulator.LINK_IDS[1])
         sublink1.append(InfoPopulator.LINK_URNS[1])
         sublink1.append("layer2")
         sublink1.append(str(int(time.time() * 1000000)))
@@ -422,9 +408,7 @@ class InfoPopulator():
             ok = False
 
         sublink2 = []
-        sublink2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
-        sublink2.append(InfoPopulator.LINK_IDS[2])
-        sublink2.append(url_local_info + "link/" + sublink2[1])
+        self.__fill_in_list_with_schema_id_and_url(sublink2, "link", InfoPopulator.LINK_IDS[2])
         sublink2.append(InfoPopulator.LINK_URNS[2])
         sublink2.append("layer2")
         sublink2.append(str(int(time.time() * 1000000)))
@@ -433,9 +417,7 @@ class InfoPopulator():
             ok = False
 
         egress_link = []
-        egress_link.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/link#")
-        egress_link.append(InfoPopulator.LINK_IDS[3])
-        egress_link.append(url_local_info + "link/" + egress_link[1])
+        self.__fill_in_list_with_schema_id_and_url(egress_link, "link", InfoPopulator.LINK_IDS[3])
         egress_link.append(InfoPopulator.LINK_URNS[3])
         egress_link.append("layer2")
         egress_link.append(str(int(time.time() * 1000000)))
@@ -444,9 +426,7 @@ class InfoPopulator():
             ok = False
 
         sliver4 = []
-        sliver4.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/sliver#")
-        sliver4.append(InfoPopulator.SLIVER_IDS[3])
-        sliver4.append(url_local_info + "sliver/" + sliver4[1])
+        self.__fill_in_list_with_schema_id_and_url(sliver4, "sliver", InfoPopulator.SLIVER_IDS[3])
         sliver4.append(InfoPopulator.SLIVER_URNS[3])
         sliver4.append(InfoPopulator.SLIVER_UUIDS[3])  # uuid
         sliver4.append(str(int(time.time() * 1000000)))  # current ts
@@ -465,9 +445,7 @@ class InfoPopulator():
             ok = False
 
         interface1 = []
-        interface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
-        interface1.append(InfoPopulator.IF_IDS[0])
-        interface1.append(url_local_info + "interface/" + interface1[1])
+        self.__fill_in_list_with_schema_id_and_url(interface1, "interface", InfoPopulator.IF_IDS[0])
         interface1.append(InfoPopulator.IF_URNS[0])
         interface1.append(str(int(time.time() * 1000000)))
         interface1.append("control")  # role
@@ -478,9 +456,7 @@ class InfoPopulator():
             ok = False
 
         interface2 = []
-        interface2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
-        interface2.append(InfoPopulator.IF_IDS[1])
-        interface2.append(url_local_info + "interface/" + interface2[1])
+        self.__fill_in_list_with_schema_id_and_url(interface2, "interface", InfoPopulator.IF_IDS[1])
         interface2.append(InfoPopulator.IF_URNS[1])
         interface2.append(str(int(time.time() * 1000000)))
         interface2.append("control")  # role
@@ -491,9 +467,7 @@ class InfoPopulator():
             ok = False
 
         interface3 = []
-        interface3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
-        interface3.append(InfoPopulator.IF_IDS[2])
-        interface3.append(url_local_info + "interface/" + interface3[1])
+        self.__fill_in_list_with_schema_id_and_url(interface3, "interface", InfoPopulator.IF_IDS[2])
         interface3.append(InfoPopulator.IF_URNS[2])
         interface3.append(str(int(time.time() * 1000000)))
         interface3.append("control")  # role
@@ -504,9 +478,7 @@ class InfoPopulator():
             ok = False
 
         remoteinterface1 = []
-        remoteinterface1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interface#")
-        remoteinterface1.append(InfoPopulator.IF_IDS[3])
-        remoteinterface1.append(url_local_info + "interface/" + remoteinterface1[1])
+        self.__fill_in_list_with_schema_id_and_url(remoteinterface1, "interface", InfoPopulator.IF_IDS[3])
         remoteinterface1.append(InfoPopulator.IF_URNS[3])
         remoteinterface1.append(str(int(time.time() * 1000000)))
         remoteinterface1.append("stub")  # role
@@ -532,9 +504,7 @@ class InfoPopulator():
         vlan1 = InfoPopulator.VLAN_ID
 
         interfacevlan1 = []
-        interfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
-        interfacevlan1.append(InfoPopulator.IFVLAN_IDS[0])
-        interfacevlan1.append(url_local_info + "interfacevlan/" + interfacevlan1[1])
+        self.__fill_in_list_with_schema_id_and_url(interfacevlan1, "interfacevlan", InfoPopulator.IFVLAN_IDS[0])
         interfacevlan1.append(InfoPopulator.IFVLAN_URNS[0])
         interfacevlan1.append(str(int(time.time() * 1000000)))
         interfacevlan1.append(str(vlan1))  # tag type
@@ -546,9 +516,7 @@ class InfoPopulator():
 
 
         interfacevlan2 = []
-        interfacevlan2.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
-        interfacevlan2.append(InfoPopulator.IFVLAN_IDS[1])
-        interfacevlan2.append(url_local_info + "interfacevlan/" + interfacevlan2[1])
+        self.__fill_in_list_with_schema_id_and_url(interfacevlan2, "interfacevlan", InfoPopulator.IFVLAN_IDS[1])
         interfacevlan2.append(InfoPopulator.IFVLAN_URNS[1])
         interfacevlan2.append(str(int(time.time() * 1000000)))
         interfacevlan2.append(str(vlan1))  # tag type
@@ -558,9 +526,7 @@ class InfoPopulator():
             ok = False
 
         interfacevlan3 = []
-        interfacevlan3.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
-        interfacevlan3.append(InfoPopulator.IFVLAN_IDS[2])
-        interfacevlan3.append(url_local_info + "interfacevlan/" + interfacevlan3[1])
+        self.__fill_in_list_with_schema_id_and_url(interfacevlan3, "interfacevlan", InfoPopulator.IFVLAN_IDS[2])
         interfacevlan3.append(InfoPopulator.IFVLAN_URNS[2])
         interfacevlan3.append(str(int(time.time() * 1000000)))
         interfacevlan3.append(str(vlan1))  # tag type
@@ -571,9 +537,7 @@ class InfoPopulator():
 
 
         remoteinterfacevlan1 = []
-        remoteinterfacevlan1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/interfacevlan#")
-        remoteinterfacevlan1.append(InfoPopulator.IFVLAN_IDS[3])
-        remoteinterfacevlan1.append(url_local_info + "interfacevlan/" + remoteinterfacevlan1[1])
+        self.__fill_in_list_with_schema_id_and_url(remoteinterfacevlan1, "interfacevlan", InfoPopulator.IFVLAN_IDS[3])
         remoteinterfacevlan1.append(InfoPopulator.IFVLAN_URNS[3])
         remoteinterfacevlan1.append(str(int(time.time() * 1000000)))
         remoteinterfacevlan1.append(str(vlan1))  # tag type
@@ -585,9 +549,7 @@ class InfoPopulator():
 
 
         authority1 = []
-        authority1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/authority#")
-        authority1.append("ch.geni.net")
-        authority1.append(url_local_info + "authority/" + authority1[1])
+        self.__fill_in_list_with_schema_id_and_url(authority1, "authority", "ch.geni.net")
         authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
         authority1.append(str(int(time.time() * 1000000)))
 
@@ -595,9 +557,7 @@ class InfoPopulator():
             ok = False
 
         slice1 = []
-        slice1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/slice#")
-        slice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
-        slice1.append(url_local_info + "slice/" + slice1[1])
+        self.__fill_in_list_with_schema_id_and_url(slice1, "slice", "ch.geni.net_gpo-infra_slice_tuptyexclusive")
         slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
         slice1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")
         slice1.append(str(int(time.time() * 1000000)))
@@ -611,13 +571,11 @@ class InfoPopulator():
 
 
         user1 = []
-        user1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/user#")
-        user1.append("tupty")
-        user1.append(url_local_info + "user/" + user1[1])
+        self.__fill_in_list_with_schema_id_and_url(user1, "user", "tupty")
         user1.append("tupty_user_urn")
         user1.append(str(int(time.time() * 1000000)))
-        user1.append("urn:publicid:IDN+ch.geni.net+authority+ch")  # authority urn
-        user1.append(url_opsconfig_local_info + "authority/ch.geni.net")  # authority href
+        user1.append(authority1[3])  # authority urn
+        user1.append(authority1[2])  # authority href
         user1.append("Tim Exampleuser")
         user1.append("tupty@example.com")
 
@@ -770,7 +728,7 @@ class InfoPopulator():
             nodeiface.append(InfoPopulator.IF_IDS[if_idx])
             nodeiface.append(InfoPopulator.NODE_IDS[node_idx])
             nodeiface.append(InfoPopulator.IF_URNS[if_idx])
-            if_url = url_local_info + "interface/" + InfoPopulator.IF_IDS[if_idx]
+            if_url = self.__get_selfRef_url_for("interface", InfoPopulator.IF_IDS[if_idx])
             nodeiface.append(if_url)
 
             if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface):
@@ -795,31 +753,31 @@ class InfoPopulator():
 
 
         sliceuser1 = []
-        sliceuser1.append("tupty")
-        sliceuser1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
-        sliceuser1.append("urn:publicid:IDN+instageni.gpolab.bbn.com+node+pc1")
+        sliceuser1.append(user1[1])
+        sliceuser1.append(slice1[1])
+        sliceuser1.append(user1[3])
         sliceuser1.append("lead")
-        sliceuser1.append(url_opsconfig_local_info + "user/" + sliceuser1[0])
+        sliceuser1.append(user1[2])
 
         if not info_insert(self.tbl_mgr, "ops_slice_user", sliceuser1):
             ok = False
 
 
         authuser1 = []
-        authuser1.append("tupty")
-        authuser1.append("ch.geni.net")
-        authuser1.append("urn:publicid:IDN+ch.geni.net+user+tupty")
-        authuser1.append(url_local_info + "user/" + authuser1[0])
+        authuser1.append(user1[1])
+        authuser1.append(authority1[1])
+        authuser1.append(user1[3])
+        authuser1.append(user1[2])
 
         if not info_insert(self.tbl_mgr, "ops_authority_user", authuser1):
             ok = False
 
 
         authslice1 = []
-        authslice1.append("ch.geni.net_gpo-infra_slice_tuptyexclusive")
-        authslice1.append("ch.geni.net")
-        authslice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
-        authslice1.append(url_local_info + "slice/" + authslice1[0])
+        authslice1.append(slice1[1])
+        authslice1.append(authority1[1])
+        authslice1.append(slice1[3])
+        authslice1.append(slice1[2])
 
         if not info_insert(self.tbl_mgr, "ops_authority_slice", authslice1):
             ok = False
@@ -853,9 +811,7 @@ class InfoPopulator():
         extck_id = "gpo"
         ts = str(int(time.time() * 1000000))
         extck = []
-        extck.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#")
-        extck.append(extck_id)
-        extck.append(self.url_base + "/info/externalcheck/" + extck_id)
+        self.__fill_in_list_with_schema_id_and_url(extck, "externalcheck", extck_id)
         extck.append(ts)
         extck.append(self.url_base + "/data/")
         if not info_insert(self.tbl_mgr, "ops_externalcheck", extck):
@@ -864,9 +820,7 @@ class InfoPopulator():
         exp1_id = "missouri_ig_to_gpo_ig"
 
         exp1 = []
-        exp1.append("http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#")
-        exp1.append(exp1_id)
-        exp1.append(self.url_base + "/info/experiment/" + exp1_id)
+        self.__fill_in_list_with_schema_id_and_url(exp1, "experiment", exp1_id)
         exp1.append(ts)
         exp1.append("urn:slice_urn")
         exp1.append("uuid:slice_uuid")
@@ -880,14 +834,14 @@ class InfoPopulator():
         extck_exp1 = []
         extck_exp1.append(exp1_id)
         extck_exp1.append(extck_id)
-        extck_exp1.append(self.url_base + "/info/experiment/" + exp1_id)
+        extck_exp1.append(self.__get_selfRef_url_for("experiment", exp1_id))
         if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
             ok = False
 
         mon_agg = []
         mon_agg.append(InfoPopulator.AGGREGATE_ID)
         mon_agg.append(extck_id)
-        mon_agg.append(self.url_base + "/info/aggregate/" + InfoPopulator.AGGREGATE_ID)
+        mon_agg.append(self.__get_selfRef_url_for("aggregate", InfoPopulator.AGGREGATE_ID))
         if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
             ok = False
 
