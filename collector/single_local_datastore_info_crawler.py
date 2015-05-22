@@ -121,7 +121,7 @@ def refresh_one_sliver_information((crawler, sliver_ref_object, sliver_schema, a
     return crawler.refresh_one_sliver_info(sliver_ref_object, sliver_schema, agg_sliver_schema)
 
 def refresh_one_node_information((crawler, resource_object, schema, res_schema)):
-    return crawler.refresh_one_node_info(resource_object, schema, res_schema)
+    return crawler.refresh_one_node_info_from_resource(resource_object, schema, res_schema)
 
 def refresh_interface_information_for_one_node((crawler, node_url, nodeif_schema, ifaddr_schema)):
     return crawler.refresh_interface_info_for_one_node(node_url, nodeif_schema, ifaddr_schema)
@@ -135,7 +135,8 @@ class SingleLocalDatastoreInfoCrawler:
 
     def __init__(self, tbl_mgr, info_url, aggregate_id, extck_id, cert_path, debug, config_path):
         self.tbl_mgr = tbl_mgr
-        self.logger = logger.get_logger(config_path)
+#         self.logger = logger.get_logger(config_path)
+        self.logger = tbl_mgr.logger
         # ensures tables exist in database
         if not self.tbl_mgr.establish_all_tables():
             self.logger.critical("Could not establish all the tables. Exiting")
@@ -374,18 +375,32 @@ class SingleLocalDatastoreInfoCrawler:
                         ok = False
         return ok
 
-    def refresh_one_node_info(self, resource_object, node_schema, resource_schema):
-        ok = True
+    def refresh_one_node_info_from_resource(self, resource_object, node_schema, resource_schema):
         # counting on v2.0 schema improvements
         if resource_object["resource_type"] and resource_object["resource_type"] != "node":
             # we skip this resource
-            return ok
-        # either v2.0 told us it's a node, or we'll have to check the schema
-        res_dict = handle_request(resource_object["href"], self.cert_path, self.logger)
+            return True
+        return self.refresh_one_node_info(resource_object["href"], node_schema, resource_schema)
+
+    def refresh_one_node_info(self, node_href, node_schema, resource_schema):
+        ok = True
+        # v2.0 may have told us it's a node, but we'll have to check the schema in case of V1
+        res_dict = handle_request(node_href, self.cert_path, self.logger)
         if res_dict:
             if res_dict["$schema"].endswith("node#"):  # if a node
                 # get each attribute out of response into list
                 node_info_list = self.get_node_attributes(res_dict, node_schema)
+                # Deal with parent_node
+                if "parent_node" in res_dict:
+                    if "href" in res_dict['parent_node']:
+                        if not self.check_exists("ops_node", "selfRef", res_dict['parent_node']['href']):
+                            if not self.refresh_one_node_info(res_dict['parent_node']['href'], node_schema, resource_schema):
+                                ok = False
+                        if ok:
+                            # we got the parent node info, let's get the id
+                            parent_id_col = self.tbl_mgr.get_column_from_schema(node_schema, 'parent_node_id')
+                            parent_id = self.get_id_from_urn("ops_node", res_dict['parent_node']['urn'])
+                            node_info_list[parent_id_col] = parent_id
                 self.lock.acquire()
                 if not info_update(self.tbl_mgr, "ops_node", node_schema, node_info_list, \
                                    self.tbl_mgr.get_column_from_schema(node_schema, "id"), self.debug, self.logger):
