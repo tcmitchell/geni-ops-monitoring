@@ -566,6 +566,9 @@ def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref):
             # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
             else:
+                # Not including parent_node_id column.
+                if schema[col_i][0] == 'parent_node_id':
+                    continue
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
     if interface_refs:
