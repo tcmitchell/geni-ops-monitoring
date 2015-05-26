@@ -46,6 +46,22 @@
         "additionalProperties": false
       }
     },
+    "parent_interface": {
+      "description": "Parent interface of this interface, if any. Applies in the case of a logical interface, whose parent is a physical interface",
+      "type": "object",
+      "required": false,
+      "additionalProperties": false,
+      "properties": {
+        "urn": {
+          "type":"string",
+          "required": true
+        },
+        "href": {
+          "type":"string",
+          "required": true
+        }
+      }
+    },
     "ops_monitoring:role": { 
        "description":"Role of interface (experimental, control)",
        "enum": [ "experimental", "control", "stub" ],
