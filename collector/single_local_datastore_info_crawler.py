@@ -546,6 +546,19 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         schema = self.tbl_mgr.schema_dict["ops_interface"]
         interface_info_list = self.get_interface_attributes(interface_dict, schema)
+        if "parent_interface" in interface_dict:
+            if "href" in interface_dict['parent_interface']:
+                parent_url = interface_dict['parent_interface']['href']
+                if not self.check_exists("ops_interface", "selfRef", parent_url):
+                    parent_interface_dict = handle_request(parent_url, self.cert_path, self.logger)
+                    if parent_interface_dict:
+                        if not self.refresh_interface_info(parent_interface_dict):
+                            ok = False
+                if ok:
+                    # we got the parent node info, let's get the id
+                    parent_id_col = self.tbl_mgr.get_column_from_schema(schema, 'parent_interface_id')
+                    parent_id = self.get_id_from_urn("ops_interface", interface_dict['parent_interface']['urn'])
+                    interface_info_list[parent_id_col] = parent_id
         self.lock.acquire()
         if not info_update(self.tbl_mgr, "ops_interface", schema, interface_info_list, \
                            self.tbl_mgr.get_column_from_schema(schema, "id"), self.debug, self.logger):
