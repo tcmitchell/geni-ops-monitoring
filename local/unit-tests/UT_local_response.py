@@ -500,10 +500,10 @@ class TestLocalResponses(unittest.TestCase):
             interface_obj = json_dict["interface"]
             # just so I can reuse an existing method
             if_array = (interface_obj,)
-            # the expectation is that is ifvlan correspond to one if - same idx in the arrays
+            if_idx = info_populator.InfoPopulator.get_ifvlan_if_idx(i)
             self.find_urn_and_href_object_in_json_array(if_array,
-                                                        info_populator.InfoPopulator.IF_URNS[i],
-                                                        self.base_url + "/info/interface/" + info_populator.InfoPopulator.IF_IDS[i],
+                                                        info_populator.InfoPopulator.IF_URNS[if_idx],
+                                                        self.base_url + "/info/interface/" + info_populator.InfoPopulator.IF_IDS[if_idx],
                                                         "interface")
 
     def test_get_wrong_ifvlan_info(self):

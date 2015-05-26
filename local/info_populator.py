@@ -48,12 +48,18 @@ class _HackVlan():
 class _HackIf():
     IF_IDS = ("instageni.gpolab.bbn.com_interface_pc1:eth1",
               "instageni.gpolab.bbn.com_interface_pc2:eth1",
+              "instageni.gpolab.bbn.com_interface_pc1:eth1:0",
+              "instageni.gpolab.bbn.com_interface_pc1:eth1:1",
+              "instageni.gpolab.bbn.com_interface_pc2:eth1:0",
               "instageni.gpolab.bbn.com_interface_interconnect:port0",
               "instageni.gpolab.bbn.com_interface_newy.ion.internet2.edu:ae0"
               )
 
     IF_URNS = ("urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1",
                "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1",
+               "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:0",
+               "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc1:eth1:1",
+               "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+pc2:eth1:0",
                "urn:publicid:IDN+instageni.gpolab.bbn.com+interface+interconnect:port0",
                "urn:publicid:IDN+ion.internet2.edu+interface+rtr.newy:ae0"
                )
@@ -61,8 +67,8 @@ class _HackIf():
 class _HackIfvlan():
     IFVLAN_IDS = (_HackIf.IF_IDS[0] + ":" + str(_HackVlan.VLAN_ID),
                    _HackIf.IF_IDS[1] + ":" + str(_HackVlan.VLAN_ID),
-                   _HackIf.IF_IDS[2] + ":" + str(_HackVlan.VLAN_ID),
-                   _HackIf.IF_IDS[3] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_IDS[5] + ":" + str(_HackVlan.VLAN_ID),
+                   _HackIf.IF_IDS[6] + ":" + str(_HackVlan.VLAN_ID),
                    )
 
 
@@ -106,6 +112,12 @@ class InfoPopulator():
 
     IF_URNS = _HackIf.IF_URNS
 
+    # list of Tuples = ( If idx, Parent If idx)
+    IF_PARENT_IF_RELATIONS = ((2, 0),
+                              (3, 0),
+                              (4, 1),
+                              )
+
     # tuples of addrtype, scope, address
     IF_ADDRESSES = (("IPv4", "public", "public"),
                      ("802.3", None, "ab:cd:ef:01:23")
@@ -118,7 +130,10 @@ class InfoPopulator():
     # list of Tuples = ( Node idx, IF idx)
     NODE_IF_RELATIONS = ((0, 0),
                          (1, 1),
-                         (5, 2)
+                         (2, 2),
+                         (3, 4),
+                         (4, 3),
+                         (5, 5)
                         )
 
     VLAN_ID = _HackVlan.VLAN_ID
@@ -131,6 +146,9 @@ class InfoPopulator():
                    _HackIf.IF_URNS[2] + ":" + str(_HackVlan.VLAN_ID),
                    _HackIf.IF_URNS[3] + ":" + str(_HackVlan.VLAN_ID),
                    )
+
+    # # Idx of interface IDS for each vlan
+    IFVLAN_IF_IDS = (0, 1, 5, 6)
 
     LINK_VLAN_RELATIONS = ((_HackIfvlan.IFVLAN_IDS[0], _HackLink.LINK_IDS[0]),
                            (_HackIfvlan.IFVLAN_IDS[1], _HackLink.LINK_IDS[0]),
@@ -212,6 +230,10 @@ class InfoPopulator():
         return ok
 
     @staticmethod
+    def get_ifvlan_if_idx(ifvlan_idx):
+        return InfoPopulator.IFVLAN_IF_IDS[ifvlan_idx]
+
+    @staticmethod
     def get_parent_node_idx(node_idx):
         for node_idces in InfoPopulator.NODE_PARENT_NODE_RELATIONS:
             if node_idx == node_idces[0]:
@@ -223,6 +245,21 @@ class InfoPopulator():
         parent_idx = InfoPopulator.get_parent_node_idx(node_idx)
         if parent_idx is not None:
             return InfoPopulator.NODE_IDS[parent_idx]
+        else:
+            return None
+
+    @staticmethod
+    def get_parent_if_idx(if_idx):
+        for if_idces in InfoPopulator.IF_PARENT_IF_RELATIONS:
+            if if_idx == if_idces[0]:
+                return if_idces[1]
+        return None
+
+    @staticmethod
+    def get_parent_if_id(if_idx):
+        parent_idx = InfoPopulator.get_parent_if_idx(if_idx)
+        if parent_idx is not None:
+            return InfoPopulator.IF_IDS[parent_idx]
         else:
             return None
 
@@ -451,6 +488,7 @@ class InfoPopulator():
         interface1.append("control")  # role
         interface1.append(str(10000000))  # max bps
         interface1.append(str(1000000))  # max pps
+        interface1.append(InfoPopulator.get_parent_if_id(0))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
             ok = False
@@ -462,6 +500,7 @@ class InfoPopulator():
         interface2.append("control")  # role
         interface2.append(str(10000000))  # max bps
         interface2.append(str(1000000))  # max pps
+        interface2.append(InfoPopulator.get_parent_if_id(1))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface2):
             ok = False
@@ -470,20 +509,58 @@ class InfoPopulator():
         self.__fill_in_list_with_schema_id_and_url(interface3, "interface", InfoPopulator.IF_IDS[2])
         interface3.append(InfoPopulator.IF_URNS[2])
         interface3.append(str(int(time.time() * 1000000)))
-        interface3.append("control")  # role
+        interface3.append("experimental")  # role
         interface3.append(str(10000000))  # max bps
         interface3.append(str(1000000))  # max pps
+        interface3.append(InfoPopulator.get_parent_if_id(2))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface3):
             ok = False
 
+        interface4 = []
+        self.__fill_in_list_with_schema_id_and_url(interface4, "interface", InfoPopulator.IF_IDS[3])
+        interface4.append(InfoPopulator.IF_URNS[3])
+        interface4.append(str(int(time.time() * 1000000)))
+        interface4.append("experimental")  # role
+        interface4.append(str(10000000))  # max bps
+        interface4.append(str(1000000))  # max pps
+        interface4.append(InfoPopulator.get_parent_if_id(3))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_interface", interface4):
+            ok = False
+
+        interface5 = []
+        self.__fill_in_list_with_schema_id_and_url(interface5, "interface", InfoPopulator.IF_IDS[4])
+        interface5.append(InfoPopulator.IF_URNS[4])
+        interface5.append(str(int(time.time() * 1000000)))
+        interface5.append("control")  # role
+        interface5.append(str(10000000))  # max bps
+        interface5.append(str(1000000))  # max pps
+        interface5.append(InfoPopulator.get_parent_if_id(4))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_interface", interface5):
+            ok = False
+
+        interface6 = []
+        self.__fill_in_list_with_schema_id_and_url(interface6, "interface", InfoPopulator.IF_IDS[5])
+        interface6.append(InfoPopulator.IF_URNS[5])
+        interface6.append(str(int(time.time() * 1000000)))
+        interface6.append("control")  # role
+        interface6.append(str(10000000))  # max bps
+        interface6.append(str(1000000))  # max pps
+        interface6.append(InfoPopulator.get_parent_if_id(5))  # Parent id
+
+        if not info_insert(self.tbl_mgr, "ops_interface", interface6):
+            ok = False
+
         remoteinterface1 = []
-        self.__fill_in_list_with_schema_id_and_url(remoteinterface1, "interface", InfoPopulator.IF_IDS[3])
-        remoteinterface1.append(InfoPopulator.IF_URNS[3])
+        self.__fill_in_list_with_schema_id_and_url(remoteinterface1, "interface", InfoPopulator.IF_IDS[6])
+        remoteinterface1.append(InfoPopulator.IF_URNS[6])
         remoteinterface1.append(str(int(time.time() * 1000000)))
         remoteinterface1.append("stub")  # role
         remoteinterface1.append(str(10000000))  # max bps
         remoteinterface1.append(str(1000000))  # max pps
+        remoteinterface1.append(InfoPopulator.get_parent_if_id(6))  # Parent id
 
         if not info_insert(self.tbl_mgr, "ops_interface", remoteinterface1):
             ok = False
@@ -508,8 +585,10 @@ class InfoPopulator():
         interfacevlan1.append(InfoPopulator.IFVLAN_URNS[0])
         interfacevlan1.append(str(int(time.time() * 1000000)))
         interfacevlan1.append(str(vlan1))  # tag type
-        interfacevlan1.append(interface1[3])  # interface urn
-        interfacevlan1.append(interface1[2])  # interface href
+        if_idx = InfoPopulator.get_ifvlan_if_idx(0)
+        interfacevlan1.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
+        interfacevlan1.append(self.__get_selfRef_url_for('interface',
+                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
 
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan1):
             ok = False
@@ -520,8 +599,10 @@ class InfoPopulator():
         interfacevlan2.append(InfoPopulator.IFVLAN_URNS[1])
         interfacevlan2.append(str(int(time.time() * 1000000)))
         interfacevlan2.append(str(vlan1))  # tag type
-        interfacevlan2.append(interface2[3])  # interface urn
-        interfacevlan2.append(interface2[2])  # interface href
+        if_idx = InfoPopulator.get_ifvlan_if_idx(1)
+        interfacevlan2.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
+        interfacevlan2.append(self.__get_selfRef_url_for('interface',
+                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan2):
             ok = False
 
@@ -530,8 +611,10 @@ class InfoPopulator():
         interfacevlan3.append(InfoPopulator.IFVLAN_URNS[2])
         interfacevlan3.append(str(int(time.time() * 1000000)))
         interfacevlan3.append(str(vlan1))  # tag type
-        interfacevlan3.append(interface3[3])  # interface urn
-        interfacevlan3.append(interface3[2])  # interface href
+        if_idx = InfoPopulator.get_ifvlan_if_idx(2)
+        interfacevlan3.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
+        interfacevlan3.append(self.__get_selfRef_url_for('interface',
+                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan3):
             ok = False
 
@@ -541,9 +624,10 @@ class InfoPopulator():
         remoteinterfacevlan1.append(InfoPopulator.IFVLAN_URNS[3])
         remoteinterfacevlan1.append(str(int(time.time() * 1000000)))
         remoteinterfacevlan1.append(str(vlan1))  # tag type
-        remoteinterfacevlan1.append(remoteinterface1[3])  # interface urn
-        remoteinterfacevlan1.append(remoteinterface1[2])  # interface href
-
+        if_idx = InfoPopulator.get_ifvlan_if_idx(3)
+        remoteinterfacevlan1.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
+        remoteinterfacevlan1.append(self.__get_selfRef_url_for('interface',
+                                                               InfoPopulator.IF_IDS[if_idx]))  # interface href
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", remoteinterfacevlan1):
             ok = False
 
