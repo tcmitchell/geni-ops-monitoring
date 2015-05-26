@@ -141,11 +141,16 @@ def handle_interface_info_query(tm, iface_id):
     iface_info = get_object_info(tm, table_str, iface_id)
 
     if iface_info is not None:
+        parent_idx = tm.get_column_from_schema(iface_schema, "parent_interface_id")
+        parent_if_ref = None
+        if iface_info[parent_idx] is not None:
+            parent_if_ref = get_refs(tm, "ops_interface", iface_info[parent_idx])
         addr_table_str = "ops_interface_addresses"
         address_schema = tm.schema_dict[addr_table_str]
         address_rows = get_related_objects_full(tm, addr_table_str,
                                                 "interface_id", iface_id)
         return json.dumps(get_interface_info_dict(iface_schema, iface_info,
+                                                  parent_if_ref,
                                                   address_schema,
                                                   address_rows))
     else:
@@ -432,7 +437,7 @@ def should_include_json_field(schema, info_row, column):
 # ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
-def get_interface_info_dict(schema, info_row, address_schema, address_rows):
+def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, address_rows):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
@@ -442,7 +447,13 @@ def get_interface_info_dict(schema, info_row, address_schema, address_rows):
             # parse off properties$
                 json_dict["ops_monitoring:" + schema[col_i][0].split("$")[1]] = info_row[col_i]
             else:
+                if schema[col_i][0] == 'parent_interface_id':
+                    continue
                 json_dict[schema[col_i][0]] = info_row[col_i]
+
+
+    if parent_if_ref:
+        json_dict["parent_interface"] = {"href":parent_if_ref[0], "urn":parent_if_ref[1]}
 
     # construct the list of addresses
     json_address_list = []
