@@ -50,6 +50,11 @@
        "href": "https://www.utahddc.geniracks.net:5001/info/aggregate/utahddc-ig"
     },
     {
+       "urn": "urn:publicid:IDN+stitch.geniracks.net+authority+cm",
+       "amtype": "network-aggregate",
+       "href": "https://www.stitch.geniracks.net:5001/info/aggregate/utah-stitch"
+    },
+    {
        "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
        "amtype": "instageni",
        "href": "https://www.instageni.gpolab.bbn.com:5001/info/aggregate/gpo-ig"
