@@ -610,6 +610,21 @@
        "amurl": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/2",
        "amurl2": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/1"
     },
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:moxifoam.ictc.indiana.gigapop.net+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-of"
+    },
+    // moxi-iccn-of is not production and has no resources. does not look like there's a plan for it.
+    // Not known to omni either.
+    // Still we can monitor it...
+    {
+       "urn": "urn:publicid:IDN+openflow:foam:moxi-foam.geni.illinois.edu+authority+am",
+       "amtype": "foam",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-iccn-of",
+       "amurl": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/2",
+       "amurl2": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/1"
+    },
     // Stiching Computation Service "aggregate" store.
     // Though SCS isn't an aggregate we're representing it as such for now
     // so that the GPO external check store is able to report on its availability
