@@ -123,8 +123,8 @@ class InfoPopulator():
     def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
-        ext_exp_tablename = "ops_externalcheck_experiment"
-        ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
+#         ext_exp_tablename = "ops_externalcheck_experiment"
+#         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
         ts = str(int(time.time() * 1000000))
         exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
                exp_id,
@@ -135,13 +135,14 @@ class InfoPopulator():
                srcAmUrn,
                srcAmHref,
                dstAmUrn,
-               dstAmHref
+               dstAmHref,
+               exp_id
                ]
         self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
-        extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
-        self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
-                            (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
-                             self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
+#         extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
+#         self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
+#                             (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
+#                              self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
         experiment_names.add(exp_id)
 
     def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
@@ -180,7 +181,7 @@ class InfoPopulator():
             if experiment[0] not in experiment_names:
                 # Looks like we had an old experiment registered
                 self.tbl_mgr.logger.info("Experiment %s is obsolete: deleting corresponding records" % experiment[0])
-                self.tbl_mgr.execute_sql("delete from ops_externalcheck_experiment where id='%s'" % experiment[0])
+#                 self.tbl_mgr.execute_sql("delete from ops_externalcheck_experiment where id='%s'" % experiment[0])
                 self.tbl_mgr.execute_sql("delete from ops_experiment_ping_rtt_ms where id='%s'" % experiment[0])
                 self.tbl_mgr.execute_sql("delete from ops_experiment where id='%s'" % experiment[0])
 
@@ -646,7 +647,7 @@ def main(argv):
 
     registerAggregates(aggStores, cert_path, urn_map, ip, config)
 
-    # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
+    # Populate "ops_experiment" tables
     ip.populateExperimentInfoTables(aggStores)
 
 if __name__ == "__main__":
