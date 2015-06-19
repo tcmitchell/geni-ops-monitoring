@@ -332,15 +332,29 @@ class TestLocalResponses(unittest.TestCase):
 
         return index
 
-    def get_children_link_indexes(self, link_id):
+    def get_children_link_indexes(self, link_idx):
         """
-        Method to return the indexes of the children link ids of a given link id.
+        Method to return the indexes of the children link ids of a given link index.
+        :param link_idx: the index of the link being considered.
+        :return: a list of children link indexes 
         """
         indexes = []
         for i in range(len(info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION)):
-            if link_id == info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0]:
+            if link_idx == info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0]:
                 indexes.append(self.get_link_index(info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION[i][1]))
         return indexes
+
+    def get_parent_link_index(self, link_idx):
+        """
+        Method to return the index of the parent link id of a given link id.
+        :param link_idx: the index of the link being considered.
+        :return: the index of the parent link or None if the link does not have a parent.
+        """
+        indexes = []
+        for i in range(len(info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION)):
+            if link_idx == info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION[i][1]:
+                return self.get_link_index(info_populator.InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0])
+        return None
 
     def test_get_links_info(self):
         for i in range(len(info_populator.InfoPopulator.LINK_IDS)):
@@ -362,6 +376,15 @@ class TestLocalResponses(unittest.TestCase):
                                                             info_populator.InfoPopulator.IFVLAN_URNS[vlan_idx],
                                                             "%s/info/interfacevlan/%s" % (self.base_url, info_populator.InfoPopulator.IFVLAN_IDS[vlan_idx]),
                                                             "interfacevlan")
+            parent_idx = self.get_parent_link_index(i);
+            if parent_idx is not None:
+                self.check_json_dictionary_for_field_presence(json_dict, "parent")
+                parent_array = [json_dict["parent"]]
+                self.find_urn_and_href_object_in_json_array(parent_array,
+                                                            info_populator.InfoPopulator.LINK_URNS[parent_idx],
+                                                            "%s/info/link/%s"
+                                                                % (self.base_url, info_populator.InfoPopulator.LINK_IDS[parent_idx]),
+                                                            "link")
             children_indexes = self.get_children_link_indexes(info_populator.InfoPopulator.LINK_IDS[i])
             if len(children_indexes) != 0:
                 self.check_json_dictionary_for_field_presence(json_dict, "children", desc)
