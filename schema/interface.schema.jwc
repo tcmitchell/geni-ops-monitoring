@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/interface/<interface object id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150312/interface#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/interface#",
   "description": "interface with some extensions for GENI monitoring use",
   "name": "interface",
   "type": "object",

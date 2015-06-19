@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/sliver/<sliver object id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150312/sliver#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/sliver#",
   "description": "GENI sliver",
   "name": "Sliver",
   "type": "object",

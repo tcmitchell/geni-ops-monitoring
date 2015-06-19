@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/node/<node object id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150312/node#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/node#",
   "description": "node with some extensions for GENI monitoring use",
   "name": "node",
   "type": "object",
