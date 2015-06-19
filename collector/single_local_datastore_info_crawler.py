@@ -114,17 +114,17 @@ def parse_args(argv):
 
     return [base_url, aggregate_id, extck_id, object_types, cert_path, debug]
 
-def refresh_one_links_information((crawler, link_ref_object, link_schema, resource_schema)):
-    return crawler.refresh_one_link_info(link_ref_object, link_schema, resource_schema)
+def refresh_one_links_information((crawler, link_ref_object, link_schema)):
+    return crawler.refresh_one_link_info(link_ref_object, link_schema)
 
-def refresh_one_sliver_information((crawler, sliver_ref_object, sliver_schema, agg_sliver_schema)):
-    return crawler.refresh_one_sliver_info(sliver_ref_object, sliver_schema, agg_sliver_schema)
+def refresh_one_sliver_information((crawler, sliver_ref_object, sliver_schema)):
+    return crawler.refresh_one_sliver_info(sliver_ref_object, sliver_schema)
 
-def refresh_one_node_information((crawler, resource_object, schema, res_schema)):
-    return crawler.refresh_one_node_info_from_resource(resource_object, schema, res_schema)
+def refresh_one_node_information((crawler, resource_object, schema)):
+    return crawler.refresh_one_node_info_from_resource(resource_object, schema)
 
-def refresh_interface_information_for_one_node((crawler, node_url, nodeif_schema, ifaddr_schema)):
-    return crawler.refresh_interface_info_for_one_node(node_url, nodeif_schema, ifaddr_schema)
+def refresh_interface_information_for_one_node((crawler, node_url, ifaddr_schema)):
+    return crawler.refresh_interface_info_for_one_node(node_url, ifaddr_schema)
 
 def refresh_interfacevlans_info_for_one_link((crawler, link_url, ifvlan_schema, link_ifvlan_schema)):
     return crawler.refresh_interfacevlans_info_for_one_link(link_url, ifvlan_schema, link_ifvlan_schema)
@@ -253,7 +253,7 @@ class SingleLocalDatastoreInfoCrawler:
                             ok = False
         return ok
 
-    def refresh_one_link_info(self, resource_object, link_schema, resource_schema):
+    def refresh_one_link_info(self, resource_object, link_schema):
         ok = True
         # counting on v2.0 schema improvements
         if resource_object["resource_type"] and resource_object["resource_type"] != "link":
@@ -268,10 +268,10 @@ class SingleLocalDatastoreInfoCrawler:
                 if not info_update(self.tbl_mgr, "ops_link", link_schema, link_info_list, \
                                    self.tbl_mgr.get_column_from_schema(link_schema, "id"), self.debug, self.logger):
                     ok = False
-                agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-                if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
-                                   self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
-                    ok = False
+#                 agg_res_info_list = [res_dict["id"], self.am_dict["id"]]
+#                 if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
+#                                    self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
+#                     ok = False
         return ok
 
     def refresh_all_links_info(self):
@@ -279,12 +279,12 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         if self.am_dict:
             link_schema = self.tbl_mgr.schema_dict["ops_link"]
-            resource_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
+#             resource_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 argsArray = []
                 for res_i in self.am_dict["resources"]:
-                    args = (self, res_i, link_schema, resource_schema)
+                    args = (self, res_i, link_schema)
                     argsArray.append(args)
                 results = self.pool.map(refresh_one_links_information, argsArray)
                 for tmp_ok in results:
@@ -292,14 +292,14 @@ class SingleLocalDatastoreInfoCrawler:
                         ok = False
         return ok
 
-    def refresh_one_sliver_info(self, sliver_ref_object, sliver_schema, agg_sliver_schema):
+    def refresh_one_sliver_info(self, sliver_ref_object, sliver_schema):
         ok = True
         slv_dict = handle_request(sliver_ref_object["href"], self.cert_path, self.logger)
         if not slv_dict:
             ok = False
             
         node_schema = self.tbl_mgr.schema_dict["ops_node"]
-        res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
+#         res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
         link_schema = self.tbl_mgr.schema_dict["ops_link"]
         node_sliver_schema = self.tbl_mgr.schema_dict["ops_sliver_node"]
         link_sliver_schema = self.tbl_mgr.schema_dict["ops_sliver_link"]
@@ -309,10 +309,10 @@ class SingleLocalDatastoreInfoCrawler:
         if not info_update(self.tbl_mgr, "ops_sliver", sliver_schema, slv_info_list, \
                            self.tbl_mgr.get_column_from_schema(sliver_schema, "id"), self.debug, self.logger):
             ok = False
-        agg_slv_info_list = [slv_dict["id"], self.am_dict["id"], slv_dict["urn"], slv_dict["selfRef"]]
-        if not info_update(self.tbl_mgr, "ops_aggregate_sliver", agg_sliver_schema, agg_slv_info_list, \
-                           self.tbl_mgr.get_column_from_schema(agg_sliver_schema, "id"), self.debug, self.logger):
-            ok = False
+#         agg_slv_info_list = [slv_dict["id"], self.am_dict["id"]]
+#         if not info_update(self.tbl_mgr, "ops_aggregate_sliver", agg_sliver_schema, agg_slv_info_list, \
+#                            self.tbl_mgr.get_column_from_schema(agg_sliver_schema, "id"), self.debug, self.logger):
+#             ok = False
         self.lock.release()
         # Deal with resources
         # Have to deal with old and new schema
@@ -323,7 +323,7 @@ class SingleLocalDatastoreInfoCrawler:
         elif slv_dict.has_key('resources'):
             res_array = slv_dict['resources']
         else:
-            self.logger.warn("Found a sliver with no resource associated");
+            self.logger.warn("Found a sliver with no associated resources");
             res_array = ()
 
         for res in res_array:
@@ -332,7 +332,7 @@ class SingleLocalDatastoreInfoCrawler:
                 continue
             if res['resource_type'] == 'node':
                 if not self.check_exists("ops_node", "selfRef", res["href"]):
-                    if not self.refresh_one_node_info(res, node_schema, res_schema):
+                    if not self.refresh_one_node_info(res, node_schema):
                         ok = False
                 node_id = self.get_id_from_urn("ops_node", res['urn'])
                 sliver_res_record = (node_id, slv_dict['id'])
@@ -340,7 +340,7 @@ class SingleLocalDatastoreInfoCrawler:
                 res_sliver_schema = node_sliver_schema
             elif res['resource_type'] == 'link':
                 if not self.check_exists("ops_link", "selfRef", res["href"]):
-                    if not self.refresh_one_link_info(res, link_schema, res_schema):
+                    if not self.refresh_one_link_info(res, link_schema):
                         ok = False
                 link_id = self.get_id_from_urn("ops_link", res['urn'])
                 sliver_res_record = (link_id, slv_dict['id'])
@@ -362,12 +362,11 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         if self.am_dict:
             sliver_schema = self.tbl_mgr.schema_dict["ops_sliver"]
-            agg_sliver_schema = self.tbl_mgr.schema_dict["ops_aggregate_sliver"]
             # Need to check because "slivers" is optional
             if "slivers" in self.am_dict:
                 argsArray = []
                 for slv_i in self.am_dict["slivers"]:
-                    args = (self, slv_i, sliver_schema, agg_sliver_schema)
+                    args = (self, slv_i, sliver_schema)
                     argsArray.append(args)
                 results = self.pool.map(refresh_one_sliver_information, argsArray)
                 for tmp_ok in results:
@@ -375,14 +374,14 @@ class SingleLocalDatastoreInfoCrawler:
                         ok = False
         return ok
 
-    def refresh_one_node_info_from_resource(self, resource_object, node_schema, resource_schema):
+    def refresh_one_node_info_from_resource(self, resource_object, node_schema):
         # counting on v2.0 schema improvements
         if resource_object["resource_type"] and resource_object["resource_type"] != "node":
             # we skip this resource
             return True
-        return self.refresh_one_node_info(resource_object["href"], node_schema, resource_schema)
+        return self.refresh_one_node_info(resource_object["href"], node_schema)
 
-    def refresh_one_node_info(self, node_href, node_schema, resource_schema):
+    def refresh_one_node_info(self, node_href, node_schema):
         ok = True
         # v2.0 may have told us it's a node, but we'll have to check the schema in case of V1
         res_dict = handle_request(node_href, self.cert_path, self.logger)
@@ -394,7 +393,7 @@ class SingleLocalDatastoreInfoCrawler:
                 if "parent_node" in res_dict:
                     if "href" in res_dict['parent_node']:
                         if not self.check_exists("ops_node", "selfRef", res_dict['parent_node']['href']):
-                            if not self.refresh_one_node_info(res_dict['parent_node']['href'], node_schema, resource_schema):
+                            if not self.refresh_one_node_info(res_dict['parent_node']['href'], node_schema):
                                 ok = False
                         if ok:
                             # we got the parent node info, let's get the id
@@ -406,12 +405,12 @@ class SingleLocalDatastoreInfoCrawler:
                                    self.tbl_mgr.get_column_from_schema(node_schema, "id"), self.debug, self.logger):
                     ok = False
                 self.lock.release()
-            agg_res_info_list = [res_dict["id"], self.am_dict["id"], res_dict["urn"], res_dict["selfRef"]]
-            self.lock.acquire()
-            if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
-                               self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
-                ok = False
-            self.lock.release()
+#             agg_res_info_list = [res_dict["id"], self.am_dict["id"]]
+#             self.lock.acquire()
+#             if not info_update(self.tbl_mgr, "ops_aggregate_resource", resource_schema, agg_res_info_list, \
+#                                self.tbl_mgr.get_column_from_schema(resource_schema, "id"), self.debug, self.logger):
+#                 ok = False
+#             self.lock.release()
         return ok
 
     def refresh_all_nodes_info(self):
@@ -419,12 +418,12 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         if self.am_dict:
             schema = self.tbl_mgr.schema_dict["ops_node"]
-            res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
+#             res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
             # Need to check because "resources" is optional
             if "resources" in self.am_dict:
                 argsArray = []
                 for res_i in self.am_dict["resources"]:
-                    args = (self, res_i, schema, res_schema)
+                    args = (self, res_i, schema)
                     argsArray.append(args)
                 results = self.pool.map(refresh_one_node_information, argsArray)
                 for tmp_ok in results:
@@ -449,18 +448,30 @@ class SingleLocalDatastoreInfoCrawler:
                         self.lock.release()
                         # before updating the ifvlan info we need to make sure the if info exists
                         if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
-                                or ifacevlan_dict["interface"]["href"] == "":
+                                or ifacevlan_dict["interface"]["href"] == "" or not "urn" in ifacevlan_dict['interface'] \
+                                or ifacevlan_dict['interface']['urn'] == "":
                             self.lock.acquire()
                             self.logger.warn("Can not record interface vlan not linked to an interface.")
                             self.logger.debug(json.dumps(ifacevlan_dict, indent=1))
                             self.lock.release()
                             ok = False
                             continue
-                        if not self.check_exists("ops_interface", "selfRef", ifacevlan_dict["interface"]["href"]):
+                        if_id = self.get_id_from_urn("ops_interface", "ops_interface")
+                        if if_id is None:
                             interface_dict = handle_request(ifacevlan_dict["interface"]["href"], self.cert_path, self.logger)
-                            if not self.refresh_interface_info(interface_dict):
+                            # better be a stub interface, because we can't know what its node is.
+                            if interface_dict is None:
                                 ok = False
-                        ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, ifvlan_schema)
+                                self.lock.acquire()
+                                self.logger.warn("Can not record interface vlan: could not get interface information.")
+                                self.logger.debug(json.dumps(ifacevlan_dict, indent=1))
+                                self.lock.release()
+                                continue
+                            else:
+                                if_id = interface_dict['id']
+                                if not self.refresh_interface_info(interface_dict, None):
+                                    ok = False
+                        ifacevlan_info_list = self.get_interfacevlan_attributes(ifacevlan_dict, ifvlan_schema, if_id)
                         self.lock.acquire()
                         if not info_update(self.tbl_mgr, "ops_interfacevlan", ifvlan_schema, ifacevlan_info_list, \
                                            self.tbl_mgr.get_column_from_schema(ifvlan_schema, "id"), self.debug, self.logger):
@@ -491,22 +502,23 @@ class SingleLocalDatastoreInfoCrawler:
         return ok
 
 
-    def refresh_interface_info_for_one_node(self, node_url, nodeif_schema, ifaddr_schema):
+    def refresh_interface_info_for_one_node(self, node_url, ifaddr_schema):
         ok = True
         node_dict = handle_request(node_url, self.cert_path, self.logger)
         if node_dict:
+            node_id = node_dict['id']
             if "interfaces" in node_dict:
                 for interface in node_dict["interfaces"]:
                     interface_dict = handle_request(interface["href"], self.cert_path, self.logger)
                     if interface_dict:
-                        if not self.refresh_interface_info(interface_dict):
+                        if not self.refresh_interface_info(interface_dict, node_id):
                             ok = False
-                        node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
-                        self.lock.acquire()
-                        if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
-                                           self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
-                            ok = False
-                        self.lock.release()
+#                         node_interface_info_list = [interface_dict["id"], node_dict["id"], interface_dict["urn"], interface_dict["selfRef"]]
+#                         self.lock.acquire()
+#                         if not info_update(self.tbl_mgr, "ops_node_interface", nodeif_schema, node_interface_info_list, \
+#                                            self.tbl_mgr.get_column_from_schema(nodeif_schema, "id"), self.debug, self.logger):
+#                             ok = False
+#                         self.lock.release()
                         interface_address_list = self.get_interface_addresses(interface_dict, ifaddr_schema)
                         primary_key_columns = [self.tbl_mgr.get_column_from_schema(ifaddr_schema, "interface_id"),
                                                self.tbl_mgr.get_column_from_schema(ifaddr_schema, "address")]
@@ -525,11 +537,10 @@ class SingleLocalDatastoreInfoCrawler:
         self.logger.info("Refreshing all interfaces information for aggregate %s " % (self.aggregate_id,))
         ok = True
         node_urls = self.get_all_nodes_of_aggregate()
-        nodeif_schema = self.tbl_mgr.schema_dict["ops_node_interface"]
         ifaddr_schema = self.tbl_mgr.schema_dict["ops_interface_addresses"]
         argsArray = []
         for node_url in node_urls:
-            args = (self, node_url, nodeif_schema, ifaddr_schema)
+            args = (self, node_url, ifaddr_schema)
             argsArray.append(args)
         results = self.pool.map(refresh_interface_information_for_one_node, argsArray)
         for tmp_ok in results:
@@ -537,22 +548,24 @@ class SingleLocalDatastoreInfoCrawler:
                 ok = False
         return ok
 
-    def refresh_interface_info(self, interface_dict):
+    def refresh_interface_info(self, interface_dict, node_id):
         """
         Method to update one interface information at a time
         :param interface_dict: the json dictionary corresponding to the interface information
+        :param node_id: the id of the node owning the interface or None for a stub interface
         :return: True if the update went well, False otherwise.
         """
         ok = True
         schema = self.tbl_mgr.schema_dict["ops_interface"]
-        interface_info_list = self.get_interface_attributes(interface_dict, schema)
+        interface_info_list = self.get_interface_attributes(interface_dict, node_id, schema)
         if "parent_interface" in interface_dict:
             if "href" in interface_dict['parent_interface']:
                 parent_url = interface_dict['parent_interface']['href']
                 if not self.check_exists("ops_interface", "selfRef", parent_url):
                     parent_interface_dict = handle_request(parent_url, self.cert_path, self.logger)
                     if parent_interface_dict:
-                        if not self.refresh_interface_info(parent_interface_dict):
+                        # Assuming that parent if is on same node as child if
+                        if not self.refresh_interface_info(parent_interface_dict, node_id):
                             ok = False
                 if ok:
                     # we got the parent node info, let's get the id
@@ -579,6 +592,8 @@ class SingleLocalDatastoreInfoCrawler:
         :param db_table_schema: the database table schema corresponding to the node table.
         :return: a list of attributes for the node, in the database node table column order.
         """
+        # Adding aggregate info so as to not get a warning
+        res_dict['aggregate_id'] = self.aggregate_id
         node_info_list = self.extract_row_from_json_dict(db_table_schema, res_dict, "node")
 
         return node_info_list
@@ -591,6 +606,8 @@ class SingleLocalDatastoreInfoCrawler:
         :param db_table_schema: the database table schema corresponding to the link table.
         :return: a list of attributes for the link, in the database link table column order.
         """
+        # Adding aggregate info so as to not get a warning
+        res_dict['aggregate_id'] = self.aggregate_id
         link_info_list = self.extract_row_from_json_dict(db_table_schema, res_dict, "link")
 
         return link_info_list
@@ -607,19 +624,24 @@ class SingleLocalDatastoreInfoCrawler:
         :return: a list of sliver attributes ready to be inserted in the
         sliver table.
         """
+#         mapping = {}
+#         mapping["aggregate_href"] = ("aggregate", "href")
+#         mapping["aggregate_urn"] = ("aggregate", "urn")
+        
+        # just to avoid a warning
         mapping = {}
-        mapping["aggregate_href"] = ("aggregate", "href")
-        mapping["aggregate_urn"] = ("aggregate", "urn")
+        mapping["aggregate_id"] = ("aggregate", "href")
 
 
 
         slv_info_list = self.extract_row_from_json_dict(db_table_schema, slv_dict, "sliver", mapping)
+        slv_info_list[self.tbl_mgr.get_column_from_schema(db_table_schema, 'aggregate_id')] = self.aggregate_id
 
 
         return slv_info_list
 
 
-    def get_interfacevlan_attributes(self, ifv_dict, db_table_schema):
+    def get_interfacevlan_attributes(self, ifv_dict, db_table_schema, if_id):
         """
         Method to parse the json dictionary object corresponding to an
         interface-vlan object and returning the information in a list corresponding
@@ -627,29 +649,32 @@ class SingleLocalDatastoreInfoCrawler:
         :param ifv_dict: the json dictionary for the interface-vlan object
         :param db_table_schema: the database schema for the interface-vlan table (in its
         usual format)
+        :param if_id: the id of the interface related to this interface/vlan
         :return: a list of interface-vlan attributes ready to be inserted in the
         interface-vlan table.
         """
-        mapping = {}
-        mapping["interface_href"] = ("interface", "href")
-        mapping["interface_urn"] = ("interface", "urn")
-
-        ifv_info_list = self.extract_row_from_json_dict(db_table_schema, ifv_dict, "interface-vlan", mapping)
+        # Adding this to dictionary so that the mapping function puts the info in the right column.
+        ifv_dict['interface_id'] = if_id
+        ifv_info_list = self.extract_row_from_json_dict(db_table_schema, ifv_dict, "interface-vlan")
         return ifv_info_list
 
 
-    def get_interface_attributes(self, interface_dict, db_table_schema):
+    def get_interface_attributes(self, interface_dict, node_id, db_table_schema):
         """
         Method to parse the json dictionary object corresponding to an
         interface object and returning the information in a list corresponding
         to a database record for the interface table.
         :param interface_dict: the json dictionary for the interface object
+        :param node_id: the id of the node owning the interface or None for a stub interface 
         :param db_table_schema: the database schema for the interface table (in its
         usual format)
         :return: a list of interface attributes ready to be inserted in the
         interface table.
         """
+        # 'node_id' column with not be populated initially on this call, as it is an optional value.
         interface_info_list = self.extract_row_from_json_dict(db_table_schema, interface_dict, "interface")
+        if node_id is not None:
+            interface_info_list[self.tbl_mgr.get_column_from_schema(db_table_schema, 'node_id')] = node_id
         return interface_info_list
 
 
@@ -700,7 +725,7 @@ class SingleLocalDatastoreInfoCrawler:
         aggregate_id = self.aggregate_id
 
         q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef")
-                              + " from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
+                              + " from ops_node where aggregate_id = '" + aggregate_id + "'")
         res = [];
         if q_res is not None:
             for res_i in range(len(q_res)):
@@ -713,7 +738,7 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "'))")
+        q_res = tbl_mgr.query("select id from ops_interface where node_id in (select id from ops_node where aggregate_id = '" + aggregate_id + "')")
         res = [];
         if q_res is not None:
             for res_i in range(len(q_res)):
@@ -726,7 +751,7 @@ class SingleLocalDatastoreInfoCrawler:
         tbl_mgr = self.tbl_mgr
         aggregate_id = self.aggregate_id
 
-        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef") + " from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
+        q_res = tbl_mgr.query("select " + tbl_mgr.get_column_name("selfRef") + " from ops_link where aggregate_id = '" + aggregate_id + "'")
         res = [];
         if q_res is not None:
             for res_i in range(len(q_res)):
