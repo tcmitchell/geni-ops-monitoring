@@ -723,15 +723,17 @@
              ["node_type", "varchar", false],
              ["properties$mem_total_kb", "int8", false],
              ["virtualization_type", "varchar", false],
-             ["parent_node_id", "varchar", false]
+             ["parent_node_id", "varchar", false],
+             ["aggregate_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_node_id", "ops_node", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_node_id", "ops_node", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_aggregate"]
     },
     {   "name": "link",
         "db_schema": [
@@ -740,14 +742,18 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["layer", "varchar", false],
-             ["ts", "int8", true]
+             ["ts", "int8", true],
+             ["aggregate_id", "varchar", true],
+             ["parent_link_id", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
+            ["UNIQUE (%s)", ["urn"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_link_id", "ops_link", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_aggregate"]
     },
     {   "name": "sliver",
         "db_schema": [
@@ -757,8 +763,7 @@
              ["urn", "varchar", true],
              ["uuid", "varchar", true],
              ["ts", "int8", true],
-             ["aggregate_urn", "varchar", true],
-             ["aggregate_href", "varchar", true],
+             ["aggregate_id", "varchar", true],
              ["slice_urn", "varchar", true],
              ["slice_uuid", "varchar", false],
              ["creator", "varchar", false],
@@ -770,8 +775,7 @@
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["UNIQUE (%s)", ["uuid"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_urn", "ops_aggregate", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_href", "ops_aggregate", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
         ],
         "dependencies" : ["ops_aggregate"]
     },
@@ -785,15 +789,17 @@
              ["properties$role", "varchar", false],
              ["properties$max_bps", "int8", false],
              ["properties$max_pps", "int8", false],
-             ["parent_interface_id", "varchar", false]
+             ["parent_interface_id", "varchar", false],
+             ["node_id", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_interface_id", "ops_interface", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_interface_id", "ops_interface", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_node"]
     },
     {   "name": "interfacevlan",
         "db_schema": [
@@ -803,15 +809,13 @@
              ["urn", "varchar", true],
              ["ts", "int8", true],
              ["tag", "int8", true],
-             ["interface_urn", "varchar", true],
-             ["interface_href", "varchar", true]
+             ["interface_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_urn", "ops_interface", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_href", "ops_interface", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_id", "ops_interface", "id"]]
         ],
         "dependencies" : ["ops_interface"]
     },
@@ -838,8 +842,7 @@
              ["urn", "varchar", true],
              ["uuid", "varchar", true],
              ["ts", "int8", true],
-             ["authority_urn", "varchar", true],
-             ["authority_href", "varchar", true],
+             ["authority_id", "varchar", true],
              ["created", "int8", true],
              ["expires", "int8", true]
        ],
@@ -848,8 +851,7 @@
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["UNIQUE (%s)", ["uuid"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_urn", "ops_authority", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
         ],
         "dependencies" : ["ops_authority"]
     },
@@ -860,8 +862,7 @@
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
              ["ts", "int8", true],
-             ["authority_urn", "varchar", true],
-             ["authority_href", "varchar", true],
+             ["authority_id", "varchar", true],
              ["fullname", "varchar", true],
              ["email", "varchar", true]
         ],
@@ -869,8 +870,7 @@
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_urn", "ops_authority", "urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_href", "ops_authority", "selfRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
         ],
         "dependencies" : ["ops_authority"]
     },
@@ -899,13 +899,15 @@
              ["source_aggregate_urn", "varchar", true],
              ["source_aggregate_href", "varchar", true],
              ["destination_aggregate_urn", "varchar", true],
-             ["destination_aggregate_href", "varchar", true]
+             ["destination_aggregate_href", "varchar", true],
+             ["externalcheck_id", "varchar", true]
          ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
-            ["UNIQUE (%s)", ["selfRef"]]
+            ["UNIQUE (%s)", ["selfRef"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_externalcheck"]
     },
     {   "name":"opsconfig",
         "db_schema": [
@@ -920,36 +922,29 @@
         ],
         "dependencies" : []
     },
-    {   "name":"aggregate_resource",
-        "db_schema" : [
-             ["id", "varchar", true],
-             ["aggregate_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
-        ],
-        "dependencies" : []
-    },
-    {   "name":"aggregate_sliver",
-        "db_schema" : [
-             ["id", "varchar", true],
-             ["aggregate_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_sliver", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
-        ],
-        "dependencies" : ["ops_sliver", "ops_aggregate"]
-    },
+//    {   "name":"aggregate_resource",
+//        "db_schema" : [
+//             ["id", "varchar", true],
+//             ["aggregate_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+//        ],
+//        "dependencies" : ["ops_aggregate"]
+//    },
+//    {   "name":"aggregate_sliver",
+//        "db_schema" : [
+//             ["id", "varchar", true],
+//             ["aggregate_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "aggregate_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_sliver", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+//        ],
+//        "dependencies" : ["ops_sliver", "ops_aggregate"]
+//    },
     {   "name":"sliver_node",
         "db_schema" : [
              ["id", "varchar", true],
@@ -974,18 +969,18 @@
         ],
         "dependencies" : ["ops_sliver", "ops_link"]
     },
-    {   "name":"link_relations",
-        "db_schema" : [
-             ["parent_id", "varchar", true],
-             ["child_id", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["parent_id", "child_id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_id", "ops_link", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["child_id", "ops_link", "id"]]
-        ],
-        "dependencies" : ["ops_link"]
-    },
+//    {   "name":"link_relations",
+//        "db_schema" : [
+//             ["parent_id", "varchar", true],
+//             ["child_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["parent_id", "child_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_id", "ops_link", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["child_id", "ops_link", "id"]]
+//        ],
+//        "dependencies" : ["ops_link"]
+//    },
     {   "name":"link_interfacevlan",
         "db_schema" : [
              ["id", "varchar", true],
@@ -998,71 +993,59 @@
         ],
         "dependencies" : ["ops_interfacevlan", "ops_link"]
     },
-    {   "name":"node_interface",
-        "db_schema": [
-             ["id", "varchar", true],
-             ["node_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "node_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interface", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]]
-        ],
-        "dependencies" : ["ops_interface", "ops_node"]
-    },
+//    {   "name":"node_interface",
+//        "db_schema": [
+//             ["id", "varchar", true],
+//             ["node_id", "varchar", true],
+//             ["urn", "varchar", true],
+//             ["selfRef", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "node_id"]],
+//            ["UNIQUE (%s)", ["selfRef"]],
+//            ["UNIQUE (%s)", ["urn"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interface", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]]
+//        ],
+//        "dependencies" : ["ops_interface", "ops_node"]
+//    },
     {   "name":"slice_user",
         "db_schema": [
              ["id","varchar", true],
              ["slice_id","varchar", true],
-             ["urn","varchar", true],
-             ["role","varchar", true],
-             ["selfRef","varchar", true]
+             ["role","varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "slice_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_user", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["slice_id", "ops_slice", "id"]]
         ],
         "dependencies" : ["ops_user", "ops_slice"]
     },
-    {   "name":"authority_user",
-        "db_schema": [
-             ["id", "varchar", true],
-             ["authority_id", "varchar", true],
-             ["urn", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_user", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
-        ],
-        "dependencies" : ["ops_user", "ops_authority"]
-    },
-    {   "name":"authority_slice",
-        "db_schema": [
-             ["id","varchar", true],
-             ["authority_id","varchar", true],
-             ["urn","varchar", true],
-             ["selfRef","varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_slice", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
-        ],
-        "dependencies" : ["ops_slice", "ops_authority"]
-    },
+//    {   "name":"authority_user",
+//        "db_schema": [
+//             ["id", "varchar", true],
+//             ["authority_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_user", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
+//        ],
+//        "dependencies" : ["ops_user", "ops_authority"]
+//    },
+//    {   "name":"authority_slice",
+//        "db_schema": [
+//             ["id","varchar", true],
+//             ["authority_id","varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "authority_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_slice", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["authority_id", "ops_authority", "id"]]
+//        ],
+//        "dependencies" : ["ops_slice", "ops_authority"]
+//    },
     {   "name":"opsconfig_aggregate",
         "db_schema": [
              ["id", "varchar", true],
@@ -1099,7 +1082,7 @@
              ["object_type", "varchar", true],
              ["name", "varchar", true],
              ["id", "varchar", true],
-             ["ts", "varchar", true],
+             ["ts", "int8", true],
              ["v", "varchar", true],
              ["units", "varchar", true]
         ],
@@ -1108,29 +1091,25 @@
         ],
         "dependencies" : []
     },
-    {   "name":"externalcheck_experiment",
-        "db_schema": [
-             ["id", "varchar", true],
-             ["externalcheck_id", "varchar", true],
-             ["selfRef", "varchar", true]
-        ],
-        "constraints": [
-            ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_experiment", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
-        ],
-        "dependencies" : ["ops_experiment", "ops_externalcheck"]
-    },
+//    {   "name":"externalcheck_experiment",
+//        "db_schema": [
+//             ["id", "varchar", true],
+//             ["externalcheck_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_experiment", "id"]],
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+//        ],
+//        "dependencies" : ["ops_experiment", "ops_externalcheck"]
+//    },
     {   "name":"externalcheck_monitoredaggregate",
         "db_schema": [
              ["id", "varchar", true],
-             ["externalcheck_id", "varchar", true],
-             ["selfRef", "varchar", true]
+             ["externalcheck_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
-            ["UNIQUE (%s)", ["selfRef"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_aggregate", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
         ],
