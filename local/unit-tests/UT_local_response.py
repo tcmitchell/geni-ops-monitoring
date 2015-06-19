@@ -51,7 +51,7 @@ import stats_populator
 class TestLocalResponses(unittest.TestCase):
     NUM_INS = 10;
     PER_SEC = 0.2;
-    BASE_SCHEMA = "http://www.gpolab.bbn.com/monitoring/schema/20140828/"
+    BASE_SCHEMA = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
 
     CERT_PATH = "/vagrant/collector-gpo-withnpkey2.pem"
     IP_ADDR_FILE = "/tmp/ip.conf"
@@ -287,8 +287,9 @@ class TestLocalResponses(unittest.TestCase):
 
 
     def test_get_wrong_aggregate_info(self):
-        url = self.base_url + "/info/aggregate/" + info_populator.InfoPopulator.AGGREGATE_ID + "_WRONG"
-        self.check_error_response(url, "aggregate not found")
+        incorrect_agg_id = info_populator.InfoPopulator.AGGREGATE_ID + "_WRONG"
+        url = self.base_url + "/info/aggregate/" + incorrect_agg_id
+        self.check_error_response(url, ("aggregate not found: " + incorrect_agg_id))
 
     def _get_node_interface(self, node_idx):
         for node_if_idxes in info_populator.InfoPopulator.NODE_IF_RELATIONS:
@@ -340,8 +341,9 @@ class TestLocalResponses(unittest.TestCase):
                                                             "parent node")
 
     def test_get_wrong_node_info(self):
-        url = self.base_url + "/info/node/" + info_populator.InfoPopulator.NODE_IDS[0] + "_WRONG"
-        self.check_error_response(url, "node not found")
+        incorrect_node_id = info_populator.InfoPopulator.NODE_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/node/" + incorrect_node_id
+        self.check_error_response(url, "node not found: " + incorrect_node_id)
 
     def get_ifvlan_index(self, ifvlan_id):
         """
@@ -448,8 +450,9 @@ class TestLocalResponses(unittest.TestCase):
                                                                 "link")
 
     def test_get_wrong_link_info(self):
-        url = self.base_url + "/info/link/" + info_populator.InfoPopulator.LINK_IDS[0] + "_WRONG"
-        self.check_error_response(url, "link not found")
+        incorrect_link_id = info_populator.InfoPopulator.LINK_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/link/" + incorrect_link_id
+        self.check_error_response(url, "link not found: " + incorrect_link_id)
 
     def get_if_addresses_indexes(self, if_id):
         """
@@ -504,8 +507,9 @@ class TestLocalResponses(unittest.TestCase):
 
 
     def test_get_wrong_if_info(self):
-        url = self.base_url + "/info/interface/" + info_populator.InfoPopulator.IF_IDS[0] + "_WRONG"
-        self.check_error_response(url, "interface not found")
+        incorrect_if_id = info_populator.InfoPopulator.IF_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/interface/" + incorrect_if_id
+        self.check_error_response(url, "interface not found: " + incorrect_if_id)
 
     def test_get_ifvlans_info(self):
         for i in range(len(info_populator.InfoPopulator.IFVLAN_IDS)):
@@ -530,8 +534,9 @@ class TestLocalResponses(unittest.TestCase):
                                                         "interface")
 
     def test_get_wrong_ifvlan_info(self):
-        url = self.base_url + "/info/interfacevlan/" + info_populator.InfoPopulator.IFVLAN_IDS[0] + "_WRONG"
-        self.check_error_response(url, "interfacevlan not found")
+        incorrect_ifvlan_id = info_populator.InfoPopulator.IFVLAN_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/interfacevlan/" + incorrect_ifvlan_id
+        self.check_error_response(url, "interfacevlan not found: " + incorrect_ifvlan_id)
 
     def test_get_sliver_info(self):
         for i in range(len(info_populator.InfoPopulator.SLIVER_IDS)):
@@ -590,8 +595,9 @@ class TestLocalResponses(unittest.TestCase):
 
 
     def test_get_wrong_sliver_info(self):
-        url = self.base_url + "/info/sliver/" + info_populator.InfoPopulator.SLIVER_IDS[0] + "_WRONG"
-        self.check_error_response(url, "sliver not found")
+        incorrect_sliver_id = info_populator.InfoPopulator.SLIVER_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/sliver/" + incorrect_sliver_id
+        self.check_error_response(url, "sliver not found: " + incorrect_sliver_id)
 
 
     def translate_event_types(self, ev_types):
