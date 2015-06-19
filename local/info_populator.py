@@ -74,7 +74,7 @@ class _HackIfvlan():
 
 class InfoPopulator():
 
-    __SCHEMA_BASE = 'http://www.gpolab.bbn.com/monitoring/schema/20140828/'
+    __SCHEMA_BASE = 'http://www.gpolab.bbn.com/monitoring/schema/20150625/'
 
 
     AGGREGATE_ID = "gpo-ig"
@@ -264,6 +264,29 @@ class InfoPopulator():
             return None
 
     @staticmethod
+    def get_parent_link_id(link_id):
+        for i in range(len(InfoPopulator.LINK_PARENT_CHILD_RELATION)):
+            if link_id == InfoPopulator.LINK_PARENT_CHILD_RELATION[i][1]:  # child id
+                return InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0]  # parent id
+        return None
+
+    @staticmethod
+    def get_node_idx_for_if_idx(if_idx):
+
+        for tup in InfoPopulator.NODE_IF_RELATIONS:
+            node_idx = tup[0]
+            if if_idx == tup[1]:
+                return node_idx
+        return None
+    
+    @staticmethod
+    def get_node_id_for_if_idx(if_idx):
+        node_idx = InfoPopulator.get_node_idx_for_if_idx(if_idx)
+        if node_idx is not None:
+            return InfoPopulator.NODE_IDS[node_idx]
+        return None
+    
+    @staticmethod
     def __get_schema_url_for(objecttype):
         return InfoPopulator.__SCHEMA_BASE + objecttype + '#'
 
@@ -301,6 +324,7 @@ class InfoPopulator():
         node1.append(str(2 * 1000000))  # mem_total_kb
         node1.append("xen")  # virtualization_type
         node1.append(InfoPopulator.get_parent_node_id(0))  # Parent id
+        node1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
 
         if not info_insert(self.tbl_mgr, "ops_node", node1):
             ok = False
@@ -314,6 +338,7 @@ class InfoPopulator():
         node2.append(str(2 * 1000000))  # mem_total_kb
         node2.append("xen")  # virtualization_type
         node2.append(InfoPopulator.get_parent_node_id(1))  # Parent id
+        node2.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
 
         if not info_insert(self.tbl_mgr, "ops_node", node2):
             ok = False
@@ -326,6 +351,7 @@ class InfoPopulator():
         node3.append(str(2 * 1000000))  # mem_total_kb
         node3.append("xen")  # virtualization_type
         node3.append(InfoPopulator.get_parent_node_id(2))  # Parent id
+        node3.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
 
         if not info_insert(self.tbl_mgr, "ops_node", node3):
             ok = False
@@ -338,6 +364,7 @@ class InfoPopulator():
         node4.append(str(2 * 1000000))  # mem_total_kb
         node4.append("xen")  # virtualization_type
         node4.append(InfoPopulator.get_parent_node_id(3))  # Parent id
+        node4.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
 
         if not info_insert(self.tbl_mgr, "ops_node", node4):
             ok = False
@@ -350,6 +377,7 @@ class InfoPopulator():
         node5.append(str(2 * 1000000))  # mem_total_kb
         node5.append("xen")  # virtualization_type
         node5.append(InfoPopulator.get_parent_node_id(4))  # Parent id
+        node5.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
 
         if not info_insert(self.tbl_mgr, "ops_node", node5):
             ok = False
@@ -362,6 +390,7 @@ class InfoPopulator():
         switch1.append(str(2 * 1000000))  # mem_total_kb
         switch1.append(None)  # virtualization_type
         switch1.append(InfoPopulator.get_parent_node_id(5))  # Parent id
+        switch1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
         if not info_insert(self.tbl_mgr, "ops_node", switch1):
             ok = False
 
@@ -371,8 +400,7 @@ class InfoPopulator():
         sliver1.append(InfoPopulator.SLIVER_URNS[0])
         sliver1.append(InfoPopulator.SLIVER_UUIDS[0])  # uuid
         sliver1.append(str(int(time.time() * 1000000)))  # current ts
-        sliver1.append(agg1[3])  # agg_urn
-        sliver1.append(agg1[2])  # agg_href
+        sliver1.append(InfoPopulator.AGGREGATE_ID)  # agg_id
         sliver1.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice_urn
         sliver1.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice uuid
         sliver1.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[0]])  # creator
@@ -391,8 +419,7 @@ class InfoPopulator():
         sliver2.append(InfoPopulator.SLIVER_URNS[1])
         sliver2.append(InfoPopulator.SLIVER_UUIDS[1])  # uuid
         sliver2.append(str(int(time.time() * 1000000)))  # current ts
-        sliver2.append(agg1[3])  # agg_urn
-        sliver2.append(agg1[2])  # agg_href
+        sliver2.append(InfoPopulator.AGGREGATE_ID)  # agg_id
         sliver2.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice_urn
         sliver2.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice uuid
         sliver2.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[1]])  # creator
@@ -411,8 +438,7 @@ class InfoPopulator():
         sliver3.append(InfoPopulator.SLIVER_URNS[2])
         sliver3.append(InfoPopulator.SLIVER_UUIDS[2])  # uuid
         sliver3.append(str(int(time.time() * 1000000)))  # current ts
-        sliver3.append(agg1[3])  # agg_urn
-        sliver3.append(agg1[2])  # agg_href
+        sliver3.append(InfoPopulator.AGGREGATE_ID)  # agg_id
         sliver3.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice_urn
         sliver3.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice uuid
         sliver3.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[2]])  # creator
@@ -431,7 +457,8 @@ class InfoPopulator():
         link1.append(InfoPopulator.LINK_URNS[0])
         link1.append("layer2")
         link1.append(str(int(time.time() * 1000000)))
-
+        link1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        link1.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[0]))  # Parent ID
         if not info_insert(self.tbl_mgr, "ops_link", link1):
             ok = False
 
@@ -440,6 +467,8 @@ class InfoPopulator():
         sublink1.append(InfoPopulator.LINK_URNS[1])
         sublink1.append("layer2")
         sublink1.append(str(int(time.time() * 1000000)))
+        sublink1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        sublink1.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[1]))  # Parent ID
 
         if not info_insert(self.tbl_mgr, "ops_link", sublink1):
             ok = False
@@ -449,6 +478,8 @@ class InfoPopulator():
         sublink2.append(InfoPopulator.LINK_URNS[2])
         sublink2.append("layer2")
         sublink2.append(str(int(time.time() * 1000000)))
+        sublink2.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        sublink2.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[2]))  # Parent ID
 
         if not info_insert(self.tbl_mgr, "ops_link", sublink2):
             ok = False
@@ -458,6 +489,8 @@ class InfoPopulator():
         egress_link.append(InfoPopulator.LINK_URNS[3])
         egress_link.append("layer2")
         egress_link.append(str(int(time.time() * 1000000)))
+        egress_link.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        egress_link.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[3]))  # Parent ID
 
         if not info_insert(self.tbl_mgr, "ops_link", egress_link):
             ok = False
@@ -467,8 +500,7 @@ class InfoPopulator():
         sliver4.append(InfoPopulator.SLIVER_URNS[3])
         sliver4.append(InfoPopulator.SLIVER_UUIDS[3])  # uuid
         sliver4.append(str(int(time.time() * 1000000)))  # current ts
-        sliver4.append(agg1[3])  # agg_urn
-        sliver4.append(agg1[2])  # agg_href
+        sliver4.append(InfoPopulator.AGGREGATE_ID)  # agg_id
         sliver4.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice_urn
         sliver4.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice uuid
         sliver4.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[3]])  # creator
@@ -489,6 +521,7 @@ class InfoPopulator():
         interface1.append(str(10000000))  # max bps
         interface1.append(str(1000000))  # max pps
         interface1.append(InfoPopulator.get_parent_if_id(0))  # Parent id
+        interface1.append(InfoPopulator.get_node_id_for_if_idx(0))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
             ok = False
@@ -501,6 +534,7 @@ class InfoPopulator():
         interface2.append(str(10000000))  # max bps
         interface2.append(str(1000000))  # max pps
         interface2.append(InfoPopulator.get_parent_if_id(1))  # Parent id
+        interface2.append(InfoPopulator.get_node_id_for_if_idx(1))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface2):
             ok = False
@@ -513,6 +547,7 @@ class InfoPopulator():
         interface3.append(str(10000000))  # max bps
         interface3.append(str(1000000))  # max pps
         interface3.append(InfoPopulator.get_parent_if_id(2))  # Parent id
+        interface3.append(InfoPopulator.get_node_id_for_if_idx(2))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface3):
             ok = False
@@ -525,6 +560,7 @@ class InfoPopulator():
         interface4.append(str(10000000))  # max bps
         interface4.append(str(1000000))  # max pps
         interface4.append(InfoPopulator.get_parent_if_id(3))  # Parent id
+        interface4.append(InfoPopulator.get_node_id_for_if_idx(3))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface4):
             ok = False
@@ -537,6 +573,7 @@ class InfoPopulator():
         interface5.append(str(10000000))  # max bps
         interface5.append(str(1000000))  # max pps
         interface5.append(InfoPopulator.get_parent_if_id(4))  # Parent id
+        interface5.append(InfoPopulator.get_node_id_for_if_idx(4))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface5):
             ok = False
@@ -549,6 +586,7 @@ class InfoPopulator():
         interface6.append(str(10000000))  # max bps
         interface6.append(str(1000000))  # max pps
         interface6.append(InfoPopulator.get_parent_if_id(5))  # Parent id
+        interface6.append(InfoPopulator.get_node_id_for_if_idx(5))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface6):
             ok = False
@@ -561,6 +599,7 @@ class InfoPopulator():
         remoteinterface1.append(str(10000000))  # max bps
         remoteinterface1.append(str(1000000))  # max pps
         remoteinterface1.append(InfoPopulator.get_parent_if_id(6))  # Parent id
+        remoteinterface1.append(InfoPopulator.get_node_id_for_if_idx(6))  # Node id
 
         if not info_insert(self.tbl_mgr, "ops_interface", remoteinterface1):
             ok = False
@@ -586,10 +625,7 @@ class InfoPopulator():
         interfacevlan1.append(str(int(time.time() * 1000000)))
         interfacevlan1.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(0)
-        interfacevlan1.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
-        interfacevlan1.append(self.__get_selfRef_url_for('interface',
-                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
-
+        interfacevlan1.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan1):
             ok = False
 
@@ -600,9 +636,7 @@ class InfoPopulator():
         interfacevlan2.append(str(int(time.time() * 1000000)))
         interfacevlan2.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(1)
-        interfacevlan2.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
-        interfacevlan2.append(self.__get_selfRef_url_for('interface',
-                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
+        interfacevlan2.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan2):
             ok = False
 
@@ -612,9 +646,7 @@ class InfoPopulator():
         interfacevlan3.append(str(int(time.time() * 1000000)))
         interfacevlan3.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(2)
-        interfacevlan3.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
-        interfacevlan3.append(self.__get_selfRef_url_for('interface',
-                                                         InfoPopulator.IF_IDS[if_idx]))  # interface href
+        interfacevlan3.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan3):
             ok = False
 
@@ -625,9 +657,7 @@ class InfoPopulator():
         remoteinterfacevlan1.append(str(int(time.time() * 1000000)))
         remoteinterfacevlan1.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(3)
-        remoteinterfacevlan1.append(InfoPopulator.IF_URNS[if_idx])  # interface urn
-        remoteinterfacevlan1.append(self.__get_selfRef_url_for('interface',
-                                                               InfoPopulator.IF_IDS[if_idx]))  # interface href
+        remoteinterfacevlan1.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", remoteinterfacevlan1):
             ok = False
 
@@ -645,8 +675,7 @@ class InfoPopulator():
         slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
         slice1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")
         slice1.append(str(int(time.time() * 1000000)))
-        slice1.append(authority1[3])  # authority urn
-        slice1.append(authority1[2])  # authority href
+        slice1.append(authority1[1])  # authority id
         slice1.append("1391626683000000")
         slice1.append("1391708989000000")
 
@@ -658,8 +687,7 @@ class InfoPopulator():
         self.__fill_in_list_with_schema_id_and_url(user1, "user", "tupty")
         user1.append("tupty_user_urn")
         user1.append(str(int(time.time() * 1000000)))
-        user1.append(authority1[3])  # authority urn
-        user1.append(authority1[2])  # authority href
+        user1.append(authority1[1])  # authority id
         user1.append("Tim Exampleuser")
         user1.append("tupty@example.com")
 
@@ -667,156 +695,128 @@ class InfoPopulator():
             ok = False
 
 
-        aggres1 = []
-        aggres1.append(node1[1])
-        aggres1.append(agg1[1])
-        aggres1.append(node1[3])
-        aggres1.append(node1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres1):
-            ok = False
-
-        aggres2 = []
-        aggres2.append(node2[1])
-        aggres2.append(agg1[1])
-        aggres2.append(node2[3])
-        aggres2.append(node2[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres2):
-            ok = False
-
-
-        aggres3 = []
-        aggres3.append(node3[1])
-        aggres3.append(agg1[1])
-        aggres3.append(node3[3])
-        aggres3.append(node3[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres3):
-            ok = False
-
-
-        aggres4 = []
-        aggres4.append(node4[1])
-        aggres4.append(agg1[1])
-        aggres4.append(node4[3])
-        aggres4.append(node4[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres4):
-            ok = False
-
-
-        aggres5 = []
-        aggres5.append(node5[1])
-        aggres5.append(agg1[1])
-        aggres5.append(node5[3])
-        aggres5.append(node5[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres5):
-            ok = False
-
-
-        aggres6 = []
-        aggres6.append(link1[1])
-        aggres6.append(agg1[1])
-        aggres6.append(link1[3])
-        aggres6.append(link1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres6):
-            ok = False
-
-
-        aggres7 = []
-        aggres7.append(sublink1[1])
-        aggres7.append(agg1[1])
-        aggres7.append(sublink1[3])
-        aggres7.append(sublink1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres7):
-            ok = False
-
-
-        aggres8 = []
-        aggres8.append(sublink2[1])
-        aggres8.append(agg1[1])
-        aggres8.append(sublink2[3])
-        aggres8.append(sublink2[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres8):
-            ok = False
-
-
-        aggres9 = []
-        aggres9.append(egress_link[1])
-        aggres9.append(agg1[1])
-        aggres9.append(egress_link[3])
-        aggres9.append(egress_link[2])
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres9):
-            ok = False
+#         aggres1 = []
+#         aggres1.append(node1[1])
+#         aggres1.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres1):
+#             ok = False
+#
+#         aggres2 = []
+#         aggres2.append(node2[1])
+#         aggres2.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres2):
+#             ok = False
+#
+#
+#         aggres3 = []
+#         aggres3.append(node3[1])
+#         aggres3.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres3):
+#             ok = False
+#
+#
+#         aggres4 = []
+#         aggres4.append(node4[1])
+#         aggres4.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres4):
+#             ok = False
+#
+#
+#         aggres5 = []
+#         aggres5.append(node5[1])
+#         aggres5.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres5):
+#             ok = False
+#
+#
+#         aggres6 = []
+#         aggres6.append(link1[1])
+#         aggres6.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres6):
+#             ok = False
+#
+#
+#         aggres7 = []
+#         aggres7.append(sublink1[1])
+#         aggres7.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres7):
+#             ok = False
+#
+#
+#         aggres8 = []
+#         aggres8.append(sublink2[1])
+#         aggres8.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres8):
+#             ok = False
+#
+#
+#         aggres9 = []
+#         aggres9.append(egress_link[1])
+#         aggres9.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres9):
+#             ok = False
+#
+#
+#         aggres10 = []
+#         aggres10.append(switch1[1])
+#         aggres10.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres10):
+#             ok = False
 
 
-        aggres10 = []
-        aggres10.append(switch1[1])
-        aggres10.append(agg1[1])
-        aggres10.append(switch1[3])
-        aggres10.append(switch1[2])
+#         aggsliv1 = []
+#         aggsliv1.append(sliver1[1])  # id
+#         aggsliv1.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv1):
+#             ok = False
+#
+#
+#         aggsliv2 = []
+#         aggsliv2.append(sliver2[1])  # id
+#         aggsliv2.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv2):
+#             ok = False
+#
+#
+#         aggsliv3 = []
+#         aggsliv3.append(sliver3[1])  # id
+#         aggsliv3.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
+#             ok = False
+#
+#
+#         aggsliv4 = []
+#         aggsliv4.append(sliver4[1])  # id
+#         aggsliv4.append(agg1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv4):
+#             ok = False
 
-        if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres10):
-            ok = False
-
-
-        aggsliv1 = []
-        aggsliv1.append(sliver1[1])  # id
-        aggsliv1.append(agg1[1])
-        aggsliv1.append(sliver1[3])  # urn
-        aggsliv1.append(sliver1[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv1):
-            ok = False
-
-
-        aggsliv2 = []
-        aggsliv2.append(sliver2[1])  # id
-        aggsliv2.append(agg1[1])
-        aggsliv2.append(sliver2[3])  # urn
-        aggsliv2.append(sliver2[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv2):
-            ok = False
-
-
-        aggsliv3 = []
-        aggsliv3.append(sliver3[1])  # id
-        aggsliv3.append(agg1[1])
-        aggsliv3.append(sliver3[3])  # urn
-        aggsliv3.append(sliver3[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
-            ok = False
-
-
-        aggsliv4 = []
-        aggsliv4.append(sliver4[1])  # id
-        aggsliv4.append(agg1[1])
-        aggsliv4.append(sliver4[3])  # urn
-        aggsliv4.append(sliver4[2])  # href
-
-        if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv4):
-            ok = False
-
-        for node_if_idxes in InfoPopulator.NODE_IF_RELATIONS:
-            node_idx = node_if_idxes[0]
-            if_idx = node_if_idxes[1]
-            nodeiface = []
-            nodeiface.append(InfoPopulator.IF_IDS[if_idx])
-            nodeiface.append(InfoPopulator.NODE_IDS[node_idx])
-            nodeiface.append(InfoPopulator.IF_URNS[if_idx])
-            if_url = self.__get_selfRef_url_for("interface", InfoPopulator.IF_IDS[if_idx])
-            nodeiface.append(if_url)
-
-            if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface):
-                ok = False
+#         for node_if_idxes in InfoPopulator.NODE_IF_RELATIONS:
+#             node_idx = node_if_idxes[0]
+#             if_idx = node_if_idxes[1]
+#             nodeiface = []
+#             nodeiface.append(InfoPopulator.IF_IDS[if_idx])
+#             nodeiface.append(InfoPopulator.NODE_IDS[node_idx])
+#             nodeiface.append(InfoPopulator.IF_URNS[if_idx])
+#             if_url = self.__get_selfRef_url_for("interface", InfoPopulator.IF_IDS[if_idx])
+#             nodeiface.append(if_url)
+#
+#             if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface):
+#                 ok = False
 
 
         for i in range(len(InfoPopulator.LINK_VLAN_RELATIONS)):
@@ -828,43 +828,29 @@ class InfoPopulator():
                 ok = False
 
 
-        for i in range(len(InfoPopulator.LINK_PARENT_CHILD_RELATION)):
-            link_rel = []
-            link_rel.append(InfoPopulator.LINK_PARENT_CHILD_RELATION[i][0])  # parent id
-            link_rel.append(InfoPopulator.LINK_PARENT_CHILD_RELATION[i][1])  # child id
-            if not info_insert(self.tbl_mgr, "ops_link_relations", link_rel):
-                ok = False
-
-
         sliceuser1 = []
         sliceuser1.append(user1[1])
         sliceuser1.append(slice1[1])
-        sliceuser1.append(user1[3])
         sliceuser1.append("lead")
-        sliceuser1.append(user1[2])
 
         if not info_insert(self.tbl_mgr, "ops_slice_user", sliceuser1):
             ok = False
 
 
-        authuser1 = []
-        authuser1.append(user1[1])
-        authuser1.append(authority1[1])
-        authuser1.append(user1[3])
-        authuser1.append(user1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_authority_user", authuser1):
-            ok = False
+#         authuser1 = []
+#         authuser1.append(user1[1])
+#         authuser1.append(authority1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_authority_user", authuser1):
+#             ok = False
 
 
-        authslice1 = []
-        authslice1.append(slice1[1])
-        authslice1.append(authority1[1])
-        authslice1.append(slice1[3])
-        authslice1.append(slice1[2])
-
-        if not info_insert(self.tbl_mgr, "ops_authority_slice", authslice1):
-            ok = False
+#         authslice1 = []
+#         authslice1.append(slice1[1])
+#         authslice1.append(authority1[1])
+#
+#         if not info_insert(self.tbl_mgr, "ops_authority_slice", authslice1):
+#             ok = False
 
         return ok
 
@@ -912,20 +898,19 @@ class InfoPopulator():
         exp1.append("source aggregate local datastore href")
         exp1.append("urn:destination_aggregate_urn")
         exp1.append("destination aggregate local datastore href")
+        exp1.append(extck_id)
         if not info_insert(self.tbl_mgr, "ops_experiment", exp1):
             ok = False
 
-        extck_exp1 = []
-        extck_exp1.append(exp1_id)
-        extck_exp1.append(extck_id)
-        extck_exp1.append(self.__get_selfRef_url_for("experiment", exp1_id))
-        if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
-            ok = False
+#         extck_exp1 = []
+#         extck_exp1.append(exp1_id)
+#         extck_exp1.append(extck_id)
+#         if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
+#             ok = False
 
         mon_agg = []
         mon_agg.append(InfoPopulator.AGGREGATE_ID)
         mon_agg.append(extck_id)
-        mon_agg.append(self.__get_selfRef_url_for("aggregate", InfoPopulator.AGGREGATE_ID))
         if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
             ok = False
 
