@@ -244,12 +244,13 @@ class TestLocalResponses(unittest.TestCase):
         return json_dict
 
     def check_error_response(self, url, expected_error):
-        (resp, status, fail_msg) = self.request_url(url, TestLocalResponses.CERT_PATH)
-        print status
-        if fail_msg is not None:
-            self.fail(fail_msg)
-        else:
-            self.assertEqual(expected_error, resp.content, "Unexpected error response when requesting non-existing aggregate info")
+        import urlparse
+        error_dict = self.get_json_dictionary(url)
+        self.check_json_dictionary_for_field(error_dict, "$schema", TestLocalResponses.BASE_SCHEMA + "error#", "JSON Error response")
+        self.check_json_dictionary_for_field(error_dict, "error_message", expected_error, "JSON Error response")
+        parseRes = urlparse.urlparse(url)
+        self.check_json_dictionary_for_field(error_dict, "origin_url", parseRes.path, "JSON Error response")
+        
 
     def test_get_aggregate_info(self):
         url = self.base_url + "/info/aggregate/" + info_populator.InfoPopulator.AGGREGATE_ID
