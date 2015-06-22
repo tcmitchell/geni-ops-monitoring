@@ -24,6 +24,10 @@
 
 import json
 import logger
+
+
+__SCHEMA_BASE = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
+
 # ## Main query handler functions
 
 # Main handle for data queries
@@ -91,7 +95,7 @@ def handle_ts_data_query(tm, filters):
                     obj_href = obj_href_res[0]
 
                 if (ts_arr != None):
-                    resp_i["$schema"] = "http://www.gpolab.bbn.com/monitoring/schema/20150625/data#"
+                    resp_i["$schema"] = __SCHEMA_BASE + "data#"
                     resp_i["id"] = event_type + ":" + obj_id
                     resp_i["subject"] = obj_href
                     resp_i["eventType"] = "ops_monitoring:" + event_type
@@ -107,6 +111,7 @@ def handle_ts_data_query(tm, filters):
 
 # Main handle for node queries
 def handle_node_info_query(tm, node_id):
+    url = "/info/node/" + node_id
     opslog = logger.get_logger()
     table_str = "ops_node"
     node_schema = tm.schema_dict[table_str]
@@ -128,11 +133,12 @@ def handle_node_info_query(tm, node_id):
     else:
         errStr = "node not found: " + node_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle interface queries
 def handle_interface_info_query(tm, iface_id):
+    url = "/info/interface/" + iface_id
     opslog = logger.get_logger()
     table_str = "ops_interface"
     iface_schema = tm.schema_dict[table_str]
@@ -155,11 +161,12 @@ def handle_interface_info_query(tm, iface_id):
     else:
         errStr = "interface not found: " + iface_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle interface queries
 def handle_interfacevlan_info_query(tm, ifacevlan_id):
+    url = "/info/interfacevlan/" + ifacevlan_id
     opslog = tm.logger
     table_str = "ops_interfacevlan"
     iface_schema = tm.schema_dict[table_str]
@@ -179,11 +186,12 @@ def handle_interfacevlan_info_query(tm, ifacevlan_id):
     else:
         errStr = "interfacevlan not found: " + ifacevlan_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle for sliver queries
 def handle_sliver_info_query(tm, sliver_id):
+    url = "/info/sliver/" + sliver_id
     opslog = logger.get_logger()
     table_str = "ops_sliver"
     sliver_schema = tm.schema_dict[table_str]
@@ -220,11 +228,12 @@ def handle_sliver_info_query(tm, sliver_id):
     else:
         errStr = "sliver not found: " + sliver_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle aggregate for info queries
 def handle_aggregate_info_query(tm, agg_id, monitoring_version):
+    url = "/info/aggregate/" + agg_id
     opslog = logger.get_logger()
     table_str = "ops_aggregate"
     agg_schema = tm.schema_dict[table_str]
@@ -253,10 +262,11 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
     else:
         errStr = "aggregate not found: " + agg_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 def handle_externalcheck_info_query(tm, extck_id):
+    url = "/info/externalcheck/" + extck_id
     opslog = logger.get_logger()
     table_str = "ops_externalcheck"
     extck_schema = tm.schema_dict[table_str]
@@ -278,11 +288,12 @@ def handle_externalcheck_info_query(tm, extck_id):
     else:
         errStr = "external check store not found: " + extck_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle aggregate for info queries
 def handle_authority_info_query(tm, auth_id):
+    url = "/info/authority/" + auth_id
     opslog = logger.get_logger()
     table_str = "ops_authority"
     auth_schema = tm.schema_dict[table_str]
@@ -306,11 +317,12 @@ def handle_authority_info_query(tm, auth_id):
     else:
         errStr = "authority not found: " + auth_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle slice info queries
 def handle_slice_info_query(tm, slice_id):
+    url = "/info/slice/" + slice_id
     opslog = logger.get_logger()
     table_str = "ops_slice"
     slice_schema = tm.schema_dict[table_str]
@@ -330,11 +342,12 @@ def handle_slice_info_query(tm, slice_id):
     else:
         errStr = "slice not found: " + slice_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle user info queries
 def handle_user_info_query(tm, user_id):
+    url = "/info/user/" + user_id
     opslog = logger.get_logger()
     table_str = "ops_user"
     user_schema = tm.schema_dict[table_str]
@@ -345,11 +358,12 @@ def handle_user_info_query(tm, user_id):
     else:
         errStr = "user not found: " + user_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle for link info queries
 def handle_link_info_query(tm, link_id):
+    url = "/info/link/" + link_id
     opslog = logger.get_logger()
     table_str = "ops_link"
     link_schema = tm.schema_dict[table_str]
@@ -378,11 +392,12 @@ def handle_link_info_query(tm, link_id):
     else:
         errStr = "link not found: " + link_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # Main handle for experiment queries
 def handle_experiment_info_query(tm, exp_id):
+    url = "/info/experiment/" + exp_id
     opslog = logger.get_logger()
     table_str = "ops_experiment"
     exp_schema = tm.schema_dict[table_str]
@@ -394,19 +409,20 @@ def handle_experiment_info_query(tm, exp_id):
     else:
         errStr = "experiment not found: " + exp_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id):
+    url = "/info/opsconfig/" + opsconfig_id
     opslog = logger.get_logger()
     if opsconfig_id == "geni-prod":
         return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
     else:
         errStr = "opsconfig not found: " + opsconfig_id
         opslog.debug(errStr)
-        return errStr
+        return json.dumps(create_json_error_response(errStr, url))
 
 
 # ## Argument checker for tsdata queries
@@ -993,6 +1009,14 @@ def get_object_ids(tm, table_str):
         obj_ids = [x[0] for x in q_res]
 
     return obj_ids
+
+def create_json_error_response(message, url):
+    error_dict = dict()
+    error_dict["$schema"] = __SCHEMA_BASE + "error#"
+    error_dict["error_message"] = message
+    error_dict["origin_url"] = url
+    return error_dict
+
 
 def main():
     print "no unit test"
