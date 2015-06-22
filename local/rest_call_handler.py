@@ -33,6 +33,7 @@ __SCHEMA_BASE = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
 # Main handle for data queries
 def handle_ts_data_query(tm, filters):
 
+    url = "/data/?q=" + filters
     opslog = logger.get_logger()
     schema_dict = tm.schema_dict
     opslog.debug("handling time series query for filter ='" + str(filters) + "'")
@@ -40,6 +41,10 @@ def handle_ts_data_query(tm, filters):
         q_dict = json.loads(filters)  # try to make a dictionary
     except Exception, e:
         opslog.warning(filters + "failed to parse as JSON\n" + str(e))
+        fail_str = "query: " + filters + "\n\nhad error: " + str(e) + \
+            "\n\n failed to parse as JSON"
+        return json.dumps(create_json_error_response(fail_str, url))
+
         return "query: " + filters + "<br><br>had error: " + str(e) + \
             "<br><br> failed to parse as JSON"
 
@@ -54,7 +59,8 @@ def handle_ts_data_query(tm, filters):
         objid_set = set(objects["id"])
         obj_type = objects["type"]
     else:
-        return fail_str  # returns why filters failed
+        # returns why filters failed
+        return json.dumps(create_json_error_response(fail_str, url))
 
     ts_where_str = build_ts_where_str(ts_filters)
 
