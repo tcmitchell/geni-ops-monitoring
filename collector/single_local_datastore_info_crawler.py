@@ -880,7 +880,21 @@ def handle_request(url, cert_path, logger):
         if (resp.status_code == requests.codes.ok):
             try:
                 json_dict = json.loads(resp.content)
-                return json_dict
+                if json_dict.has_key('$schema'):
+                    if json_dict['$schema'].endswith('/error#'):
+                        logger.warning('JSON error returned from ' + url)
+                        if json_dict.has_key('error_message'):
+                            logger.warning('Error = ' + json_dict['error_message'])
+                        else:
+                            logger.warning('Invalid error response?')
+                            logger.debug(json_dict)
+                        return None
+                    else:
+                        return json_dict
+                else:
+                    logger.warning('unrecognized JSON response: (missin $schema)')
+                    logger.debug(json_dict)
+                    return None
             except ValueError, e:
                 logger.warning("Could not load into JSON with response from " + url)
                 logger.warning("response = \n" + resp.content)
