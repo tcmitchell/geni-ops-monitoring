@@ -558,7 +558,7 @@ class TableManager:
                 self.logger.critical("exiting")
                 sys.exit(-1)
 
-        return tuple(table_list)
+        return table_list
 
     def __contain_ts_column__(self, table_schema_def):
         for col_def in table_schema_def:
