@@ -1349,7 +1349,28 @@
         // "dependencies" is the list of table names (with ops_ prefix) that the obsolete table was dependent upon.
         "info" : [
             {   "name":"sliver_resource",
-                "dependencies" : ""
+                "dependencies" : []
+            },
+            {   "name":"aggregate_resource",
+                "dependencies" : []
+            },
+            {   "name":"aggregate_sliver",
+                "dependencies" : ["ops_sliver", "ops_aggregate"]
+            },
+            {   "name":"link_relations",
+                "dependencies" : ["ops_link"]
+            },
+            {   "name":"node_interface",
+                "dependencies" : ["ops_interface", "ops_node"]
+            },
+            {   "name":"authority_user",
+                "dependencies" : ["ops_user", "ops_authority"]
+            },
+            {   "name":"authority_slice",
+                "dependencies" :  ["ops_slice", "ops_authority"]
+            },
+            {   "name":"externalcheck_experiment",
+                "dependencies" :   ["ops_experiment", "ops_externalcheck"]
             }
         ],
         // events section is contain object type sections (node, aggregate, etc.) each expected to contain objects with "name" keys.
