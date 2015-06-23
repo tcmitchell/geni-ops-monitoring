@@ -1345,5 +1345,31 @@
                 "units":"boolean"
             }
         ]
+    },
+    // The obsolete section contains the name of DB tables that were used in previous versions, along with their 
+    // dependencies for info tables.
+    // This allows script to properly delete old tables.
+    "obsolete" : {
+        // info section is expected to contain objects with "name" and "dependencies" keys.
+        // "name" is the DB table name (minus the ops_ prefix)
+        // "dependencies" is the list of table names (with ops_ prefix) that the obsolete table was dependent upon.
+        "info" : [
+            {   "name":"sliver_resource",
+                "dependencies" : ""
+            }
+        ],
+        // events section is contain object type sections (node, aggregate, etc.) each expected to contain objects with "name" keys.
+        "events" : {
+            "node": [
+            ],
+            "aggregate": [
+            ],
+            "interface": [
+            ],
+            "interfacevlan": [
+            ],
+            "experiment": [
+            ]
+        }
     }
 }
