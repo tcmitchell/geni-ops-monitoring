@@ -274,9 +274,21 @@ class TableManager:
         # hold the DB constraints in the constraints dictionary
         self.contraints_dict = self.__create_constraints_dict__(self.data_schema, info_constraints)
 
-        self._all_dependencies_dict = self.__create_dependencies_dict__(self.data_schema, info_dependencies)
+        self.__current_dependencies_dict = self.__create_dependencies_dict__(self.data_schema.keys(), info_dependencies)
 
-        self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
+        self.tables = self.__create_ordered_table_list__(self.__current_dependencies_dict)
+
+        obsolete_info_table_dependencies = ocl.get_obsolete_info_dependencies()
+        obsolete_data_table_names = ocl.get_obsolete_data_table_names()
+
+        all_info_deps = self.__current_dependencies_dict.copy()
+        all_info_deps.update(obsolete_info_table_dependencies)
+
+        all_data = self.data_schema.keys() + obsolete_data_table_names
+        self.__all_dependencies_dict = self.__create_dependencies_dict__(all_data, all_info_deps)
+
+        self.__all_tables = self.__create_ordered_table_list__(self.__all_dependencies_dict)
+        self.__all_tables.reverse()
 
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
 
@@ -392,42 +404,41 @@ class TableManager:
 
         return constraints_dict
 
-    def __create_dependencies_dict__(self, data_schema, info_dependencies):
+    def __create_dependencies_dict__(self, data_names, info_dependencies):
         """
-        Creates a unified dictionary of the DB table dependencies, containing 
-        both the tables supporting the "information" and the tables supporting 
+        Creates a unified dictionary of the DB table dependencies, containing
+        both the tables supporting the "information" and the tables supporting
         the "data" (i.e. measurements)
-        :param data_schema: the schema dictionary for the data tables
+        :param data_names: the list of the data table name
         :param info_schema: the dependencies dictionary for the information tables
         :return: a unified dictionary of the DB dependencies for all the tables.
-        :note: The returned dictionary has the tables names as keys, and a list
-        for value. That list contains the names of the tables the table 
-        (identified via the key) is dependent upon.
+        :note: The returned dictionary has the tables names as keys, and a set
+        for value. That set contains the names of the tables that
+        the table (identified via the key) is dependent upon.
         """
         dependencies_dict = {}
 
-        for ds_k in data_schema.keys():
+        for ds_k in data_names:
+            dependencies_dict[ds_k] = set()
             if self.database_type == "collector":
                 # The ops_experiment_XXX tables are coming from external check stores.
                 # and so is ops_aggregate_is_available
                 # The rest of the data are coming from aggregate stores.
                 if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
-                    dependencies_dict[ds_k] = ["ops_externalcheck"]
+                    dependencies_dict[ds_k].add("ops_externalcheck")
                 else:
-                    dependencies_dict[ds_k] = ["ops_aggregate"]
-            else:
-                dependencies_dict[ds_k] = []
+                    dependencies_dict[ds_k].add("ops_aggregate")
 
             if ds_k.startswith("ops_node"):
-                dependencies_dict[ds_k].append("ops_node")
+                dependencies_dict[ds_k].add("ops_node")
             elif ds_k.startswith("ops_interfacevlan"):
-                dependencies_dict[ds_k].append("ops_interfacevlan")
+                dependencies_dict[ds_k].add("ops_interfacevlan")
             elif ds_k.startswith("ops_interface"):
-                dependencies_dict[ds_k].append("ops_interface")
+                dependencies_dict[ds_k].add("ops_interface")
             elif ds_k.startswith("ops_aggregate"):
-                dependencies_dict[ds_k].append("ops_aggregate")
+                dependencies_dict[ds_k].add("ops_aggregate")
             elif ds_k.startswith("ops_experiment"):
-                dependencies_dict[ds_k].append("ops_experiment")
+                dependencies_dict[ds_k].add("ops_experiment")
 
         for id_k in info_dependencies.keys():
             dependencies_dict[id_k] = info_dependencies[id_k]
@@ -443,7 +454,7 @@ class TableManager:
         @param table_constraints: the constraints of the table in its usual form, i.e. a list of tuples, each containing 
         the constraint string in the form of a string format and a list of columns or tables names to 
         be inserted in the constraint string with the python operator %.
-        @param table_dependencies: the dependencies of the table in its usual form, i.e. a list of table names 
+        @param table_dependencies: the dependencies of the table in its usual form, i.e. a list or set of table names 
         that the table being added depends upon.
         @return: True if the addition was successful, False if the information for such a table name was already 
         existing
@@ -461,13 +472,17 @@ class TableManager:
         self.contraints_dict[table_name] = table_constraints
         if table_dependencies is None:
             self.tables.append(table_name)
+            self.__all_tables.append(table_name)
         else:
-            if self._all_dependencies_dict.has_key(table_name):
+            if self.__current_dependencies_dict.has_key(table_name):
                 self.logger.warning("dependencies for table '%s' already exists" % table_name)
                 return False
-            self._all_dependencies_dict[table_name] = table_dependencies
+            self.__current_dependencies_dict[table_name] = set(table_dependencies)
+            self.__all_dependencies_dict[table_name] = set(table_dependencies)
             # need to reorder the tables
-            self.tables = self.__create_ordered_table_list__(self._all_dependencies_dict)
+            self.tables = self.__create_ordered_table_list__(self.__current_dependencies_dict)
+            self.__all_tables = self.__create_ordered_table_list__(self.__all_dependencies_dict)
+            self.__all_tables.reverse()
 
         return True
 
@@ -769,12 +784,10 @@ class TableManager:
 
     def drop_all_tables(self):
         """
-        Drops all the DB tables
+        Drops all the DB tables (including obsolete ones)
         :return: True if the tables were dropped, false if there was any kind of issue.
         """
-        reverse_table_order = self.tables[:]
-        reverse_table_order.reverse()
-        return self.__drop_tables__(reverse_table_order)
+        return self.__drop_tables__(self.__all_tables)
 
     def drop_data_tables(self):
         """
