@@ -277,17 +277,12 @@ def handle_externalcheck_info_query(tm, extck_id):
     table_str = "ops_externalcheck"
     extck_schema = tm.schema_dict[table_str]
 
-    exp_refs = []
-
     extck_info = get_object_info(tm, table_str, extck_id)
     if extck_info is not None:
 
         monitored_aggregates = get_monitored_aggregates(tm, extck_id)
 
-        experiments = get_related_objects_refs(tm, "ops_experiment", "externalcheck_id", extck_id, ("selfRef"))
-
-        for exp_ref in experiments:
-            exp_refs.append(exp_ref[0])
+        exp_refs = get_related_objects_refs(tm, "ops_experiment", "externalcheck_id", extck_id, ("selfRef",))
 
         return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs, monitored_aggregates))
 
@@ -339,7 +334,9 @@ def handle_slice_info_query(tm, slice_id):
         for user_i in users:
             user_refs.append(get_slice_user_refs(tm, user_i))
 
-        return json.dumps(get_slice_info_dict(slice_schema, slice_info, user_refs))
+        auth_ref = get_refs(tm, 'ops_authority', slice_info[tm.get_column_from_schema(slice_schema, 'authority_id')])
+
+        return json.dumps(get_slice_info_dict(slice_schema, slice_info, user_refs, auth_ref))
 
     else:
         errStr = "slice not found: " + slice_id
@@ -356,7 +353,8 @@ def handle_user_info_query(tm, user_id):
 
     user_info = get_object_info(tm, table_str, user_id)
     if user_info is not None:
-        return json.dumps(get_user_info_dict(user_schema, user_info))
+        auth_ref = get_refs(tm, 'ops_authority', user_info[tm.get_column_from_schema(user_schema, 'authority_id')])
+        return json.dumps(get_user_info_dict(user_schema, user_info, auth_ref))
     else:
         errStr = "user not found: " + user_id
         opslog.debug(errStr)
@@ -524,6 +522,8 @@ def get_experiment_info_dict(schema, info_row):
                 dest_agg_urn = info_row[col_i]
             elif schema[col_i][0] == "destination_aggregate_href":
                 dest_agg_href = info_row[col_i]
+            elif schema[col_i][0] == 'externalcheck_id':
+                continue
             else:  # top level keys are equal to what is in DB
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -567,27 +567,21 @@ def get_interfacevlan_info_dict(schema, info_row, if_ref):
 
 
 # Forms user info dictionary (to be made to JSON)
-def get_user_info_dict(schema, info_row):
+def get_user_info_dict(schema, info_row, auth_ref):
 
     json_dict = {}
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if should_include_json_field(schema, info_row, col_i):
-            if schema[col_i][0] == "authority_urn":
-                auth_urn = info_row[col_i]
-            elif schema[col_i][0] == "authority_href":
-                auth_href = info_row[col_i]
+            if schema[col_i][0] == "authority_id":
+                continue
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
-#    json_dict["authority"] = {"urn":auth_urn,"href":auth_href}
-    if (auth_urn is not None) or (auth_href is not None):
-        json_dict["authority"] = {}
-        if (auth_urn is not None):
-            json_dict["authority"]["urn"] = auth_urn
-        if (auth_href is not None):
-            json_dict["authority"]["href"] = auth_href
+    json_dict["authority"] = dict()
+    json_dict["authority"]["href"] = auth_ref[0]
+    json_dict["authority"]["urn"] = auth_ref[1]
 
     return json_dict
 
@@ -694,14 +688,14 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
         if should_include_json_field(schema, info_row, col_i):
             json_dict[schema[col_i][0]] = info_row[col_i]
 
+    json_dict["experiments"] = []
     if exp_refs:
-        json_dict["experiments"] = []
         for exp_ref in exp_refs:
             if len(exp_ref) > 0:
                 json_dict["experiments"].append({"href":exp_ref[0]})
 
+    json_dict["monitored_aggregates"] = []
     if mon_agg_refs:
-        json_dict["monitored_aggregates"] = []
         for mon_agg_ref in mon_agg_refs:
             if len(mon_agg_ref) > 0:
                 json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0], "href":mon_agg_ref[1]})
@@ -745,27 +739,21 @@ def get_link_info_dict(schema, info_row, endpt_refs, parent_ref, children_refs):
 
 
 # Forms slice info dictionary (to be made to JSON)
-def get_slice_info_dict(schema, info_row, user_refs):
+def get_slice_info_dict(schema, info_row, user_refs, auth_ref):
 
     json_dict = {}
 
     # NOT all of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if should_include_json_field(schema, info_row, col_i):
-            if schema[col_i][0] == "authority_href":
-                auth_href = info_row[col_i]
-            elif schema[col_i][0] == "authority_urn":
-                auth_urn = info_row[col_i]
+            if schema[col_i][0] == "authority_id":
+                continue
             else:
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
-#    json_dict["authority"] = {"href":auth_href,"urn":auth_urn}
-    if (auth_urn is not None) or (auth_href is not None):
-        json_dict["authority"] = {}
-        if (auth_urn is not None):
-            json_dict["authority"]["urn"] = auth_urn
-        if (auth_href is not None):
-            json_dict["authority"]["href"] = auth_href
+        json_dict["authority"] = dict()
+        json_dict["authority"]["href"] = auth_ref[0]
+        json_dict["authority"]["urn"] = auth_ref[1]
 
     if user_refs:
         json_dict["members"] = []
@@ -909,7 +897,7 @@ def get_refs(tm, table_str, object_id, column_names=("selfRef", "urn")):
 def get_monitored_aggregates(tm, extck_id):
 
     res = tm.query("SELECT id, " + tm.get_column_name("selfRef") + \
-                   " FROM ops_aggregates WHERE id IN " + \
+                   " FROM ops_aggregate WHERE id IN " + \
                    "(SELECT id FROM ops_externalcheck_monitoredaggregate WHERE externalcheck_id = '" + extck_id + "')")
     return res
 
