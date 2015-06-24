@@ -426,10 +426,10 @@ def main(argv):
     # encountered.
     # The value for "valid" is the number of times the response was
     # valid according to this schema.
-    if options.schema_stats:
-        schema_stats_dict = dict()
-    else:
-        schema_stats_dict = None
+#    if options.schema_stats:
+    schema_stats_dict = dict()
+#     else:
+#         schema_stats_dict = None
 
     http_status_dict = dict()
 
@@ -514,8 +514,15 @@ def main(argv):
 
     # print schema stats if requested
 
+    print
     if options.schema_stats:
         print_schema_stats(schema_stats_dict)
+    else:
+        # we at least want to see the count of error schema returned.
+        for schema_url in schema_stats_dict.keys():
+            if schema_url.endswith("/error#"):
+                print "JSON Error response seen %d times" % (schema_stats_dict[schema_url]["seen"],)
+                break
 
 if __name__ == "__main__":
     main(sys.argv[1:])
