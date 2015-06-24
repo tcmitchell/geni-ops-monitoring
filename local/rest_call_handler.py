@@ -310,13 +310,9 @@ def handle_authority_info_query(tm, auth_id):
     auth_info = get_object_info(tm, table_str, auth_id)
     if auth_info is not None:
 
-        users = get_related_objects_refs(tm, "ops_user", "authority_id", auth_id)
-        for user_ref in users:
-            user_refs.append(user_ref[0], user_ref[1])
+        user_refs = get_related_objects_refs(tm, "ops_user", "authority_id", auth_id)
 
-        slices = get_related_objects_refs(tm, "ops_slice", "authority_id", auth_id)
-        for slice_ref in slices:
-            slice_refs.append(slice_ref[0], slice_ref[1])
+        slice_refs = get_related_objects_refs(tm, "ops_slice", "authority_id", auth_id)
 
         return json.dumps(get_authority_info_dict(auth_schema, auth_info, user_refs, slice_refs))
 
