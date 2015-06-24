@@ -8,6 +8,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "$schema": {
+            "default": "http://www.gpolab.bbn.com/monitoring/schema/20150625/error#",
+            "description": "The schema of the this file.",
+            "format": "uri",
+            "required": false,
+            "type": "string"
+        },
     "error_message" : {
       "description": "The error message returned by the data store",
       "type": "string",
