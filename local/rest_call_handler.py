@@ -332,7 +332,7 @@ def handle_slice_info_query(tm, slice_id):
         users = get_related_objects(tm, "ops_slice_user", "slice_id", slice_id)
 
         for user_i in users:
-            user_refs.append(get_slice_user_refs(tm, user_i))
+            user_refs.append(get_slice_user_refs(tm, slice_id, user_i))
 
         auth_ref = get_refs(tm, 'ops_authority', slice_info[tm.get_column_from_schema(slice_schema, 'authority_id')])
 
@@ -903,13 +903,13 @@ def get_monitored_aggregates(tm, extck_id):
 
 
 # special get of refs for slice users which includes role
-def get_slice_user_refs(tm, user_id):
+def get_slice_user_refs(tm, slice_id, user_id):
 
     refs = list()
     q_res = tm.query("SELECT " + tm.get_column_name("selfRef") + ", urn FROM ops_user WHERE id = '" + user_id + "' limit 1")
     if q_res is not None:
         refs.extend(q_res[0])
-        q_res = tm.query("select role from ops_slice_user where id = '" + user_id + "' limit 1")
+        q_res = tm.query("select role from ops_slice_user where id = '" + user_id + "' and slice_id = '" + slice_id + "' limit 1")
         if q_res is not None:
             refs.extend(q_res[0])
     return refs
