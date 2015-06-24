@@ -50,7 +50,10 @@ class AgingOutThread(object):
                     cls._singleton = object.__new__(cls)
                     cls._singleton._lockfd = lockfd
             except IOError as ioe:
-                cls._lockfd.close()
+                try:
+                    lockfd.close()
+                except NameError:
+                    pass
                 import errno
                 import os
                 if (ioe.errno != errno.EACCES) and (ioe.errno != errno.EAGAIN):
