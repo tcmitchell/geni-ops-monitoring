@@ -31,7 +31,6 @@ import os
 import subprocess
 import time
 from optparse import OptionParser
-from compiler.ast import Node
 
 ut_path = os.path.abspath(os.path.dirname(__file__))
 local_path = os.path.dirname(ut_path)
@@ -47,8 +46,7 @@ import info_populator
 import stats_populator
 
 
-
-class TestLocalResponses(unittest.TestCase):
+class TestResponses(unittest.TestCase):
     NUM_INS = 10;
     PER_SEC = 0.2;
     BASE_SCHEMA = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
@@ -56,11 +54,8 @@ class TestLocalResponses(unittest.TestCase):
     CERT_PATH = "/vagrant/collector-gpo-withnpkey2.pem"
     IP_ADDR_FILE = "/tmp/ip.conf"
 
-    NEW_PURGE_TIMEOUT = 100
-    NEW_PURGE_PERIOD = 15
-
     def __init__(self, methodName):
-        super(TestLocalResponses, self).__init__(methodName)
+        super(TestResponses, self).__init__(methodName)
         db_type = "local"
         self.tbl_mgr = table_manager.TableManager(db_type, config_path)
         self.tbl_mgr.poll_config_store()
@@ -68,7 +63,7 @@ class TestLocalResponses(unittest.TestCase):
         ocl = opsconfig_loader.OpsconfigLoader(config_path)
         self.event_types = ocl.get_event_types()
 
-        f = open(TestLocalResponses.IP_ADDR_FILE)
+        f = open(TestResponses.IP_ADDR_FILE)
         self.ip = f.read().strip()
         f.close()
         self.base_url = "https://%s" % self.ip
@@ -81,101 +76,15 @@ class TestLocalResponses(unittest.TestCase):
         if not self.tbl_mgr.establish_all_tables():
             self.fail("Could not establish all tables");
 
-    def populate_info(self):
-        ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
-        if not ip.insert_fake_info():
-            self.fail("Could not insert test info data into tables");
-
-    def populate_measurements(self):
-        threads = []
-
-        obj_type = "node"
-        for node_id in info_populator.InfoPopulator.NODE_IDS:
-            node_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                     node_id,
-                                                     TestLocalResponses.NUM_INS,
-                                                     TestLocalResponses.PER_SEC,
-                                                     self.event_types[obj_type])
-            threads.append(node_sp)
-
-        obj_type = "interface"
-        for if_id in info_populator.InfoPopulator.IF_IDS:
-            interface_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                          if_id,
-                                                          TestLocalResponses.NUM_INS,
-                                                          TestLocalResponses.PER_SEC,
-                                                          self.event_types[obj_type])
-            threads.append(interface_sp)
-
-        obj_type = "interfacevlan"
-        for ifvlan_id in info_populator.InfoPopulator.IFVLAN_IDS:
-            interfacevlan_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                              ifvlan_id,
-                                                              TestLocalResponses.NUM_INS,
-                                                              TestLocalResponses.PER_SEC,
-                                                              self.event_types[obj_type])
-            threads.append(interfacevlan_sp)
-
-        obj_type = "aggregate"
-        aggregate_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
-                                                      info_populator.InfoPopulator.AGGREGATE_ID,
-                                                      TestLocalResponses.NUM_INS,
-                                                      TestLocalResponses.PER_SEC,
-                                                      self.event_types[obj_type])
-        threads.append(aggregate_sp)
-
-        # start threads
-        for t in threads:
-            t.start()
-
-        ok = True
-        # join all threads
-        for t in threads:
-            t.join()
-            if not t.run_ok:
-                ok = False
-
-        if not ok:
-            self.fail("Error while inserting measurement data into tables");
-
-    def restart_apache(self):
-        # this works on Ubuntu.
-        subprocess.call(["sudo", "/usr/sbin/service", "apache2", "restart"])
-
-    def modify_purging_values(self, timeout, period):
-        local_config_file = os.path.join(config_path, "local_datastore_operator.conf")
-        subprocess.call(["sed", "-i", "s/^aging_timeout:.*/aging_timeout: %s/" % str(timeout), local_config_file])
-        subprocess.call(["sed", "-i", "s/^purge_period:.*/purge_period: %s/" % str(period), local_config_file])
-
     def setUp(self):
-        super(TestLocalResponses, self).setUp()
-        # dropping existing tables
-
+        super(TestResponses, self).setUp()
         self.startTime = int(time.time() * 1000000)
+        # dropping existing tables
         self.db_cleanup()
-        if "purge" in self.id():
-            self.saved_timeout = self.tbl_mgr.conf_loader.get_aging_timeout()
-            self.saved_period = self.tbl_mgr.conf_loader.get_purge_period()
-            self.modify_purging_values(TestLocalResponses.NEW_PURGE_TIMEOUT, TestLocalResponses.NEW_PURGE_PERIOD)
-            self.restart_apache()
-
-
-        self.populate_info()
-
-        if ("stats" in self.id()) or ("purge" in self.id()):
-            self.populate_measurements()
-
-        print
-        print "Done with setUp()"
-        self.endOfSetUp = int(time.time() * 1000000)
-
 
     def tearDown(self):
         self.db_cleanup()
-        if "purge" in self.id():
-            self.modify_purging_values(self.saved_timeout, self.saved_period)
-            self.restart_apache()
-        super(TestLocalResponses, self).tearDown()
+        super(TestResponses, self).tearDown()
 
     def request_url(self, url, cert_path):
         resp = None
@@ -206,31 +115,38 @@ class TestLocalResponses(unittest.TestCase):
         self.assertEqual(dict[fieldName], fieldValue,
                          "json dictionary for %s does not contains the expected value for field %s" % (desc, fieldName));
 
-    def find_urn_and_href_object_in_json_array(self, json_array, urn, href, obj_desc):
+    def find_keys_and_values_in_json_array(self, json_array, expected_dict, id_key, obj_desc):
         for i in range(len(json_array)):
             obj_dict = json_array[i]
-            if obj_dict.has_key("urn") and obj_dict["urn"] == urn:
+            if obj_dict.has_key(id_key) and obj_dict[id_key] == expected_dict[id_key]:
                 break
         else:
-            self.fail("Did not find %s with urn %s" % (obj_desc, urn))
+            self.fail("Did not find %s with %s %s" % (obj_desc, id_key, expected_dict[id_key]))
 
-        self.assertTrue(obj_dict.has_key("href"), "%s json object does not have an href field" % obj_desc)
-        self.assertEqual(href, obj_dict["href"], "unexpected href for %s %s" % (obj_desc, urn))
+        for key in expected_dict.keys():
+            if key != id_key:
+                self.assertTrue(obj_dict.has_key(key), "%s json object does not have an %s field" % (obj_desc, key))
+                self.assertEqual(expected_dict[key], obj_dict[key], "unexpected %s for %s %s" % (key, obj_desc, expected_dict[id_key]))
+
+    def find_urn_and_href_object_in_json_array(self, json_array, urn, href, obj_desc):
+        expected_dict = dict()
+        expected_dict['urn'] = urn
+        expected_dict['href'] = href
+        self.find_keys_and_values_in_json_array(json_array, expected_dict, 'urn', obj_desc)
+#         for i in range(len(json_array)):
+#             obj_dict = json_array[i]
+#             if obj_dict.has_key("urn") and obj_dict["urn"] == urn:
+#                 break
+#         else:
+#             self.fail("Did not find %s with urn %s" % (obj_desc, urn))
+#
+#         self.assertTrue(obj_dict.has_key("href"), "%s json object does not have an href field" % obj_desc)
+#         self.assertEqual(href, obj_dict["href"], "unexpected href for %s %s" % (obj_desc, urn))
 
 
-    def find_resource_in_json_array(self, res_array, res_urn, res_url):
-        for i in range(len(res_array)):
-            res_dict = res_array[i]
-            if res_dict.has_key("urn") and res_dict["urn"] == res_urn:
-                break
-        else:
-            self.fail("Did not find resource with urn %s" % res_urn)
-
-        self.assertTrue(res_dict.has_key("href"), "resource json object does not have an href field")
-        self.assertEqual(res_url, res_dict["href"], "unexpected href for resource %s" % res_urn)
 
     def get_json_dictionary(self, url):
-        (resp, status, fail_msg) = self.request_url(url, TestLocalResponses.CERT_PATH)
+        (resp, status, fail_msg) = self.request_url(url, TestResponses.CERT_PATH)
         print status
         json_dict = None
         if fail_msg is not None:
@@ -246,11 +162,111 @@ class TestLocalResponses(unittest.TestCase):
     def check_error_response(self, url, expected_error):
         import urlparse
         error_dict = self.get_json_dictionary(url)
-        self.check_json_dictionary_for_field(error_dict, "$schema", TestLocalResponses.BASE_SCHEMA + "error#", "JSON Error response")
+        self.check_json_dictionary_for_field(error_dict, "$schema", TestResponses.BASE_SCHEMA + "error#", "JSON Error response")
         self.check_json_dictionary_for_field(error_dict, "error_message", expected_error, "JSON Error response")
         parseRes = urlparse.urlparse(url)
         self.check_json_dictionary_for_field(error_dict, "origin_url", parseRes.path, "JSON Error response")
-        
+
+class TestLocalResponses(TestResponses):
+    NEW_PURGE_TIMEOUT = 100
+    NEW_PURGE_PERIOD = 15
+
+
+    def __init__(self, methodName):
+        super(TestLocalResponses, self).__init__(methodName)
+
+    def populate_info(self):
+        ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
+        if not ip.insert_fake_info():
+            self.fail("Could not insert test info data into tables");
+
+    def populate_measurements(self):
+        threads = []
+
+        obj_type = "node"
+        for node_id in info_populator.InfoPopulator.NODE_IDS:
+            node_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                     node_id,
+                                                     TestResponses.NUM_INS,
+                                                     TestResponses.PER_SEC,
+                                                     self.event_types[obj_type])
+            threads.append(node_sp)
+
+        obj_type = "interface"
+        for if_id in info_populator.InfoPopulator.IF_IDS:
+            interface_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                          if_id,
+                                                          TestResponses.NUM_INS,
+                                                          TestResponses.PER_SEC,
+                                                          self.event_types[obj_type])
+            threads.append(interface_sp)
+
+        obj_type = "interfacevlan"
+        for ifvlan_id in info_populator.InfoPopulator.IFVLAN_IDS:
+            interfacevlan_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                              ifvlan_id,
+                                                              TestResponses.NUM_INS,
+                                                              TestResponses.PER_SEC,
+                                                              self.event_types[obj_type])
+            threads.append(interfacevlan_sp)
+
+        obj_type = "aggregate"
+        aggregate_sp = stats_populator.StatsPopulator(self.tbl_mgr, obj_type,
+                                                      info_populator.InfoPopulator.AGGREGATE_ID,
+                                                      TestResponses.NUM_INS,
+                                                      TestResponses.PER_SEC,
+                                                      self.event_types[obj_type])
+        threads.append(aggregate_sp)
+
+        # start threads
+        for t in threads:
+            t.start()
+
+        ok = True
+        # join all threads
+        for t in threads:
+            t.join()
+            if not t.run_ok:
+                ok = False
+
+        if not ok:
+            self.fail("Error while inserting measurement data into tables");
+
+    def restart_apache(self):
+        # this works on Ubuntu.
+        subprocess.call(["sudo", "/usr/sbin/service", "apache2", "restart"])
+
+    def modify_purging_values(self, timeout, period):
+        local_config_file = os.path.join(config_path, "local_datastore_operator.conf")
+        subprocess.call(["sed", "-i", "s/^aging_timeout:.*/aging_timeout: %s/" % str(timeout), local_config_file])
+        subprocess.call(["sed", "-i", "s/^purge_period:.*/purge_period: %s/" % str(period), local_config_file])
+
+    def setUp(self):
+        super(TestLocalResponses, self).setUp()
+
+        if "purge" in self.id():
+            self.saved_timeout = self.tbl_mgr.conf_loader.get_aging_timeout()
+            self.saved_period = self.tbl_mgr.conf_loader.get_purge_period()
+            self.modify_purging_values(TestLocalResponses.NEW_PURGE_TIMEOUT, TestLocalResponses.NEW_PURGE_PERIOD)
+            self.restart_apache()
+
+
+        self.populate_info()
+
+        if ("stats" in self.id()) or ("purge" in self.id()):
+            self.populate_measurements()
+
+        print
+        print "Done with setUp()"
+        self.endOfSetUp = int(time.time() * 1000000)
+
+
+    def tearDown(self):
+        if "purge" in self.id():
+            self.modify_purging_values(self.saved_timeout, self.saved_period)
+            self.restart_apache()
+        super(TestLocalResponses, self).tearDown()
+
 
     def test_get_aggregate_info(self):
         url = self.base_url + "/info/aggregate/" + info_populator.InfoPopulator.AGGREGATE_ID
@@ -269,7 +285,7 @@ class TestLocalResponses(unittest.TestCase):
         self.check_json_dictionary_for_field(json_dict, "operational_status", "development", desc)
         self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
         self.check_json_dictionary_for_field_presence(json_dict, "monitoring_version", desc)
-        self.check_json_dictionary_for_field_presence(json_dict, "populator_version", desc)
+        self.check_json_dictionary_for_field(json_dict, "populator_version", info_populator.InfoPopulator.POPULATOR_VERSION, desc)
         self.check_json_dictionary_for_field_presence(json_dict, "resources", desc)
         self.check_json_dictionary_for_field_presence(json_dict, "slivers", desc)
 
@@ -280,11 +296,15 @@ class TestLocalResponses(unittest.TestCase):
                                                         "sliver")
 
         for i in range(len(info_populator.InfoPopulator.NODE_IDS)):
-           self.find_resource_in_json_array(json_dict["resources"], info_populator.InfoPopulator.NODE_URNS[i],
-                                          "%s/info/node/%s" % (self.base_url, info_populator.InfoPopulator.NODE_IDS[i]))
+           self.find_urn_and_href_object_in_json_array(json_dict["resources"],
+                                                       info_populator.InfoPopulator.NODE_URNS[i],
+                                                       "%s/info/node/%s" % (self.base_url, info_populator.InfoPopulator.NODE_IDS[i]),
+                                                       'resource')
         for i in range(len(info_populator.InfoPopulator.LINK_IDS)):
-           self.find_resource_in_json_array(json_dict["resources"], info_populator.InfoPopulator.LINK_URNS[i],
-                                          "%s/info/link/%s" % (self.base_url, info_populator.InfoPopulator.LINK_IDS[i]))
+           self.find_urn_and_href_object_in_json_array(json_dict["resources"],
+                                                       info_populator.InfoPopulator.LINK_URNS[i],
+                                                       "%s/info/link/%s" % (self.base_url, info_populator.InfoPopulator.LINK_IDS[i]),
+                                                       'resource')
 
 
     def test_get_wrong_aggregate_info(self):
@@ -551,10 +571,10 @@ class TestLocalResponses(unittest.TestCase):
             self.check_json_dictionary_for_field(json_dict, "urn", info_populator.InfoPopulator.SLIVER_URNS[i], desc)
             self.check_json_dictionary_for_field(json_dict, "uuid", info_populator.InfoPopulator.SLIVER_UUIDS[i], desc)
             self.check_json_dictionary_for_field(json_dict, "slice_uuid",
-                                                 info_populator.InfoPopulator.SLICE_UUIDS[info_populator.InfoPopulator.SLIVER_SCLICE_IDX[i]],
+                                                 info_populator.InfoPopulator.SLICE_UUIDS[info_populator.InfoPopulator.SLIVER_SLICE_IDX[i]],
                                                  desc)
             self.check_json_dictionary_for_field(json_dict, "creator",
-                                                 info_populator.InfoPopulator.USER_URNS[info_populator.InfoPopulator.SLIVER_USER_IDX[i]],
+                                                 info_populator.InfoPopulator.SLIVER_USER_URNS[info_populator.InfoPopulator.SLIVER_USER_IDX[i]],
                                                  desc)
             self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
             self.check_json_dictionary_for_field_presence(json_dict, "expires", desc)
@@ -743,6 +763,209 @@ class TestLocalResponses(unittest.TestCase):
         self.assertEqual(len(json_dict), 0, "Got some stats back")
 
 
+class TestAuthorityStoreResponses(TestResponses):
+
+    def __init__(self, methodName):
+        super(TestAuthorityStoreResponses, self).__init__(methodName)
+
+    def populate_info(self):
+        ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
+        if not ip.insert_authority_store_info():
+            self.fail("Could not insert test authority info into tables");
+
+    def setUp(self):
+        super(TestAuthorityStoreResponses, self).setUp()
+
+        self.populate_info()
+
+        print
+        print "Done with setUp()"
+        self.endOfSetUp = int(time.time() * 1000000)
+
+
+    def tearDown(self):
+        super(TestAuthorityStoreResponses, self).tearDown()
+
+    def test_get_authority_info(self):
+        url = self.base_url + "/info/authority/" + info_populator.InfoPopulator.AUTHORITY_ID
+        json_dict = self.get_json_dictionary(url)
+
+        desc = "authority %s info" % info_populator.InfoPopulator.AUTHORITY_URN
+
+        self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+        self.check_json_dictionary_for_field(json_dict, "$schema", TestLocalResponses.BASE_SCHEMA + "authority#", desc)
+        self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+        self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.AUTHORITY_ID, desc)
+        self.check_json_dictionary_for_field(json_dict, "urn", info_populator.InfoPopulator.AUTHORITY_URN, desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "monitoring_version", desc)
+        self.check_json_dictionary_for_field(json_dict, "populator_version", info_populator.InfoPopulator.POPULATOR_VERSION, desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "slices", desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "users", desc)
+
+        for i in range(len(info_populator.InfoPopulator.AUTHORITY_SLICE_IDS)):
+            self.find_urn_and_href_object_in_json_array(json_dict["slices"],
+                                                        info_populator.InfoPopulator.AUTHORITY_SLICE_URNS[i],
+                                                        "%s/info/slice/%s" % (self.base_url, info_populator.InfoPopulator.AUTHORITY_SLICE_IDS[i]),
+                                                        "slice")
+        for i in range(len(info_populator.InfoPopulator.AUTHORITY_USER_IDS)):
+            self.find_urn_and_href_object_in_json_array(json_dict["users"],
+                                                        info_populator.InfoPopulator.AUTHORITY_USER_URNS[i],
+                                                        "%s/info/user/%s" % (self.base_url, info_populator.InfoPopulator.AUTHORITY_USER_IDS[i]),
+                                                        "user")
+
+    def test_get_wrong_authority_info(self):
+        incorrect_authority_id = info_populator.InfoPopulator.AUTHORITY_ID + "_WRONG"
+        url = self.base_url + "/info/authority/" + incorrect_authority_id
+        self.check_error_response(url, ("authority not found: " + incorrect_authority_id))
+
+    def test_get_user_info(self):
+        for i in range(len(info_populator.InfoPopulator.AUTHORITY_USER_IDS)):
+            url = self.base_url + "/info/user/" + info_populator.InfoPopulator.AUTHORITY_USER_IDS[i]
+            json_dict = self.get_json_dictionary(url)
+
+            desc = "user %s info" % info_populator.InfoPopulator.AUTHORITY_USER_IDS[i]
+
+            self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+            self.check_json_dictionary_for_field(json_dict, "$schema", TestResponses.BASE_SCHEMA + "user#", desc)
+            self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+            self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.AUTHORITY_USER_IDS[i], desc)
+            self.check_json_dictionary_for_field(json_dict, "urn", info_populator.InfoPopulator.AUTHORITY_USER_URNS[i], desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "email", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "fullname", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "authority", desc)
+            authority_obj = json_dict['authority']
+            tmp_array = [authority_obj]
+            self.find_urn_and_href_object_in_json_array(tmp_array,
+                                                        info_populator.InfoPopulator.AUTHORITY_URN,
+                                                        "%s/info/authority/%s" % (self.base_url, info_populator.InfoPopulator.AUTHORITY_ID),
+                                                        "authority")
+
+    def test_get_wrong_user_info(self):
+        incorrect_user_id = info_populator.InfoPopulator.AUTHORITY_USER_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/user/" + incorrect_user_id
+        self.check_error_response(url, ("user not found: " + incorrect_user_id))
+
+    def test_get_slice_info(self):
+        for i in range(len(info_populator.InfoPopulator.AUTHORITY_SLICE_IDS)):
+            url = self.base_url + "/info/slice/" + info_populator.InfoPopulator.AUTHORITY_SLICE_IDS[i]
+            json_dict = self.get_json_dictionary(url)
+
+            desc = "slice %s info" % info_populator.InfoPopulator.AUTHORITY_SLICE_IDS[i]
+
+            self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+            self.check_json_dictionary_for_field(json_dict, "$schema", TestResponses.BASE_SCHEMA + "slice#", desc)
+            self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+            self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.AUTHORITY_SLICE_IDS[i], desc)
+            self.check_json_dictionary_for_field(json_dict, "urn", info_populator.InfoPopulator.AUTHORITY_SLICE_URNS[i], desc)
+            self.check_json_dictionary_for_field(json_dict, "uuid", info_populator.InfoPopulator.AUTHORITY_SLICE_UUIDS[i], desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "created", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "expires", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "members", desc)
+            members_array = json_dict['members']
+            total_mambers = 0
+            for slice_user in info_populator.InfoPopulator.AUTHORITY_SLICE_USER_RELATION:
+                if slice_user[0] == i:
+                    expected_dict = dict()
+                    expected_dict['urn'] = info_populator.InfoPopulator.AUTHORITY_USER_URNS[slice_user[1]]
+                    expected_dict['href'] = "%s/info/user/%s" % (self.base_url, info_populator.InfoPopulator.AUTHORITY_USER_IDS[slice_user[1]])
+                    expected_dict['role'] = slice_user[2]
+                    self.find_keys_and_values_in_json_array(members_array, expected_dict, 'urn', "user")
+
+    def test_get_wrong_slice_info(self):
+        incorrect_slice_id = info_populator.InfoPopulator.AUTHORITY_SLICE_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/slice/" + incorrect_slice_id
+        self.check_error_response(url, ("slice not found: " + incorrect_slice_id))
+
+
+class TestExternalCheckStoreResponses(TestResponses):
+
+    def __init__(self, methodName):
+        super(TestExternalCheckStoreResponses, self).__init__(methodName)
+
+    def populate_info(self):
+        ip = info_populator.InfoPopulator(self.tbl_mgr, self.base_url)
+        if not ip.insert_externalcheck_store():
+            self.fail("Could not insert test external check info into tables");
+
+    def setUp(self):
+        super(TestExternalCheckStoreResponses, self).setUp()
+
+        self.populate_info()
+
+        print
+        print "Done with setUp()"
+        self.endOfSetUp = int(time.time() * 1000000)
+
+
+    def tearDown(self):
+        super(TestExternalCheckStoreResponses, self).tearDown()
+
+    def test_get_externalcheck_info(self):
+        url = self.base_url + "/info/externalcheck/" + info_populator.InfoPopulator.EXTCK_ID
+        json_dict = self.get_json_dictionary(url)
+
+        desc = "externalcheck %s info" % info_populator.InfoPopulator.EXTCK_ID
+
+        self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+        self.check_json_dictionary_for_field(json_dict, "$schema", TestLocalResponses.BASE_SCHEMA + "externalcheck#", desc)
+        self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+        self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.EXTCK_ID, desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "measRef", desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "monitoring_version", desc)
+        self.check_json_dictionary_for_field(json_dict, "populator_version", info_populator.InfoPopulator.POPULATOR_VERSION, desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "experiments", desc)
+        self.check_json_dictionary_for_field_presence(json_dict, "monitored_aggregates", desc)
+
+        for i in range(len(info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS)):
+            expected_dict = { "href" : "%s/info/experiment/%s" % (self.base_url, info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[i])}
+            self.find_keys_and_values_in_json_array(json_dict["experiments"],
+                                                    expected_dict,
+                                                    'href',
+                                                    "experiment")
+        for i in range(len(info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
+            expected_dict = {'href': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_URLS[i],
+                             'id': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]}
+            self.find_keys_and_values_in_json_array(json_dict["monitored_aggregates"],
+                                                    expected_dict,
+                                                    'id',
+                                                    "monitored aggregate")
+
+    def test_get_wrong_externalcheck_info(self):
+        incorrect_extck_id = info_populator.InfoPopulator.EXTCK_ID + "_WRONG"
+        url = self.base_url + "/info/externalcheck/" + incorrect_extck_id
+        self.check_error_response(url, ("external check store not found: " + incorrect_extck_id))
+
+    def test_get_experiment_info(self):
+        for i in range(len(info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS)):
+            url = self.base_url + "/info/experiment/" + info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[i]
+            json_dict = self.get_json_dictionary(url)
+
+            desc = "experiment %s info" % info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[i]
+
+            self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+            self.check_json_dictionary_for_field(json_dict, "$schema", TestResponses.BASE_SCHEMA + "experiment#", desc)
+            self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+            self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[i], desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+            slice_idx = info_populator.InfoPopulator.EXTCK_EXPERIMENT_SLICE_RELATION[i]
+            self.check_json_dictionary_for_field(json_dict, "slice_urn", info_populator.InfoPopulator.SLICE_URNS[slice_idx], desc)
+            self.check_json_dictionary_for_field(json_dict, "slice_uuid", info_populator.InfoPopulator.SLICE_UUIDS[slice_idx], desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "source_aggregate", desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "destination_aggregate", desc)
+            self.check_json_dictionary_for_field_presence(json_dict["source_aggregate"], "urn", desc)
+            self.check_json_dictionary_for_field_presence(json_dict["source_aggregate"], "href", desc)
+            self.check_json_dictionary_for_field_presence(json_dict["destination_aggregate"], "urn", desc)
+            self.check_json_dictionary_for_field_presence(json_dict["destination_aggregate"], "href", desc)
+
+    def test_get_wrong_experiment_info(self):
+        incorrect_experiment_id = info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/experiment/" + incorrect_experiment_id
+        self.check_error_response(url, ("experiment not found: " + incorrect_experiment_id))
+
 def main(argv):
 
     # Set up command-line options
@@ -779,8 +1002,11 @@ def main(argv):
     else:
         # we want the output on the console
 #     unittest.main()
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestLocalResponses)
-        return unittest.TextTestRunner(verbosity=2).run(suite)
+        suiteLocal = unittest.TestLoader().loadTestsFromTestCase(TestLocalResponses)
+        suiteAuth = unittest.TestLoader().loadTestsFromTestCase(TestAuthorityStoreResponses)
+        suiteExtck = unittest.TestLoader().loadTestsFromTestCase(TestExternalCheckStoreResponses)
+        allTestsSuite = unittest.TestSuite([suiteLocal, suiteAuth, suiteExtck])
+        return unittest.TextTestRunner(verbosity=2).run(allTestsSuite)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
