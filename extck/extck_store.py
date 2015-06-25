@@ -90,6 +90,20 @@ class InfoPopulator():
         self._ipsconfig = ConfigParser.ConfigParser()
         self._ipsconfig.read(os.path.join(extck_path, "ips.conf"))
 
+        # Try to get the software version we're running from the VERSION file
+        # in the top-level directory.
+        version_filename = top_path + "/VERSION"
+        try:
+            version_file = open(version_filename)
+            self.monitoring_version = version_file.readline().strip()
+            version_file.close()
+        except Exception, e:
+            self.tbl_mgr.logger.warning("Could not read monitoring version from file %s: %s" % (
+                    version_filename, str(e)))
+            self.monitoring_version = "unknown"
+
+        self.tbl_mgr.logger.info("Monitoring version is %s" % (self.monitoring_version))
+
 
 
     def __getSiteInfo(self, srcSiteName, aggStores):
@@ -232,7 +246,9 @@ class InfoPopulator():
                  self._extckStoreSite,
                  self.extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
                  ts,
-                 self.extckStoreBaseUrl + "/data/"]
+                 self.extckStoreBaseUrl + "/data/",
+                 self.monitoring_version
+                 ]
         table_str = "ops_externalcheck"
         extck_schema = self.tbl_mgr.schema_dict[table_str]
         self.tbl_mgr.upsert(table_str, extck_schema, extck, self.tbl_mgr.get_column_from_schema(extck_schema, "id"))
