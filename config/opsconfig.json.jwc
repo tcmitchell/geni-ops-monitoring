@@ -825,7 +825,8 @@
              ["id", "varchar", true],
              ["selfRef", "varchar", true],
              ["urn", "varchar", true],
-             ["ts", "int8", true]
+             ["ts", "int8", true],
+             ["populator_version", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
@@ -880,7 +881,8 @@
              ["id", "varchar", true],
              ["selfRef", "varchar", true],
              ["ts", "int8", true],
-             ["measRef", "varchar", true]
+             ["measRef", "varchar", true],
+             ["populator_version", "varchar", false]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
