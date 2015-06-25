@@ -12,6 +12,15 @@
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
   },
   "properties": {
+    "version": {
+      "description": "ops configuration version",
+      // this is the version of the ops configuration
+      // In GPO implementation, it's the same as the software version
+      // since a new (minor) version of the software is created every time
+      // the ops configuration is updated.
+      "type": "string",
+      "required": true
+    },
     "aggregatestores": {
       "description": "GENI aggregates known to support operational monitoring",
       "type": "array",
