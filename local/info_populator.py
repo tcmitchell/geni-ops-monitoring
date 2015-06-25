@@ -189,9 +189,9 @@ class InfoPopulator():
                    "8c6b97fa-493b-400f-95ee-19accfaf4ae9"
                   )
     # at sliver idx you have slice idx
-    SLIVER_SCLICE_IDX = (0, 1, 1, 0)
+    SLIVER_SLICE_IDX = (0, 1, 1, 0)
 
-    USER_URNS = ("urn:publicid:IDN+ch.geni.net+user+tupty",
+    SLIVER_USER_URNS = ("urn:publicid:IDN+ch.geni.net+user+tupty",
                  "urn:publicid:IDN+ch.geni.net+user+sblais"
                  )
 
@@ -203,6 +203,65 @@ class InfoPopulator():
                                 (("node", 3),),
                                 (("node", 4),),
                                 (("link", 0), ("link", 1)),
+                                )
+
+    POPULATOR_VERSION = "SuperDuper 2.4.x.10a"
+
+    AUTHORITY_ID = "ch.geni.net"
+
+    AUTHORITY_URN = "urn:publicid:IDN+ch.geni.net+authority+ch"
+
+    AUTHORITY_SLICE_IDS = ("slicearoo",
+                           "slicearoni",
+                           "slicette")
+
+    AUTHORITY_SLICE_URNS = ("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+slicearoo",
+                            "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+slicearoni",
+                            "urn:publicid:IDN+ch.geni.net:gpo-infra+slice+slicette"
+                            )
+    AUTHORITY_SLICE_UUIDS = ("8c6b97fa-493b-400f-95ee-190000000000",
+                             "8c6b97fa-493b-400f-95ee-190000000001",
+                             "8c6b97fa-493b-400f-95ee-190000000002"
+                             )
+
+    AUTHORITY_USER_IDS = ("tupty",
+                          "sblais"
+                          )
+    AUTHORITY_USER_URNS = ("urn:publicid:IDN+ch.geni.net+user+tupty",
+                           "urn:publicid:IDN+ch.geni.net+user+sblais"
+                          )
+
+    # tuples of (slice idx, user idx, user role)
+    AUTHORITY_SLICE_USER_RELATION = ((0, 0, "lead"),
+                                     (1, 1, "lead"),
+                                     (2, 0, "lead"),
+                                     (2, 1, "member"),
+                                     )
+
+    EXTCK_ID = "gpo"
+
+    EXTCK_EXPERIMENT_IDS = ("missouri-ig_to_gpo-ig",
+                            "missouri-ig_to_gpo-eg",
+                            "missouri-ig_to_utah-ig",
+                            )
+
+    # at the experiment IDX is the slice index
+    EXTCK_EXPERIMENT_SLICE_RELATION = (0, 1, 1)
+
+    EXTCK_MONITORED_AGG_IDS = ("cwru-ig",
+                               "cenic-ig",
+                               "cornell-ig",
+                               "gatech-ig"
+                               )
+    EXTCK_MONITORED_AGG_URNS = ("urn:publicid:IDN+geni.case.edu+authority+cm",
+                                "urn:publicid:IDN+instageni.cenic.net+authority+cm",
+                                "urn:publicid:IDN+geni.it.cornell.edu+authority+cm",
+                                "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm"
+                                )
+    EXTCK_MONITORED_AGG_URLS = ("https://www.geni.case.edu:5001/info/aggregate/cwru-ig",
+                                "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
+                                "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig",
+                                "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
                                 )
 
     def __init__(self, tbl_mgr, url_base):
@@ -298,6 +357,26 @@ class InfoPopulator():
         array.append(objectid)
         array.append(self.__get_selfRef_url_for(objecttype, objectid))
 
+    def insert_aggregate_info(self, agg_id, agg_urn, agg_url):
+        ok = True
+
+
+        agg_record = []
+        agg_record.append(InfoPopulator.__get_schema_url_for("aggregate"))
+        agg_record.append(agg_id)
+        agg_record.append(agg_url)
+        agg_record.append(agg_urn)
+        agg_record.append(str(int(time.time() * 1000000)))
+        agg_record.append("http://some.data.url")  # measRef
+        agg_record.append(InfoPopulator.POPULATOR_VERSION)  # populator_version
+        agg_record.append("development")  # operational_status
+        agg_record.append("0")  # routable_ip_poolsize
+
+        if not info_insert(self.tbl_mgr, "ops_aggregate", agg_record):
+            ok = False
+
+        return ok
+
     def insert_fake_info(self):
         ok = True
 
@@ -308,13 +387,12 @@ class InfoPopulator():
         agg1.append(InfoPopulator.AGGREGATE_URN)
         agg1.append(str(int(time.time() * 1000000)))
         agg1.append(url_local_data)  # measRef
-        agg1.append("1.0")  # populator_version
+        agg1.append(InfoPopulator.POPULATOR_VERSION)  # populator_version
         agg1.append("development")  # operational_status
         agg1.append("0")  # routable_ip_poolsize
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg1):
             ok = False
-
 
         node1 = []
         self.__fill_in_list_with_schema_id_and_url(node1, "node", InfoPopulator.NODE_IDS[0])
@@ -401,9 +479,9 @@ class InfoPopulator():
         sliver1.append(InfoPopulator.SLIVER_UUIDS[0])  # uuid
         sliver1.append(str(int(time.time() * 1000000)))  # current ts
         sliver1.append(InfoPopulator.AGGREGATE_ID)  # agg_id
-        sliver1.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice_urn
-        sliver1.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[0]])  # slice uuid
-        sliver1.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[0]])  # creator
+        sliver1.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SLICE_IDX[0]])  # slice_urn
+        sliver1.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SLICE_IDX[0]])  # slice uuid
+        sliver1.append(InfoPopulator.SLIVER_USER_URNS[InfoPopulator.SLIVER_USER_IDX[0]])  # creator
         sliver1.append(str(int(1391626683000000)))  # created
         sliver1.append(str(int(1391708989000000)))  # expires
 
@@ -420,9 +498,9 @@ class InfoPopulator():
         sliver2.append(InfoPopulator.SLIVER_UUIDS[1])  # uuid
         sliver2.append(str(int(time.time() * 1000000)))  # current ts
         sliver2.append(InfoPopulator.AGGREGATE_ID)  # agg_id
-        sliver2.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice_urn
-        sliver2.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[1]])  # slice uuid
-        sliver2.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[1]])  # creator
+        sliver2.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SLICE_IDX[1]])  # slice_urn
+        sliver2.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SLICE_IDX[1]])  # slice uuid
+        sliver2.append(InfoPopulator.SLIVER_USER_URNS[InfoPopulator.SLIVER_USER_IDX[1]])  # creator
         sliver2.append(str(int(1391626683000000)))  # created
         sliver2.append(str(int(1391708989000000)))  # expires
 
@@ -439,9 +517,9 @@ class InfoPopulator():
         sliver3.append(InfoPopulator.SLIVER_UUIDS[2])  # uuid
         sliver3.append(str(int(time.time() * 1000000)))  # current ts
         sliver3.append(InfoPopulator.AGGREGATE_ID)  # agg_id
-        sliver3.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice_urn
-        sliver3.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[2]])  # slice uuid
-        sliver3.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[2]])  # creator
+        sliver3.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SLICE_IDX[2]])  # slice_urn
+        sliver3.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SLICE_IDX[2]])  # slice uuid
+        sliver3.append(InfoPopulator.SLIVER_USER_URNS[InfoPopulator.SLIVER_USER_IDX[2]])  # creator
         sliver3.append(str(int(1391626683000000)))  # created
         sliver3.append(str(int(1391708989000000)))  # expires
 
@@ -501,9 +579,9 @@ class InfoPopulator():
         sliver4.append(InfoPopulator.SLIVER_UUIDS[3])  # uuid
         sliver4.append(str(int(time.time() * 1000000)))  # current ts
         sliver4.append(InfoPopulator.AGGREGATE_ID)  # agg_id
-        sliver4.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice_urn
-        sliver4.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SCLICE_IDX[3]])  # slice uuid
-        sliver4.append(InfoPopulator.USER_URNS[InfoPopulator.SLIVER_USER_IDX[3]])  # creator
+        sliver4.append(InfoPopulator.SLICE_URNS[InfoPopulator.SLIVER_SLICE_IDX[3]])  # slice_urn
+        sliver4.append(InfoPopulator.SLICE_UUIDS[InfoPopulator.SLIVER_SLICE_IDX[3]])  # slice uuid
+        sliver4.append(InfoPopulator.SLIVER_USER_URNS[InfoPopulator.SLIVER_USER_IDX[3]])  # creator
         sliver4.append(str(int(1391626683000005)))  # created
         sliver4.append(str(int(1391708989000006)))  # expires
 
@@ -661,164 +739,6 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", remoteinterfacevlan1):
             ok = False
 
-
-        authority1 = []
-        self.__fill_in_list_with_schema_id_and_url(authority1, "authority", "ch.geni.net")
-        authority1.append("urn:publicid:IDN+ch.geni.net+authority+ch")
-        authority1.append(str(int(time.time() * 1000000)))
-
-        if not info_insert(self.tbl_mgr, "ops_authority", authority1):
-            ok = False
-
-        slice1 = []
-        self.__fill_in_list_with_schema_id_and_url(slice1, "slice", "ch.geni.net_gpo-infra_slice_tuptyexclusive")
-        slice1.append("urn:publicid:IDN+ch.geni.net:gpo-infra+slice+tuptyexclusive")
-        slice1.append("8c6b97fa-493b-400f-95ee-19accfaf4ae8")
-        slice1.append(str(int(time.time() * 1000000)))
-        slice1.append(authority1[1])  # authority id
-        slice1.append("1391626683000000")
-        slice1.append("1391708989000000")
-
-        if not info_insert(self.tbl_mgr, "ops_slice", slice1):
-            ok = False
-
-
-        user1 = []
-        self.__fill_in_list_with_schema_id_and_url(user1, "user", "tupty")
-        user1.append("tupty_user_urn")
-        user1.append(str(int(time.time() * 1000000)))
-        user1.append(authority1[1])  # authority id
-        user1.append("Tim Exampleuser")
-        user1.append("tupty@example.com")
-
-        if not info_insert(self.tbl_mgr, "ops_user", user1):
-            ok = False
-
-
-#         aggres1 = []
-#         aggres1.append(node1[1])
-#         aggres1.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres1):
-#             ok = False
-#
-#         aggres2 = []
-#         aggres2.append(node2[1])
-#         aggres2.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres2):
-#             ok = False
-#
-#
-#         aggres3 = []
-#         aggres3.append(node3[1])
-#         aggres3.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres3):
-#             ok = False
-#
-#
-#         aggres4 = []
-#         aggres4.append(node4[1])
-#         aggres4.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres4):
-#             ok = False
-#
-#
-#         aggres5 = []
-#         aggres5.append(node5[1])
-#         aggres5.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres5):
-#             ok = False
-#
-#
-#         aggres6 = []
-#         aggres6.append(link1[1])
-#         aggres6.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres6):
-#             ok = False
-#
-#
-#         aggres7 = []
-#         aggres7.append(sublink1[1])
-#         aggres7.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres7):
-#             ok = False
-#
-#
-#         aggres8 = []
-#         aggres8.append(sublink2[1])
-#         aggres8.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres8):
-#             ok = False
-#
-#
-#         aggres9 = []
-#         aggres9.append(egress_link[1])
-#         aggres9.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres9):
-#             ok = False
-#
-#
-#         aggres10 = []
-#         aggres10.append(switch1[1])
-#         aggres10.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_resource", aggres10):
-#             ok = False
-
-
-#         aggsliv1 = []
-#         aggsliv1.append(sliver1[1])  # id
-#         aggsliv1.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv1):
-#             ok = False
-#
-#
-#         aggsliv2 = []
-#         aggsliv2.append(sliver2[1])  # id
-#         aggsliv2.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv2):
-#             ok = False
-#
-#
-#         aggsliv3 = []
-#         aggsliv3.append(sliver3[1])  # id
-#         aggsliv3.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv3):
-#             ok = False
-#
-#
-#         aggsliv4 = []
-#         aggsliv4.append(sliver4[1])  # id
-#         aggsliv4.append(agg1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_aggregate_sliver", aggsliv4):
-#             ok = False
-
-#         for node_if_idxes in InfoPopulator.NODE_IF_RELATIONS:
-#             node_idx = node_if_idxes[0]
-#             if_idx = node_if_idxes[1]
-#             nodeiface = []
-#             nodeiface.append(InfoPopulator.IF_IDS[if_idx])
-#             nodeiface.append(InfoPopulator.NODE_IDS[node_idx])
-#             nodeiface.append(InfoPopulator.IF_URNS[if_idx])
-#             if_url = self.__get_selfRef_url_for("interface", InfoPopulator.IF_IDS[if_idx])
-#             nodeiface.append(if_url)
-#
-#             if not info_insert(self.tbl_mgr, "ops_node_interface", nodeiface):
-#                 ok = False
-
-
         for i in range(len(InfoPopulator.LINK_VLAN_RELATIONS)):
             link1ifacevlan = []
             link1ifacevlan.append(InfoPopulator.LINK_VLAN_RELATIONS[i][0])  # id
@@ -827,30 +747,53 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_link_interfacevlan", link1ifacevlan):
                 ok = False
 
+        return ok
 
-        sliceuser1 = []
-        sliceuser1.append(user1[1])
-        sliceuser1.append(slice1[1])
-        sliceuser1.append("lead")
+    def insert_authority_store_info(self):
+        ok = True
 
-        if not info_insert(self.tbl_mgr, "ops_slice_user", sliceuser1):
+        authority1 = []
+        self.__fill_in_list_with_schema_id_and_url(authority1, "authority", InfoPopulator.AUTHORITY_ID)
+        authority1.append(InfoPopulator.AUTHORITY_URN)
+        authority1.append(str(int(time.time() * 1000000)))
+        authority1.append(InfoPopulator.POPULATOR_VERSION)
+
+        if not info_insert(self.tbl_mgr, "ops_authority", authority1):
             ok = False
 
+        for idx in range(len(InfoPopulator.AUTHORITY_SLICE_IDS)):
+            slice_obj = []
+            self.__fill_in_list_with_schema_id_and_url(slice_obj, "slice", InfoPopulator.AUTHORITY_SLICE_IDS[idx])
+            slice_obj.append(InfoPopulator.AUTHORITY_SLICE_URNS[idx])
+            slice_obj.append(InfoPopulator.AUTHORITY_SLICE_UUIDS[idx])
+            slice_obj.append(str(int(time.time() * 1000000)))
+            slice_obj.append(InfoPopulator.AUTHORITY_ID)  # authority id
+            slice_obj.append("1391626683000000")  # created
+            slice_obj.append("1391708989000000")  # expires
 
-#         authuser1 = []
-#         authuser1.append(user1[1])
-#         authuser1.append(authority1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_authority_user", authuser1):
-#             ok = False
+            if not info_insert(self.tbl_mgr, "ops_slice", slice_obj):
+                ok = False
 
+        for idx in range(len(InfoPopulator.AUTHORITY_USER_IDS)):
+            user_obj = []
+            self.__fill_in_list_with_schema_id_and_url(user_obj, "user", InfoPopulator.AUTHORITY_USER_IDS[idx])
+            user_obj.append(InfoPopulator.AUTHORITY_USER_URNS[idx])
+            user_obj.append(str(int(time.time() * 1000000)))
+            user_obj.append(InfoPopulator.AUTHORITY_ID)  # authority id
+            user_obj.append(InfoPopulator.AUTHORITY_USER_IDS[idx] + " Example User")
+            user_obj.append(InfoPopulator.AUTHORITY_USER_IDS[idx] + "@example.com")
 
-#         authslice1 = []
-#         authslice1.append(slice1[1])
-#         authslice1.append(authority1[1])
-#
-#         if not info_insert(self.tbl_mgr, "ops_authority_slice", authslice1):
-#             ok = False
+            if not info_insert(self.tbl_mgr, "ops_user", user_obj):
+                ok = False
+
+        for slice_user in InfoPopulator.AUTHORITY_SLICE_USER_RELATION:
+            sliceuser_record = []
+            sliceuser_record.append(InfoPopulator.AUTHORITY_USER_IDS[slice_user[1]])
+            sliceuser_record.append(InfoPopulator.AUTHORITY_SLICE_IDS[slice_user[0]])
+            sliceuser_record.append(slice_user[2])
+
+            if not info_insert(self.tbl_mgr, "ops_slice_user", sliceuser_record):
+                ok = False
 
         return ok
 
@@ -878,41 +821,42 @@ class InfoPopulator():
 
     def insert_externalcheck_store_info(self):
         ok = True
-        extck_id = "gpo"
         ts = str(int(time.time() * 1000000))
-        extck = []
-        self.__fill_in_list_with_schema_id_and_url(extck, "externalcheck", extck_id)
+        extck = list()
+        self.__fill_in_list_with_schema_id_and_url(extck, "externalcheck", InfoPopulator.EXTCK_ID)
         extck.append(ts)
         extck.append(self.url_base + "/data/")
+        extck.append(InfoPopulator.POPULATOR_VERSION)  # populator version
         if not info_insert(self.tbl_mgr, "ops_externalcheck", extck):
             ok = False
 
-        exp1_id = "missouri_ig_to_gpo_ig"
 
-        exp1 = []
-        self.__fill_in_list_with_schema_id_and_url(exp1, "experiment", exp1_id)
-        exp1.append(ts)
-        exp1.append("urn:slice_urn")
-        exp1.append("uuid:slice_uuid")
-        exp1.append("urn:source_aggregate_urn")
-        exp1.append("source aggregate local datastore href")
-        exp1.append("urn:destination_aggregate_urn")
-        exp1.append("destination aggregate local datastore href")
-        exp1.append(extck_id)
-        if not info_insert(self.tbl_mgr, "ops_experiment", exp1):
-            ok = False
+        for idx in range(len(InfoPopulator.EXTCK_EXPERIMENT_IDS)):
+            exp_record = list()
+            self.__fill_in_list_with_schema_id_and_url(exp_record, "experiment", InfoPopulator.EXTCK_EXPERIMENT_IDS[idx])
+            exp_record.append(ts)
+            slice_idx = InfoPopulator.EXTCK_EXPERIMENT_SLICE_RELATION[idx]
+            exp_record.append(InfoPopulator.SLICE_URNS[slice_idx])
+            exp_record.append(InfoPopulator.SLICE_UUIDS[slice_idx])
+            exp_record.append("urn:source_aggregate_urn")
+            exp_record.append("source aggregate local datastore href")
+            exp_record.append("urn:destination_aggregate_urn")
+            exp_record.append("destination aggregate local datastore href")
+            exp_record.append(InfoPopulator.EXTCK_ID)
+            if not info_insert(self.tbl_mgr, "ops_experiment", exp_record):
+                ok = False
 
-#         extck_exp1 = []
-#         extck_exp1.append(exp1_id)
-#         extck_exp1.append(extck_id)
-#         if not info_insert(self.tbl_mgr, "ops_externalcheck_experiment", extck_exp1):
-#             ok = False
-
-        mon_agg = []
-        mon_agg.append(InfoPopulator.AGGREGATE_ID)
-        mon_agg.append(extck_id)
-        if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
-            ok = False
+        for idx in range(len(InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
+            if not self.insert_aggregate_info(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx],
+                                              InfoPopulator.EXTCK_MONITORED_AGG_URNS[idx], 
+                                              InfoPopulator.EXTCK_MONITORED_AGG_URLS[idx]):
+                ok = False
+                continue
+            mon_agg = list()
+            mon_agg.append(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx])
+            mon_agg.append(InfoPopulator.EXTCK_ID)
+            if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
+                ok = False
 
         return ok
 
