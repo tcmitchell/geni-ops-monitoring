@@ -14,8 +14,9 @@
   "properties": {
     "node_type" : {
       "description": "What kind of node this represents",
-      "enum": [ "server", "vm", "switch", "wimax_bs" ],
-      // server: "bare metal" node
+      "enum": [ "server", "baremetal", "vm", "switch", "wimax_bs" ],
+      // server: VM server
+      // baremetal: baremetal machine.
       // vm: virtual machine
       // switch: network switch
       // wimax_bs: WiMAX base station
