@@ -151,7 +151,7 @@ class LocalDatastoreServer:
 
             @self.app.route('/info/externalcheck/<path:extck_id>', methods=['GET'])
             def info_externalcheck_args(extck_id):
-                return make_resp(rest_call_handler.handle_externalcheck_info_query(self.tm, extck_id))
+                return make_resp(rest_call_handler.handle_externalcheck_info_query(self.tm, extck_id, self.monitoring_version))
 
             @self.app.route('/info/experiment/<path:exp_id>', methods=['GET'])
             def info_experiment_args(exp_id):
@@ -188,12 +188,12 @@ class LocalDatastoreServer:
 
             @self.app.route('/info/authority/<path:authority_id>', methods=['GET'])
             def info_authority_args(authority_id):
-                return make_resp(rest_call_handler.handle_authority_info_query(self.tm, authority_id))
+                return make_resp(rest_call_handler.handle_authority_info_query(self.tm, authority_id, self.monitoring_version))
 
             @self.app.route('/info/opsconfig/<path:opsconfig_id>', methods=['GET'])
             def info_opsconfig_args(opsconfig_id):
                 return rest_call_handler.handle_opsconfig_info_query(
-                    self.tm, opsconfig_id)
+                    self.tm, opsconfig_id, self.monitoring_version)
 
             @self.app.route('/data/', methods=['GET'])
             def data():

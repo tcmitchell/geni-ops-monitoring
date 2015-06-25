@@ -239,6 +239,13 @@ def handle_sliver_info_query(tm, sliver_id):
 
 # Main handle aggregate for info queries
 def handle_aggregate_info_query(tm, agg_id, monitoring_version):
+    """
+    Function to handle an aggregate info query.
+    :param tm: the table manager instance
+    :param agg_id: the aggregate id to look for
+    :param monitoring_version: the monitoring version of the ops monitoring software implementation.
+    :return: a json dictionary containing either the aggregate information or an error message.
+    """
     url = "/info/aggregate/" + agg_id
     opslog = logger.get_logger()
     table_str = "ops_aggregate"
@@ -271,7 +278,14 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
         return json.dumps(create_json_error_response(errStr, url))
 
 
-def handle_externalcheck_info_query(tm, extck_id):
+def handle_externalcheck_info_query(tm, extck_id, monitoring_version):
+    """
+    Function to handle an external check info query.
+    :param tm: the table manager instance
+    :param agg_id: the external check id to look for
+    :param monitoring_version: the monitoring version of the ops monitoring software implementation.
+    :return: a json dictionary containing either the external check information or an error message.
+    """
     url = "/info/externalcheck/" + extck_id
     opslog = logger.get_logger()
     table_str = "ops_externalcheck"
@@ -284,7 +298,11 @@ def handle_externalcheck_info_query(tm, extck_id):
 
         exp_refs = get_related_objects_refs(tm, "ops_experiment", "externalcheck_id", extck_id, ("selfRef",))
 
-        return json.dumps(get_externalcheck_info_dict(extck_schema, extck_info, exp_refs, monitored_aggregates))
+        return json.dumps(get_externalcheck_info_dict(extck_schema,
+                                                      extck_info,
+                                                      exp_refs,
+                                                      monitored_aggregates,
+                                                      monitoring_version))
 
     else:
         errStr = "external check store not found: " + extck_id
@@ -293,7 +311,14 @@ def handle_externalcheck_info_query(tm, extck_id):
 
 
 # Main handle aggregate for info queries
-def handle_authority_info_query(tm, auth_id):
+def handle_authority_info_query(tm, auth_id, monitoring_version):
+    """
+    Function to handle an authority info query.
+    :param tm: the table manager instance
+    :param agg_id: the authority id to look for
+    :param monitoring_version: the monitoring version of the ops monitoring software implementation.
+    :return: a json dictionary containing either the authority information or an error message.
+    """
     url = "/info/authority/" + auth_id
     opslog = logger.get_logger()
     table_str = "ops_authority"
@@ -309,7 +334,11 @@ def handle_authority_info_query(tm, auth_id):
 
         slice_refs = get_related_objects_refs(tm, "ops_slice", "authority_id", auth_id)
 
-        return json.dumps(get_authority_info_dict(auth_schema, auth_info, user_refs, slice_refs))
+        return json.dumps(get_authority_info_dict(auth_schema,
+                                                  auth_info,
+                                                  user_refs,
+                                                  slice_refs,
+                                                  monitoring_version))
 
     else:
         errStr = "authority not found: " + auth_id
@@ -414,11 +443,13 @@ def handle_experiment_info_query(tm, exp_id):
 
 
 # Main handle opsconfig info queries
-def handle_opsconfig_info_query(tm, opsconfig_id):
+def handle_opsconfig_info_query(tm, opsconfig_id, monitoring_version):
     url = "/info/opsconfig/" + opsconfig_id
     opslog = logger.get_logger()
     if opsconfig_id == "geni-prod":
-        return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
+        json_dict = json.load(open(tm.config_path + "opsconfig.json"))
+        json_dict["version"] = monitoring_version
+        return json.dumps(json_dict)
     else:
         errStr = "opsconfig not found: " + opsconfig_id
         opslog.debug(errStr)
@@ -679,7 +710,7 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
     return json_dict
 
 # Forms external check store info dictionary (to be made to JSON)
-def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
+def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs, monitoring_version):
 
     json_dict = {}
 
@@ -699,6 +730,8 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs):
         for mon_agg_ref in mon_agg_refs:
             if len(mon_agg_ref) > 0:
                 json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0], "href":mon_agg_ref[1]})
+
+    json_dict["monitoring_version"] = monitoring_version
 
     return json_dict
 
@@ -765,7 +798,7 @@ def get_slice_info_dict(schema, info_row, user_refs, auth_ref):
 
 
 # Forms authority info dictionary (to be made to JSON)
-def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
+def get_authority_info_dict(schema, info_row, user_refs, slice_refs, monitoring_version):
 
     json_dict = {}
 
@@ -785,6 +818,8 @@ def get_authority_info_dict(schema, info_row, user_refs, slice_refs):
         for slice_ref in slice_refs:
             if len(slice_ref) > 0:
                 json_dict["slices"].append({"href":slice_ref[0], "urn":slice_ref[1]})
+
+    json_dict["monitoring_version"] = monitoring_version
 
     return json_dict
 
