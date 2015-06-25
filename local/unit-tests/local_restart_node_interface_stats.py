@@ -41,12 +41,13 @@ def usage():
     sys.exit(2)
 
 def parse_args(argv):
+    import info_populator
     base_url = "http://127.0.0.1:5000"
-    node_id = "instageni.gpolab.bbn.com_node_pc1"
-    interface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
-    interfacevlan_id = "instageni.gpolab.bbn.com_interface_pc1:eth1:1750"
-    aggregate_id = "gpo-ig"
-    experiment_id = "missouri_ig_to_gpo_ig"
+    node_id = info_populator.InfoPopulator.NODE_IDS[0]
+    interface_id = info_populator.InfoPopulator.IF_IDS[0]
+    interfacevlan_id = info_populator.InfoPopulator.IFVLAN_IDS[0]
+    aggregate_id = info_populator.InfoPopulator.AGGREGATE_ID
+    experiment_id = info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[0]
     num_ins = 10;
     per_sec = 0.2;
 
@@ -101,6 +102,8 @@ def main(argv):
     ip = info_populator.InfoPopulator(tbl_mgr, base_url)
     error = False
     if not ip.insert_fake_info():
+        error = True
+    if not ip.insert_authority_store_info():
         error = True
     if not ip.insert_externalcheck_store():
         error = True
