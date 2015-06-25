@@ -986,9 +986,9 @@ def main(argv):
             print "cert-path %s is not a file" % (options.cert_path)
             return 1
         else:
-            TestLocalResponses.CERT_PATH = options.cert_path
+            TestResponses.CERT_PATH = options.cert_path
 
-    print "using certificate:", TestLocalResponses.CERT_PATH
+    print "using certificate:", TestResponses.CERT_PATH
     if options.xml_output:
         # we want to output a JUnit style report
         if not os.path.isdir(options.xml_output):
