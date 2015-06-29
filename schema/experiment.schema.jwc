@@ -25,6 +25,8 @@
     "source_aggregate": {
        "description":"Source aggregate information",
        "type":"object",
+       "required":true,
+       "additionalProperties": false,
        "properties": {
           "urn": {
             "type":"string",
@@ -39,8 +41,26 @@
     "destination_aggregate": {
        "description":"Destination aggregate information",
        "type":"object",
+       "required":true,
+       "additionalProperties": false,
        "properties": {
           "urn": {
+            "type":"string",
+            "required": true
+          },
+          "href": {
+            "type":"string",
+            "required": true
+          }
+       }
+    },
+    "experiment_group": {
+       "description":"Experiment group information",
+       "type":"object",
+       "required":true,
+       "additionalProperties": false,
+       "properties": {
+          "id": {
             "type":"string",
             "required": true
           },
