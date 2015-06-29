@@ -890,6 +890,20 @@
         ],
         "dependencies" : []
     },
+    {   "name":"experimentgroup",
+        "db_schema": [
+             ["$schema", "varchar", true],
+             ["id", "varchar", true],
+             ["selfRef", "varchar", true],
+             ["ts", "int8", true],         
+             ["group_description", "varchar", true]
+         ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]],
+            ["UNIQUE (%s)", ["selfRef"]]
+        ],
+        "dependencies" : []
+    },
     {   "name":"experiment",
         "db_schema": [
              ["$schema", "varchar", true],
@@ -902,14 +916,16 @@
              ["source_aggregate_href", "varchar", true],
              ["destination_aggregate_urn", "varchar", true],
              ["destination_aggregate_href", "varchar", true],
-             ["externalcheck_id", "varchar", true]
+             ["externalcheck_id", "varchar", true],
+             ["experimentgroup_id", "varchar", false]
          ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["experimentgroup_id", "ops_experimentgroup", "id"]]
         ],
-        "dependencies" : ["ops_externalcheck"]
+        "dependencies" : ["ops_externalcheck", "ops_experimentgroup"]
     },
     {   "name":"opsconfig",
         "db_schema": [
