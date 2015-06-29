@@ -243,10 +243,21 @@ class InfoPopulator():
     EXTCK_EXPERIMENT_IDS = ("missouri-ig_to_gpo-ig",
                             "missouri-ig_to_gpo-eg",
                             "missouri-ig_to_utah-ig",
+                            "missouri-ig_to_utah-ig_al2s",
                             )
 
+    EXTCK_EXPERIMENTGROUP_IDS = ("mesoscale",
+                                 "al2s",
+                                 )
+
+    EXTCK_EXPERIMENTGROUP_DESC = ("Connectivity checks via mesoscale OpenFlow network",
+                                  "Connectivity checks via al2s OpenFlow network",
+                                 )
     # at the experiment IDX is the slice index
-    EXTCK_EXPERIMENT_SLICE_RELATION = (0, 1, 1)
+    EXTCK_EXPERIMENT_SLICE_RELATION = (0, 1, 1, 0)
+
+    # at the experiment IDX is the slice index
+    EXTCK_EXPERIMENT_GROUP_RELATION = (0, 0, 0, 1)
 
     EXTCK_MONITORED_AGG_IDS = ("cwru-ig",
                                "cenic-ig",
@@ -337,14 +348,14 @@ class InfoPopulator():
             if if_idx == tup[1]:
                 return node_idx
         return None
-    
+
     @staticmethod
     def get_node_id_for_if_idx(if_idx):
         node_idx = InfoPopulator.get_node_idx_for_if_idx(if_idx)
         if node_idx is not None:
             return InfoPopulator.NODE_IDS[node_idx]
         return None
-    
+
     @staticmethod
     def __get_schema_url_for(objecttype):
         return InfoPopulator.__SCHEMA_BASE + objecttype + '#'
@@ -830,6 +841,14 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_externalcheck", extck):
             ok = False
 
+        for idx in range(len(InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS)):
+            expgroup_record = list()
+            self.__fill_in_list_with_schema_id_and_url(expgroup_record, "experimentgroup", InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[idx])
+            expgroup_record.append(ts)
+            expgroup_record.append(InfoPopulator.EXTCK_EXPERIMENTGROUP_DESC[idx])
+            if not info_insert(self.tbl_mgr, "ops_experimentgroup", expgroup_record):
+                ok = False
+
 
         for idx in range(len(InfoPopulator.EXTCK_EXPERIMENT_IDS)):
             exp_record = list()
@@ -843,12 +862,14 @@ class InfoPopulator():
             exp_record.append("urn:destination_aggregate_urn")
             exp_record.append("destination aggregate local datastore href")
             exp_record.append(InfoPopulator.EXTCK_ID)
+            exp_id = InfoPopulator.EXTCK_EXPERIMENT_GROUP_RELATION[idx]
+            exp_record.append(InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[exp_id])
             if not info_insert(self.tbl_mgr, "ops_experiment", exp_record):
                 ok = False
 
         for idx in range(len(InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
             if not self.insert_aggregate_info(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx],
-                                              InfoPopulator.EXTCK_MONITORED_AGG_URNS[idx], 
+                                              InfoPopulator.EXTCK_MONITORED_AGG_URNS[idx],
                                               InfoPopulator.EXTCK_MONITORED_AGG_URLS[idx]):
                 ok = False
                 continue
