@@ -215,7 +215,7 @@ class SingleLocalDatastoreInfoCrawler:
                             ok = False
                             insert = False
                     if insert:
-                        mon_agg_info = [agg_id, self.extck_dict["id"], agg_url]
+                        mon_agg_info = [agg_id, self.extck_dict["id"]]
                         if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
                                            (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
                                            self.debug, self.logger):
@@ -229,7 +229,7 @@ class SingleLocalDatastoreInfoCrawler:
         """
         ok = True
         if self.extck_dict:
-            schema = self.tbl_mgr.schema_dict["ops_externalcheck_experiment"]
+#             schema = self.tbl_mgr.schema_dict["ops_externalcheck_experiment"]
             exp_schema = self.tbl_mgr.schema_dict["ops_experiment"]
 
             if "experiments" in self.extck_dict:
@@ -237,20 +237,20 @@ class SingleLocalDatastoreInfoCrawler:
                     # Check that monitored aggregate ID exists in ops_aggregates
                     # if not, get the info from the href and insert it
                     experiment_url = experiment["href"]
-                    insert = True
+#                     insert = True
                     experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
                     experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
                     if not info_update(self.tbl_mgr, "ops_experiment", exp_schema, experiment_info_list, \
                                        self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
                                        self.debug, self.logger):
                             ok = False
-                            insert = False
-                    if insert:
-                        experiment_relation_info = [experiment_dict["id"], self.extck_dict["id"], experiment_url]
-                        if not info_update(self.tbl_mgr, "ops_externalcheck_experiment", schema, experiment_relation_info, \
-                                           (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
-                                           self.debug, self.logger):
-                            ok = False
+#                             insert = False
+#                     if insert:
+#                         experiment_relation_info = [experiment_dict["id"], self.extck_dict["id"], experiment_url]
+#                         if not info_update(self.tbl_mgr, "ops_externalcheck_experiment", schema, experiment_relation_info, \
+#                                            (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
+#                                            self.debug, self.logger):
+#                             ok = False
         return ok
 
     def refresh_one_link_info(self, resource_object, link_schema):
@@ -694,6 +694,8 @@ class SingleLocalDatastoreInfoCrawler:
         mapping["source_aggregate_href"] = ("source_aggregate", "href")
         mapping["destination_aggregate_urn"] = ("destination_aggregate", "urn")
         mapping["destination_aggregate_href"] = ("destination_aggregate", "href")
+        # to avoid the warning.
+        experiment_dict['externalcheck_id'] = self.extck_id
         experiment_info_list = self.extract_row_from_json_dict(db_table_schema, experiment_dict, "experiment", mapping)
         return experiment_info_list
 
