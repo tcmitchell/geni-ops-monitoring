@@ -960,11 +960,42 @@ class TestExternalCheckStoreResponses(TestResponses):
             self.check_json_dictionary_for_field_presence(json_dict["source_aggregate"], "href", desc)
             self.check_json_dictionary_for_field_presence(json_dict["destination_aggregate"], "urn", desc)
             self.check_json_dictionary_for_field_presence(json_dict["destination_aggregate"], "href", desc)
+            group_idx = info_populator.InfoPopulator.EXTCK_EXPERIMENT_GROUP_RELATION[i]
+            self.check_json_dictionary_for_field_presence(json_dict, "experiment_group", desc)
+            group_array = [json_dict["experiment_group"]]
+            expected_dict = {"id": info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[group_idx],
+                             "href": self.base_url + "/info/experimentgroup/" + info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[group_idx]}
+            self.find_keys_and_values_in_json_array(group_array,
+                                                    expected_dict,
+                                                    'id',
+                                                    "experiement group")
 
     def test_get_wrong_experiment_info(self):
         incorrect_experiment_id = info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[0] + "_WRONG"
         url = self.base_url + "/info/experiment/" + incorrect_experiment_id
         self.check_error_response(url, ("experiment not found: " + incorrect_experiment_id))
+
+    def test_get_experimentgroup_info(self):
+        for i in range(len(info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS)):
+            url = self.base_url + "/info/experimentgroup/" + info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[i]
+            json_dict = self.get_json_dictionary(url)
+
+            desc = "experiment group %s info" % info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[i]
+
+            self.assertIsNotNone(json_dict, "Error parsing return from %s" % url)
+            self.check_json_dictionary_for_field(json_dict, "$schema", TestResponses.BASE_SCHEMA + "experimentgroup#", desc)
+            self.check_json_dictionary_for_field(json_dict, "selfRef", url, desc)
+            self.check_json_dictionary_for_field(json_dict, "id", info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[i], desc)
+            self.check_json_dictionary_for_field_presence(json_dict, "ts", desc)
+            self.check_json_dictionary_for_field(json_dict, "group_description", 
+                                                 info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_DESC[i], desc)
+
+    def test_get_wrong_experimentgroup_info(self):
+        incorrect_experiment_group_id = info_populator.InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[0] + "_WRONG"
+        url = self.base_url + "/info/experimentgroup/" + incorrect_experiment_group_id
+        self.check_error_response(url, ("experiment group not found: " + incorrect_experiment_group_id))
+
+
 
 def main(argv):
 
