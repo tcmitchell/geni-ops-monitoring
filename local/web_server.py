@@ -157,6 +157,10 @@ class LocalDatastoreServer:
             def info_experiment_args(exp_id):
                 return make_resp(rest_call_handler.handle_experiment_info_query(self.tm, exp_id))
 
+            @self.app.route('/info/experimentgroup/<path:expgroup_id>', methods=['GET'])
+            def info_experimentgroup_args(expgroup_id):
+                return make_resp(rest_call_handler.handle_experimentgroup_info_query(self.tm, expgroup_id))
+
             @self.app.route('/info/node/<path:node_id>', methods=['GET'])
             def info_node_args(node_id):
                 return make_resp(rest_call_handler.handle_node_info_query(self.tm, node_id))

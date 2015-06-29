@@ -69,7 +69,7 @@ def handle_ts_data_query(tm, filters):
         return "[]"
 
     resp_arr = []
-    
+
     # Remember if we are wildcarding (selecting all of) the objects.
     # If we are, none of the other object ids in the list (if any)
     # matter, since we're going to get them all anyway.
@@ -434,13 +434,29 @@ def handle_experiment_info_query(tm, exp_id):
     exp_info = get_object_info(tm, table_str, exp_id)
 
     if exp_info is not None:
-        return json.dumps(get_experiment_info_dict(exp_schema, exp_info))
+        group_id = exp_info[tm.get_column_from_schema(exp_schema, "experimentgroup_id")]
+        group_refs = get_related_objects_refs(tm, "ops_experimentgroup", "id", group_id, ("selfRef", "id"))
+        return json.dumps(get_experiment_info_dict(exp_schema, exp_info, group_refs[0]))
     else:
         errStr = "experiment not found: " + exp_id
         opslog.debug(errStr)
         return json.dumps(create_json_error_response(errStr, url))
 
 
+def handle_experimentgroup_info_query(tm, expgroup_id):
+    url = "/info/experimentgroup/" + expgroup_id
+    opslog = tm.logger
+    table_str = "ops_experimentgroup"
+    expgroup_schema = tm.schema_dict[table_str]
+
+    expgroup_info = get_object_info(tm, table_str, expgroup_id)
+
+    if expgroup_info is not None:
+        return json.dumps(get_experiment_group_info_dict(expgroup_schema, expgroup_info))
+    else:
+        errStr = "experiment group not found: " + expgroup_id
+        opslog.debug(errStr)
+        return json.dumps(create_json_error_response(errStr, url))
 
 # Main handle opsconfig info queries
 def handle_opsconfig_info_query(tm, opsconfig_id, monitoring_version):
@@ -539,7 +555,7 @@ def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, add
 
 
 # Forms experiment info dictionary (to be made to JSON)
-def get_experiment_info_dict(schema, info_row):
+def get_experiment_info_dict(schema, info_row, group_ref):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
@@ -554,6 +570,8 @@ def get_experiment_info_dict(schema, info_row):
             elif schema[col_i][0] == "destination_aggregate_href":
                 dest_agg_href = info_row[col_i]
             elif schema[col_i][0] == 'externalcheck_id':
+                continue
+            elif schema[col_i][0] == "experimentgroup_id":
                 continue
             else:  # top level keys are equal to what is in DB
                 json_dict[schema[col_i][0]] = info_row[col_i]
@@ -573,6 +591,11 @@ def get_experiment_info_dict(schema, info_row):
             json_dict["destination_aggregate"]["urn"] = dest_agg_urn
         if (dest_agg_href is not None):
             json_dict["destination_aggregate"]["href"] = dest_agg_href
+
+    if group_ref is not None:
+        json_dict["experiment_group"] = dict()
+        json_dict["experiment_group"]["href"] = group_ref[0];
+        json_dict["experiment_group"]["id"] = group_ref[1];
 
     return json_dict
 
@@ -596,6 +619,14 @@ def get_interfacevlan_info_dict(schema, info_row, if_ref):
 
     return json_dict
 
+def get_experiment_group_info_dict(schema, info_row):
+
+    json_dict = dict()
+    # NOT all of info_row goes into top level dictionary
+    for col_i in range(len(schema)):
+        if should_include_json_field(schema, info_row, col_i):
+            json_dict[schema[col_i][0]] = info_row[col_i]
+    return json_dict
 
 # Forms user info dictionary (to be made to JSON)
 def get_user_info_dict(schema, info_row, auth_ref):
@@ -703,7 +734,7 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
         json_dict["slivers"] = []
         for slv_ref in slv_refs:
             if len(slv_ref) > 0:
-                json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})  
+                json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})
 
     json_dict["monitoring_version"] = monitoring_version
 
