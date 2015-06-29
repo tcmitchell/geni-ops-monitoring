@@ -222,6 +222,18 @@ class SingleLocalDatastoreInfoCrawler:
                             ok = False
         return ok
 
+    def refresh_one_experiment_group_info(self, exp_group_url, expgroup_schema):
+        ok = True
+        exp_group_dict = handle_request(exp_group_url, self.cert_path, self.logger)
+        if exp_group_dict:
+            exp_group_info_list = self.extract_row_from_json_dict(expgroup_schema, exp_group_dict, "experiment group")
+            if not info_update(self.tbl_mgr, "ops_experimentgroup", expgroup_schema, exp_group_info_list, \
+                               self.tbl_mgr.get_column_from_schema(expgroup_schema, "id"), self.debug, self.logger):
+                ok = False
+        else:
+            ok = False
+        return ok
+
     def refresh_all_experiments_info(self):
         """
         Method to refresh the experiment information associated with an external check store
@@ -231,6 +243,7 @@ class SingleLocalDatastoreInfoCrawler:
         if self.extck_dict:
 #             schema = self.tbl_mgr.schema_dict["ops_externalcheck_experiment"]
             exp_schema = self.tbl_mgr.schema_dict["ops_experiment"]
+            expgroup_schema = self.tbl_mgr.schema_dict["ops_experimentgroup"]
 
             if "experiments" in self.extck_dict:
                 for experiment in self.extck_dict["experiments"]:
@@ -240,6 +253,12 @@ class SingleLocalDatastoreInfoCrawler:
 #                     insert = True
                     experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
                     experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
+                    # if old schema, there is no experiment group
+                    if 'experiment_group' in experiment_dict:
+                        # Need to make sure we have the experiment group info
+                        if not self.check_exists("ops_experimentgroup", "id", experiment_dict['experiment_group']['id']):
+                            if not self.refresh_one_experiment_group_info(experiment_dict['experiment_group']['href'], expgroup_schema):
+                                ok = False
                     if not info_update(self.tbl_mgr, "ops_experiment", exp_schema, experiment_info_list, \
                                        self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
                                        self.debug, self.logger):
@@ -251,6 +270,7 @@ class SingleLocalDatastoreInfoCrawler:
 #                                            (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
 #                                            self.debug, self.logger):
 #                             ok = False
+
         return ok
 
     def refresh_one_link_info(self, resource_object, link_schema):
@@ -696,6 +716,7 @@ class SingleLocalDatastoreInfoCrawler:
         mapping["destination_aggregate_href"] = ("destination_aggregate", "href")
         # to avoid the warning.
         experiment_dict['externalcheck_id'] = self.extck_id
+        mapping["experimentgroup_id"] = ("experiment_group", "id")
         experiment_info_list = self.extract_row_from_json_dict(db_table_schema, experiment_dict, "experiment", mapping)
         return experiment_info_list
 
