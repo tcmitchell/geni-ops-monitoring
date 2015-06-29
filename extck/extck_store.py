@@ -46,6 +46,9 @@ import pinger
 import extck_populate_stitching_experiment
 import opsconfig_loader
 
+
+__BASE_SCHEMA_URL = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
+
 def getSiteInfo(nickCache, srcSiteName, aggStores):
         am_urn = nickCache.get_am_urn(srcSiteName)
         am_url = nickCache.get_am_url(srcSiteName)
@@ -109,16 +112,34 @@ class InfoPopulator():
     def __getSiteInfo(self, srcSiteName, aggStores):
         return getSiteInfo(self._nickCache, srcSiteName, aggStores)
 
+    def __addExperimentGroupInfo(self, group_id, group_desc):
+        expgroup_tablename = "ops_experimentgroup"
+        expgroup_schema = self.tbl_mgr.schema_dict[expgroup_tablename]
+        ts = str(int(time.time() * 1000000))
+        expgroup = [__BASE_SCHEMA_URL + "experimentgroup#", group_id,
+                    self.extckStoreBaseUrl + "/info/experimentgroup/" + group_id,
+                    ts, group_desc
+                    ]
+        self.tbl_mgr.upsert(expgroup_tablename, expgroup_schema, expgroup,
+                            self.tbl_mgr.get_column_from_schema(expgroup_schema, "id"))
+
     def populateExperimentInfoTables(self, aggStores):
         slices = self._config.get_experiment_slices_info()
         ping_sets = self._config.get_experiment_ping_set()
 
         experiment_names = set()
 
+
         for ping_set in ping_sets:
             srcPing = self._config.get_experiment_source_ping_for_set(ping_set)
-            # Populate "ops_externalcheck_experiment" and "ops_experiment" tables
-            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names)
+            # Populate "ops_experimentgroup" table
+            (group_id, group_desc) = self._config.get_experiment_group_for_ping_set(ping_set)
+            self.__addExperimentGroupInfo(group_id, group_desc)
+            # Populate "ops_experiment" table
+            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names, group_id)
+
+        (group_id, group_desc) = self._config.get_experiment_group_for_stitching("scs-geni")
+        self.__addExperimentGroupInfo(group_id, group_desc)
 
         stitch_site_info = extck_populate_stitching_experiment.get_stitch_sites_details(self.tbl_mgr)
         stitch_slicename = self._config.get_stitch_experiment_slicename()
@@ -130,17 +151,17 @@ class InfoPopulator():
             for idx2 in range(idx1 + 1, len(stitch_site_info)):
                 site2 = stitch_site_info[idx2]
                 exp_id = extck_populate_stitching_experiment.name_stitch_path_experiment(site1[0], site2[0])
-                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names)
+                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names, group_id)
 
         self.__cleanUpObsoleteExperiments(experiment_names)
-    
-    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names):
+
+    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names, group_id):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
 #         ext_exp_tablename = "ops_externalcheck_experiment"
 #         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
         ts = str(int(time.time() * 1000000))
-        exp = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/experiment#",
+        exp = [__BASE_SCHEMA_URL + "experiment#",
                exp_id,
                self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
                ts,
@@ -150,7 +171,8 @@ class InfoPopulator():
                srcAmHref,
                dstAmUrn,
                dstAmHref,
-               exp_id
+               exp_id,
+               group_id
                ]
         self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
 #         extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
@@ -159,7 +181,7 @@ class InfoPopulator():
 #                              self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
         experiment_names.add(exp_id)
 
-    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names):
+    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names, group_id):
         ipList = dict(self._ipsconfig.items(ping_set))
 
         for srcSite in srcPing:
@@ -184,7 +206,7 @@ class InfoPopulator():
                                                 % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
                     continue
                 else:
-                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names)
+                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names, group_id)
 
 
     def __cleanUpObsoleteExperiments(self, experiment_names):
@@ -242,7 +264,7 @@ class InfoPopulator():
 
     def insert_externalcheck(self):
         ts = str(int(time.time() * 1000000))
-        extck = ["http://www.gpolab.bbn.com/monitoring/schema/20140828/externalcheck#",
+        extck = [__BASE_SCHEMA_URL + "externalcheck#",
                  self._extckStoreSite,
                  self.extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
                  ts,
@@ -541,7 +563,7 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip, config):
     """
     ops_agg_schema = ip.tbl_mgr.schema_dict["ops_aggregate"]
     # TODO parameterize these
-    agg_schema_str = "http://www.gpolab.bbn.com/monitoring/schema/20140828/aggregate#"
+    agg_schema_str = __BASE_SCHEMA_URL + "/aggregate#"
     version_filename = top_path + "/VERSION"
     try:
         version_file = open(version_filename)
