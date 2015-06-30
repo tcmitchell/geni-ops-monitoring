@@ -653,6 +653,41 @@
        "urn": "urn:publicid:IDN+wimaxrf.rutgers-wimax+authority+cm",
        "amtype": "wimax",
        "href": "http://oml.orbit-lab.org:5054/genimon/info/aggregate/rutgers-wimax"
+    },
+    // iMinds stores
+    // For now the external check will create these entries
+    // much in the same way it does for foam data stores.
+    // In the future iMinds will have their own data store and the
+    // creation will have to be disabled for the external check store.
+    {
+       "urn": "urn:publicid:IDN+wall1.ilabt.iminds.be+authority+cm",
+       "amtype": "iminds",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw1",
+       "amurl": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "im-vw1"
+    },
+    {
+       "urn": "urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm",
+       "amtype": "iminds",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw2",
+       "amurl": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "im-vw2"
+    },
+    {
+       "urn": "urn:publicid:IDN+wilab2.ilabt.iminds.be+authority+cm",
+       "amtype": "iminds",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-wilab",
+       "amurl": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+       "amurl1": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+       "amurl2": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+       "amurl3": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+       "am_nickname": "im-wilab"
     }
   ],
   "externalcheckstores": [
