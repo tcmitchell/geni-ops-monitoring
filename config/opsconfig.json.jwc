@@ -640,12 +640,12 @@
        "am_status": "production"
     },
     {
-       "urn": "FAKE-URN:publicid:IDN+sticther:oingo.dragon.maxgigapop.net+authority+am",
+       "urn": "FAKE-URN:publicid:IDN+sticther:nutshell.maxgigapop.net+authority+am",
        "amtype": "stitcher",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-max",
-       "amurl": "https://oingo.dragon.maxgigapop.net:8443/geni/xmlrpc",
-       "amurl2": "http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc",
-       "am_nickname": "scs-max",
+       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-geni-test",
+       "amurl": "https://nutshell.maxgigapop.net:8443/geni/xmlrpc",
+       "amurl2": "http://nutshell.maxgigapop.net:8081/geni/xmlrpc",
+       "am_nickname": "scs-geni-test",
        "am_status": "development"
     },
     // Wimax stores
