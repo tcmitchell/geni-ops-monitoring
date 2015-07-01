@@ -263,12 +263,15 @@
        "amtype": "exogeni",
        "href": "https://uh-hn.exogeni.net:4334/info/aggregate/uhvmsite"
     },
-    {
-       "urn": "urn:publicid:IDN+exogeni.net:ncsuvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://ncsu-hn.exogeni.net:4334/info/aggregate/ncsuvmsite",
-       "amurl": "https://ncsu-hn.exogeni.net:11443/orca/xmlrpc"
-    },
+    // Commenting out NCSU CISCO ExoGENI rack as its fate is uncertain 
+    // at the moment (07/01/15)
+    // We can add it back if it comes back to life later.
+//    {
+//       "urn": "urn:publicid:IDN+exogeni.net:ncsuvmsite+authority+am",
+//       "amtype": "exogeni",
+//       "href": "https://ncsu-hn.exogeni.net:4334/info/aggregate/ncsuvmsite",
+//       "amurl": "https://ncsu-hn.exogeni.net:11443/orca/xmlrpc"
+//    },
     {
        "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
        "amtype": "exogeni",
