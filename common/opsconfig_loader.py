@@ -58,32 +58,13 @@ class OpsconfigLoader:
 
         opsconfig = self.config_json
 
-        event_types = {}
-        event_types["node"] = []
-        event_types["interface"] = []
-        event_types["interfacevlan"] = []
-        event_types["experiment"] = []
-        event_types["aggregate"] = []
+        event_types = dict()
 
-        # node event types
-        for ev_i in opsconfig["events"]["node"]:
-            event_types["node"].append(ev_i["name"])
 
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
-            event_types["interface"].append(ev_i["name"])
-
-        # interfacevlan event types
-        for ev_i in opsconfig["events"]["interfacevlan"]:
-            event_types["interfacevlan"].append(ev_i["name"])
-
-        # experiment event types
-        for ev_i in opsconfig["events"]["experiment"]:
-            event_types["experiment"].append(ev_i["name"])
-
-        # aggregate event types
-        for ev_i in opsconfig["events"]["aggregate"]:
-            event_types["aggregate"].append(ev_i["name"])
+        for obj_type in ("node", "interface", "interfacevlan", "experiment", "aggregate"):
+            event_types[obj_type] = list()
+            for ev_i in opsconfig["events"][obj_type]:
+                event_types[obj_type].append(ev_i["name"])
 
         return event_types
 
@@ -99,29 +80,18 @@ class OpsconfigLoader:
         """
 
         opsconfig = self.config_json
-        data_schema = {}
+        data_schema = dict()
 
-        # node event types
         # add ops_ to avoid namespace collision with database (i.e.,
         # user not allowed)
-        for ev_i in opsconfig["events"]["node"]:
-            data_schema["ops_node_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
+        for obj_type in ("node", "interface", "interfacevlan", "experiment", "aggregate"):
+            for ev_i in opsconfig["events"][obj_type]:
+                data_schema["ops_" + obj_type + "_" + ev_i["name"]] = [["id", ev_i["id"]],
+                                                                       ["ts", ev_i["ts"]],
+                                                                       ["v", ev_i["v"]],
+                                                                       ["units", ev_i["units"]]
+                                                                       ]
 
-        # interface event types
-        for ev_i in opsconfig["events"]["interface"]:
-            data_schema["ops_interface_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
-
-        # interfacevlan event types
-        for ev_i in opsconfig["events"]["interfacevlan"]:
-            data_schema["ops_interfacevlan_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
-
-        # experiment event types
-        for ev_i in opsconfig["events"]["experiment"]:
-            data_schema["ops_experiment_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
-
-        # aggregate event types
-        for ev_i in opsconfig["events"]["aggregate"]:
-            data_schema["ops_aggregate_" + ev_i["name"]] = [["id", ev_i["id"]], ["ts", ev_i["ts"]], ["v", ev_i["v"]], ["units", ev_i["units"]]]
 
         return data_schema
 
@@ -167,8 +137,8 @@ class OpsconfigLoader:
     def get_info_dependencies(self):
         """
         Method to get the DB information tables dependencies.
-        The dependencies object is a dictionary where the keys are the table names and the values are lists.
-        These lists contain the names of the tables the table identified by the key, is dependent upon.
+        The dependencies object is a dictionary where the keys are the table names and the values are sets.
+        These sets contain the names of the tables that the table identified by the key, is dependent upon.
         :return: the DB information tables dependencies. 
         """
         opsconfig = self.config_json
@@ -178,6 +148,40 @@ class OpsconfigLoader:
         # add ops_ to avoid namespace collision with database (i.e.,
         # user not allowed)
         for info_i in opsconfig["info"]:
-            info_dep["ops_" + info_i["name"]] = info_i["dependencies"]
+            info_dep["ops_" + info_i["name"]] = set(info_i["dependencies"])
 
         return info_dep
+
+    def get_obsolete_info_dependencies(self):
+        """
+        Method to get the obsolete DB information tables dependencies.
+        The dependencies object is a dictionary where the keys are the obsolete
+        table names and the values are sets. These sets contain the names of
+        the tables (obsolete and valid) that the obsolete table identified by the key,
+        was dependent upon.
+        :return: the DB information tables dependencies.
+        """
+        info_dep = dict()
+        for info_i in self.config_json["obsolete"]["info"]:
+            info_dep["ops_" + info_i["name"]] = set(info_i["dependencies"])
+
+        return info_dep
+
+    def get_obsolete_data_table_names(self):
+        """
+        Method to get the obsolete DB data tables names.
+        The returned value is a list of the obsolete data tables names.
+        :return: the obsolete DB data tables names.
+        """
+        obsolete_data = list()
+
+        # node event types
+        # add ops_ to avoid namespace collision with database (i.e.,
+        # user not allowed)
+        for obj_type in ("node", "interface", "interfacevlan", "experiment", "aggregate"):
+            for ev_i in self.config_json["obsolete"]["events"][obj_type]:
+                obsolete_data.append("ops_" + obj_type + "_" + ev_i["name"])
+
+
+        return obsolete_data
+
