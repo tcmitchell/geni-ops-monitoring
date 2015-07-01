@@ -533,6 +533,32 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
         ip.tbl_mgr.logger.info("Wimax aggregate won't be monitored (%s)" % urn)
         lock.release()
         return
+    elif amtype == "iminds" :
+        # iMinds store. Registering them for now
+        if not urn_to_urls_map.has_key(urn):
+            lock.acquire()
+            ip.tbl_mgr.logger.warning("No known AM API URL for aggregate: %s\n Will NOT monitor" % urn)
+            lock.release()
+            return
+
+        selfRef = aggregate['href']
+        ops_status = "production"
+
+        # Get aggregate id
+        cols = selfRef.strip().split('/')
+        aggId = cols[len(cols) - 1]  # Grab last component in cols
+
+        ts = str(int(time.time() * 1000000))
+        agg_attributes = (agg_schema_str,  # schema
+                          aggId,  # id
+                          selfRef,  # selfref
+                          urn,  # urn
+                          ts,  # time stamp
+                          extck_measRef,  # meas Ref
+                          monitoring_version,  # # populator version
+                          ops_status,  # operational status
+                          None  # routable IP poolsize
+                          )
     else:
         lock.acquire()
         ip.tbl_mgr.logger.warning("Unrecognized AM type: " + amtype)

@@ -296,6 +296,7 @@ def check_aggregate_state_for_one_url((monitored_aggregate_id, amtype, am_url, l
         amtype == "instageni" or \
         amtype == "exogeni" or \
         amtype == "opengeni" or \
+        amtype == "iminds" or \
         amtype == "network-aggregate":
         state = getAMStateForURL(monitored_aggregate_id, am_url, amtype, config, lock)
     elif amtype == "stitcher":
