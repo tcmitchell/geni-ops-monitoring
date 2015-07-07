@@ -413,7 +413,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         tbl_mgr = self.tbl_mgr
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_externalcheck_experiment where externalcheck_id = '" + self.extck_id + "'")
+        q_res = tbl_mgr.query("select id from ops_experiment where externalcheck_id = '" + self.extck_id + "'")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
