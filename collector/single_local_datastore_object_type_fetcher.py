@@ -180,7 +180,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 ok = False
 
             if data is not None:
-                if data.has_key('$schema') and data['$schema'].endswith('/error#'):
+                if isinstance(data, dict) and data.has_key('$schema') and data['$schema'].endswith('/error#'):
                     if data.has_key('error_message') and data.has_key('origin_url'):
                         self.logger.warning('Error returned from store for url ' + data['origin_url'] + ': ' + data['error_message'])
                     continue
