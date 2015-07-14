@@ -72,6 +72,16 @@
           "href": {
             "type": "string",
             "required": true
+          },
+          // This allows to specify the metrics names reported by the specific external check
+          // about this monitored aggregate.
+          "reported_metrics": {
+            "description": "metrics reported by this external check about this monitored aggregate",
+            "type": "array",
+            "required": false,
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
