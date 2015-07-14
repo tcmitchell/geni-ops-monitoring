@@ -741,15 +741,17 @@
              ["measRef","varchar", false],
              ["populator_version", "varchar", false],
              ["operational_status", "varchar", true],
-             ["routable_ip_poolsize", "int4", false]
+             ["routable_ip_poolsize", "int4", false],
+             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
-            ["UNIQUE (%s)", ["urn"]]
+            ["UNIQUE (%s)", ["urn"]],
 //            ["UNIQUE (%s)", ["measRef"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_aggregate_metricsgroup", "id"]]
         ],
-        "dependencies" : []
+        "dependencies" : ["ops_aggregate_metricsgroup"]
     },
     {   "name":"node",
         "db_schema": [
@@ -762,16 +764,18 @@
              ["properties$mem_total_kb", "int8", false],
              ["virtualization_type", "varchar", false],
              ["parent_node_id", "varchar", false],
-             ["aggregate_id", "varchar", true]
+             ["aggregate_id", "varchar", true],
+             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_node_id", "ops_node", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_node_metricsgroup", "id"]]
         ],
-        "dependencies" : ["ops_aggregate"]
+        "dependencies" : ["ops_aggregate", "ops_node_metricsgroup"]
     },
     {   "name": "link",
         "db_schema": [
@@ -783,6 +787,7 @@
              ["ts", "int8", true],
              ["aggregate_id", "varchar", true],
              ["parent_link_id", "varchar", false]
+//             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
@@ -790,8 +795,9 @@
             ["UNIQUE (%s)", ["urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_link_id", "ops_link", "id"]]
+//            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_link_metricsgroup", "id"]]
         ],
-        "dependencies" : ["ops_aggregate"]
+        "dependencies" : ["ops_aggregate", "ops_link_metricsgroup"]
     },
     {   "name": "sliver",
         "db_schema": [
@@ -828,16 +834,18 @@
              ["properties$max_bps", "int8", false],
              ["properties$max_pps", "int8", false],
              ["parent_interface_id", "varchar", false],
-             ["node_id", "varchar", false]
+             ["node_id", "varchar", false],
+             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["parent_interface_id", "ops_interface", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["node_id", "ops_node", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_interface_metricsgroup", "id"]]
         ],
-        "dependencies" : ["ops_node"]
+        "dependencies" : ["ops_node", "ops_interface_metricsgroup"]
     },
     {   "name": "interfacevlan",
         "db_schema": [
@@ -847,15 +855,17 @@
              ["urn", "varchar", true],
              ["ts", "int8", true],
              ["tag", "int8", true],
-             ["interface_id", "varchar", true]
+             ["interface_id", "varchar", true],
+             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["UNIQUE (%s)", ["urn"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_id", "ops_interface", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_id", "ops_interface", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_interfacevlan_metricsgroup", "id"]]
         ],
-        "dependencies" : ["ops_interface"]
+        "dependencies" : ["ops_interface", "ops_interfacevlan_metricsgroup"]
     },
     {   "name":"authority",
         "db_schema": [
@@ -955,15 +965,17 @@
              ["destination_aggregate_urn", "varchar", true],
              ["destination_aggregate_href", "varchar", true],
              ["externalcheck_id", "varchar", true],
-             ["experimentgroup_id", "varchar", false]
+             ["experimentgroup_id", "varchar", false],
+             ["metricsgroup_id", "varchar", true]
          ],
         "constraints": [
             ["PRIMARY KEY (%s)", ["id"]],
             ["UNIQUE (%s)", ["selfRef"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["experimentgroup_id", "ops_experimentgroup", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["experimentgroup_id", "ops_experimentgroup", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_experiment_metricsgroup", "id"]]
         ],
-        "dependencies" : ["ops_externalcheck", "ops_experimentgroup"]
+        "dependencies" : ["ops_externalcheck", "ops_experimentgroup", "ops_experiment_metricsgroup"]
     },
     {   "name":"opsconfig",
         "db_schema": [
@@ -1162,12 +1174,14 @@
     {   "name":"externalcheck_monitoredaggregate",
         "db_schema": [
              ["id", "varchar", true],
-             ["externalcheck_id", "varchar", true]
+             ["externalcheck_id", "varchar", true],
+             ["metricsgroup_id", "varchar", true]
         ],
         "constraints": [
             ["PRIMARY KEY (%s, %s)", ["id", "externalcheck_id"]],
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_aggregate", "id"]],
-            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]],
+            ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["metricsgroup_id", "ops_aggregate_metricsgroup", "id"]]
         ],
         "dependencies" : ["ops_aggregate", "ops_externalcheck"]
     },
@@ -1183,6 +1197,175 @@
             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["interface_id", "ops_interface", "id"]]
         ],
         "dependencies" : ["ops_interface"]
+    },
+    {   "name":"aggregate_metrics",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"aggregate_metricsgroup",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"aggregate_metricsgroup_relation",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["group_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+        ],
+        "dependencies" : ["ops_aggregate_metrics", "ops_aggregate_metricsgroup"]
+    },
+    {   "name":"node_metrics",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"node_metricsgroup",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"node_metricsgroup_relation",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["group_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+        ],
+        "dependencies" : ["ops_node_metrics", "ops_node_metricsgroup"]
+    },
+    {   "name":"experiment_metrics",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"experiment_metricsgroup",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"experiment_metricsgroup_relation",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["group_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+        ],
+        "dependencies" : ["ops_experiment_metrics", "ops_experiment_metricsgroup"]
+    },
+// Commenting for now.
+//    {   "name":"link_metrics",
+//        "db_schema": [
+//             ["id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s)", ["id"]]
+//        ],
+//        "dependencies" : []
+//    },
+//    {   "name":"link_metricsgroup",
+//        "db_schema": [
+//             ["id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s)", ["id"]]
+//        ],
+//        "dependencies" : []
+//    },
+//    {   "name":"link_metricsgroup_relation",
+//        "db_schema": [
+//             ["id", "varchar", true],
+//             ["group_id", "varchar", true]
+//        ],
+//        "constraints": [
+//            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+//        ],
+//        "dependencies" : ["ops_link_metrics", "ops_link_metricsgroup"]
+//    },
+    {   "name":"interface_metrics",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"interface_metricsgroup",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"interface_metricsgroup_relation",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["group_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+        ],
+        "dependencies" : ["ops_interface_metrics", "ops_interface_metricsgroup"]
+    },
+    {   "name":"interfacevlan_metrics",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"interfacevlan_metricsgroup",
+        "db_schema": [
+             ["id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s)", ["id"]]
+        ],
+        "dependencies" : []
+    },
+    {   "name":"interfacevlan_metricsgroup_relation",
+        "db_schema": [
+             ["id", "varchar", true],
+             ["group_id", "varchar", true]
+        ],
+        "constraints": [
+            ["PRIMARY KEY (%s, %s)", ["id", "group_id"]]
+        ],
+        "dependencies" : ["ops_interfacevlan_metrics", "ops_interfacevlan_metricsgroup"]
     }
   ],
   // The "events" section represents all the tables that will capture measurement data.
