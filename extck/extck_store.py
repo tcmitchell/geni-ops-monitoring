@@ -47,7 +47,7 @@ import extck_populate_stitching_experiment
 import opsconfig_loader
 
 
-__BASE_SCHEMA_URL = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
+BASE_SCHEMA_URL = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
 
 def getSiteInfo(nickCache, srcSiteName, aggStores):
         am_urn = nickCache.get_am_urn(srcSiteName)
@@ -76,6 +76,10 @@ def getSiteInfo(nickCache, srcSiteName, aggStores):
 class InfoPopulator():
     PING_CAMPUS = object()
     PING_CORE = object()
+
+    EXPERIMENT_METRICSGROUP_PINGS = "pings"
+    EXPERIMENT_METRICSGROUP_STITCHING = "stitching"
+    AGGREGATE_METRICSGROUP_AVAILABILITY = "availability"
 
     def __init__(self, tbl_mgr, config, nickCache):
         """
@@ -106,7 +110,7 @@ class InfoPopulator():
             self.monitoring_version = "unknown"
 
         self.tbl_mgr.logger.info("Monitoring version is %s" % (self.monitoring_version))
-
+        self.__setUp_metricsgroups()
 
 
     def __getSiteInfo(self, srcSiteName, aggStores):
@@ -116,7 +120,7 @@ class InfoPopulator():
         expgroup_tablename = "ops_experimentgroup"
         expgroup_schema = self.tbl_mgr.schema_dict[expgroup_tablename]
         ts = str(int(time.time() * 1000000))
-        expgroup = [__BASE_SCHEMA_URL + "experimentgroup#", group_id,
+        expgroup = [BASE_SCHEMA_URL + "experimentgroup#", group_id,
                     self.extckStoreBaseUrl + "/info/experimentgroup/" + group_id,
                     ts, group_desc
                     ]
@@ -136,7 +140,8 @@ class InfoPopulator():
             (group_id, group_desc) = self._config.get_experiment_group_for_ping_set(ping_set)
             self.__addExperimentGroupInfo(group_id, group_desc)
             # Populate "ops_experiment" table
-            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names, group_id)
+            self.__populateExperimentInfoTables(slices, srcPing, ping_set, aggStores, experiment_names,
+                                                group_id, InfoPopulator.EXPERIMENT_METRICSGROUP_PINGS)
 
         (group_id, group_desc) = self._config.get_experiment_group_for_stitching("scs-geni")
         self.__addExperimentGroupInfo(group_id, group_desc)
@@ -151,17 +156,19 @@ class InfoPopulator():
             for idx2 in range(idx1 + 1, len(stitch_site_info)):
                 site2 = stitch_site_info[idx2]
                 exp_id = extck_populate_stitching_experiment.name_stitch_path_experiment(site1[0], site2[0])
-                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2], experiment_names, group_id)
+                self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, site1[1], site1[2], site2[1], site2[2],
+                                         experiment_names, group_id, InfoPopulator.EXPERIMENT_METRICSGROUP_STITCHING)
 
         self.__cleanUpObsoleteExperiments(experiment_names)
 
-    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names, group_id):
+    def __addExperimentInfo(self, exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref,
+                            dstAmUrn, dstAmHref, experiment_names, group_id, metricsgroup_id):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
 #         ext_exp_tablename = "ops_externalcheck_experiment"
 #         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
         ts = str(int(time.time() * 1000000))
-        exp = [__BASE_SCHEMA_URL + "experiment#",
+        exp = [BASE_SCHEMA_URL + "experiment#",
                exp_id,
                self.extckStoreBaseUrl + "/info/experiment/" + exp_id,
                ts,
@@ -172,7 +179,8 @@ class InfoPopulator():
                dstAmUrn,
                dstAmHref,
                self._extckStoreSite,
-               group_id
+               group_id,
+               metricsgroup_id
                ]
         self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
 #         extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
@@ -181,7 +189,7 @@ class InfoPopulator():
 #                              self.tbl_mgr.get_column_from_schema(ext_exp_schema, "externalcheck_id")))
         experiment_names.add(exp_id)
 
-    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names, group_id):
+    def __populateExperimentInfoTables(self, slices, srcPing, ping_set, aggStores, experiment_names, group_id, metricsgroup_id):
         ipList = dict(self._ipsconfig.items(ping_set))
 
         for srcSite in srcPing:
@@ -206,7 +214,7 @@ class InfoPopulator():
                                                 % (srcSite, dstSite, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref))
                     continue
                 else:
-                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names, group_id)
+                    self.__addExperimentInfo(exp_id, sliceUrn, sliceUuid, srcAmUrn, srcAmHref, dstAmUrn, dstAmHref, experiment_names, group_id, metricsgroup_id)
 
 
     def __cleanUpObsoleteExperiments(self, experiment_names):
@@ -221,10 +229,8 @@ class InfoPopulator():
                 self.tbl_mgr.execute_sql("delete from ops_experiment_ping_rtt_ms where id='%s'" % experiment[0])
                 self.tbl_mgr.execute_sql("delete from ops_experiment where id='%s'" % experiment[0])
 
-    def insert_externalcheck_monitoredaggregate(self, urn, aggRow):
-        aggregate_id = aggRow[1]  # agg_id
-        dataStoreHref = aggRow[2]
-        mon_agg = [aggregate_id, self._extckStoreSite, dataStoreHref]
+    def insert_externalcheck_monitoredaggregate(self, aggregate_id):
+        mon_agg = [aggregate_id, self._extckStoreSite, InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY]
         ext_monagg_tablename = "ops_externalcheck_monitoredaggregate"
         ext_monagg_schema = self.tbl_mgr.schema_dict[ext_monagg_tablename]
 
@@ -264,7 +270,7 @@ class InfoPopulator():
 
     def insert_externalcheck(self):
         ts = str(int(time.time() * 1000000))
-        extck = [__BASE_SCHEMA_URL + "externalcheck#",
+        extck = [BASE_SCHEMA_URL + "externalcheck#",
                  self._extckStoreSite,
                  self.extckStoreBaseUrl + "/info/externalcheck/" + self._extckStoreSite,
                  ts,
@@ -274,6 +280,26 @@ class InfoPopulator():
         table_str = "ops_externalcheck"
         extck_schema = self.tbl_mgr.schema_dict[table_str]
         self.tbl_mgr.upsert(table_str, extck_schema, extck, self.tbl_mgr.get_column_from_schema(extck_schema, "id"))
+
+    def __setUp_metricsgroups(self):
+        exp_metricsgrp_table = "ops_experiment_metricsgroup"
+        exp_metricsgrp_relation_table = "ops_experiment_metricsgroup_relation"
+        agg_metricsgrp_table = "ops_aggregate_metricsgroup"
+        agg_metricsgrp_relation_table = "ops_aggregate_metricsgroup_relation"
+        exp_metricsgr_schema = self.tbl_mgr.schema_dict[exp_metricsgrp_table]
+        exp_metricsgr_relation_schema = self.tbl_mgr.schema_dict[exp_metricsgrp_relation_table]
+        agg_metricsgr_schema = self.tbl_mgr.schema_dict[agg_metricsgrp_table]
+        agg_metricsgr_relation_schema = self.tbl_mgr.schema_dict[agg_metricsgrp_relation_table]
+
+        self.tbl_mgr.upsert(exp_metricsgrp_table, exp_metricsgr_schema, (InfoPopulator.EXPERIMENT_METRICSGROUP_PINGS,), 0)
+        self.tbl_mgr.upsert(exp_metricsgrp_table, exp_metricsgr_schema, (InfoPopulator.EXPERIMENT_METRICSGROUP_STITCHING,), 0)
+
+        self.tbl_mgr.upsert(agg_metricsgrp_table, agg_metricsgr_schema, (InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY,), 0)
+
+        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema, ('ping_rtt_ms', InfoPopulator.EXPERIMENT_METRICSGROUP_PINGS), (0, 1))
+        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema, ('is_stitch_path_available', InfoPopulator.EXPERIMENT_METRICSGROUP_STITCHING), (0, 1))
+
+        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema, ('is_available', InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY), (0, 1))
 
     def cleanUpObsoleteAggregates(self, aggStores):
         """
@@ -470,6 +496,7 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
         aggDetails = handle_request(ip.tbl_mgr.logger, cert_path, aggregate['href'])  # Use url for site's store to query site
         if aggDetails == None:
             return
+        aggDetails['metricsgroup_id'] = table_manager.TableManager.EMPTY_METRICSGROUP_ID  # don't care about what's being reported by the aggregate here.
         agg_attributes = extract_row_from_json_dict(ip.tbl_mgr.logger, ops_agg_schema, aggDetails, "aggregate")
     elif amtype == "stitcher":  # Special case
         selfRef = aggregate['href'];
@@ -494,7 +521,8 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
                           extck_measRef,  # meas Ref
                           monitoring_version,  # # populator version
                           ops_status,  # operational status
-                          None  # routable IP poolsize
+                          None,  # routable IP poolsize
+                          table_manager.TableManager.EMPTY_METRICSGROUP_ID  # metricsgroup_id
                           )
     elif amtype == "foam" :
         # FOAM
@@ -524,7 +552,8 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
                           extck_measRef,  # meas Ref
                           monitoring_version,  # # populator version
                           ops_status,  # operational status
-                          None  # routable IP poolsize
+                          None,  # routable IP poolsize
+                          table_manager.TableManager.EMPTY_METRICSGROUP_ID  # metricsgroup_id
                           )
     elif amtype == "wimax":
         # wimax are not really aggregates...
@@ -557,7 +586,8 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
                           extck_measRef,  # meas Ref
                           monitoring_version,  # # populator version
                           ops_status,  # operational status
-                          None  # routable IP poolsize
+                          None,  # routable IP poolsize
+                          table_manager.TableManager.EMPTY_METRICSGROUP_ID  # metricsgroup_id
                           )
     else:
         lock.acquire()
@@ -569,12 +599,13 @@ def registerOneAggregate((cert_path, urn_to_urls_map, ip, amtype, urn,
     # Populate "ops_aggregate" table
     ip.insert_aggregate(urn, agg_attributes)
     # Populate "ops_externalcheck_monitoredaggregate" table
-    ip.insert_externalcheck_monitoredaggregate(urn, agg_attributes)
-    ip.insert_aggregate_type(agg_attributes[1], amtype)
+    agg_id = agg_attributes[1]
+    ip.insert_externalcheck_monitoredaggregate(agg_id)
+    ip.insert_aggregate_type(agg_id, amtype)
 
     am_urls = urn_to_urls_map[urn]
     for am_url in am_urls:
-        ip.insert_aggregate_url(agg_attributes[1], am_url)
+        ip.insert_aggregate_url(agg_id, am_url)
     lock.release()
 
 def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip, config):
@@ -589,7 +620,7 @@ def registerAggregates(aggStores, cert_path, urn_to_urls_map, ip, config):
     """
     ops_agg_schema = ip.tbl_mgr.schema_dict["ops_aggregate"]
     # TODO parameterize these
-    agg_schema_str = __BASE_SCHEMA_URL + "/aggregate#"
+    agg_schema_str = BASE_SCHEMA_URL + "/aggregate#"
     version_filename = top_path + "/VERSION"
     try:
         version_file = open(version_filename)
