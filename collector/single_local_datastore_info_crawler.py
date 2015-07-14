@@ -157,12 +157,59 @@ class SingleLocalDatastoreInfoCrawler:
         self.lock = multiprocessing.Lock()
         self.pool = multiprocessing.pool.ThreadPool(processes=SingleLocalDatastoreInfoCrawler.__THREAD_POOL_SIZE)
 
+        self.metrics_sets = dict()
+        for obj in ('aggregate', 'node', 'interface', 'interfacevlan', 'experiment'):
+            self.metrics_sets[obj] = dict()
+            res = self.tbl_mgr.query('SELECT id FROM ops_' + obj + '_metricsgroup')
+            if res:
+                for group_id in res:
+                    grp_id = group_id[0]
+                    registered_metrics = set()
+                    res2 = self.tbl_mgr.query("SELECT id FROM ops_" + obj + "_metricsgroup_relation WHERE group_id ='" + grp_id + "'")
+                    if res2:
+                        for metric_id in res2:
+                            registered_metrics.add(metric_id[0])
+                    self.metrics_sets[obj][grp_id] = registered_metrics
+
+
     # Updates head aggregate information
     def refresh_aggregate_info(self):
         am_url = self.info_url + '/aggregate/' + self.aggregate_id
         self.logger.info("Refreshing aggregate %s info from %s" % (self.aggregate_id, am_url))
         self.am_dict = handle_request(am_url, self.cert_path, self.logger)
         return self.refresh_specific_aggregate_info(self.am_dict)
+
+    def _find_or_create_metricsgroup(self, obj_type, reported_metric_list):
+        reported_set = set()
+        for reported_metric in reported_metric_list:
+            if reported_metric.startswith('ops_monitoring:'):
+                reported_set.add(reported_metric[15:])
+        metrics_dict = self.metrics_sets[obj_type]
+        for group_id in metrics_dict:
+            if metrics_dict[group_id] == reported_set:
+                return group_id
+
+        # we need to create it then
+        idx = 1
+        group_id = obj_type + "_" + str(idx)
+        FoundUnique = not (group_id in metrics_dict)
+        while not FoundUnique:
+            idx += 1
+            group_id = obj_type + "_" + str(idx)
+            FoundUnique = not (group_id in metrics_dict)
+        metrics_dict[group_id] = reported_set
+        group_record = (group_id,)
+        metricsgroup_table = 'ops_' + obj_type + "_metricsgroup"
+        metricsgroup_schema = self.tbl_mgr.schema_dict[metricsgroup_table]
+        metricsgroup_relation_table = 'ops_' + obj_type + "_metricsgroup_relation"
+        metricsgroup_relation_schema = self.tbl_mgr.schema_dict[metricsgroup_relation_table]
+
+        self.tbl_mgr.upsert(metricsgroup_table, metricsgroup_schema, group_record, 0)
+
+        for metric_id in reported_set:
+            relation_record = (metric_id, group_id)
+            self.tbl_mgr.upsert(metricsgroup_relation_table, metricsgroup_relation_schema, relation_record, (0, 1))
+        return group_id
 
     def refresh_specific_aggregate_info(self, agg_dict):
         """
@@ -174,7 +221,16 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         if agg_dict:
             db_table_schema = self.tbl_mgr.schema_dict["ops_aggregate"]
+            # Setting up metricsgroup_id before the extraction to avoid warning
+            if 'reported_metrics' in agg_dict:
+                reported_metrics_list = agg_dict['reported_metrics']
+                group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_list)
+            else:
+                group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
+            agg_dict['metricsgroup_id'] = group_id
             am_info_list = self.extract_row_from_json_dict(db_table_schema, agg_dict, "aggregate")
+
+            # deal with reported metrics
 
             if not info_update(self.tbl_mgr, "ops_aggregate", db_table_schema, am_info_list, \
                                self.tbl_mgr.get_column_from_schema(db_table_schema, "id"), self.debug, self.logger):
@@ -208,6 +264,12 @@ class SingleLocalDatastoreInfoCrawler:
                     # if not, get the info from the href and insert it
                     agg_id = mon_agg["id"]
                     agg_url = mon_agg["href"]
+                    # Setting up metricsgroup_id before the extraction to avoid warning
+                    if 'reported_metrics' in mon_agg:
+                        reported_metrics_list = mon_agg['reported_metrics']
+                        group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_list)
+                    else:
+                        group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
                     insert = True
                     if not self.check_exists("ops_aggregate", "id", agg_id):
                         agg_dict = handle_request(agg_url, self.cert_path, self.logger)
@@ -215,7 +277,7 @@ class SingleLocalDatastoreInfoCrawler:
                             ok = False
                             insert = False
                     if insert:
-                        mon_agg_info = [agg_id, self.extck_dict["id"]]
+                        mon_agg_info = [agg_id, self.extck_dict["id"], group_id]
                         if not info_update(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", schema, mon_agg_info, \
                                            (self.tbl_mgr.get_column_from_schema(schema, "id"), self.tbl_mgr.get_column_from_schema(schema, "externalcheck_id")),
                                            self.debug, self.logger):
@@ -252,6 +314,14 @@ class SingleLocalDatastoreInfoCrawler:
                     experiment_url = experiment["href"]
 #                     insert = True
                     experiment_dict = handle_request(experiment_url, self.cert_path, self.logger)
+                    if experiment_dict:
+                        # Setting up metricsgroup_id before the extraction to avoid warning
+                        if 'reported_metrics' in experiment_dict:
+                            reported_metrics_list = experiment_dict['reported_metrics']
+                            group_id = self._find_or_create_metricsgroup('experiment', reported_metrics_list)
+                        else:
+                            group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
+                        experiment_dict['metricsgroup_id'] = group_id
                     experiment_info_list = self.get_experiment_attributes(experiment_dict, exp_schema)
                     # if old schema, there is no experiment group
                     if 'experiment_group' in experiment_dict:
@@ -317,7 +387,7 @@ class SingleLocalDatastoreInfoCrawler:
         slv_dict = handle_request(sliver_ref_object["href"], self.cert_path, self.logger)
         if not slv_dict:
             ok = False
-            
+
         node_schema = self.tbl_mgr.schema_dict["ops_node"]
 #         res_schema = self.tbl_mgr.schema_dict["ops_aggregate_resource"]
         link_schema = self.tbl_mgr.schema_dict["ops_link"]
@@ -374,7 +444,7 @@ class SingleLocalDatastoreInfoCrawler:
                                     self.tbl_mgr.get_column_from_schema(res_sliver_schema, "sliver_id")), \
                                self.debug, self.logger):
                 ok = False
-                
+
         return ok
 
     def refresh_all_slivers_info(self):
@@ -407,6 +477,14 @@ class SingleLocalDatastoreInfoCrawler:
         res_dict = handle_request(node_href, self.cert_path, self.logger)
         if res_dict:
             if res_dict["$schema"].endswith("node#"):  # if a node
+                # Setting up metricsgroup_id before the extraction to avoid warning
+                if 'reported_metrics' in res_dict:
+                    reported_metrics_list = res_dict['reported_metrics']
+                    group_id = self._find_or_create_metricsgroup('node', reported_metrics_list)
+                else:
+                    group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
+                res_dict['metricsgroup_id'] = group_id
+
                 # get each attribute out of response into list
                 node_info_list = self.get_node_attributes(res_dict, node_schema)
                 # Deal with parent_node
@@ -466,6 +544,13 @@ class SingleLocalDatastoreInfoCrawler:
                         self.lock.acquire()
                         self.logger.debug("refreshing vlans endpoint with id: %s" % (ifacevlan_dict["id"],))
                         self.lock.release()
+                        # Setting up metricsgroup_id before the extraction to avoid warning
+                        if 'reported_metrics' in ifacevlan_dict:
+                            reported_metrics_list = ifacevlan_dict['reported_metrics']
+                            group_id = self._find_or_create_metricsgroup('interfacevlan', reported_metrics_list)
+                        else:
+                            group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
+                        ifacevlan_dict['metricsgroup_id'] = group_id
                         # before updating the ifvlan info we need to make sure the if info exists
                         if not "interface" in ifacevlan_dict or not "href" in ifacevlan_dict["interface"] \
                                 or ifacevlan_dict["interface"]["href"] == "" or not "urn" in ifacevlan_dict['interface'] \
@@ -576,6 +661,13 @@ class SingleLocalDatastoreInfoCrawler:
         :return: True if the update went well, False otherwise.
         """
         ok = True
+        # Setting up metricsgroup_id before the extraction to avoid warning
+        if 'reported_metrics' in interface_dict:
+            reported_metrics_list = interface_dict['reported_metrics']
+            group_id = self._find_or_create_metricsgroup('interface', reported_metrics_list)
+        else:
+            group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
+        interface_dict['metricsgroup_id'] = group_id
         schema = self.tbl_mgr.schema_dict["ops_interface"]
         interface_info_list = self.get_interface_attributes(interface_dict, node_id, schema)
         if "parent_interface" in interface_dict:
@@ -647,7 +739,7 @@ class SingleLocalDatastoreInfoCrawler:
 #         mapping = {}
 #         mapping["aggregate_href"] = ("aggregate", "href")
 #         mapping["aggregate_urn"] = ("aggregate", "urn")
-        
+
         # just to avoid a warning
         mapping = {}
         mapping["aggregate_id"] = ("aggregate", "href")
