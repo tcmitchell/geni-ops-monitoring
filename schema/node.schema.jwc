@@ -70,6 +70,15 @@
           "required": true
         }
       }
+    },
+    // This allows to specify the metrics names supported by the specific node
+    "reported_metrics": {
+      "description": "metrics supported by this node",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "string"
+      }
     }
   } 
 }
