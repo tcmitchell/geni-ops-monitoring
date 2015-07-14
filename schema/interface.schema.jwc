@@ -82,6 +82,15 @@
        "description":"Maximum pps on interface",
        "type":"number",
        "required":false    
+    },
+    // This allows to specify the metrics names supported by the specific interface
+    "reported_metrics": {
+      "description": "metrics supported by this interface",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
