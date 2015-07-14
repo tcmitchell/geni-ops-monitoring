@@ -171,7 +171,7 @@ class InfoPopulator():
                srcAmHref,
                dstAmUrn,
                dstAmHref,
-               exp_id,
+               self._extckStoreSite,
                group_id
                ]
         self.tbl_mgr.upsert(exp_tablename, exp_schema, exp, self.tbl_mgr.get_column_from_schema(exp_schema, "id"))
