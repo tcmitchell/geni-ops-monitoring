@@ -236,6 +236,9 @@ class PostgreSQLDBManager (DBManager):
 
 class TableManager:
 
+    EMPTY_METRICSGROUP_ID = "empty"
+    ALL_METRICSGROUP_ID = "all"
+
     def __init__(self, db_type, config_path):
 
         self.config_path = config_path
@@ -770,7 +773,28 @@ class TableManager:
         self.db_lock.release()
         return col_names
 
-
+    def __populate_tables_with_defaults(self):
+        """
+        Populates some tables with default value rows
+        """
+        ok = True
+        for obj_type in self.event_types:
+            group_table = "ops_" + obj_type + "_metricsgroup"
+            group_table_schema = self.schema_dict[group_table]
+            if not self.upsert(group_table, group_table_schema, (TableManager.EMPTY_METRICSGROUP_ID,), 0):
+                ok = False;
+            if not self.upsert(group_table, group_table_schema, (TableManager.ALL_METRICSGROUP_ID,), 0):
+                ok = False;
+            event_table = "ops_" + obj_type + "_metrics"
+            event_table_schema = self.schema_dict[event_table]
+            group_relation_table = "ops_" + obj_type + "_metricsgroup_relation"
+            group_relation_table_schema = self.schema_dict[group_relation_table]
+            for metric_name in self.event_types[obj_type]:
+                if not self.upsert(event_table, event_table_schema, (metric_name,), 0):
+                    ok = False;
+                if not self.upsert(group_relation_table, group_relation_table_schema, (metric_name, TableManager.ALL_METRICSGROUP_ID), (0, 1)):
+                    ok = False;
+        return ok
     def __establish_tables__(self, table_str_arr):
         """
         Creates a list of tables
@@ -788,7 +812,12 @@ class TableManager:
         Creates all the DB tables
         :return: True if the tables were successfully created, False otherwise
         """
-        return self.__establish_tables__(self.tables)
+        ok = True
+        if not self.__establish_tables__(self.tables):
+            ok = False
+        if not self.__populate_tables_with_defaults():
+            ok = False
+        return ok
 
     def is_purge_enabled(self):
         if self.database_type == "local":
