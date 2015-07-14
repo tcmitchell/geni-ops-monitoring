@@ -32,7 +32,8 @@ import table_manager
 
 
 # Using these classes for constants because we can't reference a constant to declare another constant in the same class :(
-# i.e. LINK_RELATION = ( (InfoPopulator.LINK_IDS[0], InfoPopulator.LINK_IDS[1]) ) fails with NameError: name 'InfoPopulator' is not defined
+# i.e. LINK_RELATION = ( (InfoPopulator.LINK_IDS[0], InfoPopulator.LINK_IDS[1]) ) fails with
+# NameError: name 'InfoPopulator' is not defined
 # because the class has not been fully parsed to be used.
 
 class _HackLink():
@@ -207,6 +208,36 @@ class InfoPopulator():
 
     POPULATOR_VERSION = "SuperDuper 2.4.x.10a"
 
+
+    EMPTY_METRICSGROUP_ID = table_manager.TableManager.EMPTY_METRICSGROUP_ID
+
+    AGGREGATE_METRICSGROUP_ID = "regular"
+
+    NODE_METRICSGROUP_IDS = ("server", "vm", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    # At node idx, metrics group idx
+    NODE_METRICSGROUP_DEFS = (0, 0, 1, 1, 1, 2)
+
+    NODE_METRICSGROUP_CONTENTS = (('cpu_util', 'disk_part_max_used', 'is_available', 'mem_used_kb', 'num_vms_allocated', 'swap_free'),
+                                  ('cpu_util', 'disk_part_max_used', 'is_available', 'mem_used_kb', 'swap_free')
+                                  )
+
+    IF_METRICSGROUP_IDS = ("std", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    # At interface idx, metrics group idx
+    IF_METRICSGROUP_DEFS = (0, 0, 0, 0, 0, 0, 1)
+
+    IF_METRICSGROUP_CONTENTS = (('rx_bps', 'rx_dps', 'rx_eps', 'rx_pps', 'tx_bps', 'tx_dps', 'tx_eps', 'tx_pps'),
+                                )
+
+    IFVLAN_METRICSGROUP_IDS = ("std", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    # At interface idx, metrics group idx
+    IFVLAN_METRICSGROUP_DEFS = (0, 0, 0, 1)
+
+    IFVLAN_METRICSGROUP_CONTENTS = (('rx_bps', 'rx_dps', 'rx_eps', 'rx_pps', 'tx_bps', 'tx_dps', 'tx_eps', 'tx_pps'),
+                                    )
+
     AUTHORITY_ID = "ch.geni.net"
 
     AUTHORITY_URN = "urn:publicid:IDN+ch.geni.net+authority+ch"
@@ -244,20 +275,34 @@ class InfoPopulator():
                             "missouri-ig_to_gpo-eg",
                             "missouri-ig_to_utah-ig",
                             "missouri-ig_to_utah-ig_al2s",
+                            "missouri-ig_to_utah-ig_stitching"
                             )
 
     EXTCK_EXPERIMENTGROUP_IDS = ("mesoscale",
                                  "al2s",
+                                 "stitching"
                                  )
 
     EXTCK_EXPERIMENTGROUP_DESC = ("Connectivity checks via mesoscale OpenFlow network",
                                   "Connectivity checks via al2s OpenFlow network",
+                                  "SCS tests"
                                  )
     # at the experiment IDX is the slice index
-    EXTCK_EXPERIMENT_SLICE_RELATION = (0, 1, 1, 0)
+    EXTCK_EXPERIMENT_SLICE_RELATION = (0, 1, 1, 0, 0)
 
     # at the experiment IDX is the slice index
-    EXTCK_EXPERIMENT_GROUP_RELATION = (0, 0, 0, 1)
+    EXTCK_EXPERIMENT_GROUP_RELATION = (0, 0, 0, 1, 2)
+
+
+    EXTCK_EXPERIMENT_METRICSGROUP_IDS = ("pings", "stitching", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    # At node idx, metrics group idx
+    EXTCK_EXPERIMENT_METRICSGROUP_DEFS = (0, 0, 0, 0, 1)
+
+    EXTCK_EXPERIMENT_METRICSGROUP_CONTENTS = (('ping_rtt_ms',),
+                                              ('is_stitch_path_available',)
+                                              )
+
 
     EXTCK_MONITORED_AGG_IDS = ("cwru-ig",
                                "cenic-ig",
@@ -274,6 +319,9 @@ class InfoPopulator():
                                 "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig",
                                 "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
                                 )
+
+    EXTCK_MONITORED_AGG_METRICSGROUP_ID = "availability"
+    EXTCK_MONITORED_AGG_METRICSGROUP_DEF = ('is_available',)
 
     def __init__(self, tbl_mgr, url_base):
 
@@ -382,6 +430,7 @@ class InfoPopulator():
         agg_record.append(InfoPopulator.POPULATOR_VERSION)  # populator_version
         agg_record.append("development")  # operational_status
         agg_record.append("0")  # routable_ip_poolsize
+        agg_record.append(InfoPopulator.EMPTY_METRICSGROUP_ID)  # metrics group - don't care here.
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg_record):
             ok = False
@@ -393,6 +442,17 @@ class InfoPopulator():
 
         url_local_data = self.url_base + "/data/"
 
+        agg_metric_group = (InfoPopulator.AGGREGATE_METRICSGROUP_ID,)
+        if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup", agg_metric_group):
+            ok = False
+
+        agg_metric_group_rel1 = []
+        agg_metric_group_rel1.append('routable_ip_available')
+        agg_metric_group_rel1.append(InfoPopulator.AGGREGATE_METRICSGROUP_ID)
+        if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup_relation", agg_metric_group_rel1):
+            ok = False
+
+
         agg1 = []
         self.__fill_in_list_with_schema_id_and_url(agg1, "aggregate", InfoPopulator.AGGREGATE_ID)
         agg1.append(InfoPopulator.AGGREGATE_URN)
@@ -401,9 +461,23 @@ class InfoPopulator():
         agg1.append(InfoPopulator.POPULATOR_VERSION)  # populator_version
         agg1.append("development")  # operational_status
         agg1.append("0")  # routable_ip_poolsize
+        agg1.append(InfoPopulator.AGGREGATE_METRICSGROUP_ID)  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_aggregate", agg1):
             ok = False
+
+        for group_idx in range(len(InfoPopulator.NODE_METRICSGROUP_IDS)):
+            group_id = InfoPopulator.NODE_METRICSGROUP_IDS[group_idx]
+            if group_id == InfoPopulator.EMPTY_METRICSGROUP_ID:
+                continue
+            node_metric_group = (group_id,)
+            if not info_insert(self.tbl_mgr, "ops_node_metricsgroup", node_metric_group):
+                ok = False
+            for metric_id in InfoPopulator.NODE_METRICSGROUP_CONTENTS[group_idx]:
+                node_metric_group_rel = [metric_id, group_id]
+                if not info_insert(self.tbl_mgr, "ops_node_metricsgroup_relation", node_metric_group_rel):
+                    ok = False
+#
 
         node1 = []
         self.__fill_in_list_with_schema_id_and_url(node1, "node", InfoPopulator.NODE_IDS[0])
@@ -414,6 +488,7 @@ class InfoPopulator():
         node1.append("xen")  # virtualization_type
         node1.append(InfoPopulator.get_parent_node_id(0))  # Parent id
         node1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        node1.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[0]])  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_node", node1):
             ok = False
@@ -428,6 +503,7 @@ class InfoPopulator():
         node2.append("xen")  # virtualization_type
         node2.append(InfoPopulator.get_parent_node_id(1))  # Parent id
         node2.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        node2.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[1]])  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_node", node2):
             ok = False
@@ -441,6 +517,7 @@ class InfoPopulator():
         node3.append("xen")  # virtualization_type
         node3.append(InfoPopulator.get_parent_node_id(2))  # Parent id
         node3.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        node3.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[2]])  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_node", node3):
             ok = False
@@ -454,6 +531,7 @@ class InfoPopulator():
         node4.append("xen")  # virtualization_type
         node4.append(InfoPopulator.get_parent_node_id(3))  # Parent id
         node4.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        node4.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[3]])  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_node", node4):
             ok = False
@@ -467,6 +545,7 @@ class InfoPopulator():
         node5.append("xen")  # virtualization_type
         node5.append(InfoPopulator.get_parent_node_id(4))  # Parent id
         node5.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        node5.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[4]])  # metrics group
 
         if not info_insert(self.tbl_mgr, "ops_node", node5):
             ok = False
@@ -480,6 +559,7 @@ class InfoPopulator():
         switch1.append(None)  # virtualization_type
         switch1.append(InfoPopulator.get_parent_node_id(5))  # Parent id
         switch1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
+        switch1.append(InfoPopulator.NODE_METRICSGROUP_IDS[InfoPopulator.NODE_METRICSGROUP_DEFS[5]])  # metrics group
         if not info_insert(self.tbl_mgr, "ops_node", switch1):
             ok = False
 
@@ -548,6 +628,7 @@ class InfoPopulator():
         link1.append(str(int(time.time() * 1000000)))
         link1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
         link1.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[0]))  # Parent ID
+#         link1.append("empty")  # metric group
         if not info_insert(self.tbl_mgr, "ops_link", link1):
             ok = False
 
@@ -558,6 +639,7 @@ class InfoPopulator():
         sublink1.append(str(int(time.time() * 1000000)))
         sublink1.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
         sublink1.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[1]))  # Parent ID
+#         sublink1.append("empty")  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_link", sublink1):
             ok = False
@@ -569,6 +651,7 @@ class InfoPopulator():
         sublink2.append(str(int(time.time() * 1000000)))
         sublink2.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
         sublink2.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[2]))  # Parent ID
+#         sublink2.append("empty")  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_link", sublink2):
             ok = False
@@ -580,6 +663,7 @@ class InfoPopulator():
         egress_link.append(str(int(time.time() * 1000000)))
         egress_link.append(InfoPopulator.AGGREGATE_ID)  # Aggregate id
         egress_link.append(InfoPopulator.get_parent_link_id(InfoPopulator.LINK_IDS[3]))  # Parent ID
+#         egress_link.append("empty")  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_link", egress_link):
             ok = False
@@ -602,6 +686,20 @@ class InfoPopulator():
         if not self.insert_sliver_resources_relations(sliver4[1], 3):
             ok = False
 
+        for group_idx in range(len(InfoPopulator.IF_METRICSGROUP_IDS)):
+            group_id = InfoPopulator.IF_METRICSGROUP_IDS[group_idx]
+            if group_id == InfoPopulator.EMPTY_METRICSGROUP_ID:
+                continue
+            if_metric_group = (group_id,)
+            if not info_insert(self.tbl_mgr, "ops_interface_metricsgroup", if_metric_group):
+                ok = False
+            for metric_id in InfoPopulator.IF_METRICSGROUP_CONTENTS[group_idx]:
+                if_metric_group_rel = [metric_id, group_id]
+                if not info_insert(self.tbl_mgr, "ops_interface_metricsgroup_relation", if_metric_group_rel):
+                    ok = False
+
+
+
         interface1 = []
         self.__fill_in_list_with_schema_id_and_url(interface1, "interface", InfoPopulator.IF_IDS[0])
         interface1.append(InfoPopulator.IF_URNS[0])
@@ -611,6 +709,7 @@ class InfoPopulator():
         interface1.append(str(1000000))  # max pps
         interface1.append(InfoPopulator.get_parent_if_id(0))  # Parent id
         interface1.append(InfoPopulator.get_node_id_for_if_idx(0))  # Node id
+        interface1.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[0]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface1):
             ok = False
@@ -624,6 +723,7 @@ class InfoPopulator():
         interface2.append(str(1000000))  # max pps
         interface2.append(InfoPopulator.get_parent_if_id(1))  # Parent id
         interface2.append(InfoPopulator.get_node_id_for_if_idx(1))  # Node id
+        interface2.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[1]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface2):
             ok = False
@@ -637,6 +737,7 @@ class InfoPopulator():
         interface3.append(str(1000000))  # max pps
         interface3.append(InfoPopulator.get_parent_if_id(2))  # Parent id
         interface3.append(InfoPopulator.get_node_id_for_if_idx(2))  # Node id
+        interface3.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[2]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface3):
             ok = False
@@ -650,6 +751,7 @@ class InfoPopulator():
         interface4.append(str(1000000))  # max pps
         interface4.append(InfoPopulator.get_parent_if_id(3))  # Parent id
         interface4.append(InfoPopulator.get_node_id_for_if_idx(3))  # Node id
+        interface4.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[4]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface4):
             ok = False
@@ -663,6 +765,7 @@ class InfoPopulator():
         interface5.append(str(1000000))  # max pps
         interface5.append(InfoPopulator.get_parent_if_id(4))  # Parent id
         interface5.append(InfoPopulator.get_node_id_for_if_idx(4))  # Node id
+        interface5.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[4]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface5):
             ok = False
@@ -676,6 +779,7 @@ class InfoPopulator():
         interface6.append(str(1000000))  # max pps
         interface6.append(InfoPopulator.get_parent_if_id(5))  # Parent id
         interface6.append(InfoPopulator.get_node_id_for_if_idx(5))  # Node id
+        interface6.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[5]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", interface6):
             ok = False
@@ -689,6 +793,7 @@ class InfoPopulator():
         remoteinterface1.append(str(1000000))  # max pps
         remoteinterface1.append(InfoPopulator.get_parent_if_id(6))  # Parent id
         remoteinterface1.append(InfoPopulator.get_node_id_for_if_idx(6))  # Node id
+        remoteinterface1.append(InfoPopulator.IF_METRICSGROUP_IDS[InfoPopulator.IF_METRICSGROUP_DEFS[6]])  # metric group
 
         if not info_insert(self.tbl_mgr, "ops_interface", remoteinterface1):
             ok = False
@@ -705,6 +810,18 @@ class InfoPopulator():
                     if not info_insert(self.tbl_mgr, "ops_interface_addresses", interfaceaddr):
                         ok = False
 
+        for group_idx in range(len(InfoPopulator.IFVLAN_METRICSGROUP_IDS)):
+            group_id = InfoPopulator.IFVLAN_METRICSGROUP_IDS[group_idx]
+            if group_id == InfoPopulator.EMPTY_METRICSGROUP_ID:
+                continue
+            ifvlan_metric_group = (group_id,)
+            if not info_insert(self.tbl_mgr, "ops_interfacevlan_metricsgroup", ifvlan_metric_group):
+                ok = False
+            for metric_id in InfoPopulator.IFVLAN_METRICSGROUP_CONTENTS[group_idx]:
+                ifvlan_metric_group_rel = [metric_id, group_id]
+                if not info_insert(self.tbl_mgr, "ops_interfacevlan_metricsgroup_relation", ifvlan_metric_group_rel):
+                    ok = False
+
 
         vlan1 = InfoPopulator.VLAN_ID
 
@@ -715,6 +832,8 @@ class InfoPopulator():
         interfacevlan1.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(0)
         interfacevlan1.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
+        interfacevlan1.append(InfoPopulator.IFVLAN_METRICSGROUP_IDS[InfoPopulator.IFVLAN_METRICSGROUP_DEFS[0]])  # metric group
+
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan1):
             ok = False
 
@@ -726,6 +845,7 @@ class InfoPopulator():
         interfacevlan2.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(1)
         interfacevlan2.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
+        interfacevlan2.append(InfoPopulator.IFVLAN_METRICSGROUP_IDS[InfoPopulator.IFVLAN_METRICSGROUP_DEFS[1]])  # metric group
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan2):
             ok = False
 
@@ -736,6 +856,7 @@ class InfoPopulator():
         interfacevlan3.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(2)
         interfacevlan3.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
+        interfacevlan3.append(InfoPopulator.IFVLAN_METRICSGROUP_IDS[InfoPopulator.IFVLAN_METRICSGROUP_DEFS[2]])  # metric group
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", interfacevlan3):
             ok = False
 
@@ -747,6 +868,7 @@ class InfoPopulator():
         remoteinterfacevlan1.append(str(vlan1))  # tag type
         if_idx = InfoPopulator.get_ifvlan_if_idx(3)
         remoteinterfacevlan1.append(InfoPopulator.IF_IDS[if_idx])  # Interface ID
+        remoteinterfacevlan1.append(InfoPopulator.IFVLAN_METRICSGROUP_IDS[InfoPopulator.IFVLAN_METRICSGROUP_DEFS[3]])  # metric group
         if not info_insert(self.tbl_mgr, "ops_interfacevlan", remoteinterfacevlan1):
             ok = False
 
@@ -849,6 +971,18 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_experimentgroup", expgroup_record):
                 ok = False
 
+        for group_idx in range(len(InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_IDS)):
+            group_id = InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_IDS[group_idx]
+            if group_id == InfoPopulator.EMPTY_METRICSGROUP_ID:
+                continue
+            exp_metric_group = (group_id,)
+            if not info_insert(self.tbl_mgr, "ops_experiment_metricsgroup", exp_metric_group):
+                ok = False
+            for metric_id in InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_CONTENTS[group_idx]:
+                exp_metric_group_rel = [metric_id, group_id]
+                if not info_insert(self.tbl_mgr, "ops_experiment_metricsgroup_relation", exp_metric_group_rel):
+                    ok = False
+
 
         for idx in range(len(InfoPopulator.EXTCK_EXPERIMENT_IDS)):
             exp_record = list()
@@ -864,8 +998,21 @@ class InfoPopulator():
             exp_record.append(InfoPopulator.EXTCK_ID)
             exp_id = InfoPopulator.EXTCK_EXPERIMENT_GROUP_RELATION[idx]
             exp_record.append(InfoPopulator.EXTCK_EXPERIMENTGROUP_IDS[exp_id])
+            exp_record.append(InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_IDS[InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_DEFS[idx]])  # metrics group id
             if not info_insert(self.tbl_mgr, "ops_experiment", exp_record):
                 ok = False
+
+        agg_metric_group = (InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_ID,)
+        if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup", agg_metric_group):
+            ok = False
+
+        for metric in InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_DEF:
+            agg_metric_group_rel = list()
+            agg_metric_group_rel.append(metric)
+            agg_metric_group_rel.append(InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_ID)
+            if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup_relation", agg_metric_group_rel):
+                ok = False
+
 
         for idx in range(len(InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
             if not self.insert_aggregate_info(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx],
@@ -876,6 +1023,7 @@ class InfoPopulator():
             mon_agg = list()
             mon_agg.append(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx])
             mon_agg.append(InfoPopulator.EXTCK_ID)
+            mon_agg.append(InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_ID)  # metrics group id
             if not info_insert(self.tbl_mgr, "ops_externalcheck_monitoredaggregate", mon_agg):
                 ok = False
 
