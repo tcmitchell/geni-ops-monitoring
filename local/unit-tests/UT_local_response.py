@@ -361,6 +361,17 @@ class TestLocalResponses(TestResponses):
                                                             "%s/info/node/%s" % (self.base_url, info_populator.InfoPopulator.NODE_IDS[parent_idx]),
                                                             "parent node")
 
+            self.check_json_dictionary_for_field_presence(json_dict, "reported_metrics", desc)
+            reported_metrics = json_dict['reported_metrics']
+            reported_metrics_set = set(reported_metrics)
+            expected_metrics_set = set()
+            if info_populator.InfoPopulator.NODE_METRICSGROUP_IDS[info_populator.InfoPopulator.NODE_METRICSGROUP_DEFS[i]] != info_populator.InfoPopulator.EMPTY_METRICSGROUP_ID:
+                for metric in info_populator.InfoPopulator.NODE_METRICSGROUP_CONTENTS[info_populator.InfoPopulator.NODE_METRICSGROUP_DEFS[i]]:
+                    expected_metrics_set.add("ops_monitoring:" + metric)
+            self.assertEqual(reported_metrics_set, expected_metrics_set, "reported and expected metrics set did not match")
+
+
+
     def test_get_wrong_node_info(self):
         incorrect_node_id = info_populator.InfoPopulator.NODE_IDS[0] + "_WRONG"
         url = self.base_url + "/info/node/" + incorrect_node_id
@@ -525,6 +536,14 @@ class TestLocalResponses(TestResponses):
                                                        info_populator.InfoPopulator.IF_ADDRESSES[addr_idx][0],
                                                        info_populator.InfoPopulator.IF_ADDRESSES[addr_idx][1],
                                                        info_populator.InfoPopulator.IF_ADDRESSES[addr_idx][2])
+            self.check_json_dictionary_for_field_presence(json_dict, "reported_metrics", desc)
+            reported_metrics = json_dict['reported_metrics']
+            reported_metrics_set = set(reported_metrics)
+            expected_metrics_set = set()
+            if info_populator.InfoPopulator.IF_METRICSGROUP_IDS[info_populator.InfoPopulator.IF_METRICSGROUP_DEFS[i]] != info_populator.InfoPopulator.EMPTY_METRICSGROUP_ID:
+                for metric in info_populator.InfoPopulator.IF_METRICSGROUP_CONTENTS[info_populator.InfoPopulator.IF_METRICSGROUP_DEFS[i]]:
+                    expected_metrics_set.add("ops_monitoring:" + metric)
+            self.assertEqual(reported_metrics_set, expected_metrics_set, "reported and expected metrics set did not match")
 
 
     def test_get_wrong_if_info(self):
@@ -553,6 +572,14 @@ class TestLocalResponses(TestResponses):
                                                         info_populator.InfoPopulator.IF_URNS[if_idx],
                                                         self.base_url + "/info/interface/" + info_populator.InfoPopulator.IF_IDS[if_idx],
                                                         "interface")
+            self.check_json_dictionary_for_field_presence(json_dict, "reported_metrics", desc)
+            reported_metrics = json_dict['reported_metrics']
+            reported_metrics_set = set(reported_metrics)
+            expected_metrics_set = set()
+            if info_populator.InfoPopulator.IFVLAN_METRICSGROUP_IDS[info_populator.InfoPopulator.IFVLAN_METRICSGROUP_DEFS[i]] != info_populator.InfoPopulator.EMPTY_METRICSGROUP_ID:
+                for metric in info_populator.InfoPopulator.IFVLAN_METRICSGROUP_CONTENTS[info_populator.InfoPopulator.IFVLAN_METRICSGROUP_DEFS[i]]:
+                    expected_metrics_set.add("ops_monitoring:" + metric)
+            self.assertEqual(reported_metrics_set, expected_metrics_set, "reported and expected metrics set did not match")
 
     def test_get_wrong_ifvlan_info(self):
         incorrect_ifvlan_id = info_populator.InfoPopulator.IFVLAN_IDS[0] + "_WRONG"
@@ -928,11 +955,25 @@ class TestExternalCheckStoreResponses(TestResponses):
                                                     "experiment")
         for i in range(len(info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
             expected_dict = {'href': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_URLS[i],
-                             'id': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]}
+                             'id': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]
+                             }
             self.find_keys_and_values_in_json_array(json_dict["monitored_aggregates"],
                                                     expected_dict,
                                                     'id',
                                                     "monitored aggregate")
+            # reached the current limit of the function above, since we have a "complex" value.
+            desc = "monitored aggregate: %s" % info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]
+            # so finding the aggregate info.
+            for obj in json_dict["monitored_aggregates"]:
+                if 'id' in obj and obj['id'] == info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]:
+                    # and checking for reported metrics
+                    self.check_json_dictionary_for_field_presence(obj, 'reported_metrics', desc)
+                    reported_metrics = obj['reported_metrics']
+                    reported_metrics_set = set(reported_metrics)
+                    expected_metrics_set = set()
+                    for metric in info_populator.InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_DEF:
+                        expected_metrics_set.add("ops_monitoring:" + metric)
+                    self.assertEqual(reported_metrics_set, expected_metrics_set, "reported and expected metrics set did not match")
 
     def test_get_wrong_externalcheck_info(self):
         incorrect_extck_id = info_populator.InfoPopulator.EXTCK_ID + "_WRONG"
@@ -969,6 +1010,14 @@ class TestExternalCheckStoreResponses(TestResponses):
                                                     expected_dict,
                                                     'id',
                                                     "experiement group")
+            self.check_json_dictionary_for_field_presence(json_dict, "reported_metrics", desc)
+            reported_metrics = json_dict['reported_metrics']
+            reported_metrics_set = set(reported_metrics)
+            expected_metrics_set = set()
+            if info_populator.InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_IDS[info_populator.InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_DEFS[i]] != info_populator.InfoPopulator.EMPTY_METRICSGROUP_ID:
+                for metric in info_populator.InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_CONTENTS[info_populator.InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_DEFS[i]]:
+                    expected_metrics_set.add("ops_monitoring:" + metric)
+            self.assertEqual(reported_metrics_set, expected_metrics_set, "reported and expected metrics set did not match")
 
     def test_get_wrong_experiment_info(self):
         incorrect_experiment_id = info_populator.InfoPopulator.EXTCK_EXPERIMENT_IDS[0] + "_WRONG"
