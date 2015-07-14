@@ -328,13 +328,20 @@ def handle_externalcheck_info_query(tm, extck_id, monitoring_version):
         monitored_aggregates = None
         if monitored_aggregates_info:
             monitored_aggregates = list()
+            metrics_dict = dict()
             for mon_agg_info in monitored_aggregates_info:
-                metrics_ids = get_related_objects_refs(tm,
-                                                       "ops_aggregate_metricsgroup_relation",
-                                                       "group_id",
-                                                       mon_agg_info[2],
-                                                       ("id",)
-                                                       )
+                # Chances are, the same metrics group is used over and over again.
+                # so let's look up the corresponding metrics once only.
+                if mon_agg_info[2] in metrics_dict:
+                    metrics_ids = metrics_dict[mon_agg_info[2]]
+                else:
+                    metrics_ids = get_related_objects_refs(tm,
+                                                           "ops_aggregate_metricsgroup_relation",
+                                                           "group_id",
+                                                           mon_agg_info[2],
+                                                           ("id",)
+                                                           )
+                    metrics_dict[mon_agg_info[2]] = metrics_ids
                 monitored_aggregates.append((mon_agg_info[0], mon_agg_info[1], metrics_ids))
 
 
@@ -1060,7 +1067,7 @@ def get_refs(tm, table_str, object_id, column_names=("selfRef", "urn")):
 # Get self reference only TODO refactor similar functions
 def get_monitored_aggregates(tm, extck_id):
 
-    res = tm.query("SELECT ops_aggregate.id, " + tm.get_column_name("ops_aggregate.selfRef") + \
+    res = tm.query("SELECT ops_aggregate.id, ops_aggregate." + tm.get_column_name("selfRef") + \
                    ", ops_externalcheck_monitoredaggregate.metricsgroup_id"
                    " FROM ops_aggregate, ops_externalcheck_monitoredaggregate " + \
                    "WHERE ops_externalcheck_monitoredaggregate.externalcheck_id = '" + extck_id + "' AND " + \
