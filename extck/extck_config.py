@@ -65,7 +65,7 @@ class ExtckConfigLoader:
     __SLICE_PROJECT = "project"
     __PING_SLICE = "slicename"
     __PING_NETWORK = "network"
-    __PING_GROUP_PREFIX = "ping_group_"
+    __PING_GROUP_PREFIX = "group_ping_"
     __GROUP_ID = "id"
     __GROUP_DESC = "desc"
     __IPS_FILE_REMOTE_LOCATION = "ips_file_remote_location"
