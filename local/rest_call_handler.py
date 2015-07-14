@@ -133,8 +133,14 @@ def handle_node_info_query(tm, node_id):
         if node_info[parent_idx] is not None:
             parent_node_ref = get_refs(tm, "ops_node", node_info[parent_idx])
 
+        metrics_ids = get_related_objects_refs(tm,
+                                               "ops_node_metricsgroup_relation",
+                                               "group_id",
+                                               node_info[tm.get_column_from_schema(node_schema, 'metricsgroup_id')],
+                                               ("id",)
+                                               )
 
-        return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs, parent_node_ref))
+        return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs, parent_node_ref, metrics_ids))
 
     else:
         errStr = "node not found: " + node_id
@@ -160,10 +166,19 @@ def handle_interface_info_query(tm, iface_id):
         address_schema = tm.schema_dict[addr_table_str]
         address_rows = get_related_objects_full(tm, addr_table_str,
                                                 "interface_id", iface_id)
+        metrics_ids = get_related_objects_refs(tm,
+                                               "ops_interface_metricsgroup_relation",
+                                               "group_id",
+                                               iface_info[tm.get_column_from_schema(iface_schema, 'metricsgroup_id')],
+                                               ("id",)
+                                               )
+
         return json.dumps(get_interface_info_dict(iface_schema, iface_info,
                                                   parent_if_ref,
                                                   address_schema,
-                                                  address_rows))
+                                                  address_rows,
+                                                  metrics_ids)
+                          )
     else:
         errStr = "interface not found: " + iface_id
         opslog.debug(errStr)
@@ -188,7 +203,13 @@ def handle_interfacevlan_info_query(tm, ifacevlan_id):
         else:
             if_ref = get_related_objects_refs(tm, 'ops_interface', 'id', if_id)[0]
 
-        return json.dumps(get_interfacevlan_info_dict(iface_schema, ifacevlan_info, if_ref))
+        metrics_ids = get_related_objects_refs(tm,
+                                               "ops_interfacevlan_metricsgroup_relation",
+                                               "group_id",
+                                               ifacevlan_info[tm.get_column_from_schema(iface_schema, 'metricsgroup_id')],
+                                               ("id",)
+                                               )
+        return json.dumps(get_interfacevlan_info_dict(iface_schema, ifacevlan_info, if_ref, metrics_ids))
     else:
         errStr = "interfacevlan not found: " + ifacevlan_id
         opslog.debug(errStr)
@@ -268,9 +289,18 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
 
         slv_refs = get_related_objects_refs(tm, "ops_sliver", "aggregate_id", agg_id)
 
+        metrics_ids = get_related_objects_refs(tm,
+                                               "ops_aggregate_metricsgroup_relation",
+                                               "group_id",
+                                               agg_info[tm.get_column_from_schema(agg_schema, 'metricsgroup_id')],
+                                               ("id",)
+                                               )
+
         return json.dumps(get_aggregate_info_dict(agg_schema, agg_info,
                                                   res_refs, slv_refs,
-                                                  monitoring_version))
+                                                  monitoring_version,
+                                                  metrics_ids)
+                          )
 
     else:
         errStr = "aggregate not found: " + agg_id
@@ -294,7 +324,19 @@ def handle_externalcheck_info_query(tm, extck_id, monitoring_version):
     extck_info = get_object_info(tm, table_str, extck_id)
     if extck_info is not None:
 
-        monitored_aggregates = get_monitored_aggregates(tm, extck_id)
+        monitored_aggregates_info = get_monitored_aggregates(tm, extck_id)
+        monitored_aggregates = None
+        if monitored_aggregates_info:
+            monitored_aggregates = list()
+            for mon_agg_info in monitored_aggregates_info:
+                metrics_ids = get_related_objects_refs(tm,
+                                                       "ops_aggregate_metricsgroup_relation",
+                                                       "group_id",
+                                                       mon_agg_info[2],
+                                                       ("id",)
+                                                       )
+                monitored_aggregates.append((mon_agg_info[0], mon_agg_info[1], metrics_ids))
+
 
         exp_refs = get_related_objects_refs(tm, "ops_experiment", "externalcheck_id", extck_id, ("selfRef",))
 
@@ -436,7 +478,13 @@ def handle_experiment_info_query(tm, exp_id):
     if exp_info is not None:
         group_id = exp_info[tm.get_column_from_schema(exp_schema, "experimentgroup_id")]
         group_refs = get_related_objects_refs(tm, "ops_experimentgroup", "id", group_id, ("selfRef", "id"))
-        return json.dumps(get_experiment_info_dict(exp_schema, exp_info, group_refs[0]))
+        metrics_ids = get_related_objects_refs(tm,
+                                               "ops_experiment_metricsgroup_relation",
+                                               "group_id",
+                                               exp_info[tm.get_column_from_schema(exp_schema, 'metricsgroup_id')],
+                                               ("id",)
+                                               )
+        return json.dumps(get_experiment_info_dict(exp_schema, exp_info, group_refs[0], metrics_ids))
     else:
         errStr = "experiment not found: " + exp_id
         opslog.debug(errStr)
@@ -515,7 +563,8 @@ def should_include_json_field(schema, info_row, column):
 # ## Form response dictionary functions
 
 # Forms interface info dictionary (to be made to JSON)
-def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, address_rows):
+def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, address_rows,
+                            metrics_ids):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
@@ -528,6 +577,9 @@ def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, add
                 if schema[col_i][0] == 'parent_interface_id':
                     continue
                 if schema[col_i][0] == 'node_id':
+                    continue
+                # Not including metricsgroup_id column.
+                if schema[col_i][0] == 'metricsgroup_id':
                     continue
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
@@ -551,11 +603,18 @@ def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, add
 
     if len(json_address_list) > 0:
         json_dict["addresses"] = json_address_list
+
+    reported_metrics_list = list()
+    if metrics_ids:
+        for metric in metrics_ids:
+            reported_metrics_list.append("ops_monitoring:" + metric[0])
+    json_dict["reported_metrics"] = reported_metrics_list
+
     return json_dict
 
 
 # Forms experiment info dictionary (to be made to JSON)
-def get_experiment_info_dict(schema, info_row, group_ref):
+def get_experiment_info_dict(schema, info_row, group_ref, metrics_ids):
 
     json_dict = {}
     # NOT all of info_row goes into top level dictionary
@@ -572,6 +631,9 @@ def get_experiment_info_dict(schema, info_row, group_ref):
             elif schema[col_i][0] == 'externalcheck_id':
                 continue
             elif schema[col_i][0] == "experimentgroup_id":
+                continue
+            # Not including metricsgroup_id column.
+            elif schema[col_i][0] == 'metricsgroup_id':
                 continue
             else:  # top level keys are equal to what is in DB
                 json_dict[schema[col_i][0]] = info_row[col_i]
@@ -597,11 +659,17 @@ def get_experiment_info_dict(schema, info_row, group_ref):
         json_dict["experiment_group"]["href"] = group_ref[0];
         json_dict["experiment_group"]["id"] = group_ref[1];
 
+    reported_metrics_list = list()
+    if metrics_ids:
+        for metric in metrics_ids:
+            reported_metrics_list.append("ops_monitoring:" + metric[0])
+    json_dict["reported_metrics"] = reported_metrics_list
+
     return json_dict
 
 
 # Forms interfacevlan info dictionary (to be made to JSON)
-def get_interfacevlan_info_dict(schema, info_row, if_ref):
+def get_interfacevlan_info_dict(schema, info_row, if_ref, metrics_ids):
 
     json_dict = {}
 
@@ -610,12 +678,21 @@ def get_interfacevlan_info_dict(schema, info_row, if_ref):
         if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "interface_id":
                 continue
-            else:
-                json_dict[schema[col_i][0]] = info_row[col_i]
+            # Not including metricsgroup_id column.
+            if schema[col_i][0] == 'metricsgroup_id':
+                continue
+            json_dict[schema[col_i][0]] = info_row[col_i]
+
     if if_ref is not None:
         json_dict["interface"] = dict()
         json_dict["interface"]["href"] = if_ref[0];
         json_dict["interface"]["urn"] = if_ref[1];
+
+    reported_metrics_list = list()
+    if metrics_ids:
+        for metric in metrics_ids:
+            reported_metrics_list.append("ops_monitoring:" + metric[0])
+    json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
 
@@ -649,7 +726,7 @@ def get_user_info_dict(schema, info_row, auth_ref):
 
 
 # Forms node info dictionary (to be made to JSON)
-def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref):
+def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref, metrics_ids):
 
     json_dict = {}
 
@@ -666,6 +743,9 @@ def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref):
                 # Not including aggregate_id column.
                 if schema[col_i][0] == 'aggregate_id':
                     continue
+                # Not including metricsgroup_id column.
+                if schema[col_i][0] == 'metricsgroup_id':
+                    continue
                 json_dict[schema[col_i][0]] = info_row[col_i]
 
     if interface_refs:
@@ -675,6 +755,11 @@ def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref):
                 json_dict["interfaces"].append({"href":interface_ref[0], "urn":interface_ref[1]})
     if parent_node_ref:
         json_dict["parent_node"] = {"href":parent_node_ref[0], "urn":parent_node_ref[1]}
+    reported_metrics_list = list()
+    if metrics_ids:
+        for metric in metrics_ids:
+            reported_metrics_list.append("ops_monitoring:" + metric[0])
+    json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
 
@@ -689,9 +774,7 @@ def get_sliver_info_dict(schema, info_row, resource_refs, agg_refs):
         if should_include_json_field(schema, info_row, col_i):
             if schema[col_i][0] == "aggregate_id":
                 continue
-#                 caller has dealt with this field
-            else:
-                json_dict[schema[col_i][0]] = info_row[col_i]
+            json_dict[schema[col_i][0]] = info_row[col_i]
 
     json_dict["aggregate"] = {"href":agg_refs[0], "urn":agg_refs[1]}
 
@@ -714,12 +797,15 @@ def get_sliver_info_dict(schema, info_row, resource_refs, agg_refs):
 
 # Forms aggregate info dictionary (to be made to JSON)
 def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
-                            monitoring_version):
+                            monitoring_version, metrics_ids):
     json_dict = {}
 
     # All of info_row goes into top level dictionary
     for col_i in range(len(schema)):
         if should_include_json_field(schema, info_row, col_i):
+            # Not including metricsgroup_id column.
+            if schema[col_i][0] == 'metricsgroup_id':
+                continue
             json_dict[schema[col_i][0]] = info_row[col_i]
 
     if res_refs:
@@ -737,6 +823,12 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
                 json_dict["slivers"].append({"href":slv_ref[0], "urn":slv_ref[1]})
 
     json_dict["monitoring_version"] = monitoring_version
+
+    reported_metrics_list = list()
+    if metrics_ids:
+        for metric in metrics_ids:
+            reported_metrics_list.append("ops_monitoring:" + metric[0])
+    json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
 
@@ -760,7 +852,13 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs, monito
     if mon_agg_refs:
         for mon_agg_ref in mon_agg_refs:
             if len(mon_agg_ref) > 0:
-                json_dict["monitored_aggregates"].append({"id":mon_agg_ref[0], "href":mon_agg_ref[1]})
+                mon_agg = {"id":mon_agg_ref[0], "href":mon_agg_ref[1]}
+                reported_metrics_list = list()
+                if mon_agg_ref[2]:
+                    for metric in mon_agg_ref[2]:
+                        reported_metrics_list.append("ops_monitoring:" + metric[0])
+                mon_agg['reported_metrics'] = reported_metrics_list
+                json_dict["monitored_aggregates"].append(mon_agg)
 
     json_dict["monitoring_version"] = monitoring_version
 
@@ -962,9 +1060,11 @@ def get_refs(tm, table_str, object_id, column_names=("selfRef", "urn")):
 # Get self reference only TODO refactor similar functions
 def get_monitored_aggregates(tm, extck_id):
 
-    res = tm.query("SELECT id, " + tm.get_column_name("selfRef") + \
-                   " FROM ops_aggregate WHERE id IN " + \
-                   "(SELECT id FROM ops_externalcheck_monitoredaggregate WHERE externalcheck_id = '" + extck_id + "')")
+    res = tm.query("SELECT ops_aggregate.id, " + tm.get_column_name("ops_aggregate.selfRef") + \
+                   ", ops_externalcheck_monitoredaggregate.metricsgroup_id"
+                   " FROM ops_aggregate, ops_externalcheck_monitoredaggregate " + \
+                   "WHERE ops_externalcheck_monitoredaggregate.externalcheck_id = '" + extck_id + "' AND " + \
+                   "ops_externalcheck_monitoredaggregate.id = ops_aggregate.id")
     return res
 
 
