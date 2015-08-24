@@ -165,10 +165,10 @@ class SingleLocalDatastoreInfoCrawler:
                 for group_id in res:
                     grp_id = group_id[0]
                     registered_metrics = set()
-                    res2 = self.tbl_mgr.query("SELECT id FROM ops_" + obj + "_metricsgroup_relation WHERE group_id ='" + grp_id + "'")
+                    res2 = self.tbl_mgr.query("SELECT id, period FROM ops_" + obj + "_metricsgroup_relation WHERE group_id ='" + grp_id + "'")
                     if res2:
                         for metric_id in res2:
-                            registered_metrics.add(metric_id[0])
+                            registered_metrics.add(metric_id)
                     self.metrics_sets[obj][grp_id] = registered_metrics
 
 
@@ -179,11 +179,12 @@ class SingleLocalDatastoreInfoCrawler:
         self.am_dict = handle_request(am_url, self.cert_path, self.logger)
         return self.refresh_specific_aggregate_info(self.am_dict)
 
-    def _find_or_create_metricsgroup(self, obj_type, reported_metric_list):
+    def _find_or_create_metricsgroup(self, obj_type, reported_metrics_dict):
         reported_set = set()
-        for reported_metric in reported_metric_list:
-            if reported_metric.startswith('ops_monitoring:'):
-                reported_set.add(reported_metric[15:])
+        for reported_metric in reported_metrics_dict:
+            if 'metric' in reported_metric and 'period' in reported_metric:
+                if reported_metric['metric'].startswith('ops_monitoring:'):
+                    reported_set.add((reported_metric['metric'][15:], reported_metric['period']))
         metrics_dict = self.metrics_sets[obj_type]
         for group_id in metrics_dict:
             if metrics_dict[group_id] == reported_set:
@@ -206,9 +207,13 @@ class SingleLocalDatastoreInfoCrawler:
 
         self.tbl_mgr.upsert(metricsgroup_table, metricsgroup_schema, group_record, 0)
 
-        for metric_id in reported_set:
-            relation_record = (metric_id, group_id)
-            self.tbl_mgr.upsert(metricsgroup_relation_table, metricsgroup_relation_schema, relation_record, (0, 1))
+        for metric in reported_set:
+            relation_record = (metric[0], metric[1], group_id)
+            self.tbl_mgr.upsert(metricsgroup_relation_table, metricsgroup_relation_schema, relation_record,
+                                (self.tbl_mgr.get_column_from_schema(metricsgroup_relation_schema, 'id'),
+                                 self.tbl_mgr.get_column_from_schema(metricsgroup_relation_schema, 'group_id')
+                                 )
+                                )
         return group_id
 
     def refresh_specific_aggregate_info(self, agg_dict):
@@ -223,8 +228,8 @@ class SingleLocalDatastoreInfoCrawler:
             db_table_schema = self.tbl_mgr.schema_dict["ops_aggregate"]
             # Setting up metricsgroup_id before the extraction to avoid warning
             if 'reported_metrics' in agg_dict:
-                reported_metrics_list = agg_dict['reported_metrics']
-                group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_list)
+                reported_metrics_dict = agg_dict['reported_metrics']
+                group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_dict)
             else:
                 group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
             agg_dict['metricsgroup_id'] = group_id
@@ -266,8 +271,8 @@ class SingleLocalDatastoreInfoCrawler:
                     agg_url = mon_agg["href"]
                     # Setting up metricsgroup_id before the extraction to avoid warning
                     if 'reported_metrics' in mon_agg:
-                        reported_metrics_list = mon_agg['reported_metrics']
-                        group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_list)
+                        reported_metrics_dict = mon_agg['reported_metrics']
+                        group_id = self._find_or_create_metricsgroup('aggregate', reported_metrics_dict)
                     else:
                         group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
                     insert = True
@@ -317,8 +322,8 @@ class SingleLocalDatastoreInfoCrawler:
                     if experiment_dict:
                         # Setting up metricsgroup_id before the extraction to avoid warning
                         if 'reported_metrics' in experiment_dict:
-                            reported_metrics_list = experiment_dict['reported_metrics']
-                            group_id = self._find_or_create_metricsgroup('experiment', reported_metrics_list)
+                            reported_metrics_dict = experiment_dict['reported_metrics']
+                            group_id = self._find_or_create_metricsgroup('experiment', reported_metrics_dict)
                         else:
                             group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
                         experiment_dict['metricsgroup_id'] = group_id
@@ -479,8 +484,8 @@ class SingleLocalDatastoreInfoCrawler:
             if res_dict["$schema"].endswith("node#"):  # if a node
                 # Setting up metricsgroup_id before the extraction to avoid warning
                 if 'reported_metrics' in res_dict:
-                    reported_metrics_list = res_dict['reported_metrics']
-                    group_id = self._find_or_create_metricsgroup('node', reported_metrics_list)
+                    reported_metrics_dict = res_dict['reported_metrics']
+                    group_id = self._find_or_create_metricsgroup('node', reported_metrics_dict)
                 else:
                     group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
                 res_dict['metricsgroup_id'] = group_id
@@ -546,8 +551,8 @@ class SingleLocalDatastoreInfoCrawler:
                         self.lock.release()
                         # Setting up metricsgroup_id before the extraction to avoid warning
                         if 'reported_metrics' in ifacevlan_dict:
-                            reported_metrics_list = ifacevlan_dict['reported_metrics']
-                            group_id = self._find_or_create_metricsgroup('interfacevlan', reported_metrics_list)
+                            reported_metrics_dict = ifacevlan_dict['reported_metrics']
+                            group_id = self._find_or_create_metricsgroup('interfacevlan', reported_metrics_dict)
                         else:
                             group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
                         ifacevlan_dict['metricsgroup_id'] = group_id
@@ -663,8 +668,8 @@ class SingleLocalDatastoreInfoCrawler:
         ok = True
         # Setting up metricsgroup_id before the extraction to avoid warning
         if 'reported_metrics' in interface_dict:
-            reported_metrics_list = interface_dict['reported_metrics']
-            group_id = self._find_or_create_metricsgroup('interface', reported_metrics_list)
+            reported_metrics_dict = interface_dict['reported_metrics']
+            group_id = self._find_or_create_metricsgroup('interface', reported_metrics_dict)
         else:
             group_id = table_manager.TableManager.ALL_METRICSGROUP_ID
         interface_dict['metricsgroup_id'] = group_id
