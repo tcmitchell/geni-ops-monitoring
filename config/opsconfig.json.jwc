@@ -1219,6 +1219,7 @@
     {   "name":"aggregate_metricsgroup_relation",
         "db_schema": [
              ["id", "varchar", true],
+             ["period", "int4", true],
              ["group_id", "varchar", true]
         ],
         "constraints": [
@@ -1247,6 +1248,7 @@
     {   "name":"node_metricsgroup_relation",
         "db_schema": [
              ["id", "varchar", true],
+             ["period", "int4", true],
              ["group_id", "varchar", true]
         ],
         "constraints": [
@@ -1275,6 +1277,7 @@
     {   "name":"experiment_metricsgroup_relation",
         "db_schema": [
              ["id", "varchar", true],
+             ["period", "int4", true],
              ["group_id", "varchar", true]
         ],
         "constraints": [
@@ -1332,6 +1335,7 @@
     {   "name":"interface_metricsgroup_relation",
         "db_schema": [
              ["id", "varchar", true],
+             ["period", "int4", true],
              ["group_id", "varchar", true]
         ],
         "constraints": [
@@ -1360,6 +1364,7 @@
     {   "name":"interfacevlan_metricsgroup_relation",
         "db_schema": [
              ["id", "varchar", true],
+             ["period", "int4", true],
              ["group_id", "varchar", true]
         ],
         "constraints": [
