@@ -137,7 +137,7 @@ def handle_node_info_query(tm, node_id):
                                                "ops_node_metricsgroup_relation",
                                                "group_id",
                                                node_info[tm.get_column_from_schema(node_schema, 'metricsgroup_id')],
-                                               ("id",)
+                                               ("id", "period")
                                                )
 
         return json.dumps(get_node_info_dict(node_schema, node_info, iface_refs, parent_node_ref, metrics_ids))
@@ -170,7 +170,7 @@ def handle_interface_info_query(tm, iface_id):
                                                "ops_interface_metricsgroup_relation",
                                                "group_id",
                                                iface_info[tm.get_column_from_schema(iface_schema, 'metricsgroup_id')],
-                                               ("id",)
+                                               ("id", "period")
                                                )
 
         return json.dumps(get_interface_info_dict(iface_schema, iface_info,
@@ -207,7 +207,7 @@ def handle_interfacevlan_info_query(tm, ifacevlan_id):
                                                "ops_interfacevlan_metricsgroup_relation",
                                                "group_id",
                                                ifacevlan_info[tm.get_column_from_schema(iface_schema, 'metricsgroup_id')],
-                                               ("id",)
+                                               ("id", "period")
                                                )
         return json.dumps(get_interfacevlan_info_dict(iface_schema, ifacevlan_info, if_ref, metrics_ids))
     else:
@@ -293,7 +293,7 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
                                                "ops_aggregate_metricsgroup_relation",
                                                "group_id",
                                                agg_info[tm.get_column_from_schema(agg_schema, 'metricsgroup_id')],
-                                               ("id",)
+                                               ("id", "period")
                                                )
 
         return json.dumps(get_aggregate_info_dict(agg_schema, agg_info,
@@ -339,7 +339,7 @@ def handle_externalcheck_info_query(tm, extck_id, monitoring_version):
                                                            "ops_aggregate_metricsgroup_relation",
                                                            "group_id",
                                                            mon_agg_info[2],
-                                                           ("id",)
+                                                           ("id", "period")
                                                            )
                     metrics_dict[mon_agg_info[2]] = metrics_ids
                 monitored_aggregates.append((mon_agg_info[0], mon_agg_info[1], metrics_ids))
@@ -489,7 +489,7 @@ def handle_experiment_info_query(tm, exp_id):
                                                "ops_experiment_metricsgroup_relation",
                                                "group_id",
                                                exp_info[tm.get_column_from_schema(exp_schema, 'metricsgroup_id')],
-                                               ("id",)
+                                               ("id", "period")
                                                )
         return json.dumps(get_experiment_info_dict(exp_schema, exp_info, group_refs[0], metrics_ids))
     else:
@@ -614,7 +614,10 @@ def get_interface_info_dict(schema, info_row, parent_if_ref, address_schema, add
     reported_metrics_list = list()
     if metrics_ids:
         for metric in metrics_ids:
-            reported_metrics_list.append("ops_monitoring:" + metric[0])
+            reported_metric = dict()
+            reported_metric["metric"] = "ops_monitoring:" + metric[0]
+            reported_metric["period"] = metric[1]
+            reported_metrics_list.append(reported_metric)
     json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
@@ -669,7 +672,10 @@ def get_experiment_info_dict(schema, info_row, group_ref, metrics_ids):
     reported_metrics_list = list()
     if metrics_ids:
         for metric in metrics_ids:
-            reported_metrics_list.append("ops_monitoring:" + metric[0])
+            reported_metric = dict()
+            reported_metric["metric"] = "ops_monitoring:" + metric[0]
+            reported_metric["period"] = metric[1]
+            reported_metrics_list.append(reported_metric)
     json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
@@ -698,7 +704,10 @@ def get_interfacevlan_info_dict(schema, info_row, if_ref, metrics_ids):
     reported_metrics_list = list()
     if metrics_ids:
         for metric in metrics_ids:
-            reported_metrics_list.append("ops_monitoring:" + metric[0])
+            reported_metric = dict()
+            reported_metric["metric"] = "ops_monitoring:" + metric[0]
+            reported_metric["period"] = metric[1]
+            reported_metrics_list.append(reported_metric)
     json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
@@ -765,7 +774,10 @@ def get_node_info_dict(schema, info_row, interface_refs, parent_node_ref, metric
     reported_metrics_list = list()
     if metrics_ids:
         for metric in metrics_ids:
-            reported_metrics_list.append("ops_monitoring:" + metric[0])
+            reported_metric = dict()
+            reported_metric["metric"] = "ops_monitoring:" + metric[0]
+            reported_metric["period"] = metric[1]
+            reported_metrics_list.append(reported_metric)
     json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
@@ -834,7 +846,10 @@ def get_aggregate_info_dict(schema, info_row, res_refs, slv_refs,
     reported_metrics_list = list()
     if metrics_ids:
         for metric in metrics_ids:
-            reported_metrics_list.append("ops_monitoring:" + metric[0])
+            reported_metric = dict()
+            reported_metric["metric"] = "ops_monitoring:" + metric[0]
+            reported_metric["period"] = metric[1]
+            reported_metrics_list.append(reported_metric)
     json_dict["reported_metrics"] = reported_metrics_list
 
     return json_dict
@@ -863,7 +878,10 @@ def get_externalcheck_info_dict(schema, info_row, exp_refs, mon_agg_refs, monito
                 reported_metrics_list = list()
                 if mon_agg_ref[2]:
                     for metric in mon_agg_ref[2]:
-                        reported_metrics_list.append("ops_monitoring:" + metric[0])
+                        reported_metric = dict()
+                        reported_metric["metric"] = "ops_monitoring:" + metric[0]
+                        reported_metric["period"] = metric[1]
+                        reported_metrics_list.append(reported_metric)
                 mon_agg['reported_metrics'] = reported_metrics_list
                 json_dict["monitored_aggregates"].append(mon_agg)
 
