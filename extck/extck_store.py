@@ -296,10 +296,24 @@ class InfoPopulator():
 
         self.tbl_mgr.upsert(agg_metricsgrp_table, agg_metricsgr_schema, (InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY,), 0)
 
-        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema, ('ping_rtt_ms', InfoPopulator.EXPERIMENT_METRICSGROUP_PINGS), (0, 1))
-        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema, ('is_stitch_path_available', InfoPopulator.EXPERIMENT_METRICSGROUP_STITCHING), (0, 1))
+        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema,
+                            ('ping_rtt_ms', self._config.get_experiment_ping_frequency(), InfoPopulator.EXPERIMENT_METRICSGROUP_PINGS),
+                            (self.tbl_mgr.get_column_from_schema(exp_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(exp_metricsgr_relation_schema, 'group_id'))
+                            )
+        self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema,
+                            ('is_stitch_path_available', self._config.get_experiment_stitching_frequency(),
+                             InfoPopulator.EXPERIMENT_METRICSGROUP_STITCHING),
+                            (self.tbl_mgr.get_column_from_schema(exp_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(exp_metricsgr_relation_schema, 'group_id'))
+                            )
 
-        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema, ('is_available', InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY), (0, 1))
+        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema,
+                            ('is_available', self._config.get_experiment_amcheck_frequency(),
+                             InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY),
+                            (self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'group_id'))
+                            )
 
     def cleanUpObsoleteAggregates(self, aggStores):
         """
