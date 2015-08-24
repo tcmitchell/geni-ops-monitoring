@@ -778,6 +778,7 @@ class TableManager:
         Populates some tables with default value rows
         """
         ok = True
+        default_metrics_period = self.conf_loader.get_default_metrics_period()
         for obj_type in self.event_types:
             group_table = "ops_" + obj_type + "_metricsgroup"
             group_table_schema = self.schema_dict[group_table]
@@ -792,7 +793,10 @@ class TableManager:
             for metric_name in self.event_types[obj_type]:
                 if not self.upsert(event_table, event_table_schema, (metric_name,), 0):
                     ok = False;
-                if not self.upsert(group_relation_table, group_relation_table_schema, (metric_name, TableManager.ALL_METRICSGROUP_ID), (0, 1)):
+                if not self.upsert(group_relation_table, group_relation_table_schema,
+                                   (metric_name, default_metrics_period, TableManager.ALL_METRICSGROUP_ID),
+                                   (self.get_column_from_schema(group_relation_table_schema, "id"),
+                                    self.get_column_from_schema(group_relation_table_schema, "group_id"))):
                     ok = False;
         return ok
     def __establish_tables__(self, table_str_arr):
