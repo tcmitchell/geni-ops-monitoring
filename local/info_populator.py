@@ -213,7 +213,14 @@ class InfoPopulator():
 
     AGGREGATE_METRICSGROUP_ID = "regular"
 
+    AGGREGATE_METRICS_FREQUENCY = 360
+
+    AGGREGATE_METRICSGROUP_CONTENTS = ('routable_ip_available',)
+
+
     NODE_METRICSGROUP_IDS = ("server", "vm", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    NODE_METRICS_FREQUENCY = 300
 
     # At node idx, metrics group idx
     NODE_METRICSGROUP_DEFS = (0, 0, 1, 1, 1, 2)
@@ -224,6 +231,8 @@ class InfoPopulator():
 
     IF_METRICSGROUP_IDS = ("std", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
 
+    IF_METRICS_FREQUENCY = 240
+
     # At interface idx, metrics group idx
     IF_METRICSGROUP_DEFS = (0, 0, 0, 0, 0, 0, 1)
 
@@ -231,6 +240,8 @@ class InfoPopulator():
                                 )
 
     IFVLAN_METRICSGROUP_IDS = ("std", table_manager.TableManager.EMPTY_METRICSGROUP_ID)
+
+    IFVLAN_METRICS_FREQUENCY = 120
 
     # At interface idx, metrics group idx
     IFVLAN_METRICSGROUP_DEFS = (0, 0, 0, 1)
@@ -282,6 +293,8 @@ class InfoPopulator():
                                  "al2s",
                                  "stitching"
                                  )
+
+    EXTCK_METRICS_FREQUENCY = 600
 
     EXTCK_EXPERIMENTGROUP_DESC = ("Connectivity checks via mesoscale OpenFlow network",
                                   "Connectivity checks via al2s OpenFlow network",
@@ -446,12 +459,10 @@ class InfoPopulator():
         if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup", agg_metric_group):
             ok = False
 
-        agg_metric_group_rel1 = []
-        agg_metric_group_rel1.append('routable_ip_available')
-        agg_metric_group_rel1.append(InfoPopulator.AGGREGATE_METRICSGROUP_ID)
-        if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup_relation", agg_metric_group_rel1):
-            ok = False
-
+        for metric_id in InfoPopulator.AGGREGATE_METRICSGROUP_CONTENTS:
+            agg_metric_group_rel = [metric_id, InfoPopulator.AGGREGATE_METRICS_FREQUENCY, InfoPopulator.AGGREGATE_METRICSGROUP_ID]
+            if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup_relation", agg_metric_group_rel):
+                ok = False
 
         agg1 = []
         self.__fill_in_list_with_schema_id_and_url(agg1, "aggregate", InfoPopulator.AGGREGATE_ID)
@@ -474,7 +485,7 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_node_metricsgroup", node_metric_group):
                 ok = False
             for metric_id in InfoPopulator.NODE_METRICSGROUP_CONTENTS[group_idx]:
-                node_metric_group_rel = [metric_id, group_id]
+                node_metric_group_rel = [metric_id, InfoPopulator.NODE_METRICS_FREQUENCY, group_id]
                 if not info_insert(self.tbl_mgr, "ops_node_metricsgroup_relation", node_metric_group_rel):
                     ok = False
 #
@@ -694,7 +705,7 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_interface_metricsgroup", if_metric_group):
                 ok = False
             for metric_id in InfoPopulator.IF_METRICSGROUP_CONTENTS[group_idx]:
-                if_metric_group_rel = [metric_id, group_id]
+                if_metric_group_rel = [metric_id, InfoPopulator.IF_METRICS_FREQUENCY, group_id]
                 if not info_insert(self.tbl_mgr, "ops_interface_metricsgroup_relation", if_metric_group_rel):
                     ok = False
 
@@ -818,7 +829,7 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_interfacevlan_metricsgroup", ifvlan_metric_group):
                 ok = False
             for metric_id in InfoPopulator.IFVLAN_METRICSGROUP_CONTENTS[group_idx]:
-                ifvlan_metric_group_rel = [metric_id, group_id]
+                ifvlan_metric_group_rel = [metric_id, InfoPopulator.IFVLAN_METRICS_FREQUENCY, group_id]
                 if not info_insert(self.tbl_mgr, "ops_interfacevlan_metricsgroup_relation", ifvlan_metric_group_rel):
                     ok = False
 
@@ -979,7 +990,7 @@ class InfoPopulator():
             if not info_insert(self.tbl_mgr, "ops_experiment_metricsgroup", exp_metric_group):
                 ok = False
             for metric_id in InfoPopulator.EXTCK_EXPERIMENT_METRICSGROUP_CONTENTS[group_idx]:
-                exp_metric_group_rel = [metric_id, group_id]
+                exp_metric_group_rel = [metric_id, InfoPopulator.EXTCK_METRICS_FREQUENCY, group_id]
                 if not info_insert(self.tbl_mgr, "ops_experiment_metricsgroup_relation", exp_metric_group_rel):
                     ok = False
 
@@ -1009,6 +1020,7 @@ class InfoPopulator():
         for metric in InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_DEF:
             agg_metric_group_rel = list()
             agg_metric_group_rel.append(metric)
+            agg_metric_group_rel.append(InfoPopulator.EXTCK_METRICS_FREQUENCY)
             agg_metric_group_rel.append(InfoPopulator.EXTCK_MONITORED_AGG_METRICSGROUP_ID)
             if not info_insert(self.tbl_mgr, "ops_aggregate_metricsgroup_relation", agg_metric_group_rel):
                 ok = False
@@ -1047,7 +1059,7 @@ def info_insert(tbl_mgr, table_str, row_arr):
         if row_arr[col] is None:
             val_str += "NULL"
         else:
-            val_str += "'" + row_arr[col] + "'"
+            val_str += "'" + str(row_arr[col]) + "'"
     val_str += ")"
 
     return tbl_mgr.insert_stmt(table_str, val_str)
