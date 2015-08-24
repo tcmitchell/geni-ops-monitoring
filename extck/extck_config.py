@@ -60,6 +60,9 @@ class ExtckConfigLoader:
     __PING_THREAD_POOL_SIZE = "ping_thread_pool_size"
     __PING_INITIAL_COUNT = "ping_initial_count"
     __PING_MEASURMENT_COUNT = "ping_measurement_count"
+    __PING_FREQUENCY = "ping_frequency"
+    __AMCHECK_FREQUENCY = "amcheck_frequency"
+    __STITCHING_FREQUENCY = "stitching_frequency"
     __SLICE_URN = "urn"
     __SLICE_UUID = "uuid"
     __SLICE_PROJECT = "project"
@@ -314,6 +317,15 @@ class ExtckConfigLoader:
 
     def get_experiment_ping_measurmentl_count(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_MEASURMENT_COUNT)
+
+    def get_experiment_ping_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_FREQUENCY)
+
+    def get_experiment_amcheck_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__AMCHECK_FREQUENCY)
+
+    def get_experiment_stitching_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCHING_FREQUENCY)
 
     def get_experiment_source_ping_vm_address(self, pins_set_name, srcping):
         section = ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + pins_set_name + "_" + srcping
