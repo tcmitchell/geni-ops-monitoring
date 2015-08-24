@@ -32,6 +32,7 @@ class DbConfigLoader():
         """
         import sys
         import logger
+        self.__dbconfigtype = dbconfigtype
         if dbconfigtype == "local":
             self.config = self.generic_config_parser(config_path, True)
         elif dbconfigtype == "collector":
@@ -67,6 +68,13 @@ class DbConfigLoader():
 
     def get_purge_period(self):
         return int(self.config.get("main", "purge_period"))
+
+    def get_default_metrics_period(self):
+        if self.__dbconfigtype != "local":
+            return 0
+        else:
+            return int(self.config.get("main", "default_metrics_period"))
+
 
     def get_db_parameters(self):
         """
