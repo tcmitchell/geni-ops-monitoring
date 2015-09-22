@@ -1,3 +1,62 @@
+Changes for Release 2.1
+September 30, 2015
+------------------------------
+* New Features
+ * Support for aging out the information in the DB. By default the age out 
+   period is 1 week. Any record in the DB whose time stamp is older than the
+   period, is deleted. Also any record associated with these records are also
+   deleted (via the DB constraints "ON CASCADE DELETE")
+ * Eliminated redundancy in DB tables. As a result:
+   * ops_aggregate_resource has been eliminated. Added aggregate_id column in 
+     ops_node and ops_link.
+   * ops_aggregate_sliver has been eliminated. Added aggregate_id column in 
+     ops_sliver (aggregate_urn and aggregate_href columns have been removed)
+   * ops_node_interface has been eliminated. Added node_id (which is allowed to
+     be NULL so that stub interfaces can be represented) column in ops_interface.
+   * ops_slice_user: urn and selfRef columns have been eliminated (id column 
+     point to ops_user record)
+   * ops_authority_user: has been eliminated. Added authority_id column to 
+     ops_user table.
+   * ops_authority_slice: has been eliminated. Added authority_id column to 
+     ops_slice table.
+   * ops_externalcheck_experiment. has been eliminated. Added externalcheck_id 
+     column in ops_experiment.
+   * ops_externalcheck_monitoredaggregate: selfRef column has been eliminated 
+     (id column point to ops_aggregate record)
+   * ops_link_relations: has been eliminated. There weren't redundant columns, 
+     but adding a parent_link_id column to ops_link is in line with what's been
+     done with ops_node and ops_interface.
+ * Support for multiple resources per sliver. 
+   ops_sliver DB table no longer has node_id and link_id column.
+   New DB tables ops_sliver_node and ops_sliver_link are now used to relate 
+   slivers and resources.
+ * Support relations between nodes. Allow to relate a VM with the server it is 
+   running on. New column parent_node_id in ops_node tables allows to relate 
+   nodes.
+ * Support relations between interfaces. Allow to relate interfaces (for 
+   example, logical interface can be related to physical interfaces).
+   New column parent_interface_id in ops_interface allows to relate interfaces.
+ * Support for reported metrics per info object instance. This is supported via
+   the ops_XXXX_metrics (populated automatically), ops_XXXX_metricsgroup and
+   ops_XXXX_metricsgroup_relation tables as well as the metricsgroup_id column 
+   in various ops_XXXX tables. This information helps the collector to know 
+   which particular metrics a data store reports about a given info object and
+   at which frequency.
+ * Added error schema for JSON response. Previously, this was an undefined area
+   of the system. 
+ * Added version information to ops configuration, external check and authority
+   objects.
+ * Added "baremetal" node type.
+ * Added an experimentgroup object. This allows experiment (a.k.a. checks) 
+   reported by external check stores to be grouped into categories, and help 
+   present the information more clearly to the end user. 
+ * Added minimum definition of obsolete tables in configuration file. This 
+   allows script that reset the DB to eliminate old obsolete tables that could 
+   otherwise linger and confuse developers.
+ 
+* Bug Fixes
+
+
 Changes for Release 2.0.1
 January 20, 2015
 ------------------------------
