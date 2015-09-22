@@ -24,6 +24,7 @@
 
 import json
 import logger
+import time
 
 
 __SCHEMA_BASE = "http://www.gpolab.bbn.com/monitoring/schema/20150625/"
@@ -520,6 +521,7 @@ def handle_opsconfig_info_query(tm, opsconfig_id, monitoring_version):
     if opsconfig_id == "geni-prod":
         json_dict = json.load(open(tm.config_path + "opsconfig.json"))
         json_dict["version"] = monitoring_version
+        json_dict['ts'] = int(time.time() * 1000000)
         return json.dumps(json_dict)
     else:
         errStr = "opsconfig not found: " + opsconfig_id
