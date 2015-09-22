@@ -24,6 +24,7 @@
 
 import json
 import logger
+import time
 # ## Main query handler functions
 
 # Main handle for data queries
@@ -380,7 +381,9 @@ def handle_experiment_info_query(tm, exp_id):
 def handle_opsconfig_info_query(tm, opsconfig_id):
     opslog = logger.get_logger()
     if opsconfig_id == "geni-prod":
-        return json.dumps(json.load(open(tm.config_path + "opsconfig.json")))
+        opsconfig_dict = json.load(open(tm.config_path + "opsconfig.json"))
+        opsconfig_dict['ts'] = int(time.time() * 1000000)
+        return json.dumps(opsconfig_dict)
     else:
         opslog.debug("opsconfig not found: " + opsconfig_id)
         return "opsconfig not found"
