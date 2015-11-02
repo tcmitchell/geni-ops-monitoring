@@ -3,14 +3,14 @@
 //    https://<datastore-host>/info/experimentgroup/<experiment group id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/experimentgroup#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20151105/experimentgroup#",
   "description": "Monitoring experiment group for external check data store",
   "name": "experimentgroup",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "$schema": {
-       "default": "http://www.gpolab.bbn.com/monitoring/schema/20150625/experimentgroup#",
+       "default": "http://www.gpolab.bbn.com/monitoring/schema/20151105/experimentgroup#",
        "description": "The schema of the this file.",
        "format": "uri",
        "required": true,

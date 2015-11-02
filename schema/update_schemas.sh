@@ -29,7 +29,7 @@ local_schema_dir=$(dirname $0)
 # schema_date should be the date embedded in the $schema lines of the
 # schemas.  This script does not verify that the schemas have the
 # correct date in them.
-schema_date=20150625
+schema_date=20151105
 
 # Web server hosting the schemas
 schema_server="www.gpolab.bbn.com"

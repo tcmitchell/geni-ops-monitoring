@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/opsconfig/<aggregate id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/opsconfig#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20151105/opsconfig#",
   "description": "Operational monitoring data configuration",
   "name": "opsconfig",
   "type": "object",
