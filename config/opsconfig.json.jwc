@@ -696,6 +696,9 @@
   "externalcheckstores": [
     {
        "href": "https://extckdatastore.gpolab.bbn.com/info/externalcheck/gpo"
+    },
+    {
+       "href": "https://flsmonitor.fed4fire.eu/api/geni/externalcheckstore/info/externalcheck/iminds"
     }
   ],
   "authorities": [
@@ -1448,7 +1451,17 @@
                 "ts": "int8",
                 "v": "int4",
                 "units": "count"
-           }
+            },
+            {   "name": "nodelogin",
+                // Represents whether a sliver node could be reserved at the aggregate
+                // and one could log into that node.
+                // This particular measurement is provided by the iMinds external
+                // check store, not the local datastore.
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int2",
+                "units": "boolean"
+            }
         ],
         "interface": [
             {   "name": "rx_bps",
@@ -1571,16 +1584,50 @@
         ],
         "experiment": [
             {   "name": "ping_rtt_ms",
+                // Represents the ping round trip time in milliseconds, between 2 nodes on the
+                // 2 aggregates involved in the experiment.
                 "id": "varchar",
                 "ts": "int8",
                 "v":"float4",
                 "units":"milliseconds"
             },
             {   "name": "is_stitch_path_available",
+                // Represents whether the SCS could compute a stitch path between 2 aggregates.
+                // This particular measurement is provided by the GPO external
+                // check store, not the local datastore.
                 "id": "varchar",
                 "ts": "int8",
                 "v":"int2",
                 "units":"boolean"
+            },
+            {   "name": "stitching_availability",
+                // Represents whether a stitch path could be established between 2 aggregates.
+                // This particular measurement is provided by the iMinds external
+                // check store, not the local datastore.
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int2",
+                "units":"boolean"
+            },
+            {   "name": "stitching_availability_vlan_source",
+                // Related to stitching_availability.
+                // Represent the VLAN used at the source aggregate during the stitching experiment.
+                // This particular measurement is provided by the iMinds external
+                // check store, not the local datastore.
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int4",
+                "units":"vlan ID"
+            },
+            {   "name": "stitching_availability_vlan_destination",
+                // Related to stitching_availability.
+                // Represent the VLAN used at the destination aggregate during the stitching experiment.
+                // This particular measurement is provided by the iMinds external
+                // check store, not the local datastore.
+                "id": "varchar",
+                "ts": "int8",
+                "v":"int4",
+                "units":"vlan ID"
             }
         ]
     },
