@@ -37,7 +37,9 @@ import opsconfig_loader
 
 
 class StatsPopulator(threading.Thread):
-    def __init__(self, tbl_mgr, obj_type, obj_id, num_inserts, sleep_period_sec, event_types_arr, data_life_time_sec=12 * 60 * 60):
+
+    def __init__(self, tbl_mgr, obj_type, obj_id, num_inserts,
+                 sleep_period_sec, event_types_arr, data_life_time_sec=12 * 60 * 60):
         threading.Thread.__init__(self)
         self.tbl_mgr = tbl_mgr  # ldp = local datastore populator
         self.obj_type = obj_type
@@ -68,7 +70,6 @@ class StatsPopulator(threading.Thread):
         self.pkts_last_tx_dps = psutil.network_io_counters().dropout
         self.run_ok = True
 
-
     def run(self):
 
         print "Starting thread for populating stats about" + self.obj_id
@@ -91,8 +92,9 @@ class StatsPopulator(threading.Thread):
         ok = True
         time_sec_epoch = int(time.time() * 1000000)
         data = self.get_data(ev_t)
-        if data != None:
-            val_str = "('" + self.obj_id + "'," + str(time_sec_epoch) + "," + str(data) + ")"
+        if data is not None:
+            val_str = "('" + self.obj_id + "'," + \
+                str(time_sec_epoch) + "," + str(data) + ")"
             table_str = "ops_" + self.obj_type + "_" + ev_t
             old_ts = (time.time() - self.data_life_time_sec) * 1000000
 
@@ -228,8 +230,11 @@ class StatsPopulator(threading.Thread):
             return random.uniform(900.0, 5400.0)
         elif event_type == "wmx_noc":
             return random.randint(0, 50)
+        elif event_type == "nodelogin":
+            return 1
         else:  # TODO add more
             return None
+
 
 def arg_parser(argv):
 
@@ -264,7 +269,6 @@ def main():
 
     (num_ins, per_sec) = arg_parser(sys.argv)
 
-
     db_name = "local"
     config_path = "../config/"
 #     debug = False
@@ -275,26 +279,49 @@ def main():
 
     node_id = "instageni.gpolab.bbn.com_node_pc1"
     event_types_arr = event_types["node"]
-    nsp1 = StatsPopulator(tbl_mgr, "node", node_id, num_ins, per_sec, event_types_arr)
+    nsp1 = StatsPopulator(
+        tbl_mgr,
+        "node",
+        node_id,
+        num_ins,
+        per_sec,
+        event_types_arr)
     nsp1.start()
 
     node_id = "instageni.gpolab.bbn.com_node_pc2"
-    nsp2 = StatsPopulator(tbl_mgr, "node", node_id, num_ins, per_sec, event_types_arr)
+    nsp2 = StatsPopulator(
+        tbl_mgr,
+        "node",
+        node_id,
+        num_ins,
+        per_sec,
+        event_types_arr)
     nsp2.start()
 
     iface_id = "instageni.gpolab.bbn.com_interface_pc1:eth1"
     event_types_arr = event_types["interface"]
-    isp1 = StatsPopulator(tbl_mgr, "interface", iface_id, num_ins, per_sec, event_types_arr)
+    isp1 = StatsPopulator(
+        tbl_mgr,
+        "interface",
+        iface_id,
+        num_ins,
+        per_sec,
+        event_types_arr)
     isp1.start()
 
     iface_id = "instageni.gpolab.bbn.com_interface_pc2:eth1"
-    isp2 = StatsPopulator(tbl_mgr, "interface", iface_id, num_ins, per_sec, event_types_arr)
+    isp2 = StatsPopulator(
+        tbl_mgr,
+        "interface",
+        iface_id,
+        num_ins,
+        per_sec,
+        event_types_arr)
     isp2.start()
 
-    q_res = tbl_mgr.query("select count(*) from ops_" + event_types_arr[0]);
+    q_res = tbl_mgr.query("select count(*) from ops_" + event_types_arr[0])
     if q_res is not None:
         print "num entries", q_res[0][0]
-
 
     threads = []
     threads.append(nsp1)
