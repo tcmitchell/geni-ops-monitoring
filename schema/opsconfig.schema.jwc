@@ -3,7 +3,7 @@
 //    https://<datastore-host>/info/opsconfig/<aggregate id>
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/opsconfig#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20151105/opsconfig#",
   "description": "Operational monitoring data configuration",
   "name": "opsconfig",
   "type": "object",
@@ -12,6 +12,15 @@
     "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
   },
   "properties": {
+    "version": {
+      "description": "ops configuration version",
+      // this is the version of the ops configuration
+      // In GPO implementation, it's the same as the software version
+      // since a new (minor) version of the software is created every time
+      // the ops configuration is updated.
+      "type": "string",
+      "required": true
+    },
     "aggregatestores": {
       "description": "GENI aggregates known to support operational monitoring",
       "type": "array",

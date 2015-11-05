@@ -60,11 +60,17 @@ class ExtckConfigLoader:
     __PING_THREAD_POOL_SIZE = "ping_thread_pool_size"
     __PING_INITIAL_COUNT = "ping_initial_count"
     __PING_MEASURMENT_COUNT = "ping_measurement_count"
+    __PING_FREQUENCY = "ping_frequency"
+    __AMCHECK_FREQUENCY = "amcheck_frequency"
+    __STITCHING_FREQUENCY = "stitching_frequency"
     __SLICE_URN = "urn"
     __SLICE_UUID = "uuid"
     __SLICE_PROJECT = "project"
     __PING_SLICE = "slicename"
     __PING_NETWORK = "network"
+    __PING_GROUP_PREFIX = "group_ping_"
+    __GROUP_ID = "id"
+    __GROUP_DESC = "desc"
     __IPS_FILE_REMOTE_LOCATION = "ips_file_remote_location"
     __PINGER_FILE_REMOTE_LOCATION = "pinger_file_remote_location"
     __LOCAL_OUTPUT_DIR = "local_output_dir"
@@ -77,13 +83,14 @@ class ExtckConfigLoader:
     __SLICE_SECTION_PREFIX = "slice_"
 
     __STITCHER_RSPEC_TEMPLATE = "stitcher_rspec_template_filename"
-    __STITCH_EXPERIMENT_SLICENAME = "stitch_experiement_slicename"
+    __STITCH_EXPERIMENT_SLICENAME = "stitch_experiment_slicename"
     __STITCH_SITES_SECTION = "stitch_sites_section"
     __STITCH_PATH_AVAILABLE_CMD = "sticher_path_available_command"
     __OUTPUT_FILENAME_STR = "OUTPUT_FILENAME"
     __PROJECTNAME_STR = "PROJECTNAME"
     __SLICENAME_STR = "SLICENAME"
     __RSPEC_FILENAME_STR = "RSPEC_FILENAME"
+    __STITCHING_GROUP_PREFIX = "group_stitching_exp_"
 
 
 
@@ -295,6 +302,13 @@ class ExtckConfigLoader:
         return self._extck_config.get(ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + ping_set_name + "_" + srcping ,
                                       ExtckConfigLoader.__PING_SLICE)
 
+    def get_experiment_group_for_ping_set(self, ping_set_name):
+        group_id = self._extck_config.get(ExtckConfigLoader.__PING_GROUP_PREFIX + ping_set_name,
+                                      ExtckConfigLoader.__GROUP_ID)
+        group_desc = self._extck_config.get(ExtckConfigLoader.__PING_GROUP_PREFIX + ping_set_name,
+                                      ExtckConfigLoader.__GROUP_DESC)
+        return (group_id, group_desc)
+
     def get_experiment_ping_thread_pool_size(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_THREAD_POOL_SIZE)
 
@@ -303,6 +317,15 @@ class ExtckConfigLoader:
 
     def get_experiment_ping_measurmentl_count(self):
         return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_MEASURMENT_COUNT)
+
+    def get_experiment_ping_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__PING_FREQUENCY)
+
+    def get_experiment_amcheck_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__AMCHECK_FREQUENCY)
+
+    def get_experiment_stitching_frequency(self):
+        return self._extck_config.get(ExtckConfigLoader.__EXPERIMENT_SECTION, ExtckConfigLoader.__STITCHING_FREQUENCY)
 
     def get_experiment_source_ping_vm_address(self, pins_set_name, srcping):
         section = ExtckConfigLoader.__SOURCE_PING_SECTION_PREFIX + pins_set_name + "_" + srcping
@@ -349,4 +372,12 @@ class ExtckConfigLoader:
         cmd_str = cmd_str.replace(ExtckConfigLoader.__RSPEC_FILENAME_STR, rspec_filename)
         cmd_str = cmd_str.replace(ExtckConfigLoader.__OUTPUT_FILENAME_STR, output_filename)
         return cmd_str
+
+    def get_experiment_group_for_stitching(self, scs_id):
+        group_id = self._extck_config.get(ExtckConfigLoader.__STITCHING_GROUP_PREFIX + scs_id,
+                                      ExtckConfigLoader.__GROUP_ID)
+        group_desc = self._extck_config.get(ExtckConfigLoader.__STITCHING_GROUP_PREFIX + scs_id,
+                                      ExtckConfigLoader.__GROUP_DESC)
+        return (group_id, group_desc)
+
 

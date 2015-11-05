@@ -15,7 +15,7 @@
 // datastore of type <object type name>."
 {
   "$schema": "http://json-schema.org/draft-03/schema#",
-  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140828/data#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20151105/data#",
   "description": "Operational monitoring data",
   "name": "Data",
   "type": "object",

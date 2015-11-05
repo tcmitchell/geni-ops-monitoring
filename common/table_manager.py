@@ -25,6 +25,7 @@
 import sys
 import threading
 import opsconfig_loader
+import time
 
 class DBManager(object):
     """
@@ -73,7 +74,7 @@ class DBManager(object):
         provided by the DB driver module. 
         """
         raise NotImplementedError();
-    
+
     def get_table_schema_string(self, table_schema):
         """
         Method to get a schema string, i.e. "( col1Name, col2Name, .... , colnName)"
@@ -88,7 +89,7 @@ class DBManager(object):
             schema_str += self.get_column_name(table_schema[col][0])
         schema_str += ")"
         return schema_str
-    
+
     def get_table_values_string(self, row):
         """
         Method to get a string of value, i.e. "'value1', 'value2', ... , 'valuen'"
@@ -212,7 +213,7 @@ class PostgreSQLDBManager (DBManager):
 
         # Convert id_columns to a list if it is not one already.
         try:
-            _ = iter(id_columns) # attempt to access it as an iterable
+            _ = iter(id_columns)  # attempt to access it as an iterable
         except TypeError:
             id_columns = [id_columns]
 
@@ -235,6 +236,9 @@ class PostgreSQLDBManager (DBManager):
 
 class TableManager:
 
+    EMPTY_METRICSGROUP_ID = "empty"
+    ALL_METRICSGROUP_ID = "all"
+
     def __init__(self, db_type, config_path):
 
         self.config_path = config_path
@@ -245,12 +249,12 @@ class TableManager:
         sys.path.append(config_path)
         import database_conf_loader
 
-        self.conf_loader = database_conf_loader  # clarify naming conventions
-
-        [db_prog] = self.conf_loader.main(config_path, db_type)
+        self.conf_loader = database_conf_loader.DbConfigLoader(config_path, db_type)
 
         self.database_type = db_type  # local or collector
-        self.database_program = db_prog  # postgres or mysql
+        self.database_program = self.conf_loader.get_dbType()  # postgres or mysql
+        if self.database_type == "local":
+            self.aging_timeout = self.conf_loader.get_aging_timeout()
 
         self.dbmanager = self.init_dbmanager()
 
@@ -290,6 +294,8 @@ class TableManager:
         self.__all_tables = self.__create_ordered_table_list__(self.__all_dependencies_dict)
         self.__all_tables.reverse()
 
+        self.ts_tables = self.__keep_only_tables_with_ts(self.tables, info_schema)
+
         self.logger.debug("Schema loaded with keys:\n" + str(self.schema_dict.keys()))
 
 
@@ -300,9 +306,7 @@ class TableManager:
         :return: The correct instance of a concrete class inheriting from DBManager
         :note: This method will cause the program to exit if the specified DB engine is not recognized.
         """
-        [database_, username_, password_, host_, port_, poolsize_] = self.conf_loader.get_db_parameters(self.config_path, \
-                                                                                             self.database_program, \
-                                                                                             self.database_type)
+        [database_, username_, password_, host_, port_, poolsize_] = self.conf_loader.get_db_parameters()
 
         if self.database_program == "postgres":
             return PostgreSQLDBManager(database_, username_, password_, host_, port_, poolsize_, self.logger)
@@ -382,22 +386,22 @@ class TableManager:
                 # The rest of the data are coming from aggregate stores.
                 if ds_k.startswith("ops_experiment") or ds_k == "ops_aggregate_is_available":
                     constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["externalcheck_id", "id", "ts"]],
-                                             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["externalcheck_id", "ops_externalcheck", "id"]]
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["externalcheck_id", "ops_externalcheck", "id"]]
                                             ]
                 else:
                     constraints_dict[ds_k] = [["PRIMARY KEY (%s, %s, %s)", ["aggregate_id", "id", "ts"]],
-                                             ["FOREIGN KEY (%s) REFERENCES %s(%s)", ["aggregate_id", "ops_aggregate", "id"]]
+                                             ["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["aggregate_id", "ops_aggregate", "id"]]
                                             ]
             if ds_k.startswith("ops_node"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_node", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_node", "id"]])
             elif ds_k.startswith("ops_interfacevlan"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interfacevlan", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interfacevlan", "id"]])
             elif ds_k.startswith("ops_interface"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_interface", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_interface", "id"]])
             elif ds_k.startswith("ops_aggregate"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_aggregate", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_aggregate", "id"]])
             elif ds_k.startswith("ops_experiment"):
-                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s)", ["id", "ops_experiment", "id"]])
+                constraints_dict[ds_k].append(["FOREIGN KEY (%s) REFERENCES %s(%s) ON DELETE CASCADE ON UPDATE CASCADE", ["id", "ops_experiment", "id"]])
 
         for ic_k in info_constraints.keys():
             constraints_dict[ic_k] = info_constraints[ic_k]
@@ -484,6 +488,8 @@ class TableManager:
             self.__all_tables = self.__create_ordered_table_list__(self.__all_dependencies_dict)
             self.__all_tables.reverse()
 
+        self.ts_tables = self.__keep_only_tables_with_ts(self.tables, self.schema_dict)
+
         return True
 
 #     def add_table_schema(self, table_name, table_schema):
@@ -556,6 +562,36 @@ class TableManager:
                 sys.exit(-1)
 
         return table_list
+
+    def __contain_ts_column__(self, table_schema_def):
+        for col_def in table_schema_def:
+            if col_def[0] == "ts":
+                return True
+        return False
+
+    def __keep_only_tables_with_ts(self, table_list, info_schema):
+        """
+        """
+        info_tables = info_schema.keys()
+        ts_tables = list(table_list)
+        self.logger.debug("complete list of tables = %s" % str(ts_tables))
+        tables_to_rm = []
+        for tablename in ts_tables:
+            # table for the data schema all have time stamps.
+            # only info tables have relationship table that don't have time stamps
+            if tablename in info_tables:
+                if not self.__contain_ts_column__(info_schema[tablename]):
+                    tables_to_rm.append(tablename)
+
+        for tablename in tables_to_rm:
+            self.logger.debug("removing table %s " % tablename)
+            ts_tables.remove(tablename)
+
+        self.logger.debug("list of tables = %s" % str(ts_tables))
+        ts_tables.reverse()
+        self.logger.debug("reversed list of tables = %s" % str(ts_tables))
+
+        return tuple(ts_tables)
 
     def purge_old_tsdata(self, table_name, delete_older_than_ts):
         """
@@ -737,7 +773,32 @@ class TableManager:
         self.db_lock.release()
         return col_names
 
-
+    def __populate_tables_with_defaults(self):
+        """
+        Populates some tables with default value rows
+        """
+        ok = True
+        default_metrics_period = self.conf_loader.get_default_metrics_period()
+        for obj_type in self.event_types:
+            group_table = "ops_" + obj_type + "_metricsgroup"
+            group_table_schema = self.schema_dict[group_table]
+            if not self.upsert(group_table, group_table_schema, (TableManager.EMPTY_METRICSGROUP_ID,), 0):
+                ok = False;
+            if not self.upsert(group_table, group_table_schema, (TableManager.ALL_METRICSGROUP_ID,), 0):
+                ok = False;
+            event_table = "ops_" + obj_type + "_metrics"
+            event_table_schema = self.schema_dict[event_table]
+            group_relation_table = "ops_" + obj_type + "_metricsgroup_relation"
+            group_relation_table_schema = self.schema_dict[group_relation_table]
+            for metric_name in self.event_types[obj_type]:
+                if not self.upsert(event_table, event_table_schema, (metric_name,), 0):
+                    ok = False;
+                if not self.upsert(group_relation_table, group_relation_table_schema,
+                                   (metric_name, default_metrics_period, TableManager.ALL_METRICSGROUP_ID),
+                                   (self.get_column_from_schema(group_relation_table_schema, "id"),
+                                    self.get_column_from_schema(group_relation_table_schema, "group_id"))):
+                    ok = False;
+        return ok
     def __establish_tables__(self, table_str_arr):
         """
         Creates a list of tables
@@ -755,10 +816,27 @@ class TableManager:
         Creates all the DB tables
         :return: True if the tables were successfully created, False otherwise
         """
-        return self.__establish_tables__(self.tables)
+        ok = True
+        if not self.__establish_tables__(self.tables):
+            ok = False
+        if not self.__populate_tables_with_defaults():
+            ok = False
+        return ok
+
+    def is_purge_enabled(self):
+        if self.database_type == "local":
+            return (self.aging_timeout > 0) and (self.conf_loader.get_purge_period() > 0)
+        return False
 
     def purge_outdated_resources_from_info_tables(self):
-        pass  # TODO fill in
+        """
+        Method to remove data older than now - aging_timeout.
+        """
+        ts_threshold = int((time.time() - self.aging_timeout) * 1000000)
+        # delete data in reverse order. (simple enough: use the reverse table order excluding table that don't have a ts object.)
+        # Since we have the constraint on delete cascade, if an object is deleted its corresponding relationship will be deleted.
+        for table_name in self.ts_tables:
+            self.purge_old_tsdata(table_name, ts_threshold)
 
 
     def establish_table(self, table_str):

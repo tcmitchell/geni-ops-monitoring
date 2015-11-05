@@ -23,48 +23,73 @@
 
 import ConfigParser
 
-def generic_config_parser(config_path, local):
-    """
-    Method to create a ConfigParser object and parse in the appropriate configuration file.
-    :param config_path: the path to the ops-monitoring configuration folder.
-    :param local: boolean indicating whether the local datastore configuration file will be read in or the collector configuration file.
-    :return: a ConfigParser object loaded with the configuration parameters.
-    """
-    config = ConfigParser.ConfigParser()
-    if local:
-        filename = config_path + "/local_datastore_operator.conf"
-    else:
-        filename = config_path + "/collector_operator.conf"
-    config.read(filename)
-    return config
+class DbConfigLoader():
+    def __init__(self, config_path, dbconfigtype):
+        """
+        Construct a configuration reader and parse in the appropriate configuration file.
+        :param config_path: the path to the ops-monitoring configuration folder.
+        :param dbconfigtype: either "local" or "collector"
+        """
+        import sys
+        import logger
+        self.__dbconfigtype = dbconfigtype
+        if dbconfigtype == "local":
+            self.config = self.generic_config_parser(config_path, True)
+        elif dbconfigtype == "collector":
+            self.config = self.generic_config_parser(config_path, False)
+        else:
+            logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")
+            sys.exit(1)
+        self._dbtype = self.config.get("main", "dbtype")
 
-def generic_main(config):
-    """
-    Method to return the dbtype parameter value of the [main] section.
-    :param config: the ConfigParser object loaded with the configuration.
-    :return: the dbtype parameter value of the [main] section
-    """
-    dbtype = config.get("main", "dbtype")
-    return [dbtype]
+    def generic_config_parser(self, config_path, local):
+        """
+        Method to create a ConfigParser object and parse in the appropriate configuration file.
+        :param config_path: the path to the ops-monitoring configuration folder.
+        :param local: boolean indicating whether the local datastore configuration file will be read in or the collector configuration file.
+        :return: a ConfigParser object loaded with the configuration parameters.
+        """
+        config = ConfigParser.ConfigParser()
+        if local:
+            filename = config_path + "/local_datastore_operator.conf"
+        else:
+            filename = config_path + "/collector_operator.conf"
+        config.read(filename)
+        return config
 
-def main_local(config_path):
-    """
-    Method to get the type of database from the local datastore configuration file.
-    :param config_path: the path to the ops-monitoring configuration folder.
-    :return: the type of database from the local datastore configuration file
-    """
-    config = generic_config_parser(config_path, True)
-    return generic_main(config)
+    def get_dbType(self):
+        """
+        Method to get the DB engine type as specified by the configuration.
+        """
+        return self._dbtype
 
-def main_collector(config_path):
-    """
-    Method to get the type of database from the collector configuration file
-    :param config_path: the path to the ops-monitoring configuration folder.
-    :return: the type of database from the collector configuration file
-    """
-    config = generic_config_parser(config_path, False)
-    return generic_main(config)
+    def get_aging_timeout(self):
+        return int(self.config.get("main", "aging_timeout"))
 
+    def get_purge_period(self):
+        return int(self.config.get("main", "purge_period"))
+
+    def get_default_metrics_period(self):
+        if self.__dbconfigtype != "local":
+            return 0
+        else:
+            return int(self.config.get("main", "default_metrics_period"))
+
+
+    def get_db_parameters(self):
+        """
+        Method to get the database parameters values for a dbengine kind of database and for a dbconfigtype of configuration.
+        :param dbengine: the kind of database ("mysql" or "postgres" so far)
+        :param dbconfigtype: the kind of DB configuration. ("local" or "collector" so far)
+        """
+        database = self.config.get(self._dbtype, "database")
+        username = self.config.get(self._dbtype, "username")
+        password = self.config.get(self._dbtype, "password")
+        host = self.config.get(self._dbtype, "host")
+        port = self.config.get(self._dbtype, "port")
+        poolsize = self.config.get(self._dbtype, "poolsize")
+
+        return [database, username, password, host, port, poolsize]
 
 def main(config_path, dbconfigtype):
     """
@@ -73,66 +98,10 @@ def main(config_path, dbconfigtype):
     :param dbconfigtype: the kind of DB configuration. ("local" or "collector" so far)
     :return: the type of database from the corresponding configuration file
     """
-    import sys
-    import logger
-    if dbconfigtype == "local":
-        return main_local(config_path)
-    elif dbconfigtype == "collector":
-        return main_collector(config_path)
-    else:
-        logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")
-        sys.exit(1)
+    dbconfig = DbConfigLoader(config_path, dbconfigtype)
+    return [dbconfig.get_dbType()]
+    
 
-def generic_db_param(config, dbengine):
-    """
-    Method to get the database parameters values from a given configuration file.
-    :param config: the ConfigParser object loaded with the configuration.
-    :param dbengine: the name of the DB engine. This corresponds to the section name in the configuration file.
-    :return: a tuple of configuration parameters containing the DB name, username, password, DB hostname, DB port and desired DB connection pool size.
-    """
-    database = config.get(dbengine, "database")
-    username = config.get(dbengine, "username")
-    password = config.get(dbengine, "password")
-    host = config.get(dbengine, "host")
-    port = config.get(dbengine, "port")
-    poolsize = config.get(dbengine, "poolsize")
-    return [database, username, password, host, port, poolsize]
-
-def psql_local(config_path):
-    """
-    Method to get the postgresql database parameters values from the local datastore configuration file.
-    :param config_path: he path to the ops-monitoring configuration folder.
-    :return: a tuple of configuration parameters containing the DB name, username, password, DB hostname, DB port and desired DB connection pool size.
-    """
-    config = generic_config_parser(config_path, True)
-    return generic_db_param(config, "postgres")
-
-def psql_collector(config_path):
-    """
-    Method to get the postgresql database parameters values from the collector configuration file.
-    :param config_path: he path to the ops-monitoring configuration folder.
-    :return: a tuple of configuration parameters containing the DB name, username, password, DB hostname, DB port and desired DB connection pool size.
-    """
-    config = generic_config_parser(config_path, False)
-    return generic_db_param(config, "postgres")
-
-def mysql_local(config_path):
-    """
-    Method to get the mysql database parameters values from the local datastore configuration file.
-    :param config_path: he path to the ops-monitoring configuration folder.
-    :return: a tuple of configuration parameters containing the DB name, username, password, DB hostname, DB port and desired DB connection pool size.
-    """
-    config = generic_config_parser(config_path, True)
-    return generic_db_param(config, "mysql")
-
-def mysql_collector(config_path):
-    """
-    Method to get the mysql database parameters values from the collector configuration file.
-    :param config_path: he path to the ops-monitoring configuration folder.
-    :return: a tuple of configuration parameters containing the DB name, username, password, DB hostname, DB port and desired DB connection pool size.
-    """
-    config = generic_config_parser(config_path, False)
-    return generic_db_param(config, "mysql")
 
 def get_db_parameters(config_path, dbengine, dbconfigtype):
     """
@@ -141,24 +110,7 @@ def get_db_parameters(config_path, dbengine, dbconfigtype):
     :param dbengine: the kind of database ("mysql" or "postgres" so far)
     :param dbconfigtype: the kind of DB configuration. ("local" or "collector" so far)
     """
-    import sys
-    import logger
-    if dbconfigtype == "local":
-        if dbengine == "postgres":
-            return psql_local(config_path)
-        elif dbengine == "mysql":
-            return mysql_local(config_path)
-        else:
-            logger.get_logger(config_path).critical("Unrecognized dbengine %s.  Exiting\n" % (dbengine))
-            sys.exit(1)
-    elif dbconfigtype == "collector":
-        if dbengine == "postgres":
-            return psql_collector(config_path)
-        elif dbengine == "mysql":
-            return mysql_collector(config_path)
-        else:
-            logger.get_logger(config_path).critical("Unrecognized dbengine %s.  Exiting\n" % (dbengine))
-            sys.exit(1)
-    else:
-        logger.get_logger(config_path).critical("No collector or local database selected.  Exiting\n")
-        sys.exit(1)
+
+    dbconfig = DbConfigLoader(config_path, dbconfigtype)
+    return dbconfig.get_db_parameters()
+

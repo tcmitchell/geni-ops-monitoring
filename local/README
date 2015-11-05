@@ -154,7 +154,14 @@ Table of Contents:
     http://groups.geni.net/geni/wiki/OperationalMonitoring/DatastorePolling#Security
     You only need to do this once.
 
-    (4) In /etc/apache2/sites-available/default-ssl, make sure the following SSL
+    (4) Modify the Apache configuration file for http hosts. With Apache 
+        version 2.2.x on Ubuntu, this file is located at 
+        /etc/apache2/sites-available/default-ssl
+        
+        With Apache version 2.4.x on Ubuntu, the file is located at
+        /etc/apache2/sites-available/default-ssl.conf
+        
+        In the configuration file, make sure the following SSL
         settings are in place.  Some of these are commented out by default,
         so be sure to remove the initial "#".
 
@@ -172,6 +179,8 @@ Table of Contents:
         settings and above the ending </VirtualHost>.
         If you want the pages served at a root other than /, modify the
         WSGIScriptAlias directive.
+        
+        (a) for Apache version 2.2.x:
 
         WSGIDaemonProcess localstore threads=5
         WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
@@ -182,18 +191,35 @@ Table of Contents:
             Order deny,allow
             Allow from all
         </Directory>
+        
+        (b) for Apache version 2.4.x:
  
+        WSGIDaemonProcess localstore threads=5
+        WSGIScriptAlias / /usr/local/ops-monitoring/local/wsgi/localstore.wsgi
+
+        <Directory /usr/local/ops-monitoring/local/wsgi>
+            WSGIProcessGroup localstore
+            WSGIApplicationGroup %{GLOBAL}
+            Require all granted
+        </Directory>
+        
     (6) Enable the default SSL site:
       sudo a2ensite default-ssl
 
      This creates a link default-ssl file:
-       /etc/apache2/sites-enabled/default-ssl     to link to
+     
+      /etc/apache2/sites-enabled/default-ssl links to
            /etc/apache2/sites-available/default-ssl 
+
+     Or
+
+      /etc/apache2/sites-enabled/default-ssl.conf links to
+           /etc/apache2/sites-available/default-ssl.conf 
 
 
     (7) In order to see WSGI errors if any occur, modify that same
         VirtualHost block and set:
-  LogLevel info
+            LogLevel info
 
     (8) Make sure you haven't introduced any syntax errors in default-ssl:
         sudo apache2ctl configtest

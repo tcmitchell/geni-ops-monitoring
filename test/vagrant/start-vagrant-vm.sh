@@ -28,6 +28,9 @@
  if [ "${status}" != "running (virtualbox)" ]
  then
     vagrant up
+    if [ $? -ne 0 ]; then
+        vagrant reload
+    fi
  fi
  
  # Always re-provision the VM with the latest code.

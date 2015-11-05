@@ -180,32 +180,37 @@ class SingleLocalDatastoreObjectTypeFetcher:
                 ok = False
 
             if data is not None:
-                onlyErr = False
-                for result in data:
-                    self.logger.debug("Result received from %s about:" % self.aggregate_id)
-                    self.logger.debug(pprint.pformat(result["id"]))
+                if isinstance(data, dict) and data.has_key('$schema') and data['$schema'].endswith('/error#'):
+                    if data.has_key('error_message') and data.has_key('origin_url'):
+                        self.logger.warning('Error returned from store for url ' + data['origin_url'] + ': ' + data['error_message'])
+                    continue
+                else:
+                    onlyErr = False
+                    for result in data:
+                        self.logger.debug("Result received from %s about:" % self.aggregate_id)
+                        self.logger.debug(pprint.pformat(result["id"]))
 
-                    event_type = result["eventType"]
-                    if event_type.startswith("ops_monitoring:"):
-                        table_str = "ops_" + self.obj_type + "_" + event_type[15:]
+                        event_type = result["eventType"]
+                        if event_type.startswith("ops_monitoring:"):
+                            table_str = "ops_" + self.obj_type + "_" + event_type[15:]
 
-                        # if id is event:obj_id_that_was_queried,
-                        # TODO straighten out protocol with monitoring group
-                        # for now go with this
-                        id_str = result["id"]
+                            # if id is event:obj_id_that_was_queried,
+                            # TODO straighten out protocol with monitoring group
+                            # for now go with this
+                            id_str = result["id"]
 
-                        # remove event: and prepend aggregate_id:
-                        if self.aggregate_id != "":
-                            datastore_id = self.aggregate_id
-                        elif self.extck_id != "":
-                            datastore_id = self.extck_id
-                        obj_id = id_str[id_str.find(':') + 1:]
+                            # remove event: and prepend aggregate_id:
+                            if self.aggregate_id != "":
+                                datastore_id = self.aggregate_id
+                            elif self.extck_id != "":
+                                datastore_id = self.extck_id
+                            obj_id = id_str[id_str.find(':') + 1:]
 
-                        tsdata = result["tsdata"]
-                        if len(tsdata) > 0:
-                            argsArray.append((self, datastore_id, obj_id, table_str, tsdata))
-#                             if not self.tsdata_insert(datastore_id, obj_id, table_str, tsdata):
-#                                 ok = False
+                            tsdata = result["tsdata"]
+                            if len(tsdata) > 0:
+                                argsArray.append((self, datastore_id, obj_id, table_str, tsdata))
+    #                             if not self.tsdata_insert(datastore_id, obj_id, table_str, tsdata):
+    #                                 ok = False
         if len(argsArray) > 0:
             results = self.pool.map(tsdata_insert, argsArray)
             for tmp_ok in results:
@@ -384,7 +389,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         aggregate_id = self.aggregate_id
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" + aggregate_id + "')")
+        q_res = tbl_mgr.query("select id from ops_node where aggregate_id = '" + aggregate_id + "'")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -408,7 +413,7 @@ class SingleLocalDatastoreObjectTypeFetcher:
         tbl_mgr = self.tbl_mgr
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_externalcheck_experiment where externalcheck_id = '" + self.extck_id + "'")
+        q_res = tbl_mgr.query("select id from ops_experiment where externalcheck_id = '" + self.extck_id + "'")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -421,9 +426,9 @@ class SingleLocalDatastoreObjectTypeFetcher:
         aggregate_id = self.aggregate_id
 
         res = [];
-        q_res = tbl_mgr.query("select id from ops_node_interface where node_id in \
-                               (select id from ops_node where id in (select id from ops_aggregate_resource where aggregate_id = '" \
-                               + aggregate_id + "'))")
+        q_res = tbl_mgr.query("select id from ops_interface where node_id in \
+                               (select id from ops_node where aggregate_id = '" \
+                               + aggregate_id + "')")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
@@ -437,8 +442,8 @@ class SingleLocalDatastoreObjectTypeFetcher:
 
         res = [];
         q_res = tbl_mgr.query("select distinct id from ops_link_interfacevlan where link_id in \
-                               (select id from ops_link where id in (select id from ops_aggregate_resource where aggregate_id = '" \
-                               + aggregate_id + "'))")
+                               (select id from ops_link where aggregate_id = '" \
+                               + aggregate_id + "')")
         if q_res is not None:
             for res_i in range(len(q_res)):
                 res.append(q_res[res_i][0])  # gets first of single tuple
