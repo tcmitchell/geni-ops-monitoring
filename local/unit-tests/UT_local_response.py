@@ -1612,8 +1612,13 @@ class TestExternalCheckStoreResponses(TestResponses):
                                                     'href',
                                                     "experiment")
         for i in range(len(info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
-            expected_dict = {'href': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_URLS[i],
-                             'id': info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]
+            id = info_populator.InfoPopulator.EXTCK_MONITORED_AGG_IDS[i]
+            url = info_populator.InfoPopulator.EXTCK_MONITORED_AGG_URLS[i]
+            if url == "":
+                # it's a local data store
+                url = "%s/info/aggregate/%s" % (self.base_url, id)
+            expected_dict = {'href': url,
+                             'id': id
                              }
             self.find_keys_and_values_in_json_array(json_dict["monitored_aggregates"],
                                                     expected_dict,
@@ -1821,6 +1826,67 @@ class TestExternalCheckStoreResponses(TestResponses):
             url,
             ("experiment group not found: " +
              incorrect_experiment_group_id))
+
+    def test_get_fake_aggregate_info(self):
+        for i in range(len(info_populator.InfoPopulator.EXTCK_FAKE_AGG_IDS)):
+            id = info_populator.InfoPopulator.EXTCK_FAKE_AGG_IDS[i]
+            urn = info_populator.InfoPopulator.EXTCK_FAKE_AGG_URNS[i]
+            url = "%s/info/aggregate/%s" % (self.base_url, id)
+            json_dict = self.get_json_dictionary(url)
+
+            desc = "aggregate %s info" % id
+
+            self.assertIsNotNone(json_dict,
+                                 "Error parsing return from %s" % url)
+            self.check_json_dictionary_for_field(json_dict,
+                                                 "$schema",
+                                                 TestResponses.BASE_SCHEMA +
+                                                 "aggregate#",
+                                                 desc)
+            self.check_json_dictionary_for_field(json_dict,
+                                                 "id",
+                                                 id,
+                                                 desc)
+            self.check_json_dictionary_for_field(json_dict,
+                                                 "urn",
+                                                 urn,
+                                                 desc)
+
+            self.check_json_dictionary_for_field_presence(json_dict,
+                                                          "measRef",
+                                                          desc)
+            self.check_json_dictionary_for_field(json_dict,
+                                                 "operational_status",
+                                                 "development",
+                                                 desc)
+            self.check_json_dictionary_for_field_presence(
+                json_dict,
+                "ts",
+                desc)
+            self.check_json_dictionary_for_field_presence(json_dict,
+                                                          "monitoring_version",
+                                                          desc)
+            self.check_json_dictionary_for_field(json_dict,
+                                                 "populator_version",
+                                                 info_populator.InfoPopulator.POPULATOR_VERSION,
+                                                 desc)
+            self.check_json_dictionary_for_field_absence(json_dict,
+                                                         "resources",
+                                                         desc)
+            self.check_json_dictionary_for_field_absence(json_dict,
+                                                         "slivers",
+                                                         desc)
+
+            self.check_json_dictionary_for_field_presence(
+                json_dict,
+                "reported_metrics",
+                desc)
+            reported_metrics = json_dict['reported_metrics']
+            self.assertEqual(
+                json_dict["reported_metrics"],
+                [],
+                "Did not get an empty metrics list for %s" %
+                id)
 
 
 def main(argv):
