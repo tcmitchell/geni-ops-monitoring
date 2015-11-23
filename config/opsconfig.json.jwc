@@ -321,6 +321,24 @@
        "href": "https://tamu-hn.exogeni.net:4334/info/aggregate/tamuvmsite",
        "amurl": "https://tamu-hn.exogeni.net:11443/orca/xmlrpc"
     },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:pscvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://psc-hn.exogeni.net:4334/info/aggregate/pscvmsite",
+       "amurl": "https://psc-hn.exogeni.net:11443/orca/xmlrpc"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:uafvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://uaf-hn.exogeni.net:4334/info/aggregate/uafvmsite",
+       "amurl": "https://uaf-hn.exogeni.net:11443/orca/xmlrpc"
+    },
+    {
+       "urn": "urn:publicid:IDN+exogeni.net:gwuvmsite+authority+am",
+       "amtype": "exogeni",
+       "href": "https://gwu-hn.exogeni.net:4334/info/aggregate/gwuvmsite",
+       "amurl": "https://gwu-hn.exogeni.net:11443/orca/xmlrpc"
+    },
     // Open geni stores
     {
        "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
