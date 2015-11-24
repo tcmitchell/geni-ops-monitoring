@@ -298,6 +298,11 @@ class InfoPopulator():
         self.tbl_mgr.upsert(agg_tablename, agg_schema, aggRow,
                             self.tbl_mgr.get_column_from_schema(agg_schema, "urn"))
 
+    def update_aggregate_ts(self, urn):
+        statement = "UPDATE ops_aggregate SET ts=%d WHERE urn=%s" % \
+            (int(time.time() * 1000000), urn)
+        self.tbl_mgr.execute_sql(statement)
+
     def insert_aggregate_url(self, aggregate_id, aggregate_manager_url):
         agg_amurl_tablename = "extck_aggregate_amurl"
         agg_amurl_schema = self.tbl_mgr.schema_dict[agg_amurl_tablename]
@@ -660,6 +665,10 @@ def registerOneAggregate(arg_tuple):
             cert_path,
             aggregate['href'])  # Use url for site's store to query site
         if aggDetails is None:
+            # The aggregate didn't answer, but we'll update the timestamp if the record
+            # exist. This is so the record does not get removed automatically from the DB after a week
+            # if the AM has been having an issue for a long time...
+            ip.update_aggregate_ts(urn)
             return
         # don't care about what's being reported by the aggregate here.
         aggDetails[
