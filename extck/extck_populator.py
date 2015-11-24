@@ -355,10 +355,12 @@ def check_aggregate_state_for_one_url(arg_tuple):
             amtype,
             config,
             lock)
+        # only trying to get available resources for instageni aggregates that are up.
+        # recording only version 2 of the URL...
         if state == 1 and (amtype == "protogeni" or
                            amtype == "instageni"):
             version = config.get_apiversion_from_am_url(am_url, amtype)
-            if version == 2:
+            if version == "2":
                 get_avail = True
     elif amtype == "stitcher":
         state = getStitcherState(monitored_aggregate_id, am_url, config, lock)
@@ -444,7 +446,7 @@ def refresh_user_credentials():
 
 
 def get_ig_available_ips_and_raw_pcs_for_one_site(arg_tuple):
-    (context, site, lock) = arg_tuple
+    (site, lock) = arg_tuple
     lock.acquire()
     opslogger.debug("getting available IPs and raw PCs for %s at %s." %
                     (site.name, site.url))
