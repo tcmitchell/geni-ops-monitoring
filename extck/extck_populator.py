@@ -57,16 +57,14 @@ sys.path.append(config.get_geni_lib_path())  #
 
 import amcanary_config  #
 context = amcanary_config.buildContext()  #
-from geni.aggregate.core import AM  #
+from geni.aggregate.core import AM
+from geni.aggregate.instageni import IGCompute
 ##################################################
 
 
-
-
-
-
 class SiteOF(AM):
-    def __init__ (self, name, url, apiversion):
+
+    def __init__(self, name, url, apiversion):
         if apiversion == 0:
             apiversionstr = "amapiv2"
         else:
@@ -74,17 +72,22 @@ class SiteOF(AM):
         super(SiteOF, self).__init__(name, url, apiversionstr, "foam")
         self.apiversion = apiversion
 
+
 def getOFState(context, site, lock):
 
     lock.acquire()
-    opslogger.debug("Listing resources for FOAM/FV Aggregate Manager %s at %s." % (site.name, site.url))
+    opslogger.debug("Listing resources for FOAM/FV Aggregate Manager %s at %s." %
+                    (site.name, site.url))
     lock.release()
     try:
-        ad = site.listresources(context)  # Run listresources for a particular site
-    except Exception, e:
+        # Run listresources for a particular site
+        ad = site.listresources(context)
+    except Exception as e:
         lock.acquire()
         opslogger.warning(str(e))
-        opslogger.warning("Control plane connection for FOAM/FV Aggregate Manager to %s is Offline via API version %s" % (site.name, str(site.apiversion)))
+        opslogger.warning(
+            "Control plane connection for FOAM/FV Aggregate Manager to %s is Offline via API version %s" %
+            (site.name, str(site.apiversion)))
         lock.release()
         return 0  # Can't reach the site via control pat
 
@@ -95,11 +98,13 @@ def getOFState(context, site, lock):
         switch_nb += 1
         if len(switch.ports) == 0:
             lock.acquire()
-            opslogger.warning("NO ports found on " + switch.dpid + ". FV may be hang or connection from dpid to FV is broken.")
+            opslogger.warning("NO ports found on " + switch.dpid +
+                              ". FV may be hang or connection from dpid to FV is broken.")
             lock.release()
         else:  # If any dpid has ports listed, FV is working for that switch
             lock.acquire()
-            opslogger.info("FOAM/FV Aggregate Manager %s is available at %s." % (site.name, site.url))
+            opslogger.info("FOAM/FV Aggregate Manager %s is available at %s." %
+                           (site.name, site.url))
             lock.release()
             return 1
     if switch_nb == 0:
@@ -111,13 +116,18 @@ def getOFState(context, site, lock):
         return 1
 
     lock.acquire()
-    opslogger.warning("NO ports found on any switch. FV may be hang or connection from dpid to FV is broken. Declaring foam aggregate %s (%s) unavailable" % (site.name, site.url))
+    opslogger.warning(
+        "NO ports found on any switch. FV may be hang or connection from dpid to FV is broken. Declaring foam aggregate %s (%s) unavailable" %
+        (site.name, site.url))
     lock.release()
     return 0  # All dpids on that switch had no ports. FV is down.
+
 
 class DataPopulator():
 
     __IS_AVAILABLE_TBLNAME = "ops_aggregate_is_available"
+    __ROUTABLE_IP_AVAILABLE_TBLNAME = "ops_aggregate_routable_ip_available"
+    __RAWPCS_AVAILABLE_TBLNAME = "ops_aggregate_raw_pc_available"
 
     def __init__(self, tbl_mgr):
         self.tbl_mgr = tbl_mgr
@@ -127,10 +137,24 @@ class DataPopulator():
         datapoint = (agg_id, ts, state)
         self.__db_insert(DataPopulator.__IS_AVAILABLE_TBLNAME, datapoint)
 
-    def __db_purge(self, table_str):
-        old_ts = int((time.time() - 168 * 60 * 60) * 1000000)  # Purge data older than 1 week (168 hours)
-        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
+    def insert_routable_ip_available_datapoint(
+            self, agg_id, ts, available_ips):
 
+        datapoint = (agg_id, ts, available_ips)
+        self.__db_insert(
+            DataPopulator.__ROUTABLE_IP_AVAILABLE_TBLNAME,
+            datapoint)
+
+    def insert_raw_pcs_available_datapoint(
+            self, agg_id, ts, raw_pcs_available):
+
+        datapoint = (agg_id, ts, raw_pcs_available)
+        self.__db_insert(DataPopulator.__RAWPCS_AVAILABLE_TBLNAME, datapoint)
+
+    def __db_purge(self, table_str):
+        # Purge data older than 1 week (168 hours)
+        old_ts = int((time.time() - 168 * 60 * 60) * 1000000)
+        self.tbl_mgr.purge_old_tsdata(table_str, old_ts)
 
     def __db_insert(self, table_str, row_arr):
         val_str = "('"
@@ -166,19 +190,21 @@ def getAMStateForURL(agg_id, am_url, amtype, config, lock):
     for line in output.split('\n'):
         words = line.split()
         if len(words) == 3 \
-            and words[0] == 'MONITORING' \
-            and words[1] == ('test_%s' % test):
+                and words[0] == 'MONITORING' \
+                and words[1] == ('test_%s' % test):
             retcode = int(words[2])
-            break;
+            break
     qualifier = "NOT "
     if retcode == 0:
         state = 1
         qualifier = ""
 
     lock.acquire()
-    opslogger.info("aggregate %s is %sreachable at %s" % (agg_id, qualifier, am_url))
+    opslogger.info("aggregate %s is %sreachable at %s" %
+                   (agg_id, qualifier, am_url))
     lock.release()
     return state
+
 
 def getOmniCredentials():
     argv = []
@@ -187,7 +213,9 @@ def getOmniCredentials():
     cert = config['selected_framework']['cert']
     return key, cert
 
+
 class ListAggregateThread(threading.Thread):
+
     def __init__(self, scsInstance):
         super(ListAggregateThread, self).__init__()
         self.scsInstance = scsInstance
@@ -196,19 +224,21 @@ class ListAggregateThread(threading.Thread):
     def run(self):
         self.result = listScsAggregate(self.scsInstance)
 
+
 def listScsAggregate(scsInstance):
     return scsInstance.ListAggregates(False)
 
+
 def getStitcherState(scs_id, scs_url, config, lock):
-#     cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
-#     echoCmd = "echo $?"
-#     os.popen(cmd)
-#     out = os.popen(echoCmd)
-#     result = int(out.read())
-#     if result == 0:
-#         return "1"
-#     else:
-#         return "0"
+    #     cmd = "cat /home/amcanary/getversion_SCS.xml | curl -X POST -H 'Content-type: text/xml' -d \@- http://oingo.dragon.maxgigapop.net:8081/geni/xmlrpc"
+    #     echoCmd = "echo $?"
+    #     os.popen(cmd)
+    #     out = os.popen(echoCmd)
+    #     result = int(out.read())
+    #     if result == 0:
+    #         return "1"
+    #     else:
+    #         return "0"
     state = 0
     qualifier = "NOT "
     secure = False
@@ -220,7 +250,10 @@ def getStitcherState(scs_id, scs_url, config, lock):
         [keyfile, certfile] = getOmniCredentials()
     try:
         if secure:
-            scsI = gcf.omnilib.stitch.scs.Service(scs_url, key=keyfile, cert=certfile, timeout=timeo)
+            scsI = gcf.omnilib.stitch.scs.Service(scs_url,
+                                                  key=keyfile,
+                                                  cert=certfile,
+                                                  timeout=timeo)
         else:
             scsI = gcf.omnilib.stitch.scs.Service(scs_url, timeout=timeo)
         if secure:
@@ -232,7 +265,8 @@ def getStitcherState(scs_id, scs_url, config, lock):
             t.join(timeout=timeo)
             if t.is_alive():
                 lock.acquire()
-                opslogger.warning("ERROR: SCS checking at %s timed out" % scs_url)
+                opslogger.warning("ERROR: SCS checking at %s timed out" %
+                                  scs_url)
                 lock.release()
                 raise Exception()
             result = t.result
@@ -241,35 +275,48 @@ def getStitcherState(scs_id, scs_url, config, lock):
             verStruct = result
 #             if verStruct and verStruct.has_key("value") and verStruct["value"].has_key("code_tag"):
 #                 tag = verStruct["value"]["code_tag"]
-            if verStruct and verStruct.has_key("code") and verStruct["code"].has_key("geni_code"):
+            if verStruct and "code" in verStruct \
+                    and "geni_code" in verStruct["code"]:
                 retval = verStruct["code"]["geni_code"]
             if retval == 0:
-                mandatory_aggregates = config.get_expected_aggregates_for_scs(scs_id)
+                mandatory_aggregates = config.get_expected_aggregates_for_scs(
+                    scs_id)
                 if len(mandatory_aggregates) == 0:
                     # Nothing to check so we're good
                     lock.acquire()
-                    opslogger.debug("list of mandatory aggregates for SCS %s is empty. No check will be performed on the returned list" % scs_id)
+                    opslogger.debug(
+                        "list of mandatory aggregates for SCS %s is empty. No check will be performed on the returned list" %
+                        scs_id)
                     lock.release()
                     state = 1
                     qualifier = ""
                 else:
-                    if verStruct.has_key("value") and verStruct["value"].has_key("geni_aggregate_list"):
-                        # This is a dictionary. Keys are "AM" names. Values are dictionary objects with url and urn entries.
-                        listed_aggregates = verStruct["value"]["geni_aggregate_list"]
+                    if "value" in verStruct \
+                            and "geni_aggregate_list" in verStruct["value"]:
+                        # This is a dictionary. Keys are "AM" names. Values are
+                        # dictionary objects with url and urn entries.
+                        listed_aggregates = verStruct[
+                            "value"]["geni_aggregate_list"]
                         for am_urn in mandatory_aggregates.values():
                             for entry in listed_aggregates.values():
-                                if entry.has_key('urn') and am_urn == entry['urn']:
+                                if 'urn' in entry and am_urn == entry['urn']:
                                     break
                             else:
-                                # we did not find a match exiting the outer loop
+                                # we did not find a match exiting the outer
+                                # loop
                                 lock.acquire()
-                                opslogger.warning("ERROR: list of aggregates returned by SCS %s does not contain a mandatory URN (%s)" % (scs_id, am_urn))
+                                opslogger.warning(
+                                    "ERROR: list of aggregates returned by SCS %s does not contain a mandatory URN (%s)" %
+                                    (scs_id, am_urn))
                                 lock.release()
                                 break
                         else:
-                            # we never exited this loop via a break, so we matched all mandatory URNs
+                            # we never exited this loop via a break, so we
+                            # matched all mandatory URNs
                             lock.acquire()
-                            opslogger.debug("All %d mandatory aggregates are present in the list of aggregates returned by SCS %s" % (len(mandatory_aggregates), scs_id))
+                            opslogger.debug(
+                                "All %d mandatory aggregates are present in the list of aggregates returned by SCS %s" %
+                                (len(mandatory_aggregates), scs_id))
                             lock.release()
                             state = 1
                             qualifier = ""
@@ -281,28 +328,43 @@ def getStitcherState(scs_id, scs_url, config, lock):
         pass
 
     lock.acquire()
-    opslogger.info("SCS %s is %savailable at %s" % (scs_id, qualifier, scs_url))
+    opslogger.info(
+        "SCS %s is %savailable at %s" %
+        (scs_id, qualifier, scs_url))
     lock.release()
     return state
 
 
-def check_aggregate_state_for_one_url((monitored_aggregate_id, amtype, am_url, lock)):
-#     print "Checking %s at %s" % (monitored_aggregate_id, am_url)
+def check_aggregate_state_for_one_url(arg_tuple):
+    (monitored_aggregate_id, amtype, am_url, lock) = arg_tuple
+    #     print "Checking %s at %s" % (monitored_aggregate_id, am_url)
+    get_avail = False
     if amtype == "foam":
         version = config.get_apiversion_from_am_url(am_url, amtype)
         site = SiteOF(monitored_aggregate_id, am_url, version)
         state = getOFState(context, site, lock)
     elif amtype == "protogeni" or \
-        amtype == "instageni" or \
-        amtype == "exogeni" or \
-        amtype == "opengeni" or \
-        amtype == "iminds" or \
-        amtype == "network-aggregate":
-        state = getAMStateForURL(monitored_aggregate_id, am_url, amtype, config, lock)
+            amtype == "instageni" or \
+            amtype == "exogeni" or \
+            amtype == "opengeni" or \
+            amtype == "iminds" or \
+            amtype == "network-aggregate":
+        state = getAMStateForURL(
+            monitored_aggregate_id,
+            am_url,
+            amtype,
+            config,
+            lock)
+        if state == 1 and (amtype == "protogeni" or
+                           amtype == "instageni"):
+            version = config.get_apiversion_from_am_url(am_url, amtype)
+            if version == 2:
+                get_avail = True
     elif amtype == "stitcher":
         state = getStitcherState(monitored_aggregate_id, am_url, config, lock)
     ts = int(time.time() * 1000000)
-    return (monitored_aggregate_id, ts, state)
+    return (monitored_aggregate_id, ts, state, am_url, get_avail)
+
 
 def insert_aggregate_result(monitored_aggregate_id, results, dp):
     overall_state = 1  # let's be optimistic
@@ -312,9 +374,14 @@ def insert_aggregate_result(monitored_aggregate_id, results, dp):
         if state == 0:
             overall_state = 0
     avg_ts = int(sum_ts / len(results))
-    dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, avg_ts, overall_state)
+    dp.insert_agg_is_avail_datapoint(
+        monitored_aggregate_id,
+        avg_ts,
+        overall_state)
 
-def check_aggregate_state((monitored_aggregate_id, amtype, am_urls, dp, lock)):
+
+def check_aggregate_state(arg_tuple):
+    (monitored_aggregate_id, amtype, am_urls, dp, lock) = arg_tuple
     overall_state = 0  # unavailable until confirmed available.
     if amtype == "foam":
         first = True
@@ -331,14 +398,18 @@ def check_aggregate_state((monitored_aggregate_id, amtype, am_urls, dp, lock)):
                     if state == 0:
                         overall_state = 0
     elif amtype == "protogeni" or \
-        amtype == "instageni" or \
-        amtype == "exogeni" or \
-        amtype == "opengeni" or \
-        amtype == "network-aggregate":
+            amtype == "instageni" or \
+            amtype == "exogeni" or \
+            amtype == "opengeni" or \
+            amtype == "network-aggregate":
         first = True
         for url_tuple in am_urls:
             url = url_tuple[0]
-            state = getAMStateForURL(monitored_aggregate_id, url, amtype, config, lock)
+            state = getAMStateForURL(monitored_aggregate_id,
+                                     url,
+                                     amtype,
+                                     config,
+                                     lock)
             if first:
                 overall_state = state
                 first = False
@@ -363,12 +434,43 @@ def check_aggregate_state((monitored_aggregate_id, amtype, am_urls, dp, lock)):
     dp.insert_agg_is_avail_datapoint(monitored_aggregate_id, ts, overall_state)
     lock.release()
 
+
 def refresh_user_credentials():
     refresh_cred_cmd_str = config.get_refresh_user_credential_command()
     args = shlex.split(refresh_cred_cmd_str)
     opslogger.debug("About to execute: " + refresh_cred_cmd_str)
     p = subprocess.Popen(args, stdout=subprocess.PIPE)
     _output, _err = p.communicate()
+
+
+def get_ig_available_ips_and_raw_pcs_for_one_site(arg_tuple):
+    (context, site, lock) = arg_tuple
+    lock.acquire()
+    opslogger.debug("getting available IPs and raw PCs for %s at %s." %
+                    (site.name, site.url))
+    lock.release()
+
+    try:
+        # Run listresources for a particular site
+        ad = site.listresources(context)
+        raw_pc_avail = len(
+            [node.component_id for node in ad.nodes if node.available and node.exclusive and "raw-pc" in node.sliver_types])
+        avail_ips = ad.routable_addresses.available
+        config_ips = ad.routable_addresses.configured
+    except Exception as e:
+        lock.acquire()
+        opslogger.warning(str(e))
+        opslogger.warning("Could not list resources for %s at %s" %
+                          (site.name, site.url))
+        lock.release()
+        ts = int(time.time() * 1000000)
+        return (ts, 0, 0, 0)
+    lock.acquire()
+    opslogger.debug("%s at %s: raw pcs available: %d, IPs available: %d/%d" %
+                    (site.name, site.url, raw_pc_avail, avail_ips, config_ips))
+    lock.release()
+    ts = int(time.time() * 1000000)
+    return (site.name, ts, raw_pc_avail, avail_ips, config_ips)
 
 
 def main():
@@ -380,12 +482,14 @@ def main():
 
     extck_id = config.get_extck_store_id()
 
-
     # get all monitored aggregates
 
-    monitored_aggregates = tbl_mgr.query("SELECT id FROM ops_externalcheck_monitoredaggregate WHERE externalcheck_id = '%s'" % extck_id)
+    monitored_aggregates = tbl_mgr.query(
+        "SELECT id FROM ops_externalcheck_monitoredaggregate WHERE externalcheck_id = '%s'" %
+        extck_id)
     if monitored_aggregates is None:
-        opslogger.warning("Could not find any monitored aggregate. Has extck_store been executed?")
+        opslogger.warning(
+            "Could not find any monitored aggregate. Has extck_store been executed?")
         return
 
     refresh_user_credentials()
@@ -394,15 +498,25 @@ def main():
     argsList = []
     for monitored_aggregate_tuple in monitored_aggregates:
         monitored_aggregate_id = monitored_aggregate_tuple[0]
-        opslogger.info("Checking availability of AM: %s", monitored_aggregate_id)
-        amtype = tbl_mgr.query("SELECT type FROM extck_aggregate WHERE aggregate_id = '%s'" % monitored_aggregate_id)
+        opslogger.info(
+            "Checking availability of AM: %s",
+            monitored_aggregate_id)
+        amtype = tbl_mgr.query(
+            "SELECT type FROM extck_aggregate WHERE aggregate_id = '%s'" %
+            monitored_aggregate_id)
         if amtype is None:
-            opslogger.warning("Error trying to determine type of aggregate: %s" % monitored_aggregate_id)
+            opslogger.warning(
+                "Error trying to determine type of aggregate: %s" %
+                monitored_aggregate_id)
             continue
         amtype = amtype[0][0]  # first value of first tuple...
-        am_urls = tbl_mgr.query("SELECT amurl FROM extck_aggregate_amurl WHERE aggregate_id = '%s'" % monitored_aggregate_id)
+        am_urls = tbl_mgr.query(
+            "SELECT amurl FROM extck_aggregate_amurl WHERE aggregate_id = '%s'" %
+            monitored_aggregate_id)
         if am_urls is None:
-            opslogger.warning("Did not find any registered AM URL for aggregate: %s" % monitored_aggregate_id)
+            opslogger.warning(
+                "Did not find any registered AM URL for aggregate: %s" %
+                monitored_aggregate_id)
             continue
 #         args = (monitored_aggregate_id, amtype, am_urls, dp, myLock)
         for url_tuple in am_urls:
@@ -411,18 +525,45 @@ def main():
             argsList.append(args)
 #         argsList.append(args)
 
-    pool = multiprocessing.pool.ThreadPool(processes=int(config.get_populator_pool_size()))
+    pool = multiprocessing.pool.ThreadPool(
+        processes=int(
+            config.get_populator_pool_size()))
     results = pool.map(check_aggregate_state_for_one_url, argsList)
     # Building the results
     # regroup results by aggregate_id
     agg_results = dict()
-    for (monitored_aggregate_id, ts, state) in results:
+    agg_to_get_available_res = set()
+    agg_ids_to_get_available_res = set()
+    for (monitored_aggregate_id, ts, state, am_url, get_avail) in results:
         if not monitored_aggregate_id in agg_results:
             agg_results[monitored_aggregate_id] = list()
         agg_results[monitored_aggregate_id].append((ts, state))
+        if get_avail:
+            if monitored_aggregate_id not in agg_ids_to_get_available_res:
+                agg_ids_to_get_available_res.add(monitored_aggregate_id)
+                agg_to_get_available_res.add((monitored_aggregate_id, am_url))
     for monitored_aggregate_id in agg_results.keys():
-        insert_aggregate_result(monitored_aggregate_id, agg_results[monitored_aggregate_id], dp)
+        insert_aggregate_result(
+            monitored_aggregate_id,
+            agg_results[monitored_aggregate_id],
+            dp)
     dp.db_purge_agg_is_available()
+
+    argsList = []
+    for (monitored_aggregate_id, am_url) in agg_to_get_available_res:
+        site = IGCompute(monitored_aggregate_id, '', cmid='', url=am_url)
+        args = (site, myLock)
+        argsList.append(args)
+    results = pool.map(get_ig_available_ips_and_raw_pcs_for_one_site, argsList)
+    for (monitored_aggregate_id, ts, raw_pc_avail, avail_ips, _config_ips) in results:
+        dp.insert_routable_ip_available_datapoint(
+            monitored_aggregate_id,
+            ts,
+            avail_ips)
+        dp.insert_raw_pcs_available_datapoint(
+            monitored_aggregate_id,
+            ts,
+            raw_pc_avail)
 
 if __name__ == "__main__":
     main()
