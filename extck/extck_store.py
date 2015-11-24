@@ -299,7 +299,7 @@ class InfoPopulator():
                             self.tbl_mgr.get_column_from_schema(agg_schema, "urn"))
 
     def update_aggregate_ts(self, urn):
-        statement = "UPDATE ops_aggregate SET ts=%d WHERE urn=%s" % \
+        statement = "UPDATE ops_aggregate SET ts=%d WHERE urn='%s'" % \
             (int(time.time() * 1000000), urn)
         self.tbl_mgr.execute_sql(statement)
 
