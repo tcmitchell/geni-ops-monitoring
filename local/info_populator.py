@@ -76,6 +76,16 @@ class _HackIfvlan():
                   )
 
 
+class _HackAggregate():
+    # Represent monitored aggregate reported by the extck store itself
+    MONITORED_AGGREGATE_IDS = ("uchicago-ig-of",
+                               "gpo-ig-of"
+                               )
+    MONITORED_AGGREGATE_URNS = ("urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
+                                "urn:publicid:IDN+openflow:foam:foam.instageni.gpolab.bbn.com+authority+am"
+                                )
+
+
 class InfoPopulator():
 
     __SCHEMA_BASE = 'http://www.gpolab.bbn.com/monitoring/schema/20151105/'
@@ -333,18 +343,34 @@ class InfoPopulator():
     EXTCK_MONITORED_AGG_IDS = ("cwru-ig",
                                "cenic-ig",
                                "cornell-ig",
-                               "gatech-ig"
+                               "gatech-ig",
+                               _HackAggregate.MONITORED_AGGREGATE_IDS[0],
+                               _HackAggregate.MONITORED_AGGREGATE_IDS[1]
                                )
     EXTCK_MONITORED_AGG_URNS = ("urn:publicid:IDN+geni.case.edu+authority+cm",
                                 "urn:publicid:IDN+instageni.cenic.net+authority+cm",
                                 "urn:publicid:IDN+geni.it.cornell.edu+authority+cm",
-                                "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm"
+                                "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm",
+                                _HackAggregate.MONITORED_AGGREGATE_URNS[0],
+                                _HackAggregate.MONITORED_AGGREGATE_URNS[1]
                                 )
     EXTCK_MONITORED_AGG_URLS = ("https://www.geni.case.edu:5001/info/aggregate/cwru-ig",
                                 "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
                                 "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig",
-                                "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
+                                "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig",
+                                # No data here because these will be calculated
+                                # on the fly
+                                "",
+                                ""
                                 )
+
+    EXTCK_FAKE_AGG_IDS = (_HackAggregate.MONITORED_AGGREGATE_IDS[0],
+                          _HackAggregate.MONITORED_AGGREGATE_IDS[1]
+                          )
+
+    EXTCK_FAKE_AGG_URNS = (_HackAggregate.MONITORED_AGGREGATE_URNS[0],
+                           _HackAggregate.MONITORED_AGGREGATE_URNS[1]
+                           )
 
     EXTCK_MONITORED_AGG_METRICSGROUP_ID = "availability"
     EXTCK_MONITORED_AGG_METRICSGROUP_DEF = ('is_available',)
@@ -1262,10 +1288,14 @@ class InfoPopulator():
                 ok = False
 
         for idx in range(len(InfoPopulator.EXTCK_MONITORED_AGG_IDS)):
+            url = InfoPopulator.EXTCK_MONITORED_AGG_URLS[idx]
+            if url == "":
+                url = self.__get_selfRef_url_for('aggregate',
+                                                 InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx])
             if not self.insert_aggregate_info(InfoPopulator.EXTCK_MONITORED_AGG_IDS[idx],
                                               InfoPopulator.EXTCK_MONITORED_AGG_URNS[
                                                   idx],
-                                              InfoPopulator.EXTCK_MONITORED_AGG_URLS[idx]):
+                                              url):
                 ok = False
                 continue
             mon_agg = list()

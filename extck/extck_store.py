@@ -82,6 +82,7 @@ class InfoPopulator():
     EXPERIMENT_METRICSGROUP_PINGS = "pings"
     EXPERIMENT_METRICSGROUP_STITCHING = "stitching"
     AGGREGATE_METRICSGROUP_AVAILABILITY = "availability"
+    AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES = "availability_and_resources"
 
     def __init__(self, tbl_mgr, config, nickCache):
         """
@@ -273,11 +274,16 @@ class InfoPopulator():
                     "delete from ops_experiment where id='%s'" %
                     experiment[0])
 
-    def insert_externalcheck_monitoredaggregate(self, aggregate_id):
-        mon_agg = [
-            aggregate_id,
-            self._extckStoreSite,
-            InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY]
+    def insert_externalcheck_monitoredaggregate(
+            self, aggregate_id, avail_only):
+        if avail_only:
+            metric_group_id = InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY
+        else:
+            metric_group_id = InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES
+        mon_agg = [aggregate_id,
+                   self._extckStoreSite,
+                   metric_group_id
+                   ]
         ext_monagg_tablename = "ops_externalcheck_monitoredaggregate"
         ext_monagg_schema = self.tbl_mgr.schema_dict[ext_monagg_tablename]
 
@@ -291,6 +297,11 @@ class InfoPopulator():
 
         self.tbl_mgr.upsert(agg_tablename, agg_schema, aggRow,
                             self.tbl_mgr.get_column_from_schema(agg_schema, "urn"))
+
+    def update_aggregate_ts(self, urn):
+        statement = "UPDATE ops_aggregate SET ts=%d WHERE urn='%s'" % \
+            (int(time.time() * 1000000), urn)
+        self.tbl_mgr.execute_sql(statement)
 
     def insert_aggregate_url(self, aggregate_id, aggregate_manager_url):
         agg_amurl_tablename = "extck_aggregate_amurl"
@@ -377,6 +388,13 @@ class InfoPopulator():
              ),
             0)
 
+        self.tbl_mgr.upsert(
+            agg_metricsgrp_table,
+            agg_metricsgr_schema,
+            (InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES,
+             ),
+            0)
+
         self.tbl_mgr.upsert(exp_metricsgrp_relation_table, exp_metricsgr_relation_schema,
                             ('ping_rtt_ms',
                              self._config.get_experiment_ping_frequency(),
@@ -391,9 +409,31 @@ class InfoPopulator():
                              self.tbl_mgr.get_column_from_schema(exp_metricsgr_relation_schema, 'group_id'))
                             )
 
+        amcheck_frequency = self._config.get_experiment_amcheck_frequency()
         self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema,
-                            ('is_available', self._config.get_experiment_amcheck_frequency(),
+                            ('is_available', amcheck_frequency,
                              InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY),
+                            (self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'group_id'))
+                            )
+
+        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema,
+                            ('is_available', amcheck_frequency,
+                             InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES),
+                            (self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'group_id'))
+                            )
+
+        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema,
+                            ('routable_ip_available', amcheck_frequency,
+                             InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES),
+                            (self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'id'),
+                             self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'group_id'))
+                            )
+
+        self.tbl_mgr.upsert(agg_metricsgrp_relation_table, agg_metricsgr_relation_schema,
+                            ('raw_pc_available', amcheck_frequency,
+                             InfoPopulator.AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES),
                             (self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'id'),
                              self.tbl_mgr.get_column_from_schema(agg_metricsgr_relation_schema, 'group_id'))
                             )
@@ -603,10 +643,11 @@ class AggregateNickCache:
         return vals[1].strip()
 
 
-def registerOneAggregate(xxx_todo_changeme):
+def registerOneAggregate(arg_tuple):
     (cert_path, urn_to_urls_map, ip, amtype, urn,
      ops_agg_schema, agg_schema_str, monitoring_version,
-     extck_measRef, aggregate, lock) = xxx_todo_changeme
+     extck_measRef, aggregate, lock) = arg_tuple
+    avail_only = True
     if amtype == 'instageni' or \
             amtype == 'protogeni' or \
             amtype == "exogeni" or \
@@ -624,6 +665,10 @@ def registerOneAggregate(xxx_todo_changeme):
             cert_path,
             aggregate['href'])  # Use url for site's store to query site
         if aggDetails is None:
+            # The aggregate didn't answer, but we'll update the timestamp if the record
+            # exist. This is so the record does not get removed automatically from the DB after a week
+            # if the AM has been having an issue for a long time...
+            ip.update_aggregate_ts(urn)
             return
         # don't care about what's being reported by the aggregate here.
         aggDetails[
@@ -633,6 +678,9 @@ def registerOneAggregate(xxx_todo_changeme):
             ops_agg_schema,
             aggDetails,
             "aggregate")
+        if amtype == 'instageni' or \
+                amtype == 'protogeni':
+            avail_only = False
     elif amtype == "stitcher":  # Special case
         selfRef = aggregate['href']
         if 'am_nickname' not in aggregate:
@@ -746,9 +794,8 @@ def registerOneAggregate(xxx_todo_changeme):
     ip.insert_aggregate(urn, agg_attributes)
     # Populate "ops_externalcheck_monitoredaggregate" table
     agg_id = agg_attributes[1]
-    ip.insert_externalcheck_monitoredaggregate(agg_id)
+    ip.insert_externalcheck_monitoredaggregate(agg_id, avail_only)
     ip.insert_aggregate_type(agg_id, amtype)
-
     am_urls = urn_to_urls_map[urn]
     for am_url in am_urls:
         ip.insert_aggregate_url(agg_id, am_url)

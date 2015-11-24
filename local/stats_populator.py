@@ -232,6 +232,8 @@ class StatsPopulator(threading.Thread):
             return random.randint(0, 50)
         elif event_type == "nodelogin":
             return 1
+        elif event_type == "raw_pc_available":
+            return random.randint(0, 3)
         else:  # TODO add more
             return None
 

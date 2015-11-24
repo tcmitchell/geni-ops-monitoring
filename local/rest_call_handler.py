@@ -343,16 +343,18 @@ def handle_aggregate_info_query(tm, agg_id, monitoring_version):
             "ops_node",
             "aggregate_id",
             agg_id)
-        for node_res in node_resources:
-            res_refs.append((node_res[0], node_res[1], "node"))
+        if node_resources is not None:
+            for node_res in node_resources:
+                res_refs.append((node_res[0], node_res[1], "node"))
 
         link_resources = get_related_objects_refs(
             tm,
             "ops_link",
             "aggregate_id",
             agg_id)
-        for link_res in link_resources:
-            res_refs.append((link_res[0], link_res[1], "link"))
+        if link_resources is not None:
+            for link_res in link_resources:
+                res_refs.append((link_res[0], link_res[1], "link"))
 
         slv_refs = get_related_objects_refs(
             tm,
