@@ -1470,6 +1470,14 @@
                 "v": "int4",
                 "units": "count"
             },
+            {   "name": "raw_pc_available",
+                // The value of this is the number of raw PC at the aggregate 
+                // that are not currently allocated to experiments.
+                "id": "varchar",
+                "ts": "int8",
+                "v": "int4",
+                "units": "count"
+            },
             {   "name": "nodelogin",
                 // Represents whether a sliver node could be reserved at the aggregate
                 // and one could log into that node.
