@@ -82,7 +82,7 @@ class InfoPopulator():
     EXPERIMENT_METRICSGROUP_PINGS = "pings"
     EXPERIMENT_METRICSGROUP_STITCHING = "stitching"
     AGGREGATE_METRICSGROUP_AVAILABILITY = "availability"
-    AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES = "availability"
+    AGGREGATE_METRICSGROUP_AVAILABILITY_AND_FREE_RES = "availability_and_resources"
 
     def __init__(self, tbl_mgr, config, nickCache):
         """
@@ -787,7 +787,6 @@ def registerOneAggregate(arg_tuple):
     agg_id = agg_attributes[1]
     ip.insert_externalcheck_monitoredaggregate(agg_id, avail_only)
     ip.insert_aggregate_type(agg_id, amtype)
-
     am_urls = urn_to_urls_map[urn]
     for am_url in am_urls:
         ip.insert_aggregate_url(agg_id, am_url)
