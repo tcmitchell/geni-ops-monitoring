@@ -685,7 +685,7 @@ def registerOneAggregate(arg_tuple):
                 'metricsgroup_id'] = table_manager.TableManager.EMPTY_METRICSGROUP_ID
             if ip.tbl_mgr.aging_timeout > 0:
                 current_ts = int(time.time() * 1000000)
-                threshold = current_ts - (current_ts * 1000000)
+                threshold = current_ts - (ip.tbl_mgr.aging_timeout * 1000000)
                 if aggDetails['ts'] < threshold:
                     lock.acquire()
                     ip.tbl_mgr.logger.debug(
