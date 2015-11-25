@@ -645,6 +645,15 @@ class AggregateNickCache:
         return vals[1].strip()
 
 
+def is_error(json_dict):
+    if not '$schema' in json_dict:
+        return True
+    if json_dict['$schema'].endswith(
+            'error') or json_dict['$schema'].endswith('error#'):
+        return True
+    return False
+
+
 def registerOneAggregate(arg_tuple):
     (cert_path, urn_to_urls_map, ip, amtype, urn,
      ops_agg_schema, agg_schema_str, monitoring_version,
@@ -670,7 +679,7 @@ def registerOneAggregate(arg_tuple):
             ip.tbl_mgr.logger,
             cert_path,
             aggregate['href'])  # Use url for site's store to query site
-        if aggDetails is None:
+        if aggDetails is None or is_error(aggDetails):
             # The aggregate didn't answer, but we'll update the timestamp if the record
             # exist. This is so the record does not get removed automatically from the DB after a week
             # if the AM has been having an issue for a long time...
@@ -679,6 +688,9 @@ def registerOneAggregate(arg_tuple):
             if agg_attributes is None:
                 # the aggregrate was never registered
                 return
+            else:
+                # the return from sql is a list of tuples...
+                agg_attributes = agg_attributes[0]
         else:
             # don't care about what's being reported by the aggregate here.
             aggDetails[
