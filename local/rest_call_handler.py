@@ -107,7 +107,7 @@ def handle_ts_data_query(tm, filters):
                 obj_href = None
                 obj_href_res = get_refs(
                     tm, object_table_name, obj_id, ("selfRef",))
-                if obj_href_res is None:
+                if obj_href_res is None or len(obj_href_res) == 0:
                     tm.logger.warning(
                         "Could not find URL for object %s with ID '%s'" %
                         (obj_type, obj_id))
