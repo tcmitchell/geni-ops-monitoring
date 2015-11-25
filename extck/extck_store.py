@@ -302,6 +302,8 @@ class InfoPopulator():
         statement = "UPDATE ops_aggregate SET ts=%d WHERE urn='%s'" % \
             (int(time.time() * 1000000), urn)
         self.tbl_mgr.execute_sql(statement)
+        statement = "select * from ops_aggregate WHERE urn='%s'" % urn
+        return self.tbl_mgr.query(statement)
 
     def insert_aggregate_url(self, aggregate_id, aggregate_manager_url):
         agg_amurl_tablename = "extck_aggregate_amurl"
@@ -643,11 +645,21 @@ class AggregateNickCache:
         return vals[1].strip()
 
 
+def is_error(json_dict):
+    if not '$schema' in json_dict:
+        return True
+    if json_dict['$schema'].endswith(
+            'error') or json_dict['$schema'].endswith('error#'):
+        return True
+    return False
+
+
 def registerOneAggregate(arg_tuple):
     (cert_path, urn_to_urls_map, ip, amtype, urn,
      ops_agg_schema, agg_schema_str, monitoring_version,
      extck_measRef, aggregate, lock) = arg_tuple
     avail_only = True
+    register = True
     if amtype == 'instageni' or \
             amtype == 'protogeni' or \
             amtype == "exogeni" or \
@@ -660,27 +672,44 @@ def registerOneAggregate(arg_tuple):
                 urn)
             lock.release()
             return
+        if amtype == 'instageni' or \
+                amtype == 'protogeni':
+            avail_only = False
         aggDetails = handle_request(
             ip.tbl_mgr.logger,
             cert_path,
             aggregate['href'])  # Use url for site's store to query site
-        if aggDetails is None:
+        if aggDetails is None or is_error(aggDetails):
             # The aggregate didn't answer, but we'll update the timestamp if the record
             # exist. This is so the record does not get removed automatically from the DB after a week
             # if the AM has been having an issue for a long time...
-            ip.update_aggregate_ts(urn)
-            return
-        # don't care about what's being reported by the aggregate here.
-        aggDetails[
-            'metricsgroup_id'] = table_manager.TableManager.EMPTY_METRICSGROUP_ID
-        agg_attributes = extract_row_from_json_dict(
-            ip.tbl_mgr.logger,
-            ops_agg_schema,
-            aggDetails,
-            "aggregate")
-        if amtype == 'instageni' or \
-                amtype == 'protogeni':
-            avail_only = False
+            agg_attributes = ip.update_aggregate_ts(urn)
+            register = False
+            if agg_attributes is None:
+                # the aggregrate was never registered
+                return
+            else:
+                # the return from sql is a list of tuples...
+                agg_attributes = agg_attributes[0]
+        else:
+            # don't care about what's being reported by the aggregate here.
+            aggDetails[
+                'metricsgroup_id'] = table_manager.TableManager.EMPTY_METRICSGROUP_ID
+            if ip.tbl_mgr.aging_timeout > 0:
+                current_ts = int(time.time() * 1000000)
+                threshold = current_ts - (ip.tbl_mgr.aging_timeout * 1000000)
+                if aggDetails['ts'] < threshold:
+                    lock.acquire()
+                    ip.tbl_mgr.logger.debug(
+                        "replacing outdated timestamp for aggregate %s" %
+                        aggDetails['id'])
+                    lock.release()
+                    aggDetails['ts'] = current_ts
+            agg_attributes = extract_row_from_json_dict(
+                ip.tbl_mgr.logger,
+                ops_agg_schema,
+                aggDetails,
+                "aggregate")
     elif amtype == "stitcher":  # Special case
         selfRef = aggregate['href']
         if 'am_nickname' not in aggregate:
@@ -790,8 +819,9 @@ def registerOneAggregate(arg_tuple):
         return
 
     lock.acquire()
-    # Populate "ops_aggregate" table
-    ip.insert_aggregate(urn, agg_attributes)
+    if register:
+        # Populate "ops_aggregate" table
+        ip.insert_aggregate(urn, agg_attributes)
     # Populate "ops_externalcheck_monitoredaggregate" table
     agg_id = agg_attributes[1]
     ip.insert_externalcheck_monitoredaggregate(agg_id, avail_only)
