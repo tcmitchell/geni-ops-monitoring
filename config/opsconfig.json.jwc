@@ -14,12 +14,14 @@
 //      "urn": "urn:publicid:IDN+ion.internet2.edu+authority+am",
 //      "amtype": "network-aggregate",
 //      "href": "https://geni-am.net.internet2.edu/info/aggregate/ion.internet2.edu"
+//      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/I2ION"
 //    },
     // AL2S data store
     {
       "urn": "urn:publicid:IDN+al2s.internet2.edu+authority+am",
       "amtype": "network-aggregate",
-      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.internet2.edu"
+      "href": "https://gmoc-db.grnoc.iu.edu/geni-local-datastore/info/aggregate/al2s.internet2.edu",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/I2AL2S"
     },
     // Mesoscale data store
     {
@@ -31,237 +33,306 @@
     {
       "urn": "urn:publicid:IDN+dragon.maxgigapop.net+authority+am",
       "amtype": "network-aggregate",
-      "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net"
+      "href": "https://nutshell.maxgigapop.net/info/aggregate/dragon.maxgigapop.net",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MAX"
     },
     // instageni stores
     {
-       "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.utah.geniracks.net:5001/info/aggregate/utah-ig"
+      "urn": "urn:publicid:IDN+utah.geniracks.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.utah.geniracks.net:5001/info/aggregate/utah-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+emulab.net+authority+cm",
-       "amtype": "protogeni",
-       "href": "https://www.emulab.net:5001/info/aggregate/utah-pg"
+      "urn": "urn:publicid:IDN+emulab.net+authority+cm",
+      "amtype": "protogeni",
+      "stitching_am": true,
+      "href": "https://www.emulab.net:5001/info/aggregate/utah-pg",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahProtoGeni"
     },
     {
-       "urn": "urn:publicid:IDN+utahddc.geniracks.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.utahddc.geniracks.net:5001/info/aggregate/utahddc-ig"
+      "urn": "urn:publicid:IDN+utahddc.geniracks.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.utahddc.geniracks.net:5001/info/aggregate/utahddc-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahDDCInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+stitch.geniracks.net+authority+cm",
-       "amtype": "network-aggregate",
-       "href": "https://www.stitch.geniracks.net:5001/info/aggregate/utah-stitch"
+      "urn": "urn:publicid:IDN+stitch.geniracks.net+authority+cm",
+      "amtype": "network-aggregate",
+      "href": "https://www.stitch.geniracks.net:5001/info/aggregate/utah-stitch",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahStitch"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.gpolab.bbn.com:5001/info/aggregate/gpo-ig"
+      "urn": "urn:publicid:IDN+instageni.gpolab.bbn.com+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.gpolab.bbn.com:5001/info/aggregate/gpo-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.northwestern.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.northwestern.edu:5001/info/aggregate/northwestern-ig"
+      "urn": "urn:publicid:IDN+instageni.northwestern.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.northwestern.edu:5001/info/aggregate/northwestern-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NorthwesternInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+lan.sdn.uky.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.lan.sdn.uky.edu:5001/info/aggregate/uky-ig"
+      "urn": "urn:publicid:IDN+lan.sdn.uky.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.lan.sdn.uky.edu:5001/info/aggregate/uky-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+geni.kettering.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.geni.kettering.edu:5001/info/aggregate/kettering-ig"
+      "urn": "urn:publicid:IDN+geni.kettering.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.geni.kettering.edu:5001/info/aggregate/kettering-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KetteringInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig"
+      "urn": "urn:publicid:IDN+instageni.rnoc.gatech.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.rnoc.gatech.edu:5001/info/aggregate/gatech-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GeorgiaTechInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.cs.princeton.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig"
+      "urn": "urn:publicid:IDN+instageni.cs.princeton.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.cs.princeton.edu:5001/info/aggregate/princeton-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/PrincetonInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.clemson.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.clemson.edu:5001/info/aggregate/clemson-ig"
+      "urn": "urn:publicid:IDN+instageni.clemson.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.clemson.edu:5001/info/aggregate/clemson-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ClemsonInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.ku.gpeni.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.ku.gpeni.net:5001/info/aggregate/kansas-ig"
+      "urn": "urn:publicid:IDN+instageni.ku.gpeni.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.ku.gpeni.net:5001/info/aggregate/kansas-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KansasInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+genirack.nyu.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig"
+      "urn": "urn:publicid:IDN+genirack.nyu.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.genirack.nyu.edu:5001/info/aggregate/nyu-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NYUInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.maxgigapop.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.maxgigapop.net:5001/info/aggregate/max-ig"
+      "urn": "urn:publicid:IDN+instageni.maxgigapop.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.maxgigapop.net:5001/info/aggregate/max-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MAXInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.nysernet.org+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.nysernet.org:5001/info/aggregate/nysernet-ig"
+      "urn": "urn:publicid:IDN+instageni.nysernet.org+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.nysernet.org:5001/info/aggregate/nysernet-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NYSERNetInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.sox.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.sox.net:5001/info/aggregate/sox-ig"
+      "urn": "urn:publicid:IDN+instageni.sox.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.sox.net:5001/info/aggregate/sox-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/SoxInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.illinois.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.illinois.edu:5001/info/aggregate/illinois-ig"
+      "urn": "urn:publicid:IDN+instageni.illinois.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.illinois.edu:5001/info/aggregate/illinois-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/IllinoisInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.rnet.missouri.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.rnet.missouri.edu:5001/info/aggregate/missouri-ig"
+      "urn": "urn:publicid:IDN+instageni.rnet.missouri.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.rnet.missouri.edu:5001/info/aggregate/missouri-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MissouriInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.wisc.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.wisc.edu:5001/info/aggregate/wisconsin-ig"
+      "urn": "urn:publicid:IDN+instageni.wisc.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.wisc.edu:5001/info/aggregate/wisconsin-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/WisconsinInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.rutgers.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig"
+      "urn": "urn:publicid:IDN+instageni.rutgers.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.rutgers.edu:5001/info/aggregate/rutgers-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/RutgersInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.stanford.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.stanford.edu:5001/info/aggregate/stanford-ig"
+      "urn": "urn:publicid:IDN+instageni.stanford.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.stanford.edu:5001/info/aggregate/stanford-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StanfordInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+geni.it.cornell.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig"
+      "urn": "urn:publicid:IDN+geni.it.cornell.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.geni.it.cornell.edu:5001/info/aggregate/cornell-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CornellInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.lsu.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig",
-       "amurl": "https://instageni.lsu.edu:12369/protogeni/xmlrpc/am"
+      "urn": "urn:publicid:IDN+instageni.lsu.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.lsu.edu:5001/info/aggregate/lsu-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/LouisianaStateInstaGENI",
+      "amurl": "https://instageni.lsu.edu:12369/protogeni/xmlrpc/am"
     },
     {
-       "urn": "urn:publicid:IDN+geni.case.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.geni.case.edu:5001/info/aggregate/cwru-ig",
-       "amurl": "https://geni.case.edu:12369/protogeni/xmlrpc/am"
+      "urn": "urn:publicid:IDN+geni.case.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.geni.case.edu:5001/info/aggregate/cwru-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CaseWesternReserveInstaGENI",
+      "amurl": "https://geni.case.edu:12369/protogeni/xmlrpc/am"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig"
+      "urn": "urn:publicid:IDN+instageni.iu.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.iu.edu:5001/info/aggregate/moxi-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MOXIInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig"
+      "urn": "urn:publicid:IDN+instageni.nps.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.nps.edu:5001/info/aggregate/nps-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NPSInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig"
+      "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.idre.ucla.edu:5001/info/aggregate/ucla-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCLAInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.osu.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.osu.edu:5001/info/aggregate/osu-ig",
-       "amurl": "https://instageni.osu.edu:12369/protogeni/xmlrpc/am"
+      "urn": "urn:publicid:IDN+instageni.osu.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.osu.edu:5001/info/aggregate/osu-ig",
+      "amwikipage": "",
+      "amurl": "https://instageni.osu.edu:12369/protogeni/xmlrpc/am"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig"
+      "urn": "urn:publicid:IDN+instageni.umkc.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.umkc.edu:5001/info/aggregate/umkc-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UMKCInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig"
+      "urn": "urn:publicid:IDN+geni.uchicago.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.geni.uchicago.edu:5001/info/aggregate/uchicago-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ChicagoInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig"
+      "urn": "urn:publicid:IDN+instageni.metrodatacenter.com+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.metrodatacenter.com:5001/info/aggregate/ohmetrodc-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OHMETRODCInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://pks2.sdn.uky.edu:5001/info/aggregate/ukypks2-ig"
+      "urn": "urn:publicid:IDN+pks2.sdn.uky.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://pks2.sdn.uky.edu:5001/info/aggregate/ukypks2-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyPks2InstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
-       "amtype": "instageni",
-       "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig"
+      "urn": "urn:publicid:IDN+instageni.cenic.net+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://instageni.cenic.net:5001/info/aggregate/cenic-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CENICInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig"
+      "urn": "urn:publicid:IDN+instageni.colorado.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.colorado.edu:5001/info/aggregate/colorado-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ColoradoInstaGENI"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.washington.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.washington.edu:5001/info/aggregate/uwashington-ig",
-       "amurl": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "uwashington-ig"
+      "urn": "urn:publicid:IDN+instageni.washington.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.washington.edu:5001/info/aggregate/uwashington-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfWashingtonInstaGENI",
+      "amurl": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://instageni.washington.edu:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "uwashington-ig"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.utc.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.utc.edu:5001/info/aggregate/utc-ig",
-       "amurl": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "utc-ig"
+      "urn": "urn:publicid:IDN+instageni.utc.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.utc.edu:5001/info/aggregate/utc-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfTennesseeInstaGENI",
+      "amurl": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://instageni.utc.edu:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "utc-ig"
     },
     {
-       "urn": "urn:publicid:IDN+instageni.arc.vt.edu+authority+cm",
-       "amtype": "instageni",
-       "href": "https://www.instageni.arc.vt.edu:5001/info/aggregate/vt-ig",
-       "amurl": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "vt-ig"
+      "urn": "urn:publicid:IDN+instageni.arc.vt.edu+authority+cm",
+      "amtype": "instageni",
+      "href": "https://www.instageni.arc.vt.edu:5001/info/aggregate/vt-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/VirginiaTechInstaGENI",
+      "amurl": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://instageni.arc.vt.edu:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "vt-ig"
     },
     // EXOgeni stores
     {
-       "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://rci-hn.exogeni.net:4334/info/aggregate/rcivmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:rcivmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://rci-hn.exogeni.net:4334/info/aggregate/rcivmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/RCIExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:bbnvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://bbn-hn.exogeni.net:4334/info/aggregate/bbnvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:bbnvmsite+authority+am",
+      "amtype": "exogeni",
+      "stitching_am": true,
+      "href": "https://bbn-hn.exogeni.net:4334/info/aggregate/bbnvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite",
+      "amwikipage": ""
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://fiu-hn.exogeni.net:4334/info/aggregate/fiuvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://fiu-hn.exogeni.net:4334/info/aggregate/fiuvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/FIUExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:uhvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://uh-hn.exogeni.net:4334/info/aggregate/uhvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:uhvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://uh-hn.exogeni.net:4334/info/aggregate/uhvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfHoustonExoGENI"
     },
     // Commenting out NCSU CISCO ExoGENI rack as its fate is uncertain 
     // at the moment (07/01/15)
@@ -273,378 +344,447 @@
 //       "amurl": "https://ncsu-hn.exogeni.net:11443/orca/xmlrpc"
 //    },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://wvn-hn.exogeni.net:4334/info/aggregate/wvnvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://wvn-hn.exogeni.net:4334/info/aggregate/wvnvmsite",
+      "amwikipage": ""
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://uva-nl-hn.exogeni.net:4334/info/aggregate/uva-nlvmsite",
-       "amurl": "https://uva-nl-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://uva-nl-hn.exogeni.net:4334/info/aggregate/uva-nlvmsite",
+      "amwikipage": "",
+      "amurl": "https://uva-nl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:uflvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UFLExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://sl-hn.exogeni.net:4334/info/aggregate/slvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://sl-hn.exogeni.net:4334/info/aggregate/slvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StarLightExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite"
+      "urn": "urn:publicid:IDN+exogeni.net:osfvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://osf-hn.exogeni.net:4334/info/aggregate/osfvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OaklandScientificFacilityExoGENI"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
-       "amurl": "https://umass-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
+      "amwikipage": "",
+      "amurl": "https://umass-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
-       "amurl": "https://wsu-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/WayneStateExoGENI",
+      "amurl": "https://wsu-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:tamuvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://tamu-hn.exogeni.net:4334/info/aggregate/tamuvmsite",
-       "amurl": "https://tamu-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:tamuvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://tamu-hn.exogeni.net:4334/info/aggregate/tamuvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/TexasAMUniversityExoGENI",
+      "amurl": "https://tamu-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:pscvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://psc-hn.exogeni.net:4334/info/aggregate/pscvmsite",
-       "amurl": "https://psc-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:pscvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://psc-hn.exogeni.net:4334/info/aggregate/pscvmsite",
+      "amwikipage": "",
+      "amurl": "https://psc-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:uafvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://uaf-hn.exogeni.net:4334/info/aggregate/uafvmsite",
-       "amurl": "https://uaf-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:uafvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://uaf-hn.exogeni.net:4334/info/aggregate/uafvmsite",
+      "amwikipage": "",
+      "amurl": "https://uaf-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
-       "urn": "urn:publicid:IDN+exogeni.net:gwuvmsite+authority+am",
-       "amtype": "exogeni",
-       "href": "https://gwu-hn.exogeni.net:4334/info/aggregate/gwuvmsite",
-       "amurl": "https://gwu-hn.exogeni.net:11443/orca/xmlrpc"
+      "urn": "urn:publicid:IDN+exogeni.net:gwuvmsite+authority+am",
+      "amtype": "exogeni",
+      "href": "https://gwu-hn.exogeni.net:4334/info/aggregate/gwuvmsite",
+      "amwikipage": "",
+      "amurl": "https://gwu-hn.exogeni.net:11443/orca/xmlrpc"
     },
     // Open geni stores
     {
-       "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
-       "amtype": "opengeni",
-       "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og"
+      "urn": "urn:publicid:IDN+clemson-clemson-control-1.clemson.edu+authority+am",
+      "amtype": "opengeni",
+      "href": "https://clemson-clemson-control-1.clemson.edu/info/aggregate/clemson-og",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ClemsonOpenGENI"
     },
     {
-       "urn": "urn:publicid:IDN+bbn-cam-ctrl-1.gpolab.bbn.com+authority+am",
-       "amtype": "opengeni",
-       "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og"
+      "urn": "urn:publicid:IDN+bbn-cam-ctrl-1.gpolab.bbn.com+authority+am",
+      "amtype": "opengeni",
+      "href": "https://bbn-cam-ctrl-1.gpolab.bbn.com/info/aggregate/gpo-og",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabOpenGENI"
     },
     // FOAM aggregate manager stores
     // For now, the GPO external check store is the "authoritave" store about these aggregate
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.gpolab.bbn.com+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.gpolab.bbn.com+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.net.internet2.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/i2-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.net.internet2.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/i2-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/I2OpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foamyflow.chpc.utah.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uen-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foamyflow.chpc.utah.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uen-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahUEN-OpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:bbn-hn.exogeni.gpolab.bbn.com+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:bbn-hn.exogeni.gpolab.bbn.com+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:rci-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/renci-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:rci-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/renci-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/RCIExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:fiu-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/fiu-eg-of",
-       "amurl": "https://fiu-hn.exogeni.net:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:fiu-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/fiu-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/FIUExoGENIOpenFlow",
+      "amurl": "https://fiu-hn.exogeni.net:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:uh-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uh-eg-of",
-       "amurl": "https://uh-hn.exogeni.net:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:uh-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uh-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfHoustonExoGENIOpenFlow",
+      "amurl": "https://uh-hn.exogeni.net:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:ufl-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UFLExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucdavis-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucdavis-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osf-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OaklandScientificFacilityExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:sl-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StarLightExoGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:umass-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
-       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2",
-       "amurl2": "https://umass-hn.exogeni.net:3626/foam/gapi/1"
+      "urn": "urn:publicid:IDN+openflow:foam:umass-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
+      "amwikipage": "",
+      "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2",
+      "amurl2": "https://umass-hn.exogeni.net:3626/foam/gapi/1"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:wsu-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:wsu-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wsu-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/WayneStateExoGENIOpenflow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:tamu-hn.exogeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/tamu-eg-of"
+      "urn": "urn:publicid:IDN+openflow:foam:tamu-hn.exogeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/tamu-eg-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/TexasAMUniversityExoGENIOpenflow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utah-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:ig-utah+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utah-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.gpolab.bbn.com+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.gpolab.bbn.com+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gpo-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.lan.sdn.uky.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uky-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.lan.sdn.uky.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uky-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.kettering.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kettering-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.geni.kettering.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kettering-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KetteringInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.northwestern.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/northwestern-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.northwestern.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/northwestern-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NorthwesternInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.utahddc.geniracks.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utahddc-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.utahddc.geniracks.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utahddc-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UtahDDCInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnoc.gatech.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gatech-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnoc.gatech.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/gatech-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GeorgiaTechInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nysernet.org+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nysernet.org+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NYSERNetInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.sox.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.sox.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/SoxOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.nysernet.org+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.nysernet.org+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nysernet-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NYSERNetOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.maxgigapop.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/max-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.maxgigapop.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/max-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MAXInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.clemson.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/clemson-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.clemson.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/clemson-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ClemsonInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnet.missouri.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/missouri-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rnet.missouri.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/missouri-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MissouriInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.genirack.nyu.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nyu-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.genirack.nyu.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nyu-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NYUInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.illinois.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/illinois-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.illinois.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/illinois-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/IllinoisInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.wisc.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wisconsin-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.wisc.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/wisconsin-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/WisconsinInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.it.cornell.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cornell-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.geni.it.cornell.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cornell-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CornellInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.lsu.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/lsu-ig-of",
-       "amurl": "https://foam.instageni.lsu.edu:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.lsu.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/lsu-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/LouisianaStateInstaGENIOpenFlow",
+      "amurl": "https://foam.instageni.lsu.edu:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.sox.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.sox.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/SoxInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.ku.gpeni.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.ku.gpeni.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KansasInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stanford-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stanford-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StanfordInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:sl-geni.northwestern.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-of"
+      "urn": "urn:publicid:IDN+openflow:foam:sl-geni.northwestern.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sl-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StarLightOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.cenic.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.cenic.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CENICOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nps.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.nps.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NPSInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cwru-ig-of",
-       "amurl": "https://foam.geni.case.edu:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cwru-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CaseWesternReserveInstaGENIOpenFlow",
+      "amurl": "https://foam.geni.case.edu:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MOXIInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.metrodatacenter.com+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OHMETRODCInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/PrincetonInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/rutgers-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/rutgers-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/RutgersInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.idre.ucla.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.idre.ucla.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCLAInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osu-ig-of",
-       "amurl": "https://foam.instageni.osu.edu:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osu-ig-of",
+      "amwikipage": "",
+      "amurl": "https://foam.instageni.osu.edu:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umkc-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UMKCInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uchicago-ig-of",
-       "amurl": "https://foam.geni.uchicago.edu:3626/foam/gapi/2"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.geni.uchicago.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uchicago-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ChicagoInstaGENIOpenFlow",
+      "amurl": "https://foam.geni.uchicago.edu:3626/foam/gapi/2"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.pks2.sdn.uky.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukypks2-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.pks2.sdn.uky.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukypks2-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyPks2InstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cenic.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cenic-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CENICInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.colorado.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.colorado.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/colorado-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/ColoradoInstaGENIOpenFlow"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.washington.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uwashington-ig-of",
-       "amurl": "https://foam.instageni.washington.edu:3626/foam/gapi/2",
-       "amurl2": "https://foam.instageni.washington.edu:3626/foam/gapi/1"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.washington.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uwashington-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfWashingtonInstaGENIOpenFlow",
+      "amurl": "https://foam.instageni.washington.edu:3626/foam/gapi/2",
+      "amurl2": "https://foam.instageni.washington.edu:3626/foam/gapi/1"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.utc.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utc-ig-of",
-       "amurl": "https://foam.instageni.utc.edu:3626/foam/gapi/2",
-       "amurl2": "https://foam.instageni.utc.edu:3626/foam/gapi/1"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.utc.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utc-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UniversityOfTennesseeInstaGENIOpenFlow",
+      "amurl": "https://foam.instageni.utc.edu:3626/foam/gapi/2",
+      "amurl2": "https://foam.instageni.utc.edu:3626/foam/gapi/1"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.arc.vt.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/vt-ig-of",
-       "amurl": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/2",
-       "amurl2": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/1"
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.arc.vt.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/vt-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/VirginiaTechInstaGENIOpenFlow",
+      "amurl": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/2",
+      "amurl2": "https://foam.instageni.arc.vt.edu:3626/foam/gapi/1"
     },
     {
-       "urn": "urn:publicid:IDN+openflow:foam:moxifoam.ictc.indiana.gigapop.net+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-of"
+      "urn": "urn:publicid:IDN+openflow:foam:moxifoam.ictc.indiana.gigapop.net+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MOXIOpenFlow"
     },
     // moxi-iccn-of is not production and has no resources. does not look like there's a plan for it.
     // Not known to omni either.
     // Still we can monitor it...
     {
-       "urn": "urn:publicid:IDN+openflow:foam:moxi-foam.geni.illinois.edu+authority+am",
-       "amtype": "foam",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-iccn-of",
-       "amurl": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/2",
-       "amurl2": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/1"
+      "urn": "urn:publicid:IDN+openflow:foam:moxi-foam.geni.illinois.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/moxi-iccn-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MOXIOpenFlow-ICCN",
+      "amurl": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/2",
+      "amurl2": "https://moxi-foam.geni.illinois.edu:3626/foam/gapi/1"
     },
     // Stiching Computation Service "aggregate" store.
     // Though SCS isn't an aggregate we're representing it as such for now
@@ -652,28 +792,29 @@
     // As for foam aggregates, the GPO external check store is the authoritative 
     // store for this aggregate.
     {
-       "urn": "FAKE-URN:publicid:IDN+sticther:geni-scs.net.internet2.edu+authority+am",
-       "amtype": "stitcher",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-geni",
-       "amurl": "https://geni-scs.net.internet2.edu:8443/geni/xmlrpc",
-       "amurl2": "http://geni-scs.net.internet2.edu:8081/geni/xmlrpc",
-       "am_nickname": "scs-geni",
-       "am_status": "production"
+      "urn": "FAKE-URN:publicid:IDN+sticther:geni-scs.net.internet2.edu+authority+am",
+      "amtype": "stitcher",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-geni",
+      "amurl": "https://geni-scs.net.internet2.edu:8443/geni/xmlrpc",
+      "amurl2": "http://geni-scs.net.internet2.edu:8081/geni/xmlrpc",
+      "am_nickname": "scs-geni",
+      "am_status": "production"
     },
     {
-       "urn": "FAKE-URN:publicid:IDN+sticther:nutshell.maxgigapop.net+authority+am",
-       "amtype": "stitcher",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-geni-test",
-       "amurl": "https://nutshell.maxgigapop.net:8443/geni/xmlrpc",
-       "amurl2": "http://nutshell.maxgigapop.net:8081/geni/xmlrpc",
-       "am_nickname": "scs-geni-test",
-       "am_status": "development"
+      "urn": "FAKE-URN:publicid:IDN+sticther:nutshell.maxgigapop.net+authority+am",
+      "amtype": "stitcher",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/scs-geni-test",
+      "amurl": "https://nutshell.maxgigapop.net:8443/geni/xmlrpc",
+      "amurl2": "http://nutshell.maxgigapop.net:8081/geni/xmlrpc",
+      "am_nickname": "scs-geni-test",
+      "am_status": "development"
     },
     // Wimax stores
     {
-       "urn": "urn:publicid:IDN+wimaxrf.rutgers-wimax+authority+cm",
-       "amtype": "wimax",
-       "href": "http://oml.orbit-lab.org:5054/genimon/info/aggregate/rutgers-wimax"
+      "urn": "urn:publicid:IDN+wimaxrf.rutgers-wimax+authority+cm",
+      "amtype": "wimax",
+      "href": "http://oml.orbit-lab.org:5054/genimon/info/aggregate/rutgers-wimax",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OrbitWirelessTestbed"
     },
     // iMinds stores
     // For now the external check will create these entries
@@ -681,34 +822,37 @@
     // In the future iMinds will have their own data store and the
     // creation will have to be disabled for the external check store.
     {
-       "urn": "urn:publicid:IDN+wall1.ilabt.iminds.be+authority+cm",
-       "amtype": "iminds",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw1",
-       "amurl": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "im-vw1"
+      "urn": "urn:publicid:IDN+wall1.ilabt.iminds.be+authority+cm",
+      "amtype": "iminds",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw1",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/iMindsVirtualWall1",
+      "amurl": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://www.wall1.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "im-vw1"
     },
     {
-       "urn": "urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm",
-       "amtype": "iminds",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw2",
-       "amurl": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "im-vw2"
+      "urn": "urn:publicid:IDN+wall2.ilabt.iminds.be+authority+cm",
+      "amtype": "iminds",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-vw2",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/iMindsVirtualWall2",
+      "amurl": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://www.wall2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "im-vw2"
     },
     {
-       "urn": "urn:publicid:IDN+wilab2.ilabt.iminds.be+authority+cm",
-       "amtype": "iminds",
-       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-wilab",
-       "amurl": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
-       "amurl1": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
-       "amurl2": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
-       "amurl3": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
-       "am_nickname": "im-wilab"
+      "urn": "urn:publicid:IDN+wilab2.ilabt.iminds.be+authority+cm",
+      "amtype": "iminds",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/im-wilab",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/iMindsWilabt",
+      "amurl": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am",
+      "amurl1": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/1.0",
+      "amurl2": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/2.0",
+      "amurl3": "https://www.wilab2.ilabt.iminds.be:12369/protogeni/xmlrpc/am/3.0",
+      "am_nickname": "im-wilab"
     }
   ],
   "externalcheckstores": [
