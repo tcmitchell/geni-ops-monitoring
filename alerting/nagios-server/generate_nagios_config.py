@@ -47,13 +47,20 @@ opslogger = logger.get_logger(config_path)
 
 
 def usage():
-    sys.stderr.write('generate_nagios_config.py -c </cert/path/cert.pem> [-u <opsconfig store url>] [-f <output_file>]\n')
-    sys.stderr.write('   -c | --certificate= </cert/path/cert.pem> specifies the path to the certificate file\n')
-    sys.stderr.write('   -u | --opsconfig_url= <opsconfig store url> specifies the URL of the opsconfig data store to get the list of aggregate from\n')
-    sys.stderr.write('                         By default uses the local opsconfig.json to find the location\n')
-    sys.stderr.write('   -f | --file= <output_file> specifies the path of the output nagios file\n')
-    sys.stderr.write('   -i | --input= <input_file> specifies the path of the input nagios file that was generated before\n')
+    sys.stderr.write(
+        'generate_nagios_config.py -c </cert/path/cert.pem> [-u <opsconfig store url>] [-f <output_file>]\n')
+    sys.stderr.write(
+        '   -c | --certificate= </cert/path/cert.pem> specifies the path to the certificate file\n')
+    sys.stderr.write(
+        '   -u | --opsconfig_url= <opsconfig store url> specifies the URL of the opsconfig data store to get the list of aggregate from\n')
+    sys.stderr.write(
+        '                         By default uses the local opsconfig.json to find the location\n')
+    sys.stderr.write(
+        '   -f | --file= <output_file> specifies the path of the output nagios file\n')
+    sys.stderr.write(
+        '   -i | --input= <input_file> specifies the path of the input nagios file that was generated before\n')
     sys.exit(1)
+
 
 def parse_args(argv):
     if argv == []:
@@ -65,7 +72,9 @@ def parse_args(argv):
     input_file = None
 
     try:
-        opts, _ = getopt.getopt(argv, "hc:u:f:i:", ["help", "certificate=", "opsconfig_url=", "file=", "input="])
+        opts, _ = getopt.getopt(
+            argv, "hc:u:f:i:", [
+                "help", "certificate=", "opsconfig_url=", "file=", "input="])
     except getopt.GetoptError:
         usage()
 
@@ -94,12 +103,17 @@ def parse_args(argv):
 
     return (cert_path, opsconfig_url, output_file, input_file)
 
+
 def handle_request(logger, cert_path, url):
-    http_headers = {'Connection':'close'}
+    http_headers = {'Connection': 'close'}
     resp = None
     try:
-        resp = requests.get(url, verify=False, cert=cert_path, headers=http_headers)
-    except Exception, e:
+        resp = requests.get(
+            url,
+            verify=False,
+            cert=cert_path,
+            headers=http_headers)
+    except Exception as e:
         opslogger.warning("No response from datastore at: " + url)
         opslogger.warning(e)
         return None
@@ -107,8 +121,11 @@ def handle_request(logger, cert_path, url):
     if resp:
         try:
             json_dict = json.loads(resp.content)
-        except Exception, e:
-            opslogger.warning("Could not load response from " + url + " into JSON")
+        except Exception as e:
+            opslogger.warning(
+                "Could not load response from " +
+                url +
+                " into JSON")
             opslogger.warning(e)
             return None
 
@@ -245,7 +262,6 @@ define servicegroup{
        SERVICE_GROUP_AVAILABILITY, SERVICE_GROUP_STORE_RESP, SERVICE_GROUP_DATAPLANE_CONNECTIVITY_CHECK, SERVICE_GROUP_SCS_PATH_CHECK)
 
 
-
 HOST_SECTION = '''
 define host{
     host_name    %s
@@ -313,15 +329,17 @@ STITCHING_CHECK_SERVICE_DESCRIPTION = "This nagios service represents the fact t
 to determine a stitching path between 2 aggregates"
 
 
-def get_object_info((cert_path, url)):
+def get_object_info(xxx_todo_changeme):
+    (cert_path, url) = xxx_todo_changeme
     return handle_request(opslogger, cert_path, url)
 
 
 def find_aggregate_in_list_via_key(agg_key_value, aggStores, key):
     for aggregate in aggStores:
         if aggregate is not None:
-            if agg_key_value == aggregate[key]:
-                return aggregate
+            if key in aggregate:
+                if agg_key_value == aggregate[key]:
+                    return aggregate
     return None
 
 
@@ -332,6 +350,7 @@ def get_am_urls(aggregate):
             url_list.append(aggregate[key])
     return url_list
 
+
 def get_host_description(aggregate):
     agg_urn = aggregate['urn']
     if aggregate['amtype'] == "stitcher":
@@ -341,13 +360,14 @@ def get_host_description(aggregate):
         for url in url_list:
             if first:
                 first = False
-            else :
+            else:
                 urls += ", "
             urls += url
         hostDesc = STITCHING_HOST_DESCRIPTION % (urls,)
     else:
         hostDesc = AGGREGATE_HOST_DESCRIPTION % (agg_urn,)
     return hostDesc
+
 
 def get_hostgroups(host_type):
     if host_type == 'aggregate':
@@ -362,10 +382,21 @@ def get_hostgroups(host_type):
 
 
 def write_generic_host_entry(of, hostId, hostDesc, host_type):
-    of.write(HOST_SECTION % (hostId, hostId, get_hostgroups(host_type), hostDesc))
+    of.write(
+        HOST_SECTION %
+        (hostId,
+         hostId,
+         get_hostgroups(host_type),
+         hostDesc))
     of.write('\n')
-    of.write(SERVICE_SECTION % (hostId, 'is_responsive', SERVICE_GROUP_STORE_RESP, IS_RESPONSIVE_SERVICE_DESCRIPTION))
+    of.write(
+        SERVICE_SECTION %
+        (hostId,
+         'is_responsive',
+         SERVICE_GROUP_STORE_RESP,
+         IS_RESPONSIVE_SERVICE_DESCRIPTION))
     of.write('\n')
+
 
 def write_aggregate_entry(of, hostId, aggregate):
     hostDesc = get_host_description(aggregate)
@@ -374,15 +405,17 @@ def write_aggregate_entry(of, hostId, aggregate):
         host_type = 'scs'
     write_generic_host_entry(of, hostId, hostDesc, host_type)
 
+
 def write_authority_entry(of, authorityId, authorityUrn):
     authorityHostDesc = AUTHORITY_HOST_DESCRIPTION % (authorityUrn,)
     write_generic_host_entry(of, authorityId, authorityHostDesc, 'authority')
 
+
 def write_extck_entry(of, extck_id, extck_url):
     extckHostDesc = EXTCK_HOST_DESCRIPTION % (extck_id, extck_url)
-    # for now an external check host entry pretty much looks the same as an aggregate entry
+    # for now an external check host entry pretty much looks the same as an
+    # aggregate entry
     write_generic_host_entry(of, extck_id, extckHostDesc, 'extck')
-
 
 
 def read_existing_config_file(config_filename):
@@ -419,7 +452,8 @@ def read_existing_config_file(config_filename):
                                 host_dict['urls'] = agg_urls
                             config_dict[host_name] = host_dict
                 else:
-                    opslogger.warning('Error during parsing of host section. Skipping section')
+                    opslogger.warning(
+                        'Error during parsing of host section. Skipping section')
                 host_name = None
                 host_type = None
                 agg_urn = None
@@ -429,7 +463,8 @@ def read_existing_config_file(config_filename):
                 host_name = line[9:].strip()
             elif line.startswith('notes'):
                 notes = line[5:].strip()
-                if notes.find('Aggregate Manager known via its GENI URN:') != -1:
+                if notes.find(
+                        'Aggregate Manager known via its GENI URN:') != -1:
                     host_type = 'aggregate'
                     agg_urn = notes[len(AGGREGATE_HOST_DESCRIPTION) - 2:]
                 elif notes.find('Stitching Computation Service available at the following URL(s):') != -1:
@@ -440,9 +475,13 @@ def read_existing_config_file(config_filename):
                     agg_urn = notes[len(AUTHORITY_HOST_DESCRIPTION) - 2:]
                 elif notes.find('external check data store at the following URL: ') != -1:
                     host_type = 'extck'
-                    agg_urls = notes[notes.find('external check data store at the following URL: ') + 45:]
+                    agg_urls = notes[
+                        notes.find('external check data store at the following URL: ') +
+                        45:]
                 else:
-                    opslogger.warning('unrecognized type for host %s from the notes %s' % (host_name, notes))
+                    opslogger.warning(
+                        'unrecognized type for host %s from the notes %s' %
+                        (host_name, notes))
                     error = True
             continue
         elif in_service_section:
@@ -450,15 +489,19 @@ def read_existing_config_file(config_filename):
                 in_service_section = False
                 # grab all the info and add to the dictionary
                 if host_name is None:
-                    opslogger.warning('unrecognized host name associated with service')
+                    opslogger.warning(
+                        'unrecognized host name associated with service')
                 else:
                     if service_name is None:
                         opslogger.warning('unrecognized service')
                     else:
                         if not host_name in config_dict:
-                            opslogger.warning("can't find host associated with service %s" % (service_name,))
+                            opslogger.warning(
+                                "can't find host associated with service %s" %
+                                (service_name,))
                         else:
-                            config_dict[host_name]['services'].append(service_name)
+                            config_dict[host_name][
+                                'services'].append(service_name)
                 # reset info
                 host_name = None
                 service_name = None
@@ -478,6 +521,7 @@ def read_existing_config_file(config_filename):
     of.close()
     return config_dict
 
+
 def main(argv):
     (cert_path, opsconfig_url, output_file, input_file) = parse_args(argv)
 
@@ -488,9 +532,11 @@ def main(argv):
     pool = multiprocessing.pool.ThreadPool(processes=__THREAD_POOL_SIZE)
     of = open(output_file, 'w')
     aggRequest = handle_request(opslogger, cert_path, opsconfig_url)
-    if aggRequest == None:
-        opslogger.warning("Could not not contact opsconfigdatastore at %s" % opsconfig_url)
-        return
+    if aggRequest is None:
+        opslogger.warning(
+            "Could not not contact opsconfigdatastore at %s" %
+            opsconfig_url)
+        return 1
     aggStores = aggRequest['aggregatestores']
     extckStores = aggRequest['externalcheckstores']
     authorityStores = aggRequest['authorities']
@@ -498,8 +544,10 @@ def main(argv):
     for extckStore in extckStores:
         url = extckStore['href']
         extckStoreResponse = handle_request(opslogger, cert_path, url)
-        if extckStoreResponse == None:
-            opslogger.warning("Could not not contact external check store at %s" % url)
+        if extckStoreResponse is None:
+            opslogger.warning(
+                "Could not not contact external check store at %s" %
+                url)
         else:
             extckStoresResponses.append(extckStoreResponse)
 
@@ -507,8 +555,10 @@ def main(argv):
     for authorityStore in authorityStores:
         url = authorityStore['href']
         authorityStoreResponse = handle_request(opslogger, cert_path, url)
-        if authorityStoreResponse == None:
-            opslogger.warning("Could not not contact external check store at %s" % url)
+        if authorityStoreResponse is None:
+            opslogger.warning(
+                "Could not not contact external check store at %s" %
+                url)
         else:
             authorityStoreResponses.append(authorityStoreResponse)
 
@@ -522,11 +572,13 @@ def main(argv):
     aggregatesDict = dict()
     for res in results:
         if res is not None:
-            agg_urn = res['urn']
-            hostId = res['id']
-            aggregatesDict[hostId] = agg_urn
+            if 'urn' in res and 'id' in res:
+                agg_urn = res['urn']
+                hostId = res['id']
+                aggregatesDict[hostId] = agg_urn
 
-    # If we parsed the old config, let's see if there were data store that we couldn't join this time, but did previously
+    # If we parsed the old config, let's see if there were data store that we
+    # couldn't join this time, but did previously
     if old_config_dict is not None:
         for aggregate in aggStores:
             agg_urn = aggregate['urn']
@@ -536,18 +588,26 @@ def main(argv):
                 found = False
                 for hostId in old_config_dict:
                     if aggregate['amtype'] == "stitcher":
-                        if old_config_dict[hostId]['type'] == 'scs' and old_config_dict[hostId]['urls'].find(aggregate['am_url']) != -1 :
-                            opslogger.debug('Did not get stitcher info from data store. Reusing info from previous configuration for %s' % aggregate['am_nickname'])
+                        if old_config_dict[hostId]['type'] == 'scs' and old_config_dict[
+                                hostId]['urls'].find(aggregate['am_url']) != -1:
+                            opslogger.debug(
+                                'Did not get stitcher info from data store. Reusing info from previous configuration for %s' %
+                                aggregate['am_nickname'])
                             found = True
                     else:
-                        if old_config_dict[hostId]['type'] == 'aggregate' and old_config_dict[hostId]['urn'] == agg_urn:
-                            opslogger.debug('Did not get aggregate info from data store. Reusing info from previous configuration for %s' % agg_urn)
+                        if old_config_dict[hostId]['type'] == 'aggregate' and old_config_dict[
+                                hostId]['urn'] == agg_urn:
+                            opslogger.debug(
+                                'Did not get aggregate info from data store. Reusing info from previous configuration for %s' %
+                                agg_urn)
                             found = True
                     if found:
                         aggregatesDict[hostId] = agg_urn
                         break
                 else:
-                    opslogger.warning('Data store not answering and info not found in previous config: skipping aggregate %s ' % agg_urn)
+                    opslogger.warning(
+                        'Data store not answering and info not found in previous config: skipping aggregate %s ' %
+                        agg_urn)
 
     # Now writing all entries in order
     aggregatesSet = sorted(aggregatesDict.keys())
@@ -555,7 +615,6 @@ def main(argv):
         agg_urn = aggregatesDict[hostId]
         aggregate = find_aggregate_in_list_via_key(agg_urn, aggStores, 'urn')
         write_aggregate_entry(of, hostId, aggregate)
-
 
     extckStoreUrls = set()
     for extckStoreResponse in extckStoresResponses:
@@ -575,7 +634,12 @@ def main(argv):
         srvc_prefix = extck_id + ':'
         service_name = srvc_prefix + "is_available"
         for mon_agg in mon_agg_list:
-            of.write(SERVICE_SECTION % (mon_agg, service_name, SERVICE_GROUP_AVAILABILITY, IS_AVAILABLE_SERVICE_DESCRIPTION))
+            of.write(
+                SERVICE_SECTION %
+                (mon_agg,
+                 service_name,
+                 SERVICE_GROUP_AVAILABILITY,
+                 IS_AVAILABLE_SERVICE_DESCRIPTION))
             of.write('\n')
 
         experiments = extckStoreResponse['experiments']
@@ -591,31 +655,37 @@ def main(argv):
         extck_expIds = sorted(extck_expIds)
         for exp_id in extck_expIds:
             if exp_id.endswith('_stitching'):
-                # This is ugly - Hard coding the ID of the production SCS 'host'
+                # This is ugly - Hard coding the ID of the production SCS
+                # 'host'
                 of.write(SERVICE_SECTION % ('scs-geni', srvc_prefix + exp_id, SERVICE_GROUP_SCS_PATH_CHECK,
                                             STITCHING_CHECK_SERVICE_DESCRIPTION))
                 of.write('\n')
             else:
-                # It's a ping check -It gets associated with the external check host itself.
+                # It's a ping check -It gets associated with the external check
+                # host itself.
                 of.write(SERVICE_SECTION % (extck_id, exp_id, SERVICE_GROUP_DATAPLANE_CONNECTIVITY_CHECK,
                                             CONNECTION_CHECK_SERVICE_DESCRIPTION))
                 of.write('\n')
 
-    # if we parsed the old config, let's see if there were extck stores that we couldn't join this time around
+    # if we parsed the old config, let's see if there were extck stores that
+    # we couldn't join this time around
     if old_config_dict is not None:
         for extckStore in extckStores:
             url = extckStore['href']
             extck_id = None
             if url not in extckStoreUrls:
                 for hostId in old_config_dict:
-                    if old_config_dict[hostId]['type'] == 'extck' and old_config_dict[hostId]['urls'] == url:
+                    if old_config_dict[hostId][
+                            'type'] == 'extck' and old_config_dict[hostId]['urls'] == url:
                         # we found it
                         extck_id = hostId
                         write_extck_entry(of, extck_id, url)
                         extckStoreUrls.add(url)
-                        break;
+                        break
                 else:
-                    opslogger.warning('Data store not answering and info not found in previous config: skipping external check store %s ' % url)
+                    opslogger.warning(
+                        'Data store not answering and info not found in previous config: skipping external check store %s ' %
+                        url)
                 if extck_id is not None:
                     # take care of monitoring aggregates
                     srvc_prefix = extck_id + ':'
@@ -623,14 +693,22 @@ def main(argv):
                     mon_agg_list = list()
                     for hostId in old_config_dict:
                         if hostId in aggregatesSet:
-                            if service_name in old_config_dict[hostId]['services']:
+                            if service_name in old_config_dict[
+                                    hostId]['services']:
                                 mon_agg_list.append(agg_id)
                     mon_agg_list = sorted(mon_agg_list)
                     for mon_agg in mon_agg_list:
-                        of.write(SERVICE_SECTION % (hostId, service_name, SERVICE_GROUP_AVAILABILITY, IS_AVAILABLE_SERVICE_DESCRIPTION))
+                        of.write(
+                            SERVICE_SECTION %
+                            (hostId,
+                             service_name,
+                             SERVICE_GROUP_AVAILABILITY,
+                             IS_AVAILABLE_SERVICE_DESCRIPTION))
                         of.write('\n')
-                    # deal with all the connectivity checks associated with the external checker
-                    extck_services = sorted(old_config_dict[extck_id]['services'])
+                    # deal with all the connectivity checks associated with the
+                    # external checker
+                    extck_services = sorted(
+                        old_config_dict[extck_id]['services'])
                     for service_name in extck_services:
                         if service_name != 'is_responsive':
                             # Assuming the only checks are ping checks for now
@@ -639,13 +717,14 @@ def main(argv):
                             of.write('\n')
                     # Deal with the scs experiments
                     if 'scs-geni' in old_config_dict:
-                        scs_services = sorted(old_config_dict['scs-geni']['services'])
+                        scs_services = sorted(
+                            old_config_dict['scs-geni']['services'])
                         for service_name in scs_services:
-                            if service_name.startswith(srvc_prefix) and service_name != (srvc_prefix + 'is_available'):
+                            if service_name.startswith(srvc_prefix) and service_name != (
+                                    srvc_prefix + 'is_available'):
                                 of.write(SERVICE_SECTION % ('scs-geni', service_name, SERVICE_GROUP_SCS_PATH_CHECK,
                                                             STITCHING_CHECK_SERVICE_DESCRIPTION))
                                 of.write('\n')
-
 
     authorityStoresSet = set()
     for authorityStoreResponse in authorityStoreResponses:
@@ -660,17 +739,19 @@ def main(argv):
             urn = authorityStore['urn']
             if urn not in authorityStoresSet:
                 for hostId in old_config_dict:
-                    if old_config_dict[hostId]['type'] == 'authority' and old_config_dict[hostId]['urn'] == urn:
+                    if old_config_dict[hostId][
+                            'type'] == 'authority' and old_config_dict[hostId]['urn'] == urn:
                         authorityId = hostId
                         write_authority_entry(of, authorityId, urn)
                         break
                 else:
-                    opslogger.warning('Data store not answering and info not found in previous config: skipping authority %s ' % urn)
-
-
+                    opslogger.warning(
+                        'Data store not answering and info not found in previous config: skipping authority %s ' %
+                        urn)
 
     of.close()
-
+    return 0
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    retCode = main(sys.argv[1:])
+    sys.exit(retCode)

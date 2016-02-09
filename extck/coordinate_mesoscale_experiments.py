@@ -72,9 +72,10 @@ def insert_ping_times(outputfile, tbl_mgr, table_str, lock, publish_negative_val
         else:
             val_str += ","
         val_str += line
-    lock.acquire()
-    tbl_mgr.insert_stmt(table_str, val_str)
-    lock.release()
+    if val_str != "":
+        lock.acquire()
+        tbl_mgr.insert_stmt(table_str, val_str)
+        lock.release()
 
 def get_vm_address_and_port_for_site(ext_config, ping_site, ping_set, username, slicename, slices,
                                      lock, table_mgr, aggregateStores, nickCache, user_cred_file):
@@ -96,8 +97,13 @@ def get_vm_address_and_port_for_site(ext_config, ping_site, ping_set, username, 
 
     lock.acquire()
     # readyToLogin.main_no_print() is not thread-safe so executing it one thread at a time
+    # In addition it does a sys.exit() call when the AM is unreachable!
     table_mgr.logger.debug("Looking for login info for project '%s', slice '%s', username '%s' and site '%s' " % (project, slicename, username, am_url))
-    loginInfoDict, _keyList = readyToLogin.main_no_print(argv=readyToLoginArgs)
+    try:
+        loginInfoDict, _keyList = readyToLogin.main_no_print(argv=readyToLoginArgs)
+    except SystemExit:
+        loginInfoDict = None
+
     if loginInfoDict is not None:
         if loginInfoDict.has_key(am_url) and loginInfoDict[am_url].has_key('info'):
             for userinfo in loginInfoDict[am_url]['info']:
@@ -107,7 +113,7 @@ def get_vm_address_and_port_for_site(ext_config, ping_site, ping_set, username, 
                     table_mgr.logger.debug("Found login info %s:%s for project '%s', slice '%s', username '%s' and site '%s' " \
                                            % (address, port, project, slicename, username, am_url))
                     break
-    loginInfoDict.clear()  # so that successive calls do not interfere with one another
+        loginInfoDict.clear()  # so that successive calls do not interfere with one another
     lock.release()
 
     table_name = "extck_ping_login_info"
