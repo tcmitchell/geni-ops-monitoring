@@ -221,6 +221,13 @@
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENI"
     },
     {
+      "urn": "urn:publicid:IDN+mcv.sdn.uky.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.mcv.sdn.uky.edu:5001/info/aggregate/ukymcv-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyMcvInstaGENI"
+    },
+    {
       "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
@@ -682,6 +689,12 @@
       "amtype": "foam",
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umich-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENIOpenFlow"
+    },
+    {
+      "urn": "urn:publicid:IDN+openflow:foam:foam.mcv.sdn.uky.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukymcv-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyMcvInstaGENIOpenFlow"
     },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
