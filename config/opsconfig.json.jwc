@@ -214,6 +214,13 @@
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NPSInstaGENI"
     },
     {
+      "urn": "urn:publicid:IDN+instageni.research.umich.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.research.umich.edu:5001/info/aggregate/umich-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENI"
+    },
+    {
       "urn": "urn:publicid:IDN+instageni.idre.ucla.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
@@ -669,6 +676,12 @@
       "amtype": "foam",
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NPSInstaGENIOpenFlow"
+    },
+    {
+      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.research.umich.edu+authority+am",
+      "amtype": "foam",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umich-ig-of",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENIOpenFlow"
     },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
