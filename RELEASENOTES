@@ -1,3 +1,8 @@
+Changes for Release 2.1.8
+March 17, 2016
+--------------------------
+ * Removed all mesoscale checks and associated sites and slices (sitemon, gpoI15, and gpoI16).
+
 Changes for Release 2.1.7
 March 03, 2016
 --------------------------
