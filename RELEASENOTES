@@ -1,3 +1,8 @@
+Changes for Release 2.2.0
+June 21, 2016
+--------------------------
+ * Removed stanford-ig-of, osu-ig-of, princeton-ig-of, cwru-ig-of, and umich-ig-of
+
 Changes for Release 2.1.9
 June 21, 2016
 --------------------------
