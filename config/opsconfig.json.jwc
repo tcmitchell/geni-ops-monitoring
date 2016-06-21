@@ -654,12 +654,13 @@
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/sox-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/SoxInstaGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.ku.gpeni.net+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KansasInstaGENIOpenFlow"
-    },
+  //  kansas-ig-of data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.ku.gpeni.net+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KansasInstaGENIOpenFlow"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
       "amtype": "foam",
