@@ -661,12 +661,13 @@
   //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/kansas-ig-of",
   //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KansasInstaGENIOpenFlow"
   //  },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stanford-ig-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StanfordInstaGENIOpenFlow"
-    },
+  //  This data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.stanford.edu+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/stanford-ig-of",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/StanfordInstaGENIOpenFlow"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:sl-geni.northwestern.edu+authority+am",
       "amtype": "foam",
@@ -685,25 +686,27 @@
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/nps-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/NPSInstaGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.research.umich.edu+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umich-ig-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENIOpenFlow"
-    },
+  //  umich-ig-of data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.research.umich.edu+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umich-ig-of",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/MichiganInstaGENIOpenFlow"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.mcv.sdn.uky.edu+authority+am",
       "amtype": "foam",
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ukymcv-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/KentuckyMcvInstaGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cwru-ig-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CaseWesternReserveInstaGENIOpenFlow",
-      "amurl": "https://foam.geni.case.edu:3626/foam/gapi/2"
-    },
+  //  cwru-ig-of data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.geni.case.edu+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/cwru-ig-of",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/CaseWesternReserveInstaGENIOpenFlow",
+  //    "amurl": "https://foam.geni.case.edu:3626/foam/gapi/2"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.iu.edu+authority+am",
       "amtype": "foam",
@@ -716,12 +719,13 @@
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ohmetrodc-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/OHMETRODCInstaGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/PrincetonInstaGENIOpenFlow"
-    },
+  //  princeton-ig-of data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.cs.princeton.edu+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/princeton-ig-of",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/PrincetonInstaGENIOpenFlow"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.rutgers.edu+authority+am",
       "amtype": "foam",
@@ -734,13 +738,14 @@
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucla-ig-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCLAInstaGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osu-ig-of",
-      "amwikipage": "",
-      "amurl": "https://foam.instageni.osu.edu:3626/foam/gapi/2"
-    },
+  //  osu-ig-of data store is NOW DECOMMISSIONED.
+  //  {
+  //    "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.osu.edu+authority+am",
+  //    "amtype": "foam",
+  //    "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/osu-ig-of",
+  //    "amwikipage": "",
+  //    "amurl": "https://foam.instageni.osu.edu:3626/foam/gapi/2"
+  //  },
     {
       "urn": "urn:publicid:IDN+openflow:foam:foam.instageni.umkc.edu+authority+am",
       "amtype": "foam",
