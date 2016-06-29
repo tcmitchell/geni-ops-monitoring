@@ -1,3 +1,11 @@
+Changes for Release 2.2.1
+June 29, 2016
+--------------------------
+ * Removed monitoring for all other InstaGENI OF aggregates. FOAM and FlowVisor
+   have been decommissioned and replaced with a light-weight VM for the
+   purpose of forwarding SDN traffic between data plane switches and 
+   experimenter controllers.
+
 Changes for Release 2.2.0
 June 21, 2016
 --------------------------
