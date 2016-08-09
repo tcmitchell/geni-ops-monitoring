@@ -331,6 +331,13 @@
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GpoLabExoGENI"
     },
     {
+      "urn": "urn:publicid:IDN+exogeni.net:unfvmsite+authority+am",
+      "amtype": "exogeni",
+      "stitching_am": true,
+      "href": "https://unf-hn.exogeni.net:4334/info/aggregate/unfvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UNFExoGENI"
+    },
+    {
       "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite",
