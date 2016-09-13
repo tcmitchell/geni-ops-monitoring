@@ -174,8 +174,6 @@ class InfoPopulator():
                             dstAmUrn, dstAmHref, experiment_names, group_id, metricsgroup_id):
         exp_tablename = "ops_experiment"
         exp_schema = self.tbl_mgr.schema_dict[exp_tablename]
-#         ext_exp_tablename = "ops_externalcheck_experiment"
-#         ext_exp_schema = self.tbl_mgr.schema_dict[ext_exp_tablename]
         ts = str(int(time.time() * 1000000))
         exp = [BASE_SCHEMA_URL + "experiment#",
                exp_id,
@@ -198,11 +196,10 @@ class InfoPopulator():
             self.tbl_mgr.get_column_from_schema(
                 exp_schema,
                 "id"))
-#         extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
-#         self.tbl_mgr.upsert(ext_exp_tablename, ext_exp_schema, extck_exp,
-#                             (self.tbl_mgr.get_column_from_schema(ext_exp_schema, "id"),
-# self.tbl_mgr.get_column_from_schema(ext_exp_schema,
-# "externalcheck_id")))
+        extck_exp = [exp_id, self._extckStoreSite, self.extckStoreBaseUrl + "/info/experiment/" + exp_id]
+        self.tbl_mgr.upsert(exp_tablename, exp_schema, extck_exp,
+                            (self.tbl_mgr.get_column_from_schema(exp_schema, "id"),
+                             self.tbl_mgr.get_column_from_schema(exp_schema, "externalcheck_id")))
         experiment_names.add(exp_id)
 
     def __populateExperimentInfoTables(
