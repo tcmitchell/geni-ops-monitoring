@@ -1,7 +1,12 @@
+Changes for Release 2.2.4
+September 13, 2016
+--------------------------
+* Fixed bug which blocked the insertion of new experiments. 
+
 Changes for Release 2.2.3
 September 13, 2016
 --------------------------
-* Added SCS monitoring checks for northwestern-ig
+* Added SCS monitoring checks for northwestern-ig.
 
 Changes for Release 2.2.1
 June 29, 2016
