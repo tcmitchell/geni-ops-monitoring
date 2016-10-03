@@ -508,12 +508,12 @@
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ufl-eg-of",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UFLExoGENIOpenFlow"
     },
-    {
-      "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
-      "amtype": "foam",
-      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucdavis-eg-of",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENIOpenFlow"
-    },
+   // {
+   //   "urn": "urn:publicid:IDN+openflow:foam:ucd-hn.exogeni.net+authority+am",
+   //   "amtype": "foam",
+   //   "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ucdavis-eg-of",
+   //   "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENIOpenFlow"
+   // },
     {
       "urn": "urn:publicid:IDN+openflow:foam:osf-hn.exogeni.net+authority+am",
       "amtype": "foam",
