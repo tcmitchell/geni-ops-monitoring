@@ -1,3 +1,8 @@
+Changes for Release 2.2.6
+May 2, 2017
+--------------------------
+* Added AM checks for uvm-ig, utdallas-ig, ullafayette-ig, and hawaii-ig.
+
 Changes for Release 2.2.5
 October 1, 2016
 --------------------------
