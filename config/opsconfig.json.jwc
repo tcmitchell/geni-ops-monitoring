@@ -217,28 +217,28 @@
       "urn": "urn:publicid:IDN+instageni.hawaii.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
-      "href": "https://www.instageni.hawaii.edu:5001/info/aggregate/hawaii-ig",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/hawaii-ig",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/HawaiiInstaGENI"
     },
     {
       "urn": "urn:publicid:IDN+instageni.uvm.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
-      "href": "https://www.instageni.uvm.edu:5001/info/aggregate/uvm-ig",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/uvm-ig",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UVMInstaGENI"
     },
     {
       "urn": "urn:publicid:IDN+instageni.utdallas.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
-      "href": "https://www.instageni.utdallas.edu:5001/info/aggregate/utdallas-ig",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/utdallas-ig",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/DallasInstaGENI"
     },
     {
       "urn": "urn:publicid:IDN+instageni.louisiana.edu+authority+cm",
       "amtype": "instageni",
       "stitching_am": true,
-      "href": "https://www.instageni.louisiana.edu:5001/info/aggregate/ullafayette-ig",
+      "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/ullafayette-ig",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/LouisianaInstaGENI"
     },
     {
