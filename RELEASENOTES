@@ -1,3 +1,10 @@
+Changes for Release 2.2.7
+May 10, 2017
+--------------------------
+* Updated href for uvm-ig, utdallas-ig, ullafayette-ig, and hawaii-ig, 
+  to point to the external checker since they do not have local stores.
+
+
 Changes for Release 2.2.6
 May 2, 2017
 --------------------------
