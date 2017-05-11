@@ -1,3 +1,9 @@
+Changes for Release 2.2.8
+May 11, 2017
+--------------------------
+* Added correct URLs for local store since Hussam was able to install
+  it for uvm-ig, utdallas-ig, ullafayette-ig, and hawaii-ig.
+
 Changes for Release 2.2.7
 May 10, 2017
 --------------------------
