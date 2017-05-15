@@ -232,7 +232,7 @@
       "amtype": "instageni",
       "stitching_am": true,
       "href": "https://www.instageni.utdallas.edu:5001/info/aggregate/utdallas-ig",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/DallasInstaGENI"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UTDallasInstaGENI"
     },
     {
       "urn": "urn:publicid:IDN+instageni.louisiana.edu+authority+cm",
@@ -240,6 +240,13 @@
       "stitching_am": true,
       "href": "https://www.instageni.louisiana.edu:5001/info/aggregate/ullafayette-ig",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/LouisianaInstaGENI"
+    },
+    {
+      "urn": "urn:publicid:IDN+instageni.ucsd.edu+authority+cm",
+      "amtype": "instageni",
+      "stitching_am": true,
+      "href": "https://www.instageni.ucsd.edu:5001/info/aggregate/ucsd-ig",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCSanDiegoInstaGENI"
     },
     {
       "urn": "urn:publicid:IDN+instageni.research.umich.edu+authority+cm",
@@ -366,6 +373,13 @@
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UNFExoGENI"
     },
     {
+      "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
+      "amtype": "exogeni",
+      "stitching_am": true,
+      "href": "https://wsu-hn.exogeni.net:4334/info/aggregate/wsuvmsite",
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/WayneStateExoGENI"
+    },
+    {
       "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite",
@@ -433,8 +447,7 @@
       "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
-      "amwikipage": "",
-      "amurl": "https://umass-hn.exogeni.net:11443/orca/xmlrpc"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENI"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
@@ -454,22 +467,19 @@
       "urn": "urn:publicid:IDN+exogeni.net:pscvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://psc-hn.exogeni.net:4334/info/aggregate/pscvmsite",
-      "amwikipage": "",
-      "amurl": "https://psc-hn.exogeni.net:11443/orca/xmlrpc"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/PSCExoGENI"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:uafvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://uaf-hn.exogeni.net:4334/info/aggregate/uafvmsite",
-      "amwikipage": "",
-      "amurl": "https://uaf-hn.exogeni.net:11443/orca/xmlrpc"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UAFExoGENI"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:gwuvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://gwu-hn.exogeni.net:4334/info/aggregate/gwuvmsite",
-      "amwikipage": "",
-      "amurl": "https://gwu-hn.exogeni.net:11443/orca/xmlrpc"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/GeorgeWashingtonExoGENI"
     },
     // Open geni stores
     {

@@ -1,3 +1,11 @@
+Changes for Release 2.2.9
+May 15, 2017
+--------------------------
+* Added stitching checks for ullafayette-ig, ucsd-ig, psc-eg, uaf-eg
+  gwu-eg, umass-eg, unf-eg, and wsu-eg. Added external checks for
+  ucsd-ig and also updated the aggregate URLs for some of the EG
+  sites mentioned above.
+
 Changes for Release 2.2.8
 May 11, 2017
 --------------------------
