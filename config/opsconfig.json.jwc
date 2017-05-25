@@ -383,7 +383,7 @@
       "urn": "urn:publicid:IDN+exogeni.net:nictavmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://nicta-hn.exogeni.net:4334/info/aggregate/nictavmsite",
-      "amwikipage": ""
+      "amwikipage": "http://www.exogeni.net/locations/"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:fiuvmsite+authority+am",
@@ -410,13 +410,13 @@
       "urn": "urn:publicid:IDN+exogeni.net:wvnvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://wvn-hn.exogeni.net:4334/info/aggregate/wvnvmsite",
-      "amwikipage": ""
+      "amwikipage": "http://www.exogeni.net/locations/"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:uva-nlvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://uva-nl-hn.exogeni.net:4334/info/aggregate/uva-nlvmsite",
-      "amwikipage": "",
+      "amwikipage": "http://www.exogeni.net/locations/",
       "amurl": "https://uva-nl-hn.exogeni.net:11443/orca/xmlrpc"
     },
     {
@@ -425,12 +425,12 @@
       "href": "https://ufl-hn.exogeni.net:4334/info/aggregate/uflvmsite",
       "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UFLExoGENI"
     },
-    {
-      "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
-      "amtype": "exogeni",
-      "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENI"
-    },
+  //  {
+  //    "urn": "urn:publicid:IDN+exogeni.net:ucdvmsite+authority+am",
+  //    "amtype": "exogeni",
+  //    "href": "https://ucd-hn.exogeni.net:4334/info/aggregate/ucdvmsite",
+  //    "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENI"
+  //  },
     {
       "urn": "urn:publicid:IDN+exogeni.net:slvmsite+authority+am",
       "amtype": "exogeni",
@@ -447,7 +447,7 @@
       "urn": "urn:publicid:IDN+exogeni.net:umassvmsite+authority+am",
       "amtype": "exogeni",
       "href": "https://umass-hn.exogeni.net:4334/info/aggregate/umassvmsite",
-      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UCDavisExoGENI"
+      "amwikipage": "http://groups.geni.net/geni/wiki/GeniAggregate/UMassExoGENI"
     },
     {
       "urn": "urn:publicid:IDN+exogeni.net:wsuvmsite+authority+am",
@@ -568,7 +568,7 @@
       "urn": "urn:publicid:IDN+openflow:foam:umass-hn.exogeni.net+authority+am",
       "amtype": "foam",
       "href": "https://extckdatastore.gpolab.bbn.com/info/aggregate/umass-eg-of",
-      "amwikipage": "",
+      "amwikipage": "http://www.exogeni.net/locations/",
       "amurl": "https://umass-hn.exogeni.net:3626/foam/gapi/2",
       "amurl2": "https://umass-hn.exogeni.net:3626/foam/gapi/1"
     },

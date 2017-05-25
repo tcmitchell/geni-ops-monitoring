@@ -1,3 +1,9 @@
+Changes for Release 2.3.0
+May 25, 2017
+--------------------------
+* Removed monitoring for ucd-eg and added a generic amwiki link 
+  for EG sites without a link.
+
 Changes for Release 2.2.9
 May 15, 2017
 --------------------------
