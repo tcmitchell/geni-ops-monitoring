@@ -1,0 +1,64 @@
+<html><head><title>Detail of proposed monitoring system components for use case 4</title>
+</head>
+<body><h1>Detail of proposed monitoring system components for use case 4</h1>
+<p><b>Use case description:</b>
+ Run remote reachability checks of GENI network-listening services including GENI AMs and important non-AM services, and receive notifications when these checks fail</p>
+<p><b>Use case implementation story:</b>
+ A dedicated test process runs remote reachability checks of GENI network-listening services.  This process needs access to GENI experimenter credentials in order to run AM API checks.  The process is associated with a local datastore, using which it makes check results available as health check metrics.  Any group of operators that wants to send notifications on these statistics runs an aggregator, which polls the datastore for any AMs that group wants to send notifications about.  The aggregator shares current values with a alerting service, which sends alerts.</p>
+<p><table><tr><td><table border="on"><tr><td><a href="use_case_4.png"><img src="use_case_4.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(a)</td>
+<td>Operational Alerting</td>
+<td>Tim</td>
+<td></td>
+</tr>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: operators to notify)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: racks/AMs to query)</td>
+<td>Mitch</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (external checks)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (generic web service checks)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (using AM API)</td>
+<td bgcolor="yellow"></td>
+<td>Ali</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

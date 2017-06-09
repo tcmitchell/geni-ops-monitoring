@@ -1,0 +1,69 @@
+<html><head><title>Detail of proposed monitoring system components for use case 3</title>
+</head>
+<body><h1>Detail of proposed monitoring system components for use case 3</h1>
+<p><b>Use case description:</b>
+ Track node compute utilization, interface, and health statistics for shared rack nodes, and allow operators to get notifications when they are out of bounds</p>
+<p><b>Use case implementation story:</b>
+ Node statistics are time-series data, and are either collected on the node and pushed to the compute aggregate, or polled from each node by the compute aggregate (doesn't matter for our purposes).  Statistics end up in a local database on each rack.  Any group of operators that wants to send notifications on these statistics runs an aggregator, which polls all racks of interest to that group. The aggregator shares current values with an alerting service, which sends alerts.</p>
+<p><table><tr><td><table border="on"><tr><td><a href="use_case_3.png"><img src="use_case_3.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(a)</td>
+<td>Operational Alerting</td>
+<td>Tim</td>
+<td></td>
+</tr>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ExoGENI)</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (InstaGENI)</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: operators to notify)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: racks/AMs to query)</td>
+<td>Mitch</td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Shared node metrics (ExoGENI)</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Shared node metrics (InstaGENI)</td>
+<td>Gary</td>
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

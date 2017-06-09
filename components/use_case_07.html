@@ -1,0 +1,99 @@
+<html><head><title>Detail of proposed monitoring system components for use case 7</title>
+</head>
+<body><h1>Detail of proposed monitoring system components for use case 7</h1>
+<p><b>Use case description:</b>
+ Receive notifications of dataplane connectivity failure between GENI sites, including sites which are totally unreachable, shared interfaces which are down, interfaces whose utilization is too high, and experimental VLANs which can't be used successfully.  Share results of dataplane connectivity testing among operators to use the network efficiently.</p>
+<p><b>Use case implementation story:</b>
+ The first source of data for this use case is time-series traffic metrics and VLAN membership data for shared interfaces of rack and core network devices.  Each rack and core network will collect these metrics for themselves, and store them in their own local datastore.  The second type of data is the results of end-to-end network traffic checks using experimental networks.  This use case requires a mechanism for testing health across a dynamic dataplane connection &mdash; this mechanism will probably be a framework by which an external checker orchestrates pings between VMs in GENI slivers across links of interest. Health check metrics about success/failure of those connections will be pushed or pulled from those slivers to a local datastore.  Then each group that wants to send notifications about dataplane network health will run an aggregator that polls the local datastores for the active dataplane testing and for any networks or racks they want to monitor, and the aggregator will share recent values with an alerting service, which will detect out-of-bounds values at that group's preference and send alerts.  Any groups that want to produce visualization of traffic will build this on top of their aggregator as well.</p>
+<p><table><tr><td><table border="on"><tr><td><a href="use_case_7.png"><img src="use_case_7.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(a)</td>
+<td>Operational Alerting</td>
+<td>Tim</td>
+<td></td>
+</tr>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ExoGENI)</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (InstaGENI)</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (OESS AM)</td>
+<td>Luke</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: operators to notify)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: racks/AMs to query)</td>
+<td>Mitch</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (external checks)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (ExoGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (InstaGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (OESS AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (using AM API)</td>
+<td bgcolor="yellow"></td>
+<td>Ali</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/port#",
+  "description": "interface with some extensions for GENI monitoring use",
+  "name": "port",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/port#"
+  },
+  "properties": {
+    "subports": {
+      "description": "subinterfaces of this interface",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref":
+              "http://www.gpolab.bbn.com/monitoring/schema/20140131/port#"
+          }
+        ]
+      }
+    }
+  }
+}

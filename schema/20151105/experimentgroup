@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20151105/experimentgroup#",
+  "description": "Monitoring experiment group for external check data store",
+  "name": "experimentgroup",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+       "default": "http://www.gpolab.bbn.com/monitoring/schema/20151105/experimentgroup#",
+       "description": "The schema of the this file.",
+       "format": "uri",
+       "required": true,
+       "type": "string"
+    },
+    "id": {
+       "description": "unique group ID",
+       "minLength": 1,
+       "required": true,
+       "type": "string"
+    },
+    "selfRef": {
+       "description": "Self hyperlink reference for the resource",
+       "format": "uri",
+       "required": true,
+       "type": "string"
+    },
+    "ts": {
+        "type": "integer",
+        "description": "64-bit Integer timestamp of the last update on this network resource",
+        "required": true
+    },
+    "group_description": {
+       "description":"Description of the type of experiments in the group. ",
+       "type":"string",
+       "required":true
+    }
+  }
+}

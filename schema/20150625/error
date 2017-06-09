@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20150625/error#",
+  "description": "error response for GENI monitoring use",
+  "name": "error",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+            "default": "http://www.gpolab.bbn.com/monitoring/schema/20150625/error#",
+            "description": "The schema of the this file.",
+            "format": "uri",
+            "required": false,
+            "type": "string"
+        },
+    "error_message" : {
+      "description": "The error message returned by the data store",
+      "type": "string",
+      "required": true
+    },
+    "origin_url": {
+      "description": "The URL that the data store was trying to respond to, that triggered this error",
+      "type": "string",
+      "required": true
+    }
+  } 
+}

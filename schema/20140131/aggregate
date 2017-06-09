@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/aggregate#",
+  "description": "GENI aggregate",
+  "name": "Aggregate",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/domain#"
+  },
+  "properties": {
+    "measRef": {
+      "description":
+        "Location of measurement data about this aggregate and its resources",
+      "type": "string",
+      "required": false
+    },
+    "resources": {
+      "description": "resources controlled by this aggregate",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref": "http://unis.incntre.iu.edu/schema/20120709/node"
+          }
+        ]
+      }
+    },
+    "slivers": {
+      "description": "active slivers at this aggregate",
+      "type": "array",
+      "required": false,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref":
+              "http://www.gpolab.bbn.com/monitoring/schema/20140131/sliver#"
+          }
+        ]
+      }
+    }
+  }
+}

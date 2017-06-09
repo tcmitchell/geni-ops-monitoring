@@ -1,0 +1,109 @@
+<html><head><title>Detail of proposed monitoring system components for use case 5</title>
+</head>
+<body><h1>Detail of proposed monitoring system components for use case 5</h1>
+<p><b>Use case description:</b>
+ Receive notifications when rack, regional, and core control planes are down or when utilization is too high, and visualize or otherwise map the breakdown of control plane traffic by experiment</p>
+<p><b>Use case implementation story:</b>
+ Two types of data are used for this use case.  Network reachability checks are simple checks of whether network devices are reachable on their control planes.  Maybe each group that wants these checks will run their own from their alerting service (since these are simple ping checks) &mdash; here we show the checks being run by an external checker and stored as health check results in a local datastore.  The second type of data is time-series metrics counting traffic on network devices.  Each rack and each core network will collect these metrics for themselves, and store them in their own local datastore.  Then each group that wants to send notifications about network health will run an aggregator that polls the local datastores for any networks or racks they want to monitor, and the aggregator will share recent values with an alerting service, which will detect out-of-bounds values at that group's preference and send alerts.</p>
+<p><table><tr><td><table border="on"><tr><td><a href="use_case_5.png"><img src="use_case_5.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(a)</td>
+<td>Operational Alerting</td>
+<td>Tim</td>
+<td></td>
+</tr>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ExoGENI)</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (FOAM)</td>
+<td>Nick</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (InstaGENI)</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (OESS AM)</td>
+<td>Luke</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: operators to notify)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: racks/AMs to query)</td>
+<td>Mitch</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (external checks)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (ExoGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (FOAM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (InstaGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (OESS AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (ping)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

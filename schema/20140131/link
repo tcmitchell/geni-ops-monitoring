@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-03/hyper-schema#",
+  "id": "http://www.gpolab.bbn.com/monitoring/schema/20140131/link#",
+  "description": "link (circuit) with extensions for GENI monitoring use",
+  "name": "link",
+  "type": "object",
+  "additionalProperties": true,
+  "extends": {
+    "$ref": "http://unis.incntre.iu.edu/schema/20120709/link"
+  },
+  "properties": {
+    "endpoints": {
+      "required": true,
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": [
+          {
+            "urn": "string",
+            "$ref": "http://json-schema.org/draft-03/links#"
+          }
+        ]
+      }
+    }
+  }
+}

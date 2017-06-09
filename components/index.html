@@ -1,0 +1,309 @@
+<html><head><title>Detail of proposed monitoring system components</title>
+</head>
+<body><h1>Detail of proposed monitoring system components</h1>
+<p>These pages propose a set of components which would enable an
+    operational monitoring system based on the local datastore/aggregator
+    model discussed in December 2013, to meet a representative set of
+    use cases.  We are focusing on a small number of use cases in order
+    to describe a coherent system &mdash; the intention is that the
+    design of the system be such that it should be able to address all
+    use cases.</p>
+<p>The next steps are to determine whether this set of components is
+    reasonable (necessary and sufficient) to meet the representative
+    use cases, and to determine who can implement each piece.  Please
+    discuss these questions on monitoring@geni.net, or on the call
+    Tuesday January 14th.  You can also reach GPO infra at
+    gpo-infra@geni.net with any questions or comments.</p>
+<h2>Detail drawings and components of representative use cases</h2>
+<p>Each page describes an implementation strategy and set of needed
+    components for a representative use case, based on the local
+    datastore/aggregator model.</p>
+<ul><li><a href="use_case_03.html">3. Track node compute utilization, interface, and health statistics for shared rack nodes, and allow operators to get notifications when they are out of bounds</a>
+</li>
+<li><a href="use_case_04.html">4. Run remote reachability checks of GENI network-listening services including GENI AMs and important non-AM services, and receive notifications when these checks fail</a>
+</li>
+<li><a href="use_case_05.html">5. Receive notifications when rack, regional, and core control planes are down or when utilization is too high, and visualize or otherwise map the breakdown of control plane traffic by experiment</a>
+</li>
+<li><a href="use_case_06.html">6. Find out what slivers will be affected by a maintenance or outage of some resource, and get contact information for the owners of those slivers so targeted notifications can be sent</a>
+</li>
+<li><a href="use_case_07.html">7. Receive notifications of dataplane connectivity failure between GENI sites, including sites which are totally unreachable, shared interfaces which are down, interfaces whose utilization is too high, and experimental VLANs which can't be used successfully.  Share results of dataplane connectivity testing among operators to use the network efficiently.</a>
+</li>
+</ul>
+<h2>Overview of all components</h2>
+<p><table><tr><td><table border="on"><tr><td><a href="components.png"><img src="components.png" width="500"></img>
+</a>
+</td>
+</tr>
+<tr><td><a href="aggregator-local.png"><img src="aggregator-local.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>Use cases this supports</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(a)</td>
+<td>Operational Alerting</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Tim</td>
+<td></td>
+</tr>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ExoGENI)</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (FOAM)</td>
+<td><a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+</td>
+<td>Nick</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ION AM)</td>
+<td><a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (InstaGENI)</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (OESS AM)</td>
+<td><a href="use_case_05.html">5</a>
+ <a href="use_case_06.html">6</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Luke</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (clearinghouse)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td>GPO</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: operators to notify)</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (config data: racks/AMs to query)</td>
+<td><a href="use_case_03.html">3</a>
+ <a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td>Mitch</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (external checks)</td>
+<td><a href="use_case_04.html">4</a>
+ <a href="use_case_05.html">5</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (ExoGENI)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (FOAM)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (ION AM)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (InstaGENI)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Control network traffic counters (OESS AM)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (ExoGENI)</td>
+<td><a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (ION AM)</td>
+<td><a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (InstaGENI)</td>
+<td><a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Dataplane traffic counters/VLAN data (OESS AM)</td>
+<td><a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Shared node metrics (ExoGENI)</td>
+<td><a href="use_case_03.html">3</a>
+</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Shared node metrics (InstaGENI)</td>
+<td><a href="use_case_03.html">3</a>
+</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (ExoGENI)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (FOAM)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (ION AM)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (InstaGENI)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (OESS AM)</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (generic web service checks)</td>
+<td><a href="use_case_04.html">4</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (ping)</td>
+<td><a href="use_case_05.html">5</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(f)</td>
+<td>External Checks (using AM API)</td>
+<td><a href="use_case_04.html">4</a>
+ <a href="use_case_07.html">7</a>
+</td>
+<td bgcolor="yellow"></td>
+<td>Ali</td>
+</tr>
+<tr><td>(g)</td>
+<td>Operational Reports</td>
+<td><a href="use_case_06.html">6</a>
+</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

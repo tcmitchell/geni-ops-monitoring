@@ -1,0 +1,94 @@
+<html><head><title>Detail of proposed monitoring system components for use case 6</title>
+</head>
+<body><h1>Detail of proposed monitoring system components for use case 6</h1>
+<p><b>Use case description:</b>
+ Find out what slivers will be affected by a maintenance or outage of some resource, and get contact information for the owners of those slivers so targeted notifications can be sent</p>
+<p><b>Use case implementation story:</b>
+ Aggregates collect up-to-date information about what slivers exist and what resources they have reserved (including sliver details such as expiration time), and make this information available via a local datastore. GENI trust authorities (e.g. clearinghouses) collect up-to-date information about experimenters and their contact information, and make this information available via a local datastore.  Operators who want to be able to get this information run an aggregator which can query the relevant datastores (since this is an on-demand real-time query, the aggregator doesn't need to be active all the time, though it may be).  The aggregator data is used to run a report listing affected experimenters and their contact info.</p>
+<p><table><tr><td><table border="on"><tr><td><a href="use_case_6.png"><img src="use_case_6.png" width="500"></img>
+</a>
+</td>
+</tr>
+</table>
+</td>
+<td><table border="on"><th>ID</th>
+<th>Name</th>
+<th>POC</th>
+<th>Other Participants</th>
+<tr><td>(b)</td>
+<td>Aggregator</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(c)</td>
+<td>Datastore polling API</td>
+<td>Ryan</td>
+<td>Cody, Mitch, Anirban</td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ExoGENI)</td>
+<td>Jonathan</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (FOAM)</td>
+<td>Nick</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (InstaGENI)</td>
+<td>Gary</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (OESS AM)</td>
+<td>Luke</td>
+<td></td>
+</tr>
+<tr><td>(d)</td>
+<td>Local datastore (clearinghouse)</td>
+<td bgcolor="yellow"></td>
+<td>GPO</td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (ExoGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (FOAM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (ION AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (InstaGENI)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(e)</td>
+<td>Sliver/resource mapping data (OESS AM)</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+<tr><td>(g)</td>
+<td>Operational Reports</td>
+<td bgcolor="yellow"></td>
+<td></td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</p>
+</body>
+</html>

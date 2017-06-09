@@ -1,0 +1,525 @@
+<html><head><title>Categorization of suggested monitoring use cases</title>
+</head>
+<body><h1>Categorization of suggested monitoring use cases</h1>
+<p><i>This page is a rough draft summarizing monitoring use cases
+collected from GENI participants during November 2013, and attempts to
+provide high-level guesses about the tools needed to implement each.
+The page contains 45 distinct use cases summarized from inputs from
+18 people.  This page was last updated on 2013-12-12.
+</i>
+</p>
+<table border="on"><tr><th>N</th>
+<th>Use case summary</th>
+<th>Primary actor</th>
+<th>Who suggested variants on this use case</th>
+</tr>
+<tr><td bgcolor="red">1</td>
+<td>View documentation about currently-available rack monitoring tools, tests, and notifications, including procedures for getting access to shared data and explanation of what notification e-mails are sent to rack admins and who is responsible for responding to them.</td>
+<td>Operator</td>
+<td><i>2 people:</i>
+(Jimmy Kyriannis, Joe Breen)<ul><li>View documentation about currently-available rack monitoring tools and tests (Jimmy Kyriannis)</li>
+
+<li>Documentation of notification e-mails sent by the rack and who is responsible for them (Jimmy Kyriannis)</li>
+
+<li>Understand procedures for getting access to shared monitoring data (Joe Breen)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">2</td>
+<td>Documentation of how GENI operators can share locally-generated monitoring data, of what data is most useful to share, and of what if any privacy/security/non-abuse guarantees exist for shared GENI data</td>
+<td>Operator</td>
+<td><i>2 people:</i>
+(Joe Breen, Nick Bastin)<ul><li>Get information about what campus network information is useful to share for GENI monitoring purposes (Joe Breen)</li>
+
+<li>Understand privacy/security/non-abuse guarantees around shared data, and whether trusted services exist for querying data (Joe Breen)</li>
+
+<li>Documentation of how to monitor GENI resources using local tools and share the results (Nick Bastin)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">3</td>
+<td>Track node compute utilization, interface, and health statistics for shared rack nodes, and allow operators to get notifications when they are out of bounds</td>
+<td>Operator</td>
+<td><i>5 people:</i>
+(Ali Sydney, Chaos Golubitsky, Jonathan Mills, Mitch McCracken, Rob Ricci)<ul><li>Use CPU and memory utilization data to diagnose anomalous distribution of slivers among physical resources within a rack (Ali Sydney)</li>
+
+<li>Track CPU, memory utilization, and maximum throughput on each rack node (Ali Sydney)</li>
+
+<li>Receive notifications when resources are down or unresponsive on their control planes (Chaos Golubitsky)</li>
+
+<li>Get notifications of important host problems (e.g. unpingable, disk full, RAID failure on critical nodes) (Jonathan Mills)</li>
+
+<li>Get notifications of node health checks on servers (i.e. SSH, disk full, CPU load, NTP sync, RAID health, SSL cert validity) (Mitch McCracken)</li>
+
+<li>Get node utilization metrics like CPU usage for shared nodes (Rob Ricci)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">4</td>
+<td>Run remote reachability checks of GENI network-listening services including GENI AMs and important non-AM services, and receive notifications when these checks fails</td>
+<td>Operator</td>
+<td><i>2 people:</i>
+(Chaos Golubitsky, Jonathan Mills)<ul><li>Receive notifications when AMs are down or unresponsive to AM API (Chaos Golubitsky)</li>
+
+<li>Receive notifications when aggregates fail to respond to GENI AM API requests (Jonathan Mills)</li>
+
+<li>Run remote network checks of GENI network-listening services (AM API, ORCA, etc) (Jonathan Mills)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">5</td>
+<td>Receive notifications when rack, regional, and core control planes are down or when utilization is too high, and visualize or otherwise map the breakdown of control plane traffic by experiment<br></br>
+<font color="orange">(Caveat: breakdown of control plane traffic by experiment will probably come later)</font>
+</td>
+<td>Operator</td>
+<td><i>4 people:</i>
+(Leigh Stoller, Marianne Chitwood, Nick Bastin, Russ Clark)<ul><li>Receive notifications when traffic from a resource is saturating the rack control plane (Leigh Stoller)</li>
+
+<li>Visualize the health of the GENI core network control plane (Marianne Chitwood)</li>
+
+<li>Visualize the health of the GENI regional network control plane (Marianne Chitwood)</li>
+
+<li>Visualize control plane and data plane utilization for each GENI experiment hosted at the site (Nick Bastin)</li>
+
+<li>Determine what experiment is responsible for a given traffic flow on the control plane (Nick Bastin)</li>
+
+<li>Receive notifications about outages of links, switches, FOAM/FV, rack control plane (Russ Clark)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">6</td>
+<td>Find out what slivers will be affected by a maintenance or outage of some resource, and get contact information for the owners of those slivers so targeted notifications can be sent</td>
+<td>Operator</td>
+<td><i>3 people:</i>
+(Chaos Golubitsky, Nick Bastin, Rob Ricci)<ul><li>Determine what experiments will be affected by a planned resource outage (Nick Bastin)</li>
+
+<li>Send targeted notification to experimenters affected by a planned resource outage (Nick Bastin)</li>
+
+<li>Determine what slices, slivers, and users are in existence and active right now (Rob Ricci)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">7</td>
+<td>Receive notifications of dataplane connectivity failure between GENI sites, including sites which are totally unreachable, shared interfaces which are down, interfaces whose utilization is too high, and experimental VLANs which can't be used successfully.  Share results of dataplane connectivity testing among operators to use the network efficiently.</td>
+<td>Operator</td>
+<td><i>6 people:</i>
+(Chaos Golubitsky, Ilya Baldin, Jimmy Kyriannis, Joe Breen, Jonathan Mills, Russ Clark)<ul><li>Receive notifications when sites are unreachable on their data planes (Chaos Golubitsky)</li>
+
+<li>Receive notifications when a tool fails to stand up a multisite network sliver along a given topology and ping across it (Ilya Baldin)</li>
+
+<li>Receive notifications about network traffic above a certain threshold (Jimmy Kyriannis)</li>
+
+<li>Receive notifications about offline interfaces (Jimmy Kyriannis)</li>
+
+<li>Share results from any 'operations and monitoring' slices needed across domains (Joe Breen)</li>
+
+<li>Verify dataplane connectivity between racks (Jonathan Mills)</li>
+
+<li>Receive notifications about slice/sliver outages which will require site investigation (Russ Clark)</li>
+
+<li>Receive notifications about service degradation events which will require site investigation (Russ Clark)</li>
+
+<li>Receive notifications about outages of links, switches, FOAM/FV, rack control plane (Russ Clark)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">8</td>
+<td>Visualize dataplane network performance across GENI, including interface counters at multiple points along core and regional networks, and into and out of each rack.</td>
+<td>Operator</td>
+<td><i>3 people:</i>
+(Chaos Golubitsky, Jimmy Kyriannis, Marianne Chitwood)<ul><li>Visualize interface counters at multiple points in a multisite topology (Chaos Golubitsky)</li>
+
+<li>Visualization of end-to-end links similar to I2 Atlas (http://atlas.grnoc.iu.edu/atlas.cgi?map_id=301) (Jimmy Kyriannis)</li>
+
+<li>Dashboard showing network traffic entering/leaving a rack, total and per-VLAN (Jimmy Kyriannis)</li>
+
+<li>Visualize the health of the GENI core network data plane (Marianne Chitwood)</li>
+
+<li>Visualize the health of the GENI regional network data plane (Marianne Chitwood)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">9</td>
+<td>As an experimenter, get information about the health and utilization of networks underlying a particular GENI slice<br></br>
+<font color="orange">(Caveat: Allowing experimenters to visualize this information in a useful way would come later; the priority is on collecting and correlating the information so that someone can get it back to the experimenter, even if the process is non-self-service or the amount of information the experimenter can get is very low.)</font>
+</td>
+<td>Experimenter</td>
+<td><i>2 people:</i>
+(Joe Breen, Sarah Edwards)<ul><li>Validate hop-by-hop connectivity and MTU within a multisite L2 slice (Joe Breen)</li>
+
+<li>Validate a requested multisite slice topology, ideally graphically, whether or not a specific path was requested (Joe Breen)</li>
+
+<li>Get information about the physical paths allocated for a slice topology (Joe Breen)</li>
+
+<li>Get data about substrate issues which may be impacting an experimenter slice (Joe Breen)</li>
+
+<li>Get current and historical data about other slice activity which may be impacting the experimenter's slice (Joe Breen)</li>
+
+<li>Find out whether a network sliver created by stitching is generally up and expected to work (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">10</td>
+<td>As an operator, get information about the state of OpenFlow reservations within slices, including what OpenFlow resources the experimenter has reserved, whether any slivers are pending approval at FOAM aggregates, whether sliver rules are successfully installed in FlowVisors, and whether FlowVisor is successfully connecting to the experimenter's controller</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Heidi Dempsey)</td>
+</tr>
+<tr><td bgcolor="red">11</td>
+<td>Given a network resource on a GENI rack which is misbehaving now or was misbehaving at some time in the past, get contact information for a responsible experimenter and/or operator</td>
+<td>Operator</td>
+<td><i>3 people:</i>
+(Chaos Golubitsky, Nick Bastin, Tim Upthegrove)<ul><li>Contact the experimenter responsible for a GENI IP address which is causing problems on a remote network (Nick Bastin)</li>
+
+<li>While debugging, get data which maps flowing traffic through a core link back to a slice, sliver, resource, and/or person (Tim Upthegrove)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">12</td>
+<td>Get aggregated information about core and rack shared interface bandwidth utilization by GENI experiments, for capacity planning</td>
+<td>GENI planner</td>
+<td><i>3 people:</i>
+(Ali Sydney, Rob Ricci, Tim Upthegrove)<ul><li>Use network throughput data reported over time when deciding whether to upgrade network capacity (Ali Sydney)</li>
+
+<li>Get fine-grained packet drop information for shared network ports, for capacity planning (Rob Ricci)</li>
+
+<li>Get network utilization metrics like port counters for shared ports (Rob Ricci)</li>
+
+<li>Get aggregated information about core bandwidth utilization by GENI experiments, for capacity planning (Tim Upthegrove)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">13</td>
+<td>Create reports on GENI utilization over time, broken down by distinct experimenter, what resources were used, and when</td>
+<td>GENI planner</td>
+<td><i>3 people:</i>
+(Chaos Golubitsky, Mark Berman, Sarah Edwards)<ul><li>Create reports on GENI utilization over time, including distinct experimenters, type of aggregate/resources used, sliver duration (Chaos Golubitsky)</li>
+
+<li>Get GENI utilization statistics, including as number of users, number of slivers, frequency of use, over time (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">14</td>
+<td>Create reports on GENI health and resource availability over time, including aggregate control plane downtime, shared dataplane network downtime, dataplane network saturation, and AMs running out of various resources</td>
+<td>Operator</td>
+<td><i>3 people:</i>
+(Ali Sydney, Chaos Golubitsky, Leigh Stoller)<ul><li>Report on which resources are the most popular within a rack, and use this data to alter the distribution of resources (Ali Sydney)</li>
+
+<li>Create reports on GENI resource availability over time, including network saturation and AMs running out of various resources (Chaos Golubitsky)</li>
+
+<li>Create reports on GENI health over time, including aggregate control plane and resource dataplane downtime (Chaos Golubitsky)</li>
+
+<li>Get information about which resources are underutilized over time, for planning to avoid wasted resources (Leigh Stoller)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">15</td>
+<td>Receive notification about GENI state which is inconsistent in important ways (especially allocated resources with no slice)</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Chaos Golubitsky)</td>
+</tr>
+<tr><td bgcolor="red">16</td>
+<td>Get up-to-date information about how to contact other GENI operators</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Chaos Golubitsky)</td>
+</tr>
+<tr><td bgcolor="red">17</td>
+<td>Receive notifications when AMs are out of specific resources (e.g. bare-metal hosts, VMs, VLANs)</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Chaos Golubitsky)</td>
+</tr>
+<tr><td bgcolor="red">18</td>
+<td>Use an open authenticated interface to get access to recent utilization and performance data about racks and networks</td>
+<td>Experimenter/Operator</td>
+<td><i>1 person:</i>
+(Cody Bumgardner)<ul><li>Receive a stream of utilization and performance data on request (Cody Bumgardner)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">19</td>
+<td>Produce utilization graphs annotated with GENI maintenance/change freeze events (e.g. GECs and classes)<br></br>
+<font color="orange">(Caveat: The priority item is making GENI maintenance/outage information available as GENI monitoring data, not the creation of graphs per se)</font>
+</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Rob Ricci)</td>
+</tr>
+<tr><td bgcolor="red">20</td>
+<td>Receive targeted notifications of issues which require site investigation or which site operators would want to be notified about, with few false positives</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Russ Clark)<ul><li>Receive targeted notifications of issues which require site investigation, with few false positives (Russ Clark)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">21</td>
+<td>As an operator, report an emergency event such as a security issue into the monitoring system so that monitoring system users can use that information in alerts or reporting</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Heidi Dempsey)</td>
+</tr>
+<tr><td>22</td>
+<td>Track compute node utilization, interface, and health statistics for shared rack nodes, and allow experimenters to see them to diagnose issues affecting their slices</td>
+<td>Experimenter</td>
+<td><i>3 people:</i>
+(Mark Berman, Nick Bastin, Sarah Edwards)<ul><li>Get information about performance problems affecting the experimenter's resources, even non-outage-severity slowdowns (Mark Berman)</li>
+
+<li>Get VM server utilization information over the lifetime of a slice (i.e. CPU usage/steal, disk IOPS, interrupt load, NIC utilization) (Nick Bastin)</li>
+
+<li>Get node statistics such as number of other VMs running, CPU usage, and memory usage, about shared nodes (Sarah Edwards)</li>
+
+<li>Get statistics about bandwidth and delay on interfaces of shared nodes (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">23</td>
+<td>As an experimenter, view current known problems on GENI aggregate and resource control planes.  Ideally be able to visualize, or even receive notifications about, control plane problems affecting existing slices.<br></br>
+<font color="orange">(Caveat: Priority use case is to make 'known problem' listings which operators can see available to experimenters too --- per-slice listings would probably be a later enhancement.)</font>
+</td>
+<td>Experimenter</td>
+<td><i>5 people:</i>
+(Chaos Golubitsky, Joe Breen, Mark Berman, Nick Bastin, Sarah Edwards)<ul><li>View current status of active checks for which notifications are sent, and view current health of GENI aggregates and resources (Chaos Golubitsky)</li>
+
+<li>Get information about control plane health of all aggregates involved in a slice (Joe Breen)</li>
+
+<li>Get information about GENI operational problems affecting resources on which the experimenter has slivers (Mark Berman)</li>
+
+<li>Receive notifications about infrastructure events affecting resources on which the experimenter has active slivers (Nick Bastin)</li>
+
+<li>Find out simple OK/not OK state of each resource the experimenter has allocated (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>24</td>
+<td>When planning an experiment, tutorial, or class, get information about current and historical availability of aggregates, resource count and availability at each aggregate, and historical uptime at each aggregate, to help layout the experiment or anticipate problems</td>
+<td>Experimenter</td>
+<td><i>4 people:</i>
+(Chaos Golubitsky, Mark Berman, Nick Bastin, Sarah Edwards)<ul><li>When planning a tutorial or class, get information about current availability of the resources which will be used (Chaos Golubitsky)</li>
+
+<li>When planning an experiment, get information about count and availability of resources of interest at various aggregates (Mark Berman)</li>
+
+<li>When planning an experiment, get history of uptime and problem events for individual GENI resources (Nick Bastin)</li>
+
+<li>When planning an experiment, visualize the historical uptime for an aggregate (Sarah Edwards)</li>
+
+<li>When planning an experiment, visualize how many unused resources of a desired type are available at each aggregate (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>25</td>
+<td>As an experimenter, get information from GENI to help determine whether experiments have been setup as expected, including slice membership, resources allocated (in a slice, by an experimenter, or by all experimenters in a project), and expiration times for slivers</td>
+<td>Experimenter</td>
+<td><i>1 person:</i>
+(Sarah Edwards)<ul><li>During experiment setup, find out who a slice belongs to, who is the project lead, and what users have access to the slice (Sarah Edwards)</li>
+
+<li>Find out what resources the experimenter has allocated (Sarah Edwards)</li>
+
+<li>Find out what resources a project lead's project members have allocated (Sarah Edwards)</li>
+
+<li>Find out expected expiration time for each resource the experimenter has allocated (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td bgcolor="red">26</td>
+<td>As an experimenter, get general information about health and activity on experimental network resources in GENI, including whether links are up or down and whether core interfaces are experiencing high utilization or disruption</td>
+<td>Experimenter</td>
+<td><i>2 people:</i>
+(Nick Bastin, Sarah Edwards)<ul><li>Determine whether the infrastructure underlying a slice is experiencing high utilization or disruption (Nick Bastin)</li>
+
+<li>Get information about whether network paths between sites are currently up (Sarah Edwards)</li>
+
+<li>Find out whether networks used by stitching are generally up and expected to work (Sarah Edwards)</li>
+
+<li>Get statistics about bandwidth and delay on interfaces of OpenFlow switches (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>27</td>
+<td>Gain visibility into GENI pieces of multi-domain topologies when debugging problems with GENI and non-GENI networks, including breakdowns of traffic by experiment, mappings between physical and virtual resources, isolating failures to a responsible network, and a full fingerprint of GENI traffic</td>
+<td>Operator</td>
+<td><i>5 people:</i>
+(Chaos Golubitsky, Joe Breen, Leigh Stoller, Nick Bastin, Tim Upthegrove)<ul><li>Trace a multisite experimental topology that was created using GENI, mapping per-hop between physical and virtual resources (Chaos Golubitsky)</li>
+
+<li>Gain visibility into GENI pieces of multi-domain topologies when debugging problems with GENI and non-GENI networks (Joe Breen)</li>
+
+<li>Isolate a failure in a multisite end-to-end topology to one network/set of operators (Leigh Stoller)</li>
+
+<li>Visualize control plane and data plane utilization for each GENI experiment hosted at the site (Nick Bastin)</li>
+
+<li>While debugging, see a full fingerprint of GENI traffic flowing through a core link, accompanied by traffic rates, for diagnosis (Tim Upthegrove)</li>
+
+<li>While debugging, get data which maps flowing traffic through a core link back to a slice, sliver, resource, and/or person (Tim Upthegrove)</li>
+
+<li>While debugging, get as much visibility as possible into GENI traffic across core links, and breakdowns of traffic by experiment (Tim Upthegrove)</li>
+</ul>
+</td>
+</tr>
+<tr><td>28</td>
+<td>As an experimenter, get information about the state of OpenFlow reservations within slices, including what OpenFlow resources the experimenter has reserved, whether any slivers are pending approval at FOAM aggregates, whether sliver rules are successfully installed in FlowVisors, and whether FlowVisor is successfully connecting to the experimenter's controller</td>
+<td>Experimenter</td>
+<td><i>2 people:</i>
+(Joe Breen, Sarah Edwards)<ul><li>Get information about OpenFlow control plane state and health of communication between experimental controller and switch (Joe Breen)</li>
+
+<li>What OpenFlow resources and in what topology does the experimenter have reserved? (Sarah Edwards)</li>
+
+<li>What OpenFlow slivers belonging to an experimenter are still pending approval at FOAM aggregates? (Sarah Edwards)</li>
+
+<li>For an approved FOAM sliver belonging to the experimenter, are the rules successfully installed in the corresponding FlowVisor? (Sarah Edwards)</li>
+
+<li>Determine whether the FlowVisor associated with an OpenFlow sliver is successfully connected to the experimenter's controller (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>29</td>
+<td>As an experimenter, get as much detail as possible about OpenFlow control for slivers underlying a slice, including control traffic statistics from FlowVisors and switches, and tcpdump ouput for sliver traffic between FlowVisors and switches</td>
+<td>Experimenter</td>
+<td><i>1 person:</i>
+(Sarah Edwards)<ul><li>Get OpenFlow control statistics for an experimental sliver (Sarah Edwards)</li>
+
+<li>Get a tcpdump of the OpenFlow control traffic between the switch and the flowvisor relevant to a sliver (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>30</td>
+<td>As an experimenter, get detailed information about network performance underlying a particular slice, including hop-by-hop traffic rate, packet rate, latency, buffer status, packet drops, network errors, and flowtable status for the individual slice.</td>
+<td>Experimenter</td>
+<td><i>3 people:</i>
+(Joe Breen, Nick Bastin, Sarah Edwards)<ul><li>Compare the measurable packet rate within a slice to what the AM provisioned; identify where in the slice packet rate is lowest (Joe Breen)</li>
+
+<li>Compare the measurable packet rate for the underlying substrate used in a slice to the packet rate the substrate should provide (Joe Breen)</li>
+
+<li>Compare the measurable latency within a slice to what the AM provisioned; identify where in the slice latency is highest (Joe Breen)</li>
+
+<li>Compare the measurable latency for the underlying substrate used in a slice to the latency the substrate should provide (Joe Breen)</li>
+
+<li>Investigate buffer behavior (full, blocking, dropping packets, etc) at various points within a slice (Joe Breen)</li>
+
+<li>Enumerate how many packets are being dropped within a slice, and where in the slice drops are occurring (Joe Breen)</li>
+
+<li>Enumerate network error counts within a slice, and where in the slice network errors are occurring (Joe Breen)</li>
+
+<li>Determine whether network devices in the path of a slice have run out of flows, table entries, or memory (Joe Breen)</li>
+
+<li>Use simple test tools (graphical or CLI) to verify some of these network health metrics on a given slice (Joe Breen)</li>
+
+<li>Get network utilization information over the lifetime of a slice (i.e. utilization and packet loss for each link in the path) (Nick Bastin)</li>
+
+<li>Get dataplane statistics about installed flows for an experimental OpenFlow sliver (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>31</td>
+<td>Per-rack dashboard with information about allocated/free resources, and node status and OS information about VMs and hosts which are in use by experiments</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Jimmy Kyriannis)<ul><li>Integrated dashboard with information about allocated/free resources on a rack (Jimmy Kyriannis)</li>
+
+<li>Single dashboard with information about allocated experimental VMs and hosts on a rack, including node status and OS (Jimmy Kyriannis)</li>
+</ul>
+</td>
+</tr>
+<tr><td>32</td>
+<td>Search listings of active clearinghouse accounts by CH, IdP, institution, and name, in order to help users determine whether or not they have accounts and how to best get accounts.</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Sarah Edwards)<ul><li>When helping an experimenter, find out whether the experimenter has a clearinghouse account and using what IdP (Sarah Edwards)</li>
+
+<li>When helping an experimenter, find out what other clearinghouse users/projects exist at that user's home institution (Sarah Edwards)</li>
+</ul>
+</td>
+</tr>
+<tr><td>33</td>
+<td>Provide as much information as possible about experiment setup failures and reasons those experiments failed to operators and experimenters.</td>
+<td>Experimenter/Operator</td>
+<td><i>3 people:</i>
+(Joe Breen, Jonathan Mills, Leigh Stoller)<ul><li>Diagnose reasons for slice/sliver setup failure, including lack of resources and error conditions at aggregates (Joe Breen)</li>
+
+<li>Receive notifications of certain types of experimental setup failures (Jonathan Mills)</li>
+
+<li>Provide tools to experimenters to debug their own experiment setup and network problems (Leigh Stoller)</li>
+</ul>
+</td>
+</tr>
+<tr><td>34</td>
+<td>Perform data analysis on rack node utilization and sliver data collected, and try to say interesting things about how GENI is used</td>
+<td>GENI planner</td>
+<td><i>3 people:</i>
+(Ali Sydney, Cody Bumgardner, Mark Berman)<ul><li>View historical GENI metadata (Cody Bumgardner)</li>
+
+<li>Collect or run arbitrary queries on stored historical data to generate custom reports (Mark Berman)</li>
+</ul>
+</td>
+</tr>
+<tr><td>35</td>
+<td>Find out all resources a given experimenter has allocated across GENI, to reactively enforce usage limits</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Aaron Helsinger)</td>
+</tr>
+<tr><td>36</td>
+<td>Get version information about several GENI aggregates of the same type to debug a problem or schedule upgrades</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Chaos Golubitsky)</td>
+</tr>
+<tr><td>37</td>
+<td>Automatically deploy long-running applications across multiple sites</td>
+<td>Experimenter</td>
+<td><i>1 person:</i>
+(Cody Bumgardner)</td>
+</tr>
+<tr><td>38</td>
+<td>Nagios plugin, to work with a nagios agent running on the rack and checking component health</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Jimmy Kyriannis)</td>
+</tr>
+<tr><td>39</td>
+<td>Determine whether monitoring traffic is impacting network health</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Joe Breen)</td>
+</tr>
+<tr><td>40</td>
+<td>Use existing debugging tools (e.g. PerfSonar) and processes to debug network segments allocated to GENI</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Joe Breen)</td>
+</tr>
+<tr><td>41</td>
+<td>Receive notifications when a half of a switch redundant power supply fails</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Jonathan Mills)</td>
+</tr>
+<tr><td>42</td>
+<td>Get information about rack energy utilization over time</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Jonathan Mills)</td>
+</tr>
+<tr><td>43</td>
+<td>Automatically generate nagios configuration based on a GENI shared aggregate list</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Mitch McCracken)</td>
+</tr>
+<tr><td>44</td>
+<td>Answer questions like 'What slices or users do times X, Y, and Z on resources A and B have in common?'</td>
+<td>Operator</td>
+<td><i>1 person:</i>
+(Rob Ricci)</td>
+</tr>
+<tr><td>45</td>
+<td>See a public graph of current GENI user, slice, and free/used node counts</td>
+<td>GENI planner</td>
+<td><i>1 person:</i>
+(Sarah Edwards)</td>
+</tr>
+</table>
+</body>
+</html>
+
